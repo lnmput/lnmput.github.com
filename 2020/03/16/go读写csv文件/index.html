@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="我害怕，看到你，独自一人绝望； 更害怕，看不到你，不能和你一起迷惘……   go言語の encoding&#x2F;csv パッケージの使い方。CSVファイルの読み書きと、オプション、エラーハンドリングについて書いてます。 一行ずつ読み込む(Read)123456789101112131415161718192021222324252627282930313233343536package mainimp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go读写csv文件">
+<meta property="og:url" content="https://swoole.app/2020/03/16/go%E8%AF%BB%E5%86%99csv%E6%96%87%E4%BB%B6/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="我害怕，看到你，独自一人绝望； 更害怕，看不到你，不能和你一起迷惘……   go言語の encoding&#x2F;csv パッケージの使い方。CSVファイルの読み書きと、オプション、エラーハンドリングについて書いてます。 一行ずつ読み込む(Read)123456789101112131415161718192021222324252627282930313233343536package mainimp">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-03-16T12:18:44.000Z">
+<meta property="article:modified_time" content="2020-03-16T13:43:23.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Go">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2020/03/16/go%E8%AF%BB%E5%86%99csv%E6%96%87%E4%BB%B6/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2020/03/16/go%E8%AF%BB%E5%86%99csv%E6%96%87%E4%BB%B6/","path":"2020/03/16/go读写csv文件/","title":"go读写csv文件"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>go读写csv文件 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%A1%8C%E3%81%9A%E3%81%A4%E8%AA%AD%E3%81%BF%E8%BE%BC%E3%82%80-Read"><span class="nav-number">1.</span> <span class="nav-text">一行ずつ読み込む(Read)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%8B%E3%82%89%E8%AA%AD%E3%81%BF%E8%BE%BC%E3%82%80"><span class="nav-number">2.</span> <span class="nav-text">ファイルから読み込む</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#csv-Reader%E3%81%AE%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3"><span class="nav-number">3.</span> <span class="nav-text">csv.Readerのオプション</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E3%82%A8%E3%83%A9%E3%83%BC%E3%83%8F%E3%83%B3%E3%83%89%E3%83%AA%E3%83%B3%E3%82%B0-csv-ParseError"><span class="nav-number">4.</span> <span class="nav-text">エラーハンドリング(csv.ParseError)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AA%AD%E3%81%BF%E8%BE%BC%E3%82%93%E3%81%A0Shift-JIS%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92UTF8%E3%81%AB%E3%81%99%E3%82%8B"><span class="nav-number">5.</span> <span class="nav-text">読み込んだShift-JISファイルをUTF8にする</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E5%BA%A6%E3%81%AB%E3%81%99%E3%81%B9%E3%81%A6%E8%AA%AD%E3%81%BF%E8%BE%BC%E3%82%80-ReadAll"><span class="nav-number">6.</span> <span class="nav-text">一度にすべて読み込む(ReadAll)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%A1%8C%E3%81%9A%E3%81%A4%E6%9B%B8%E3%81%8D%E8%BE%BC%E3%82%80-Write"><span class="nav-number">7.</span> <span class="nav-text">一行ずつ書き込む(Write)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E3%81%99%E3%81%B9%E3%81%A6%E4%B8%80%E5%BA%A6%E3%81%AB%E6%9B%B8%E3%81%8D%E8%BE%BC%E3%82%80-WriteAll"><span class="nav-number">8.</span> <span class="nav-text">すべて一度に書き込む(WriteAll)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CSV%E3%82%92%E6%A7%8B%E9%80%A0%E4%BD%93%E3%81%AB%E3%83%9E%E3%83%83%E3%83%94%E3%83%B3%E3%82%B0%E3%81%99%E3%82%8B"><span class="nav-number">9.</span> <span class="nav-text">CSVを構造体にマッピングする</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/16/go%E8%AF%BB%E5%86%99csv%E6%96%87%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          go读写csv文件
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2020-03-16 21:18:44 / عُدل: 22:43:23" itemprop="dateCreated datePublished" datetime="2020-03-16T21:18:44+09:00">2020-03-16</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+我害怕，看到你，独自一人绝望；
+更害怕，看不到你，不能和你一起迷惘……
+</blockquote>
+
+<p>go言語の encoding/csv パッケージの使い方。<br>CSVファイルの読み書きと、オプション、エラーハンドリングについて書いてます。</p>
+<h3 id="一行ずつ読み込む-Read"><a href="#一行ずつ読み込む-Read" class="headerlink" title="一行ずつ読み込む(Read)"></a>一行ずつ読み込む(Read)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;io&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前,年齢,身長,体重</span></span><br><span class="line"><span class="string">Tanaka,31,190cm,97kg</span></span><br><span class="line"><span class="string">Suzuki,46,180cm,79kg</span></span><br><span class="line"><span class="string">Matsui,45,188cm,95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// recordは配列</span></span><br><span class="line">        fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, record)</span><br><span class="line"></span><br><span class="line">        <span class="comment">// []string&#123;&quot;名前&quot;, &quot;年齢&quot;, &quot;身長&quot;, &quot;体重&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Tanaka&quot;, &quot;31&quot;, &quot;190cm&quot;, &quot;97kg&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Suzuki&quot;, &quot;46&quot;, &quot;180cm&quot;, &quot;79kg&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Matsui&quot;, &quot;45&quot;, &quot;188cm&quot;, &quot;95kg&quot;&#125;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ファイルから読み込む"><a href="#ファイルから読み込む" class="headerlink" title="ファイルから読み込む"></a>ファイルから読み込む</h3><p>ファイルから読み込む場合は <code>csv.NewReader</code> に <code>*os.File</code> を渡す</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;os&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    f, err := os.Open(<span class="string">&quot;file.csv&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    r := csv.NewReader(f)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line">        fmt.Println(record)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="csv-Readerのオプション"><a href="#csv-Readerのオプション" class="headerlink" title="csv.Readerのオプション"></a>csv.Readerのオプション</h3><blockquote>
+<p>Comma: 区切り文字を変更<br>Comment: コメント行の先頭になる文字を指定<br>FieldsPerRecord: 各行のフィールド数を指定<br>LazyQuotes: ダブルクオートを厳密にチェックするかどうか<br>TrimLeadingSpace: 先頭の空白文字を無視する<br>ReuseRecord: スライスの再利用<br>TrailingComma: Deprecated(非推奨)</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;io&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前;年齢;身長;体重</span></span><br><span class="line"><span class="string"># コメント行</span></span><br><span class="line"><span class="string">Tanaka;31;190cm;97kg</span></span><br><span class="line"><span class="string"># コメント行</span></span><br><span class="line"><span class="string">Suzuki;46;180cm;79kg</span></span><br><span class="line"><span class="string"># コメント行</span></span><br><span class="line"><span class="string">Matsui;45;188cm;95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line"></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line">    r.Comma = <span class="string">&#x27;;&#x27;</span> <span class="comment">// 区切り文字を , から ; に変更</span></span><br><span class="line">    r.Comment = <span class="string">&#x27;#&#x27;</span> <span class="comment">// 先頭が # の場合はコメント行として扱う</span></span><br><span class="line">    r.FieldsPerRecord = <span class="number">4</span> <span class="comment">// 各行のフィールド数。多くても少なくてもエラーになる</span></span><br><span class="line">    r.LazyQuotes = <span class="literal">true</span> <span class="comment">// true の場合、&quot;&quot; が値の途中に &quot;180&quot;cm のようになっていてもエラーにならない</span></span><br><span class="line">    r.TrimLeadingSpace = <span class="literal">true</span> <span class="comment">// true の場合は、先頭の空白文字を無視する</span></span><br><span class="line">    r.ReuseRecord = <span class="literal">true</span> <span class="comment">// true の場合は、Read で戻ってくるスライスを次回再利用する。パフォーマンスが上がる</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// recordは配列</span></span><br><span class="line">        fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, record)</span><br><span class="line"></span><br><span class="line">        <span class="comment">// []string&#123;&quot;名前&quot;, &quot;年齢&quot;, &quot;身長&quot;, &quot;体重&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Tanaka&quot;, &quot;31&quot;, &quot;190cm&quot;, &quot;97kg&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Suzuki&quot;, &quot;46&quot;, &quot;180cm&quot;, &quot;79kg&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Matsui&quot;, &quot;45&quot;, &quot;188cm&quot;, &quot;95kg&quot;&#125;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="エラーハンドリング-csv-ParseError"><a href="#エラーハンドリング-csv-ParseError" class="headerlink" title="エラーハンドリング(csv.ParseError)"></a>エラーハンドリング(csv.ParseError)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前,年齢,身長,体重</span></span><br><span class="line"><span class="string">Tanaka,31,190cm,97kg</span></span><br><span class="line"><span class="string">Suzuki,46,180cm,79kg</span></span><br><span class="line"><span class="string">Matsui,45,188cm,95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line"></span><br><span class="line">    records, err := r.ReadAll()</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> e, ok := err.(*csv.ParseError); ok &#123;</span><br><span class="line">            n := <span class="number">0</span></span><br><span class="line">            <span class="keyword">switch</span> e.Err &#123;</span><br><span class="line">            <span class="keyword">case</span> csv.ErrBareQuote:</span><br><span class="line">                <span class="comment">// ダブルクオート途中で使用されていて LazyQuotes を true にしていない場合のエラー</span></span><br><span class="line">                <span class="comment">// 例えば、 Tan&quot;aka,31,190cm,97kg のように 途中に &quot; がある場合</span></span><br><span class="line">                n = <span class="number">1</span></span><br><span class="line">            <span class="keyword">case</span> csv.ErrQuote:</span><br><span class="line">                <span class="comment">// 先頭がダブルクオートで始まっていて、末尾がダブルクオートになっていない場合のエラー</span></span><br><span class="line">                <span class="comment">// 例えば、 &quot;Tanaka,31,190cm,97kg のように閉じるための &quot; がない場合</span></span><br><span class="line">                n = <span class="number">2</span></span><br><span class="line">            <span class="keyword">case</span> csv.ErrFieldCount:</span><br><span class="line">                <span class="comment">// FieldsPerRecordで指定した数と異なる場合のエラー</span></span><br><span class="line">                n = <span class="number">3</span></span><br><span class="line">            &#125;</span><br><span class="line">            log.Fatal(<span class="string">&quot;\nエラー: &quot;</span>, n, <span class="string">&quot;\n&quot;</span>, e.Err,</span><br><span class="line">                <span class="string">&quot;\nStartLine:&quot;</span>, e.StartLine, <span class="string">&quot;\nLine:&quot;</span>, e.Line, <span class="string">&quot;\nColumn:&quot;</span>, e.Column)</span><br><span class="line">        &#125;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fmt.Println(records)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="読み込んだShift-JISファイルをUTF8にする"><a href="#読み込んだShift-JISファイルをUTF8にする" class="headerlink" title="読み込んだShift-JISファイルをUTF8にする"></a>読み込んだShift-JISファイルをUTF8にする</h3><p><code>encoding/japanese</code> と <code>text/transform</code> が必要なのでダウンロードする</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="keyword">go</span> get golang.org/x/text/encoding/japanese golang.org/x/text/transform</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;os&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;golang.org/x/text/encoding/japanese&quot;</span></span><br><span class="line">    <span class="string">&quot;golang.org/x/text/transform&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    f, err := os.Open(<span class="string">&quot;file-sjis.csv&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    r := csv.NewReader(transform.NewReader(f, japanese.ShiftJIS.NewDecoder()))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        fmt.Println(record)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="一度にすべて読み込む-ReadAll"><a href="#一度にすべて読み込む-ReadAll" class="headerlink" title="一度にすべて読み込む(ReadAll)"></a>一度にすべて読み込む(ReadAll)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前,年齢,身長,体重</span></span><br><span class="line"><span class="string">Tanaka,31,190cm,97kg</span></span><br><span class="line"><span class="string">Suzuki,46,180cm,79kg</span></span><br><span class="line"><span class="string">Matsui,45,188cm,95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line"></span><br><span class="line">    record, err := r.ReadAll()</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, record)</span><br><span class="line">    <span class="comment">// [][]string&#123;</span></span><br><span class="line">    <span class="comment">//     []string&#123;&quot;名前&quot;, &quot;年齢&quot;, &quot;身長&quot;, &quot;体重&quot;&#125;,</span></span><br><span class="line">    <span class="comment">//     []string&#123;&quot;Tanaka&quot;, &quot;31&quot;, &quot;190cm&quot;, &quot;97kg&quot;&#125;,</span></span><br><span class="line">    <span class="comment">//     []string&#123;&quot;Suzuki&quot;, &quot;46&quot;, &quot;180cm&quot;, &quot;79kg&quot;&#125;,</span></span><br><span class="line">    <span class="comment">//     []string&#123;&quot;Matsui&quot;, &quot;45&quot;, &quot;188cm&quot;, &quot;95kg&quot;&#125;,</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="一行ずつ書き込む-Write"><a href="#一行ずつ書き込む-Write" class="headerlink" title="一行ずつ書き込む(Write)"></a>一行ずつ書き込む(Write)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;os&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    records := [][]<span class="keyword">string</span>&#123;</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;名前&quot;</span>, <span class="string">&quot;年齢&quot;</span>, <span class="string">&quot;身長&quot;</span>, <span class="string">&quot;体重&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Tanaka&quot;</span>, <span class="string">&quot;31&quot;</span>, <span class="string">&quot;190cm&quot;</span>, <span class="string">&quot;97kg&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Suzuki&quot;</span>, <span class="string">&quot;46&quot;</span>, <span class="string">&quot;180cm&quot;</span>, <span class="string">&quot;79kg&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Matsui&quot;</span>, <span class="string">&quot;45&quot;</span>, <span class="string">&quot;188cm&quot;</span>, <span class="string">&quot;95kg&quot;</span>&#125;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    f, err := os.Create(<span class="string">&quot;file.csv&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    w := csv.NewWriter(f)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// オプション</span></span><br><span class="line">    w.Camma = <span class="string">&#x27;,&#x27;</span> <span class="comment">// デフォルトはカンマ区切りで出力される。変更する場合はこの rune 文字を変更する</span></span><br><span class="line">    w.UseCRLF = <span class="literal">true</span> <span class="comment">// 改行文字を CRLF(\r\n) にする</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _, record := <span class="keyword">range</span> records &#123;</span><br><span class="line">        <span class="keyword">if</span> err := w.Write(record); err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    w.Flush() <span class="comment">// バッファに残っているデータをすべて書き込む</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err := w.Error(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>書き込み結果</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cat file.csv</span><br><span class="line">名前,年齢,身長,体重</span><br><span class="line">Tanaka,<span class="number">31</span>,<span class="number">190</span>cm,<span class="number">97</span>kg</span><br><span class="line">Suzuki,<span class="number">46</span>,<span class="number">180</span>cm,<span class="number">79</span>kg</span><br><span class="line">Matsui,<span class="number">45</span>,<span class="number">188</span>cm,<span class="number">95</span>kg</span><br></pre></td></tr></table></figure>
+
+<h3 id="すべて一度に書き込む-WriteAll"><a href="#すべて一度に書き込む-WriteAll" class="headerlink" title="すべて一度に書き込む(WriteAll)"></a>すべて一度に書き込む(WriteAll)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;os&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    records := [][]<span class="keyword">string</span>&#123;</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;名前&quot;</span>, <span class="string">&quot;年齢&quot;</span>, <span class="string">&quot;身長&quot;</span>, <span class="string">&quot;体重&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Tanaka&quot;</span>, <span class="string">&quot;31&quot;</span>, <span class="string">&quot;190cm&quot;</span>, <span class="string">&quot;97kg&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Suzuki&quot;</span>, <span class="string">&quot;46&quot;</span>, <span class="string">&quot;180cm&quot;</span>, <span class="string">&quot;79kg&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Matsui&quot;</span>, <span class="string">&quot;45&quot;</span>, <span class="string">&quot;188cm&quot;</span>, <span class="string">&quot;95kg&quot;</span>&#125;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    f, err := os.Create(<span class="string">&quot;file.csv&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    w := csv.NewWriter(f)</span><br><span class="line"></span><br><span class="line">    w.WriteAll(records)</span><br><span class="line"></span><br><span class="line">    w.Flush()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err := w.Error(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="CSVを構造体にマッピングする"><a href="#CSVを構造体にマッピングする" class="headerlink" title="CSVを構造体にマッピングする"></a>CSVを構造体にマッピングする</h3><p>以下のように書いてみたけど、reflect 使うとさらに面倒そう。<br>なので gocsv (gocsvのgodocページ) を使えば、読み込んだCSVを構造体にマッピングできて、 その逆で構造体からCSVに変換するのも楽にできそう。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;io&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strconv&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> People <span class="keyword">struct</span> &#123;</span><br><span class="line">    Name   <span class="keyword">string</span></span><br><span class="line">    Age    <span class="keyword">int</span></span><br><span class="line">    Height <span class="keyword">string</span></span><br><span class="line">    Weight <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前,年齢,身長,体重</span></span><br><span class="line"><span class="string">Tanaka,31,190cm,97kg</span></span><br><span class="line"><span class="string">Suzuki,46,180cm,79kg</span></span><br><span class="line"><span class="string">Matsui,45,188cm,95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> p []People</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; ; i++ &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> i == <span class="number">0</span> &#123;</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> people People</span><br><span class="line">        <span class="keyword">for</span> i, v := <span class="keyword">range</span> record &#123;</span><br><span class="line">            <span class="keyword">switch</span> i &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                people.Name = v</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">                people.Age, err = strconv.Atoi(v)</span><br><span class="line">                <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">                    log.Fatal(err)</span><br><span class="line">                &#125;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">                people.Height = v</span><br><span class="line">            <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">                people.Weight = v</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        p = <span class="built_in">append</span>(p, people)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fmt.Println(p)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://golang.hateblo.jp/entry/golang-encoding-csv">https://golang.hateblo.jp/entry/golang-encoding-csv</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go/" rel="tag"># Go</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/03/13/%E7%90%86%E8%A7%A3laravel%E7%9A%84%E7%AE%A1%E9%81%93/" rel="prev" title="理解laravel的管道">
+                  <i class="fa fa-chevron-left"></i> 理解laravel的管道
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/03/22/golang%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9B%B8%E5%85%B3%E5%A4%84%E7%90%86/" rel="next" title="golang字符串相关处理">
+                  golang字符串相关处理 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

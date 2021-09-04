@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="有人住高楼，有人在深沟，有人光万丈，有人一身锈。世人万千种，浮云莫去求，斯人若彩虹，遇上方知有。   我们在写代码的过程中应该注意的问题：  开启数量适中的Worker进程和Task进程 守护进程化 配置运行时日志 平滑重启 避免内存泄漏 避免粘包问题  除此之外，跟swoole打交道，我们还应该注意下面这些问题：  为了避免Worker阻塞，避免使用sleep等睡眠函数 不要使用die或者ex">
+<meta property="og:type" content="article">
+<meta property="og:title" content="swoole异步task邮件案例">
+<meta property="og:url" content="https://swoole.app/2018/08/10/swoole%E5%BC%82%E6%AD%A5task%E9%82%AE%E4%BB%B6%E6%A1%88%E4%BE%8B/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="有人住高楼，有人在深沟，有人光万丈，有人一身锈。世人万千种，浮云莫去求，斯人若彩虹，遇上方知有。   我们在写代码的过程中应该注意的问题：  开启数量适中的Worker进程和Task进程 守护进程化 配置运行时日志 平滑重启 避免内存泄漏 避免粘包问题  除此之外，跟swoole打交道，我们还应该注意下面这些问题：  为了避免Worker阻塞，避免使用sleep等睡眠函数 不要使用die或者ex">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-08-09T22:41:05.000Z">
+<meta property="article:modified_time" content="2018-08-10T00:36:27.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Swoole">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/08/10/swoole%E5%BC%82%E6%AD%A5task%E9%82%AE%E4%BB%B6%E6%A1%88%E4%BE%8B/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2018/08/10/swoole%E5%BC%82%E6%AD%A5task%E9%82%AE%E4%BB%B6%E6%A1%88%E4%BE%8B/","path":"2018/08/10/swoole异步task邮件案例/","title":"swoole异步task邮件案例"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>swoole异步task邮件案例 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%82%AE%E4%BB%B6%E6%A1%88%E4%BE%8B"><span class="nav-number">1.</span> <span class="nav-text">邮件案例</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/10/swoole%E5%BC%82%E6%AD%A5task%E9%82%AE%E4%BB%B6%E6%A1%88%E4%BE%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          swoole异步task邮件案例
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2018-08-10 07:41:05 / عُدل: 09:36:27" itemprop="dateCreated datePublished" datetime="2018-08-10T07:41:05+09:00">2018-08-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+有人住高楼，有人在深沟，有人光万丈，有人一身锈。世人万千种，浮云莫去求，斯人若彩虹，遇上方知有。
+</blockquote>
+
+<p>我们在写代码的过程中应该注意的问题：</p>
+<ul>
+<li>开启数量适中的Worker进程和Task进程</li>
+<li>守护进程化</li>
+<li>配置运行时日志</li>
+<li>平滑重启</li>
+<li>避免内存泄漏</li>
+<li>避免粘包问题</li>
+</ul>
+<p>除此之外，跟swoole打交道，我们还应该注意下面这些问题：</p>
+<ul>
+<li>为了避免Worker阻塞，避免使用sleep等睡眠函数</li>
+<li>不要使用die或者exit函数，即使在你调试的时候</li>
+<li>保持良好的代码风格，try/catch捕获异常</li>
+<li>如果Worker进程无法预料会发生异常退出，虽然Manager进程会重新拉起新的Worker进程，但是我们可以通过register_shutdown_function方法在进程退出前“善后”</li>
+</ul>
+<h3 id="邮件案例"><a href="#邮件案例" class="headerlink" title="邮件案例"></a>邮件案例</h3><p>首先发送邮件，我们借助第三方类库 swiftmailer。有些框架可能集成了swiftmailer，比如yii2,本来准备在yii2的基础之上来讲，考虑部分人可能对这个框架不熟悉，我们这里直接根据swiftmailer代码操作，框架中一样可以使用，无任何影响。</p>
+<p>我们执行下面的命令，把swiftmailer下载到本地，下载好之后swiftmailer会被下载到一个叫vendor文件夹的目录里面</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> <span class="string">&quot;swiftmailer/swiftmailer:^6.0&quot;</span></span><br></pre></td></tr></table></figure>
+<p>然后我们封装一个简单的邮件类Mailer.php,同vendor目录同级，用于发送邮件，该类后期可自行完善，比如增加批量发送邮件或者增加发送模版邮件等操作。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require_once</span> <span class="keyword">__DIR__</span> . <span class="string">&#x27;/vendor/autoload.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Mailer</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$transport</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$mailer</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 发送邮件类 参数 $data 需要三个必填项 包括 邮件主题`$data[&#x27;subject&#x27;]`、接收邮件的人`$data[&#x27;to&#x27;]`和邮件内容 `$data[&#x27;content&#x27;]`</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> Array $data</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> bool $result 发送成功 or 失败</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">send</span>(<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;transport = (<span class="keyword">new</span> Swift_SmtpTransport(<span class="string">&#x27;smtp.qq.com&#x27;</span>, <span class="number">25</span>))</span><br><span class="line">            -&gt;setEncryption(<span class="string">&#x27;tls&#x27;</span>)</span><br><span class="line">            -&gt;setUsername(<span class="string">&#x27;bailangzhan@qq.com&#x27;</span>)</span><br><span class="line">            -&gt;setPassword(<span class="string">&#x27;xxxxxx&#x27;</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;mailer = <span class="keyword">new</span> Swift_Mailer(<span class="keyword">$this</span>-&gt;transport);</span><br><span class="line"></span><br><span class="line">        <span class="variable">$message</span> = (<span class="keyword">new</span> Swift_Message(<span class="variable">$data</span>[<span class="string">&#x27;subject&#x27;</span>]))</span><br><span class="line">            -&gt;setFrom(<span class="keyword">array</span>(<span class="string">&#x27;bailangzhan@qq.com&#x27;</span> =&gt; <span class="string">&#x27;白狼栈&#x27;</span>))</span><br><span class="line">            -&gt;setTo(<span class="keyword">array</span>(<span class="variable">$data</span>[<span class="string">&#x27;to&#x27;</span>]))</span><br><span class="line">            -&gt;setBody(<span class="variable">$data</span>[<span class="string">&#x27;content&#x27;</span>]);</span><br><span class="line">            </span><br><span class="line">        <span class="variable">$result</span> = <span class="keyword">$this</span>-&gt;mailer-&gt;send(<span class="variable">$message</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 释放</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;destroy();</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">destroy</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;transport = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;mailer = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这段代码中，你需要修改的地方包括 Host、Post、Encryption、Username、Password和From。</p>
+<p>Mailer类简单的封装好之后，我们写几行代码测试下你的邮件类是否可以正确的使用</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require_once</span> <span class="keyword">__DIR__</span> . <span class="string">&quot;/task/Mailer.php&quot;</span>;</span><br><span class="line"><span class="variable">$data</span> = [</span><br><span class="line">    <span class="string">&#x27;to&#x27;</span> =&gt; <span class="string">&#x27;422744***@qq.com&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;subject&#x27;</span> =&gt; <span class="string">&#x27;just a test&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;content&#x27;</span> =&gt; <span class="string">&#x27;This is just a test.&#x27;</span>,</span><br><span class="line">];</span><br><span class="line"><span class="variable">$mailer</span> = <span class="keyword">new</span> Mailer;</span><br><span class="line"><span class="variable">$mailer</span>-&gt;send(<span class="variable">$data</span>);</span><br></pre></td></tr></table></figure>
+<p>to是要发送给谁，subject邮件标题，content邮件内容。</p>
+<p>如果不可以正常发送，请检查swiftmailer相关类正确引入并且保证Mailer类的配置可用。</p>
+<p>邮件类准备好之后，我们正式开始写swoole server，主要代码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskServer</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_serv</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_run</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * init</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv = <span class="keyword">new</span> Swoole\Server(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">2</span>,</span><br><span class="line">            <span class="string">&#x27;daemonize&#x27;</span> =&gt; <span class="literal">false</span>,</span><br><span class="line">            <span class="string">&#x27;log_file&#x27;</span> =&gt; <span class="keyword">__DIR__</span> . <span class="string">&#x27;/server.log&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;task_worker_num&#x27;</span> =&gt; <span class="number">2</span>,</span><br><span class="line">            <span class="string">&#x27;max_request&#x27;</span> =&gt; <span class="number">5000</span>,</span><br><span class="line">            <span class="string">&#x27;task_max_request&#x27;</span> =&gt; <span class="number">5000</span>,</span><br><span class="line">            <span class="string">&#x27;open_eof_check&#x27;</span> =&gt; <span class="literal">true</span>, <span class="comment">//打开EOF检测</span></span><br><span class="line">            <span class="string">&#x27;package_eof&#x27;</span> =&gt; <span class="string">&quot;\r\n&quot;</span>, <span class="comment">//设置EOF</span></span><br><span class="line">            <span class="string">&#x27;open_eof_split&#x27;</span> =&gt; <span class="literal">true</span>, <span class="comment">// 自动分包</span></span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Connect&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onConnect&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;WorkerStart&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onWorkerStart&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Task&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onTask&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Finish&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onFinish&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Close&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onClose&#x27;</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onConnect</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onWorkerStart</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$workerId</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">require_once</span> <span class="keyword">__DIR__</span> . <span class="string">&quot;/TaskRun.php&quot;</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_run = <span class="keyword">new</span> TaskRun;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$data</span> = <span class="keyword">$this</span>-&gt;unpack(<span class="variable">$data</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_run-&gt;receive(<span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span>);</span><br><span class="line">        <span class="comment">// 投递一个任务到task进程中</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">empty</span>(<span class="variable">$data</span>[<span class="string">&#x27;event&#x27;</span>])) &#123;</span><br><span class="line">            <span class="variable">$serv</span>-&gt;task(array_merge(<span class="variable">$data</span> , [<span class="string">&#x27;fd&#x27;</span> =&gt; <span class="variable">$fd</span>]));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onTask</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_run-&gt;task(<span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onFinish</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_run-&gt;finish(<span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onClose</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 对数据包单独处理，数据包经过`json_decode`处理之后，只能是数组</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span> $data</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> bool|mixed</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">unpack</span>(<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$data</span> = str_replace(<span class="string">&quot;\r\n&quot;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$data</span>);</span><br><span class="line">        <span class="keyword">if</span> (!<span class="variable">$data</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$data</span> = json_decode(<span class="variable">$data</span>, <span class="literal">true</span>);</span><br><span class="line">        <span class="keyword">if</span> (!<span class="variable">$data</span> || !is_array(<span class="variable">$data</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$data</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$reload</span> = <span class="keyword">new</span> TaskServer;</span><br><span class="line"><span class="variable">$reload</span>-&gt;start();</span><br></pre></td></tr></table></figure>
+<p>简单分析下:</p>
+<ul>
+<li>在onWorkerStart回调内，我们引入了实际处理业务逻辑的类TaskRun.php，为什么这么说呢？因为我们在onReceive\onTask\onFinish回调内均把数据交给了TaskRun对象去处理了</li>
+<li>我们约定，每个数据包都必须带有EOF标记<code>\r\n</code>，在server端为了更好的处理数据，onReceive回调内我们把数据包丢给了unpack方法处理，该方法的目的就是把数据包的EOF标记去掉，还原真实的数据包。我们还约定，server收到的数据包经过unpack处理之后只能是数组，非数组在unpack中就被直接处理掉了。</li>
+<li>onReceive回调内，我们看到，只有数据包含有<code>event</code>项才会被投递给Task进程，这样做的原因是Task进程可能要处理各种任务，增加<code>event</code>项是为了表明投递过来的任务是要做什么的。</li>
+</ul>
+<p>我们看TaskRun的实现</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require_once</span> (<span class="string">&#x27;./TaskClient.php&#x27;</span>);</span><br><span class="line"><span class="keyword">require_once</span> (<span class="string">&#x27;./Mailer.php&#x27;</span>);</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskRun</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">receive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">task</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">switch</span> (<span class="variable">$data</span>[<span class="string">&#x27;event&#x27;</span>]) &#123;</span><br><span class="line">                <span class="keyword">case</span> TaskClient::EVENT_TYPE_SEND_MAIL:</span><br><span class="line">                    <span class="variable">$mailer</span> = <span class="keyword">new</span> Mailer;</span><br><span class="line">                    <span class="variable">$result</span> = <span class="variable">$mailer</span>-&gt;send(<span class="variable">$data</span>);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">default</span>:</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (\<span class="built_in">Exception</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> \<span class="built_in">Exception</span>(<span class="string">&#x27;task exception :&#x27;</span> . <span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">finish</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>目前，我们主要就一个业务，“发送邮件”，所以TaskRun类的实现现在看来非常简单。</p>
+<p>因为发邮件是一件比较耗时的任务，所以我们这里完善的是task回调。我们根据投递给Task进程的数据类型，判断投递过来的数据是要做什么。比如我们这里有一项event，等于TaskClient::EVENT_TYPE_SEND_MAIL,这一项就是发送邮件的标识，如果要投递的任务的event项等于TaskClient::EVENT_TYPE_SEND_MAIL，就表明这个任务是邮件任务，程序上就可以通过switch去处理邮件了。</p>
+<p>TaskClient是什么呢？这是一个封装好的客户端处理类，我们来看下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskClient</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$client</span>;</span><br><span class="line">    <span class="keyword">const</span> EVENT_TYPE_SEND_MAIL = <span class="string">&#x27;send-mail&#x27;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span> (<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;client = <span class="keyword">new</span> Swoole\Client(SWOOLE_SOCK_TCP);</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">$this</span>-&gt;client-&gt;connect(<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">9501</span>)) &#123;</span><br><span class="line">            <span class="variable">$msg</span> = <span class="string">&#x27;swoole client connect failed.&#x27;</span>;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> \<span class="built_in">Exception</span>(<span class="string">&quot;Error: <span class="subst">&#123;$msg&#125;</span>.&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> $data Array</span></span><br><span class="line"><span class="comment">     * send data</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sendData</span> (<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$data</span> = <span class="keyword">$this</span>-&gt;togetherDataByEof(<span class="variable">$data</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;client-&gt;send(<span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 数据末尾拼接EOF标记</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> Array $data 要处理的数据</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> String json_encode($data) . EOF</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">togetherDataByEof</span>(<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!is_array(<span class="variable">$data</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> json_encode(<span class="variable">$data</span>) . <span class="string">&quot;\r\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Swoole/" rel="tag"># Swoole</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/08/09/swoole%E4%B9%8B%E7%B2%98%E5%8C%85%E9%97%AE%E9%A2%98/" rel="prev" title="swoole之粘包问题">
+                  <i class="fa fa-chevron-left"></i> swoole之粘包问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/08/10/swoole%E7%9A%84%E5%B9%B3%E6%BB%91%E9%87%8D%E5%90%AF%E9%97%AE%E9%A2%98/" rel="next" title="swoole的平滑重启问题">
+                  swoole的平滑重启问题 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

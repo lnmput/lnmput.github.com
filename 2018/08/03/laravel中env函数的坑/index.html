@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="不自量力的还手 直至死方休   最近项目中遇到了一个问题， 问题出在env函数上，在Middleware中读取环境变量时取到的竟然是null 1dump(env(&amp;#x27;APP_ENV&amp;#x27;) &#x3D;&#x3D;&#x3D; null); &#x2F;&#x2F; true 查看env 的代码 12345678910111213function env($key, $default &#x3D; null)&amp;#123;    $value">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Laravel中env函数的坑">
+<meta property="og:url" content="https://swoole.app/2018/08/03/laravel%E4%B8%ADenv%E5%87%BD%E6%95%B0%E7%9A%84%E5%9D%91/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="不自量力的还手 直至死方休   最近项目中遇到了一个问题， 问题出在env函数上，在Middleware中读取环境变量时取到的竟然是null 1dump(env(&amp;#x27;APP_ENV&amp;#x27;) &#x3D;&#x3D;&#x3D; null); &#x2F;&#x2F; true 查看env 的代码 12345678910111213function env($key, $default &#x3D; null)&amp;#123;    $value">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-08-03T04:50:22.000Z">
+<meta property="article:modified_time" content="2018-08-03T06:06:03.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Laravel">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/08/03/laravel%E4%B8%ADenv%E5%87%BD%E6%95%B0%E7%9A%84%E5%9D%91/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2018/08/03/laravel%E4%B8%ADenv%E5%87%BD%E6%95%B0%E7%9A%84%E5%9D%91/","path":"2018/08/03/laravel中env函数的坑/","title":"Laravel中env函数的坑"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Laravel中env函数的坑 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/03/laravel%E4%B8%ADenv%E5%87%BD%E6%95%B0%E7%9A%84%E5%9D%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Laravel中env函数的坑
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2018-08-03 13:50:22 / عُدل: 15:06:03" itemprop="dateCreated datePublished" datetime="2018-08-03T13:50:22+09:00">2018-08-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+不自量力的还手 直至死方休
+</blockquote>
+
+<p>最近项目中遇到了一个问题， 问题出在env函数上，在Middleware中读取环境变量时取到的竟然是null</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dump(env(<span class="string">&#x27;APP_ENV&#x27;</span>) === <span class="literal">null</span>); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>查看env 的代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">env</span>(<span class="params"><span class="variable">$key</span>, <span class="variable">$default</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$value</span> = getenv(<span class="variable">$key</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$value</span> === <span class="literal">false</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> value(<span class="variable">$default</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 此处省略部分代码</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>可以发现，实际上调用的就是php自带的<code>getenv</code>函数，如果取不到值，那必定是某段执行putenv或者操作<code>$_ENV</code>全局变量的代码没有执行，而且这些环境变量设置操作一定是在初始化的时候进行的<br>如果对Laravel的Kernel执行顺序比较了解的话，应该知道，在Kernel启动阶段会首先执行一组bootstrappers</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Illuminate/Foundation/Http/Kernel.php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Kernel</span> <span class="keyword">implements</span> <span class="title">KernelContract</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The bootstrap classes for the application.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$bootstrappers</span> = [</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\DetectEnvironment&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\LoadConfiguration&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\ConfigureLogging&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\HandleExceptions&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\RegisterFacades&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\RegisterProviders&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\BootProviders&#x27;</span>,</span><br><span class="line">    ];</span><br></pre></td></tr></table></figure>
+<p>其中一个bootstrapper名为DetectEnvironment，而它的嫌疑是最大的，检查这个类</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Illuminate/Foundation/Bootstrap/DetectEnvironment.php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DetectEnvironment</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Bootstrap the given application.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  \Illuminate\Contracts\Foundation\Application  $app</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">bootstrap</span>(<span class="params">Application <span class="variable">$app</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (! <span class="variable">$app</span>-&gt;configurationIsCached()) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;checkForSpecificEnvironmentFile(<span class="variable">$app</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                (<span class="keyword">new</span> Dotenv(<span class="variable">$app</span>-&gt;environmentPath(), <span class="variable">$app</span>-&gt;environmentFile()))-&gt;load();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InvalidPathException <span class="variable">$e</span>) &#123;</span><br><span class="line">                <span class="comment">//</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在代码中，我们并没有发现任何执行putenv或者操作<code>$_ENV</code>全局变量的地方，实际上在整个Laravel的框架代码里也没有发现蛛丝马迹，那么这些环境变量是如何保存进来的呢？<br>如果Laravel框架里没有执行这些代码，我们应该可以推测是框架使用的第三方组件做了这些事情<br>而事实也确实如此，可以看到在DetectEnvironment类的bootstrap方法里实例化了一个Dotenv类的对象，而Dotenv\Loader正是执行了读取.env文件，执行putenv的操作。<br>那么env获取不到值只能说明Dotenv的实例化并没有执行</p>
+<p>再仔细看一下DetectEnvironment类，在实例化Dotenv前，先进行了一个 if 判断</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (! <span class="variable">$app</span>-&gt;configurationIsCached())</span><br></pre></td></tr></table></figure>
+
+<p>而这个方法的作用就是判断 <code>bootstrap/cache/config.php</code> 缓存文件是否存在，如果文件存在则不会执行Dotenv的实例化操作，也就不会往<code>$_ENV</code>里存数据，自然env函数是取不到值的</p>
+<p><code>bootstrap/cache/config.php</code>是执行下面的命令生成的</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan config:cache</span><br></pre></td></tr></table></figure>
+<p>清除使用命令</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan config:clear</span><br></pre></td></tr></table></figure>
+<p>那么，真相大白了，之前在开发时并没有出现问题，是因为没有执行 config:cache 命令，而项目上线后为了优化访问速度，生成了缓存文件，导致env取值失败</p>
+<p>如果使用了config:cache，env函数只能在config目录下的配置文件的php里使用，不可以在其他地方使用。</p>
+<p>一个非常简单的办法就是将</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env(<span class="string">&#x27;APP_ENV&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>改为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config(<span class="string">&#x27;app.env&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>config函数会优先读取 bootstrap/cache/config.php 中缓存的配置，如果没有缓存文件，则会直接读取 config 目录下的所有配置文件</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/83f9cd407751">https://www.jianshu.com/p/83f9cd407751</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Laravel/" rel="tag"># Laravel</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/08/03/linux%E6%9F%A5%E6%89%BE%E5%90%AB%E6%9C%89%E6%9F%90%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E6%89%80%E6%9C%89%E6%96%87%E4%BB%B6/" rel="prev" title="Linux查找含有某字符串的所有文件">
+                  <i class="fa fa-chevron-left"></i> Linux查找含有某字符串的所有文件
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/08/07/api%E7%9A%84%E9%98%B2%E9%87%8D%E6%94%BE%E6%9C%BA%E5%88%B6/" rel="next" title="API的防重放机制">
+                  API的防重放机制 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

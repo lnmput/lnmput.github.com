@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="肉食者鄙，未能远谋。   如何让你的代码保持整洁想要让你的代码整洁优雅，仅仅读完 uncle Bob 的《代码整洁之道》是不够的，还需要知识和持续的练习，你必须要学习原理，模式以及实践。也许这需要长时间的努力工作，但不妨你现在就开始行动。无论你现在的代码多么的整洁，然而总有一些东西能你的代码变得更加整洁，这需要你去学习。通过读专家的书或者帖子来学习，是一个非常有效的途径。你可以关注他们的 twi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何让你的PHP代码保持整洁">
+<meta property="og:url" content="https://swoole.app/2018/01/22/%E5%A6%82%E4%BD%95%E8%AE%A9%E4%BD%A0%E7%9A%84PHP%E4%BB%A3%E7%A0%81%E4%BF%9D%E6%8C%81%E6%95%B4%E6%B4%81/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="肉食者鄙，未能远谋。   如何让你的代码保持整洁想要让你的代码整洁优雅，仅仅读完 uncle Bob 的《代码整洁之道》是不够的，还需要知识和持续的练习，你必须要学习原理，模式以及实践。也许这需要长时间的努力工作，但不妨你现在就开始行动。无论你现在的代码多么的整洁，然而总有一些东西能你的代码变得更加整洁，这需要你去学习。通过读专家的书或者帖子来学习，是一个非常有效的途径。你可以关注他们的 twi">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-01-22T07:58:32.000Z">
+<meta property="article:modified_time" content="2018-03-27T13:03:38.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="PHP">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/01/22/%E5%A6%82%E4%BD%95%E8%AE%A9%E4%BD%A0%E7%9A%84PHP%E4%BB%A3%E7%A0%81%E4%BF%9D%E6%8C%81%E6%95%B4%E6%B4%81/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2018/01/22/%E5%A6%82%E4%BD%95%E8%AE%A9%E4%BD%A0%E7%9A%84PHP%E4%BB%A3%E7%A0%81%E4%BF%9D%E6%8C%81%E6%95%B4%E6%B4%81/","path":"2018/01/22/如何让你的PHP代码保持整洁/","title":"如何让你的PHP代码保持整洁"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>如何让你的PHP代码保持整洁 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%AE%A9%E4%BD%A0%E7%9A%84%E4%BB%A3%E7%A0%81%E4%BF%9D%E6%8C%81%E6%95%B4%E6%B4%81"><span class="nav-number">1.</span> <span class="nav-text">如何让你的代码保持整洁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%9D%E6%8C%81%E4%BD%A0%E7%9A%84%E5%87%BD%E6%95%B0%E7%9F%AD%E5%B0%8F%E7%B2%BE%E6%82%8D"><span class="nav-number">2.</span> <span class="nav-text">保持你的函数短小精悍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E6%88%96%E5%87%BD%E6%95%B0%E7%9A%84%E5%90%8D%E5%AD%97%E5%BA%94%E8%AF%A5%E8%83%BD%E5%A4%9F%E4%B8%80%E7%9C%BC%E7%9C%8B%E5%87%BA%E5%AE%83%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">变量或函数的名字应该能够一眼看出它的作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%81%BF%E5%85%8D-if-%E5%92%8C-switch-%E8%AF%AD%E5%8F%A5"><span class="nav-number">4.</span> <span class="nav-text">避免 if 和 switch 语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%81%BF%E5%85%8D%E5%BF%83%E7%90%86%E5%9C%B0%E5%9B%BE%E5%BC%8F%E5%91%BD%E5%90%8D"><span class="nav-number">5.</span> <span class="nav-text">避免心理地图式命名</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/22/%E5%A6%82%E4%BD%95%E8%AE%A9%E4%BD%A0%E7%9A%84PHP%E4%BB%A3%E7%A0%81%E4%BF%9D%E6%8C%81%E6%95%B4%E6%B4%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何让你的PHP代码保持整洁
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2018-01-22 16:58:32" itemprop="dateCreated datePublished" datetime="2018-01-22T16:58:32+09:00">2018-01-22</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2018-03-27 22:03:38" itemprop="dateModified" datetime="2018-03-27T22:03:38+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+肉食者鄙，未能远谋。
+</blockquote>
+
+<h3 id="如何让你的代码保持整洁"><a href="#如何让你的代码保持整洁" class="headerlink" title="如何让你的代码保持整洁"></a>如何让你的代码保持整洁</h3><p>想要让你的代码整洁优雅，仅仅读完 uncle Bob 的<code>《代码整洁之道》</code>是不够的，还需要知识和持续的练习，你必须要学习原理，模式以及实践。也许这需要长时间的努力工作，但不妨你现在就开始行动。<br>无论你现在的代码多么的整洁，然而总有一些东西能你的代码变得更加整洁，这需要你去学习。<br>通过读专家的书或者帖子来学习，是一个非常有效的途径。你可以关注他们的 twitter，听他们的演讲，关注他们的 GitHub，学习他们写代码的方式以及结构。<br>除非你向你所在领域的专家不断学习，否则，你可能一直停留在工程师的级别。</p>
+<h3 id="保持你的函数短小精悍"><a href="#保持你的函数短小精悍" class="headerlink" title="保持你的函数短小精悍"></a>保持你的函数短小精悍</h3><p>整洁的代码不仅仅是编写简短的方法，编写的代码要清晰地传达意图。<br>当一个函数太长时，很可能表明做的太多了，读者会阅读中迷路。函数应该只做一件事。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="variable">$order</span>-&gt;contains(<span class="variable">$status</span>)&#123;</span><br><span class="line">   <span class="comment">//do something with order</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">contains</span>(<span class="params"><span class="variable">$status</span></span>)</span>&#123;</span><br><span class="line">    <span class="variable">$order_statuses</span>=[<span class="string">&#x27;accepted&#x27;</span>,<span class="string">&#x27;delivered&#x27;</span>,<span class="string">&#x27;rejected&#x27;</span>,<span class="string">&#x27;processed&#x27;</span>];</span><br><span class="line">      <span class="keyword">if</span> (in_array(<span class="variable">$status</span>, <span class="variable">$order_statuses</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">         &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以通过重写函数，使它’contains’整洁为:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">contains</span>(<span class="params"><span class="variable">$status</span></span>)</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> in_array(<span class="variable">$status</span>, <span class="keyword">$this</span>-&gt;config-&gt;statuses);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="变量或函数的名字应该能够一眼看出它的作用"><a href="#变量或函数的名字应该能够一眼看出它的作用" class="headerlink" title="变量或函数的名字应该能够一眼看出它的作用"></a>变量或函数的名字应该能够一眼看出它的作用</h3><p>选择一个合适的函数名字有的时候可能很乏味，但是毫无疑问的是这值得你这样做！因为这使你在代码变更的时候不需要更新代码的注释！</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$date</span> =date(<span class="string">&#x27;Y-m-d&#x27;</span>); <span class="comment">//Ofcourse, it&#x27;s a date but too generic!</span></span><br><span class="line"><span class="variable">$orderCreationDate</span> =date(<span class="string">&#x27;Y-m-d&#x27;</span>); <span class="comment">//cleaner code</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="避免-if-和-switch-语句"><a href="#避免-if-和-switch-语句" class="headerlink" title="避免 if 和 switch 语句"></a>避免 if 和 switch 语句</h3><p>个人认为，它(if 和 switch 语句)会让我花一点时间去理解。“你告诉我，我该怎么避免使用我最爱的语句之一——if &amp; else?”事实证明，大部分条件语句可以简单的被分解成函数或类。这并不是说不让你使用 if 和 switch 语句，只是想说看情况使用！<br>这里有一个很好的例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BookOrder</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">process</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">switch</span> (<span class="keyword">$this</span>-&gt;book-&gt;type) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;audiocopy&#x27;</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;processAudioBook();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;downloadablecopy&#x27;</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;processDownloadableCopy();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;paperbookcopy&#x27;</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;processPaperBookCopy();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一个干净且更易于维护的书写方式应该是这样的：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span>  <span class="title">IBookOrder</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">process</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AudioBookOrder</span> <span class="keyword">implements</span> <span class="title">IBookOrder</span> :<span class="title">void</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">process</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> Implement process() method.</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PaperBookOrder</span> <span class="keyword">implements</span> <span class="title">IBookOrder</span>: <span class="title">void</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">process</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> Implement process() method.</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DownloadableBookOrder</span> <span class="keyword">implements</span> <span class="title">IBookOrder</span>: <span class="title">void</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">process</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> Implement process() method.</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="避免心理地图式命名"><a href="#避免心理地图式命名" class="headerlink" title="避免心理地图式命名"></a>避免心理地图式命名</h3><p>干净的代码应该易于阅读，理解，不应该有猜测的余地。<br>下面的代码检查客户是否可以提取一定数量的钱。这很有效，但很混乱。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="keyword">$this</span>-&gt;user-&gt;balance  &gt; <span class="variable">$amount</span> &amp;&amp; <span class="keyword">$this</span>-&gt;user-&gt;activeLoan===<span class="number">0</span>)&#123;</span><br><span class="line">   <span class="keyword">$this</span>-&gt;user-&gt;balance -=<span class="variable">$amount</span>; <span class="comment">// withdraw amount;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>让我们把它弄的整洁一点</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="keyword">$this</span>-&gt;hasNoActiveLoan() &amp;&amp; <span class="keyword">$this</span>-&gt;canWithdrawAmount(<span class="variable">$amount</span>))&#123;</span><br><span class="line">   <span class="keyword">$this</span>-&gt;withdraw(<span class="variable">$amount</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">hasNoActiveLoan</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;user-&gt;activeLoan===<span class="number">0</span>;</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">canWithdrawAmount</span>(<span class="params"><span class="keyword">float</span> <span class="variable">$amount</span></span>)</span>&#123;</span><br><span class="line">     <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;user-&gt;balance &gt; <span class="variable">$amount</span>;</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">withdraw</span>(<span class="params"><span class="keyword">float</span> <span class="variable">$amount</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;user-&gt;balance -=<span class="variable">$amount</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://nikic.github.io/2011/12/27/Dont-be-STUPID-GRASP-SOLID.html">https://nikic.github.io/2011/12/27/Dont-be-STUPID-GRASP-SOLID.html</a><br><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/7468/please-keep-your-php-code-neat-and-tidy">https://laravel-china.org/topics/7468/please-keep-your-php-code-neat-and-tidy</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PHP/" rel="tag"># PHP</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/01/19/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Service%E6%A8%A1%E5%BC%8F/" rel="prev" title="如何使用Service模式">
+                  <i class="fa fa-chevron-left"></i> 如何使用Service模式
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/01/23/S-O-L-I-D%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E8%AE%BE%E8%AE%A1%E7%9A%845%E5%A4%A7%E5%8E%9F%E5%88%99/" rel="next" title="S.O.L.I.D面向对象设计的5大原则">
+                  S.O.L.I.D面向对象设计的5大原则 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

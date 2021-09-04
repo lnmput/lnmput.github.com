@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="中年以后的男人,时常会觉得孤独,因为他一睁开眼睛,周围都是要依靠他的人,却没有他可以依靠的人  ### 创建命令 运行命令行创建命令 1php artisan make:console MultithreadingRequest --command&#x3D;test:multithreading-request ### 注册命令 编辑 app&#x2F;Console&#x2F;Kernel.php，在 $commands">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Laravel下使用Guzzle编写多线程爬虫实战">
+<meta property="og:url" content="https://swoole.app/2017/08/29/Laravel%E4%B8%8B%E4%BD%BF%E7%94%A8Guzzle%E7%BC%96%E5%86%99%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%88%AC%E8%99%AB%E5%AE%9E%E6%88%98/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="中年以后的男人,时常会觉得孤独,因为他一睁开眼睛,周围都是要依靠他的人,却没有他可以依靠的人  ### 创建命令 运行命令行创建命令 1php artisan make:console MultithreadingRequest --command&#x3D;test:multithreading-request ### 注册命令 编辑 app&#x2F;Console&#x2F;Kernel.php，在 $commands">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-08-29T05:20:07.000Z">
+<meta property="article:modified_time" content="2018-03-27T13:19:12.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Laravel">
+<meta property="article:tag" content="并发">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2017/08/29/Laravel%E4%B8%8B%E4%BD%BF%E7%94%A8Guzzle%E7%BC%96%E5%86%99%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%88%AC%E8%99%AB%E5%AE%9E%E6%88%98/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2017/08/29/Laravel%E4%B8%8B%E4%BD%BF%E7%94%A8Guzzle%E7%BC%96%E5%86%99%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%88%AC%E8%99%AB%E5%AE%9E%E6%88%98/","path":"2017/08/29/Laravel下使用Guzzle编写多线程爬虫实战/","title":"Laravel下使用Guzzle编写多线程爬虫实战"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Laravel下使用Guzzle编写多线程爬虫实战 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-Guzzle"><span class="nav-number">1.</span> <span class="nav-text">安装 Guzzle</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">代码</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/29/Laravel%E4%B8%8B%E4%BD%BF%E7%94%A8Guzzle%E7%BC%96%E5%86%99%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%88%AC%E8%99%AB%E5%AE%9E%E6%88%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Laravel下使用Guzzle编写多线程爬虫实战
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2017-08-29 14:20:07" itemprop="dateCreated datePublished" datetime="2017-08-29T14:20:07+09:00">2017-08-29</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2018-03-27 22:19:12" itemprop="dateModified" datetime="2018-03-27T22:19:12+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+中年以后的男人,时常会觉得孤独,因为他一睁开眼睛,周围都是要依靠他的人,却没有他可以依靠的人
+</blockquote>
+### 创建命令
+运行命令行创建命令
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan make:console MultithreadingRequest --command=test:multithreading-request</span><br></pre></td></tr></table></figure>
+### 注册命令
+编辑 app/Console/Kernel.php，在 $commands 数组中增加：
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Commands\MultithreadingRequest::class,</span><br></pre></td></tr></table></figure>
+### 测试命令
+修改 app/Console/Commands/MultithreadingRequest.php 文件，在 handle 方法中增加：
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;info(<span class="string">&#x27;hello&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装-Guzzle"><a href="#安装-Guzzle" class="headerlink" title="安装 Guzzle"></a>安装 Guzzle</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> guzzlehttp/guzzle <span class="string">&quot;6.2&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Console</span>\<span class="title">Commands</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">GuzzleHttp</span>\<span class="title">Client</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">GuzzleHttp</span>\<span class="title">Pool</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">GuzzleHttp</span>\<span class="title">Psr7</span>\<span class="title">Request</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">GuzzleHttp</span>\<span class="title">Exception</span>\<span class="title">ClientException</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Console</span>\<span class="title">Command</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MultithreadingRequest</span> <span class="keyword">extends</span> <span class="title">Command</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$totalPageCount</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$counter</span>        = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$concurrency</span>    = <span class="number">7</span>;  <span class="comment">// 同时并发抓取</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$users</span> = [<span class="string">&#x27;CycloneAxe&#x27;</span>, <span class="string">&#x27;appleboy&#x27;</span>, <span class="string">&#x27;Aufree&#x27;</span>, <span class="string">&#x27;lifesign&#x27;</span>,</span><br><span class="line">                        <span class="string">&#x27;overtrue&#x27;</span>, <span class="string">&#x27;zhengjinghua&#x27;</span>, <span class="string">&#x27;NauxLiu&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$signature</span> = <span class="string">&#x27;test:multithreading-request&#x27;</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$description</span> = <span class="string">&#x27;Command description&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">parent</span>::__construct();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;totalPageCount = count(<span class="keyword">$this</span>-&gt;users);</span><br><span class="line"></span><br><span class="line">        <span class="variable">$client</span> = <span class="keyword">new</span> Client();</span><br><span class="line"></span><br><span class="line">        <span class="variable">$requests</span> = <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$total</span></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$client</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">foreach</span> (<span class="keyword">$this</span>-&gt;users <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$user</span>) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="variable">$uri</span> = <span class="string">&#x27;https://api.github.com/users/&#x27;</span> . <span class="variable">$user</span>;</span><br><span class="line">                <span class="keyword">yield</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$client</span>, <span class="variable">$uri</span></span>) </span>&#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="variable">$client</span>-&gt;getAsync(<span class="variable">$uri</span>);</span><br><span class="line">                &#125;;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="variable">$pool</span> = <span class="keyword">new</span> Pool(<span class="variable">$client</span>, <span class="variable">$requests</span>(<span class="keyword">$this</span>-&gt;totalPageCount), [</span><br><span class="line">            <span class="string">&#x27;concurrency&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;concurrency,</span><br><span class="line">            <span class="string">&#x27;fulfilled&#x27;</span>   =&gt; <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$response</span>, <span class="variable">$index</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">                <span class="variable">$res</span> = json_decode(<span class="variable">$response</span>-&gt;getBody()-&gt;getContents());</span><br><span class="line"></span><br><span class="line">                <span class="keyword">$this</span>-&gt;info(<span class="string">&quot;请求第 <span class="subst">$index</span> 个请求，用户 &quot;</span> . <span class="keyword">$this</span>-&gt;users[<span class="variable">$index</span>] . <span class="string">&quot; 的 Github ID 为：&quot;</span> .<span class="variable">$res</span>-&gt;id);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">$this</span>-&gt;countedAndCheckEnded();</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">&#x27;rejected&#x27;</span> =&gt; <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$reason</span>, <span class="variable">$index</span></span>)</span>&#123;</span><br><span class="line">                <span class="keyword">$this</span>-&gt;error(<span class="string">&quot;rejected&quot;</span> );</span><br><span class="line">                <span class="keyword">$this</span>-&gt;error(<span class="string">&quot;rejected reason: &quot;</span> . <span class="variable">$reason</span> );</span><br><span class="line">                <span class="keyword">$this</span>-&gt;countedAndCheckEnded();</span><br><span class="line">            &#125;,</span><br><span class="line">        ]);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 开始发送请求</span></span><br><span class="line">        <span class="variable">$promise</span> = <span class="variable">$pool</span>-&gt;promise();</span><br><span class="line">        <span class="variable">$promise</span>-&gt;wait();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">countedAndCheckEnded</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;counter &lt; <span class="keyword">$this</span>-&gt;totalPageCount)&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;counter++;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;info(<span class="string">&quot;请求结束！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/2130/laravel-under-the-use-of-guzzle-to-prepare-multi-threaded-crawler-combat">https://laravel-china.org/topics/2130/laravel-under-the-use-of-guzzle-to-prepare-multi-threaded-crawler-combat</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Laravel/" rel="tag"># Laravel</a>
+              <a href="/tags/%E5%B9%B6%E5%8F%91/" rel="tag"># 并发</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/08/28/PHP%E8%BE%93%E5%87%BA%E7%BC%93%E5%86%B2%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8/" rel="prev" title="PHP输出缓冲及其应用">
+                  <i class="fa fa-chevron-left"></i> PHP输出缓冲及其应用
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/08/30/PHP%E4%B8%AD%E7%9A%84Traits%E8%AF%A6%E8%A7%A3/" rel="next" title="PHP中的Traits详解">
+                  PHP中的Traits详解 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

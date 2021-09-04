@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="父母在时，人生尚有来处。 父母去时，人生只剩归途。  ### 安装swoole pecl 安装: &#96;pecl install swoole&#96;  看命令行提示，如果它提示说没有写php.ini，则自己手动在PHP.ini后面加上：extension &#x3D; &quot;swoole.so&quot; 服务端123456789101112131415161718192021222324252627282">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用swoole异步发送邮件">
+<meta property="og:url" content="https://swoole.app/2017/07/25/%E4%BD%BF%E7%94%A8swoole%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="父母在时，人生尚有来处。 父母去时，人生只剩归途。  ### 安装swoole pecl 安装: &#96;pecl install swoole&#96;  看命令行提示，如果它提示说没有写php.ini，则自己手动在PHP.ini后面加上：extension &#x3D; &quot;swoole.so&quot; 服务端123456789101112131415161718192021222324252627282">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-07-25T05:42:39.000Z">
+<meta property="article:modified_time" content="2018-03-27T13:36:14.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Swoole">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2017/07/25/%E4%BD%BF%E7%94%A8swoole%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2017/07/25/%E4%BD%BF%E7%94%A8swoole%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/","path":"2017/07/25/使用swoole异步发送邮件/","title":"使用swoole异步发送邮件"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>使用swoole异步发送邮件 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="nav-number">1.</span> <span class="nav-text">服务端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">2.</span> <span class="nav-text">客户端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E4%B8%8E%E5%85%B3%E9%97%AD"><span class="nav-number">3.</span> <span class="nav-text">查看与关闭</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/25/%E4%BD%BF%E7%94%A8swoole%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用swoole异步发送邮件
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2017-07-25 14:42:39" itemprop="dateCreated datePublished" datetime="2017-07-25T14:42:39+09:00">2017-07-25</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2018-03-27 22:36:14" itemprop="dateModified" datetime="2018-03-27T22:36:14+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+父母在时，人生尚有来处。
+父母去时，人生只剩归途。
+</blockquote>
+### 安装swoole
+pecl 安装:
+`pecl install swoole`
+
+<p>看命令行提示，如果它提示说没有写php.ini，则自己手动在PHP.ini后面加上：<br><code>extension = &quot;swoole.so&quot;</code></p>
+<h3 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Server</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$serv</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv = <span class="keyword">new</span> swoole_server(<span class="string">&quot;0.0.0.0&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;set(<span class="keyword">array</span>(</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,   <span class="comment">//一般设置为服务器CPU数的1-4倍</span></span><br><span class="line">            <span class="string">&#x27;daemonize&#x27;</span> =&gt; <span class="number">1</span>,  <span class="comment">//以守护进程执行</span></span><br><span class="line">            <span class="string">&#x27;max_request&#x27;</span> =&gt; <span class="number">10000</span>,</span><br><span class="line">            <span class="string">&#x27;dispatch_mode&#x27;</span> =&gt; <span class="number">2</span>,</span><br><span class="line">            <span class="string">&#x27;task_worker_num&#x27;</span> =&gt; <span class="number">8</span>,  <span class="comment">//task进程的数量</span></span><br><span class="line">            <span class="string">&quot;task_ipc_mode &quot;</span> =&gt; <span class="number">3</span> ,  <span class="comment">//使用消息队列通信，并设置为争抢模式</span></span><br><span class="line">            <span class="comment">//&quot;log_file&quot; =&gt; &quot;log/taskqueueu.log&quot; ,//日志</span></span><br><span class="line">        ));</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, <span class="keyword">array</span>(<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>));</span><br><span class="line">        <span class="comment">// bind callback</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;on(<span class="string">&#x27;Task&#x27;</span>, <span class="keyword">array</span>(<span class="keyword">$this</span>, <span class="string">&#x27;onTask&#x27;</span>));</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;on(<span class="string">&#x27;Finish&#x27;</span>, <span class="keyword">array</span>(<span class="keyword">$this</span>, <span class="string">&#x27;onFinish&#x27;</span>));</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"> swoole_server <span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$from_id</span>, <span class="variable">$data</span> </span>) </span>&#123;</span><br><span class="line">        <span class="comment">//echo &quot;Get Message From Client &#123;$fd&#125;:&#123;$data&#125;n&quot;;</span></span><br><span class="line">        <span class="comment">// send a task to task worker.</span></span><br><span class="line">        <span class="variable">$serv</span>-&gt;task( <span class="variable">$data</span> );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onTask</span>(<span class="params"><span class="variable">$serv</span>,<span class="variable">$task_id</span>,<span class="variable">$from_id</span>, <span class="variable">$data</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$array</span> = json_decode( <span class="variable">$data</span> , <span class="literal">true</span> );</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$array</span>[<span class="string">&#x27;url&#x27;</span>]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;httpGet( <span class="variable">$array</span>[<span class="string">&#x27;url&#x27;</span>] , <span class="variable">$array</span>[<span class="string">&#x27;param&#x27;</span>]  );</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onFinish</span>(<span class="params"><span class="variable">$serv</span>,<span class="variable">$task_id</span>, <span class="variable">$data</span></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//echo &quot;Task &#123;$task_id&#125; finishn&quot;;</span></span><br><span class="line">        <span class="comment">//echo &quot;Result: &#123;$data&#125;n&quot;;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">httpGet</span>(<span class="params"><span class="variable">$url</span>,<span class="variable">$data</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$data</span>) &#123;</span><br><span class="line">            <span class="variable">$url</span> .=<span class="string">&#x27;?&#x27;</span>.http_build_query(<span class="variable">$data</span>) ;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$curlObj</span> = curl_init();    <span class="comment">//初始化curl，</span></span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_URL, <span class="variable">$url</span>);   <span class="comment">//设置网址</span></span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);  <span class="comment">//将curl_exec的结果返回</span></span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_SSL_VERIFYPEER, <span class="literal">FALSE</span>);</span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_SSL_VERIFYHOST, <span class="literal">FALSE</span>);</span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_HEADER, <span class="number">0</span>);         <span class="comment">//是否输出返回头信息</span></span><br><span class="line">        <span class="variable">$response</span> = curl_exec(<span class="variable">$curlObj</span>);   <span class="comment">//执行</span></span><br><span class="line">        curl_close(<span class="variable">$curlObj</span>);          <span class="comment">//关闭会话</span></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$response</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$server</span> = <span class="keyword">new</span> Server();</span><br></pre></td></tr></table></figure>
+<h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Client</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$client</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;client = <span class="keyword">new</span> swoole_client(SWOOLE_SOCK_TCP);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">connect</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>( !<span class="keyword">$this</span>-&gt;client-&gt;connect(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span> , <span class="number">1</span>) ) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;Connect Error&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$data</span> = <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">&quot;url&quot;</span> =&gt;  <span class="string">&quot;http://192.168.10.19/send_mail&quot;</span> ,</span><br><span class="line">            <span class="string">&quot;param&quot;</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">                <span class="string">&quot;username&quot;</span>=&gt;<span class="string">&#x27;test&#x27;</span>,</span><br><span class="line">                <span class="string">&quot;password&quot;</span> =&gt; <span class="string">&#x27;test&#x27;</span></span><br><span class="line">            )</span><br><span class="line">        );</span><br><span class="line">        <span class="variable">$json_data</span> = json_encode(<span class="variable">$data</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;client-&gt;send( <span class="variable">$json_data</span> );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$client</span> = <span class="keyword">new</span> Client();</span><br><span class="line"><span class="variable">$client</span>-&gt;connect();</span><br></pre></td></tr></table></figure>
+<h3 id="查看与关闭"><a href="#查看与关闭" class="headerlink" title="查看与关闭"></a>查看与关闭</h3><p>swoole好像没有很便捷的关闭方式。所以只能直接通过关闭进程来关闭。<br>查看命令：<br><code>ps -ef | grep php</code></p>
+<p>结束单个进程：<br><code>kill -9 &#123;进程号&#125;</code></p>
+<p>结束所有进程的命令：<br><code>killall -9 php</code></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Swoole/" rel="tag"># Swoole</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/07/24/PHP-cURL%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%A8%A1%E6%8B%9F%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82/" rel="prev" title="PHP-cURL多线程模拟并发请求">
+                  <i class="fa fa-chevron-left"></i> PHP-cURL多线程模拟并发请求
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/07/26/php%E7%9A%84trim%E6%97%A0%E6%B3%95%E5%8E%BB%E6%8E%89%E7%A9%BA%E6%A0%BC/" rel="next" title="php的trim无法去掉空格">
+                  php的trim无法去掉空格 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="这是场接力赛，你却当成百米赛跑。   async首先，我们使用async关键字，您可以将它放在函数声明之前，将其转换为async function。异步函数是一个知道怎样预期 await 关键字可用于调用异步代码可能性的函数。 尝试在浏览器的JS控制台中键入以下行： 12function hello() &amp;#123; return &quot;Hello&quot; &amp;#125;;hello()">
+<meta property="og:type" content="article">
+<meta property="og:title" content="async和await让异步编程更简单">
+<meta property="og:url" content="https://swoole.app/2020/05/03/async%E5%92%8Cawait%E8%AE%A9%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B%E6%9B%B4%E7%AE%80%E5%8D%95/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="这是场接力赛，你却当成百米赛跑。   async首先，我们使用async关键字，您可以将它放在函数声明之前，将其转换为async function。异步函数是一个知道怎样预期 await 关键字可用于调用异步代码可能性的函数。 尝试在浏览器的JS控制台中键入以下行： 12function hello() &amp;#123; return &quot;Hello&quot; &amp;#125;;hello()">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-05-03T11:58:27.000Z">
+<meta property="article:modified_time" content="2020-05-04T14:39:43.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="JavaScript">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2020/05/03/async%E5%92%8Cawait%E8%AE%A9%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B%E6%9B%B4%E7%AE%80%E5%8D%95/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2020/05/03/async%E5%92%8Cawait%E8%AE%A9%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B%E6%9B%B4%E7%AE%80%E5%8D%95/","path":"2020/05/03/async和await让异步编程更简单/","title":"async和await让异步编程更简单"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>async和await让异步编程更简单 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#async"><span class="nav-number">1.</span> <span class="nav-text">async</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#await"><span class="nav-number">2.</span> <span class="nav-text">await</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/05/03/async%E5%92%8Cawait%E8%AE%A9%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B%E6%9B%B4%E7%AE%80%E5%8D%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          async和await让异步编程更简单
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2020-05-03 20:58:27" itemprop="dateCreated datePublished" datetime="2020-05-03T20:58:27+09:00">2020-05-03</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2020-05-04 23:39:43" itemprop="dateModified" datetime="2020-05-04T23:39:43+09:00">2020-05-04</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+这是场接力赛，你却当成百米赛跑。
+</blockquote>
+
+<h3 id="async"><a href="#async" class="headerlink" title="async"></a>async</h3><p>首先，我们使用async关键字，您可以将它放在函数声明之前，将其转换为async function。异步函数是一个知道怎样预期 await 关键字可用于调用异步代码可能性的函数。</p>
+<p>尝试在浏览器的JS控制台中键入以下行：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123; <span class="keyword">return</span> <span class="string">&quot;Hello&quot;</span> &#125;;</span><br><span class="line">hello();</span><br></pre></td></tr></table></figure>
+<p>该函数返回“Hello” ––没什么特别的，对吧？</p>
+<p>但是，如果我们将其变成异步函数呢？请尝试以下方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123; <span class="keyword">return</span> <span class="string">&quot;Hello&quot;</span> &#125;;</span><br><span class="line">hello();</span><br></pre></td></tr></table></figure>
+<p>额。。现在调用该函数会返回一个promise。这是异步函数的特征之一 ––它将任何函数转换为promise。<br>你也可以创建一个异步函数表达式（参见async function expression），如下所示:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> hello = <span class="keyword">async</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123; <span class="keyword">return</span> <span class="string">&quot;Hello&quot;</span> &#125;;</span><br><span class="line">hello();</span><br></pre></td></tr></table></figure>
+<p>你可以使用箭头函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> hello = <span class="keyword">async</span> () =&gt; &#123; <span class="keyword">return</span> <span class="string">&quot;Hello&quot;</span> &#125;;</span><br></pre></td></tr></table></figure>
+<p>这些都基本上是一样的。</p>
+<p>要实际使用promise实现时返回的值，因为它返回了一个promise，我们可以使用.then()块：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hello().then(<span class="function">(<span class="params">value</span>) =&gt;</span> <span class="built_in">console</span>.log(value))</span><br></pre></td></tr></table></figure>
+<p>甚至只是简写如</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hello().then(<span class="built_in">console</span>.log)</span><br></pre></td></tr></table></figure>
+<p>就像我们在上一篇文章中看到的那样<br>因此，将async关键字添加到函数中以告诉它们返回promise而不是直接返回值。此外，这使同步函数可以避免运行支持使用await时带来的任何潜在开销。通过仅在函数声明为异步时添加必要的处理，JavaScript引擎可以为您优化您的程序。爽！</p>
+<h3 id="await"><a href="#await" class="headerlink" title="await"></a>await</h3><p>将它与await关键字结合使用时，异步函数的真正优势就变得明显了。这可以放在任何基于异步声明的函数之前，暂停代码在该行上，直到promise完成，然后返回结果值。与此同时，其他正在等待执行机会的代码就有可能如愿执行了。<br>这是一个简单的示例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> greeting = <span class="keyword">await</span> <span class="built_in">Promise</span>.resolve(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">hello().then(alert);</span><br></pre></td></tr></table></figure>
+<p>关键字 await 让 JavaScript 引擎等待直到 promise 完成（settle）并返回结果<br>这里的例子就是一个 1 秒后 resolve 的 promise：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> promise = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> resolve(<span class="string">&quot;done!&quot;</span>), <span class="number">1000</span>)</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> result = <span class="keyword">await</span> promise; <span class="comment">// 等待，直到 promise resolve (*)</span></span><br><span class="line"></span><br><span class="line">  alert(result); <span class="comment">// &quot;done!&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">f();</span><br></pre></td></tr></table></figure>
+<p>这个函数在执行的时候，“暂停”在了 <code>(*)</code> 那一行，并在 promise settle 时，拿到 result 作为结果继续往下执行。所以上面这段代码在一秒后显示 <code>“done!”</code>。</p>
+<p>让我们强调一下：await 字面的意思就是让 JavaScript 引擎等待直到 promise settle，然后以 promise 的结果继续执行。这个行为不会耗费任何 CPU 资源，因为引擎可以同时处理其他任务：执行其他脚本，处理事件等。</p>
+<p>相比于 promise.then，它只是获取 promise 的结果的一个更优雅的语法，同时也更易于读写。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/04/17/golang%E4%B9%8Bhttp-eof%E5%92%8Cconnection-reset-by-peer%E9%94%99%E8%AF%AF%E8%AF%A6%E8%A7%A3/" rel="prev" title="golang之http-eof和connection-reset-by-peer错误详解">
+                  <i class="fa fa-chevron-left"></i> golang之http-eof和connection-reset-by-peer错误详解
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/05/04/dom%E5%8F%98%E5%8A%A8%E8%A7%82%E5%AF%9F%E5%99%A8/" rel="next" title="DOM变动观察器">
+                  DOM变动观察器 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

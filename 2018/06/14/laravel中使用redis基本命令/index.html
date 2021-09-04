@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="The wealth of the mind is the only wealth.   Let’s store our product sales in a key: 12Redis::set(&amp;#x27;product:1:sales&amp;#x27;, 1000)Redis::set(&amp;#x27;product:1:count&amp;#x27;, 10) Now to read it we use:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="laravel中使用redis基本命令">
+<meta property="og:url" content="https://swoole.app/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="The wealth of the mind is the only wealth.   Let’s store our product sales in a key: 12Redis::set(&amp;#x27;product:1:sales&amp;#x27;, 1000)Redis::set(&amp;#x27;product:1:count&amp;#x27;, 10) Now to read it we use:">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-06-14T05:37:25.000Z">
+<meta property="article:modified_time" content="2018-06-14T06:56:46.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Laravel">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="翻译">
+<meta property="article:tag" content="translate">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/","path":"2018/06/14/laravel中使用redis基本命令/","title":"laravel中使用redis基本命令"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>laravel中使用redis基本命令 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Incrementing-and-Decrementing-counters"><span class="nav-number">1.</span> <span class="nav-text">Incrementing and Decrementing counters</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Retrieve-and-update"><span class="nav-number">2.</span> <span class="nav-text">Retrieve and update</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Keys-Expiration"><span class="nav-number">3.</span> <span class="nav-text">Keys Expiration</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Keys-Existence"><span class="nav-number">4.</span> <span class="nav-text">Keys Existence</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reading-multiple-keys-in-one-go"><span class="nav-number">5.</span> <span class="nav-text">Reading multiple keys in one go</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deleting-Keys"><span class="nav-number">6.</span> <span class="nav-text">Deleting Keys</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Renaming-Keys"><span class="nav-number">7.</span> <span class="nav-text">Renaming Keys</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          laravel中使用redis基本命令
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2018-06-14 14:37:25 / عُدل: 15:56:46" itemprop="dateCreated datePublished" datetime="2018-06-14T14:37:25+09:00">2018-06-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+The wealth of the mind is the only wealth.
+</blockquote>
+
+<p>Let’s store our product sales in a key:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">1000</span>)</span><br><span class="line">Redis::set(<span class="string">&#x27;product:1:count&#x27;</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>Now to read it we use:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::get(<span class="string">&#x27;product:1:sales&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Incrementing-and-Decrementing-counters"><a href="#Incrementing-and-Decrementing-counters" class="headerlink" title="Incrementing and Decrementing counters"></a>Incrementing and Decrementing counters</h3><p>A new purchase was made, let’s increment the sales:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis::incrby(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">100</span>)</span><br><span class="line"></span><br><span class="line">Redis::incr(<span class="string">&#x27;product:1:count&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>Here we increment the sales key by 100, and increment the count key by 1.</p>
+<p>We can also decrement in the same way:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis::decrby(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">100</span>)</span><br><span class="line"></span><br><span class="line">Redis::decr(<span class="string">&#x27;product:1:count&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>But when it comes to dealing with floating point numbers we need to use a special command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis::incrbyfloat(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">15.5</span>)</span><br><span class="line"></span><br><span class="line">Redis::incrbyfloat(<span class="string">&#x27;product:1:sales&#x27;</span>, - <span class="number">30.2</span>)</span><br></pre></td></tr></table></figure>
+<p>There’s no decrbyfloat command, but we can pass a negative value to the incrbyfloat command to have the same effect.</p>
+<blockquote>
+<p>The incrby, incr, decrby, decr, and incrbyfloat return the value after the operation as a response</p>
+</blockquote>
+<h3 id="Retrieve-and-update"><a href="#Retrieve-and-update" class="headerlink" title="Retrieve and update"></a>Retrieve and update</h3><p>Now we want to read the latest sales number and reset the counters to zero, maybe we do that at the end of each day:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$value</span> = Redis::getset(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>Here $value will hold the 1000 value, if we read the value of that key after this operation it’ll be 0.</p>
+<h3 id="Keys-Expiration"><a href="#Keys-Expiration" class="headerlink" title="Keys Expiration"></a>Keys Expiration</h3><p>Let’s say we want to send a notification to the owner when inventory is low, but we only want to send that notification once every 1 hour instead of sending it every time a new purchase is made, so maybe we set a flag once and only send the notification when that flag doesn’t exist:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;EX&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
+<p>Now this key will expire after 3600 seconds (1 hour), we can check if the key exists before attempting to set it and send the notification:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(Redis::get(<span class="string">&#x27;user:1:notified&#x27;</span>))&#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Redis::set(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;EX&#x27;</span>, <span class="number">3600</span>);</span><br><span class="line"></span><br><span class="line">Notifications::send();</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Notice: There’s no guarantee that the value of user:1:notified won’t change between the get and set operations, we’ll discuss atomic command groups later, but this example is enough for you to understand how every individual command works.</p>
+</blockquote>
+<p>We can set the expiration of a key in milliseconds as well using:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;PX&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
+<p>And you may also use the expire command and provide the timeout in seconds:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::expire(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
+<p>Or in milliseconds:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::pexpire(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
+<p>And if you want the keys to expire at a specific time you can use expireat and provide a Unix timestamp:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::expireat(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="string">&#x27;1495469730&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>Is there a way I can check when a key should expire?<br>You can use the ttl command (Time To Live), which will return the number of seconds remaining until the key expires.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::ttl(<span class="string">&#x27;user:1:notified&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>That command may return -2 if the key doesn’t exist, or -1 if the key has no expiration set.</p>
+<p>You can also use the pttl command to get the TTL in milliseconds.</p>
+<p>What if I want to cancel expiration?</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::persist(<span class="string">&#x27;user:1:notified&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>This will remove the expiration from your key, it’ll return 1 if OK or 0 if key doesn’t exist or originally had no expiration set.</p>
+<h3 id="Keys-Existence"><a href="#Keys-Existence" class="headerlink" title="Keys Existence"></a>Keys Existence</h3><p>Let’s say there’s only 1 laracon ticket available and we need to close purchasing once that ticket is sold, we can do:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;ticket:sold&#x27;</span>, <span class="variable">$user</span>-&gt;id, <span class="string">&#x27;NX&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>This will only set the key if it doesn’t exist, the next script that tries to set the key wll receive null as a response from Redis which means that the key wasn’t set.</p>
+<p>You can also instruct Redis to set the key only if it exists:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;ticket:sold&#x27;</span>, <span class="variable">$user</span>-&gt;id, <span class="string">&#x27;XX&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>If you want to simply check if a key exists, you can use the exists command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::exists(<span class="string">&#x27;ticket:sold&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Reading-multiple-keys-in-one-go"><a href="#Reading-multiple-keys-in-one-go" class="headerlink" title="Reading multiple keys in one go"></a>Reading multiple keys in one go</h3><p>Sometimes you might need to read multiple keys in one go, you can do this:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::mget(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="string">&#x27;product:2:sales&#x27;</span>, <span class="string">&#x27;non_existing_key&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>The response of this command is an array with the same size of the given keys, if a key doesn’t exist its value is going to be null.</p>
+<p>As we discussed before, Redis executes individual command atomically, that means nothing can change the value of any in the keys once the operation started, so it’s guaranteed that the values returned are not altered in between reading the value of the first key and the last key.</p>
+<blockquote>
+<p>Using mget is better that firing multiple get commands to reduce the RTT (round trip time), which is the time each individual command takes to travel from client to the server and then carry the response back to the client. More on that later.</p>
+</blockquote>
+<h3 id="Deleting-Keys"><a href="#Deleting-Keys" class="headerlink" title="Deleting Keys"></a>Deleting Keys</h3><p>You can also delete multiple keys at once using the del command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::del(<span class="string">&#x27;previous:sales&#x27;</span>, <span class="string">&#x27;previous:return&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Renaming-Keys"><a href="#Renaming-Keys" class="headerlink" title="Renaming Keys"></a>Renaming Keys</h3><p>You can rename a key using the rename command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::rename(<span class="string">&#x27;current:sales&#x27;</span>, <span class="string">&#x27;previous:sales&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>An error is returned if the original key doesn’t exist, and it overrides the second key if it already exists.</p>
+<p>Renaming keys is usually a fast operation unless a key with the desired name exists, in that case Redis will try to delete that existing key first before renaming this one, deleting a key that holds a very big value might be a bit slow.</p>
+<p>So I have to check first if the second key exists to prevent overriding?<br>Yeah you can use exists to check if the second key exists… OR:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::renamenx(<span class="string">&#x27;current:sales&#x27;</span>, <span class="string">&#x27;previous:sales&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>This will check first if the second key exists, if yes it just returns 0 without doing anything, so it only renames the key if the second key does not exist.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://divinglaravel.com/redis/redis-commands">https://divinglaravel.com/redis/redis-commands</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Laravel/" rel="tag"># Laravel</a>
+              <a href="/tags/Redis/" rel="tag"># Redis</a>
+              <a href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag"># 翻译</a>
+              <a href="/tags/translate/" rel="tag"># translate</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/06/14/%E5%9C%A8laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis/" rel="prev" title="在laravel中使用redis">
+                  <i class="fa fa-chevron-left"></i> 在laravel中使用redis
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E7%9A%84hash%E6%93%8D%E4%BD%9C/" rel="next" title="laravel中使用redis的hash操作">
+                  laravel中使用redis的hash操作 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

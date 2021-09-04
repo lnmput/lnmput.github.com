@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="像我这样的人...   composer.lock文件是否需要版本控制器 什么是 composer.lock 文件?composer.lock 文件是当你第一次使用 composer install 或者 执行 composer update 后生成的文件, 此文件里定义了当前项目的代码依赖, 还有最重要的, 这些代码依赖的对应的版本.  composer.lock 文件作用是什么?默认情况下,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于composer的一点儿思考">
+<meta property="og:url" content="https://swoole.app/2018/05/02/%E5%85%B3%E4%BA%8Ecomposer%E7%9A%84%E4%B8%80%E7%82%B9%E5%84%BF%E6%80%9D%E8%80%83/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="像我这样的人...   composer.lock文件是否需要版本控制器 什么是 composer.lock 文件?composer.lock 文件是当你第一次使用 composer install 或者 执行 composer update 后生成的文件, 此文件里定义了当前项目的代码依赖, 还有最重要的, 这些代码依赖的对应的版本.  composer.lock 文件作用是什么?默认情况下,">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-05-02T01:37:57.000Z">
+<meta property="article:modified_time" content="2018-05-02T02:49:33.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="PHP">
+<meta property="article:tag" content="Composer">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/05/02/%E5%85%B3%E4%BA%8Ecomposer%E7%9A%84%E4%B8%80%E7%82%B9%E5%84%BF%E6%80%9D%E8%80%83/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2018/05/02/%E5%85%B3%E4%BA%8Ecomposer%E7%9A%84%E4%B8%80%E7%82%B9%E5%84%BF%E6%80%9D%E8%80%83/","path":"2018/05/02/关于composer的一点儿思考/","title":"关于composer的一点儿思考"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>关于composer的一点儿思考 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#composer-lock%E6%96%87%E4%BB%B6%E6%98%AF%E5%90%A6%E9%9C%80%E8%A6%81%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="nav-number">1.</span> <span class="nav-text">composer.lock文件是否需要版本控制器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#composer-install%E4%B8%8Ecomposer-update%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">2.</span> <span class="nav-text">composer install与composer update的区别</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#composer-install"><span class="nav-number">2.1.</span> <span class="nav-text">composer install</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#composer-update"><span class="nav-number">2.2.</span> <span class="nav-text">composer update</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/02/%E5%85%B3%E4%BA%8Ecomposer%E7%9A%84%E4%B8%80%E7%82%B9%E5%84%BF%E6%80%9D%E8%80%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关于composer的一点儿思考
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2018-05-02 10:37:57 / عُدل: 11:49:33" itemprop="dateCreated datePublished" datetime="2018-05-02T10:37:57+09:00">2018-05-02</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+像我这样的人...
+</blockquote>
+
+<h3 id="composer-lock文件是否需要版本控制器"><a href="#composer-lock文件是否需要版本控制器" class="headerlink" title="composer.lock文件是否需要版本控制器"></a>composer.lock文件是否需要版本控制器</h3><ul>
+<li><p>什么是 composer.lock 文件?<br><code>composer.lock</code> 文件是当你第一次使用 <code>composer install</code> 或者 执行 <code>composer update</code> 后生成的文件, 此文件里定义了当前项目的代码依赖, 还有最重要的, 这些代码依赖的对应的版本.</p>
+</li>
+<li><p>composer.lock 文件作用是什么?<br>默认情况下, 当执行 <code>composer install</code> 的时候, Composer 会检查当前项目是否有 <code>composer.lock</code> 文件, 如果有的话, 就会按照此文件去下载代码依赖和其指定的版本.</p>
+</li>
+<li><p>好处<br>团队开发的时, clone 下代码后, 使用 <code>composer install</code> 可以确保大家使用的依赖包都是同一个版本的, 避免没必要的混乱;<br>在一个现有的项目上开发的时候, 执行 <code>composer update</code> 后, 偶尔会发现刚刚更新了某个代码包把程序整挂了, 这个时候, 如果 <code>composer.lock</code> 是加入版本控制器的话, 直接一个 <code>git diff</code> 命令, 就可以查看到这次更新了那个包, 快速定位到问题的所在;<br>在线上部署的时候, 可以确保线上生成环境下使用所有代码是和开发时候使用的一致, 因为 <code>composer.lock</code> 会确保你在执行 <code>composer install</code> 命令后, 按照文件里面指定的版本去下载代码依赖包;</p>
+</li>
+</ul>
+<h3 id="composer-install与composer-update的区别"><a href="#composer-install与composer-update的区别" class="headerlink" title="composer install与composer update的区别"></a>composer install与composer update的区别</h3><h4 id="composer-install"><a href="#composer-install" class="headerlink" title="composer install"></a>composer install</h4><p>install 命令从当前目录读取 composer.json 文件，处理了依赖关系，并把其安装到 vendor 目录下。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer install</span><br></pre></td></tr></table></figure>
+<p>如果当前目录下存在 <code>composer.lock</code> 文件，它会从此文件读取依赖版本，而不是根据 <code>composer.json</code>文件去获取依赖。这确保了该库的每个使用者都能得到相同的依赖版本。<br>如果没有<code>composer.lock</code> 文件，composer 将在处理完依赖关系后创建它。</p>
+<h4 id="composer-update"><a href="#composer-update" class="headerlink" title="composer update"></a>composer update</h4><p>为了获取依赖的最新版本，并且升级 composer.lock 文件，你应该使用 update 命令。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer update</span><br></pre></td></tr></table></figure>
+<p>这将解决项目的所有依赖，并将确切的版本号写入 <code>composer.lock</code>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PHP/" rel="tag"># PHP</a>
+              <a href="/tags/Composer/" rel="tag"># Composer</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/04/26/%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85nginx/" rel="prev" title="编译安装nginx">
+                  <i class="fa fa-chevron-left"></i> 编译安装nginx
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/05/02/mysql%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E5%92%8C%E9%94%81%E7%9A%84%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90/" rel="next" title="mysql事务隔离和锁的深入分析">
+                  mysql事务隔离和锁的深入分析 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="东风夜放花千树，更吹落，星如雨。   简述栈是一种操作受限制的线性表，将允许进行插入、删除的一端称为栈顶，另一端称为栈底。看到这里你可能会觉得有点绕，其实数据结构很多的定义都很抽象，这是很正常的，下面我将类比一个生活中的常见实例帮助大家理解。 我们在日常生活中洗盘子的时候，摞起来的盘子就是一个典型的栈结构。不管取还是放，总是要放在盘子堆的最上面操作。如果你想从一堆盘子的中间强行取一个盘子，那就有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="golang定义栈的数据结构">
+<meta property="og:url" content="https://swoole.app/2020/03/23/golang%E5%AE%9A%E4%B9%89%E6%A0%88%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="东风夜放花千树，更吹落，星如雨。   简述栈是一种操作受限制的线性表，将允许进行插入、删除的一端称为栈顶，另一端称为栈底。看到这里你可能会觉得有点绕，其实数据结构很多的定义都很抽象，这是很正常的，下面我将类比一个生活中的常见实例帮助大家理解。 我们在日常生活中洗盘子的时候，摞起来的盘子就是一个典型的栈结构。不管取还是放，总是要放在盘子堆的最上面操作。如果你想从一堆盘子的中间强行取一个盘子，那就有">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-03-23T12:03:44.000Z">
+<meta property="article:modified_time" content="2020-03-23T13:46:55.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Go">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2020/03/23/golang%E5%AE%9A%E4%B9%89%E6%A0%88%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2020/03/23/golang%E5%AE%9A%E4%B9%89%E6%A0%88%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/","path":"2020/03/23/golang定义栈的数据结构/","title":"golang定义栈的数据结构"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>golang定义栈的数据结构 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">简述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">2.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%88%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">栈的基本操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%88%E7%9A%84%E5%B8%B8%E8%A7%81%E5%BA%94%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">栈的常见应用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%AD%E7%9A%84%E5%89%8D%E8%BF%9B%E5%90%8E%E9%80%80"><span class="nav-number">4.1.</span> <span class="nav-text">浏览器中的前进后退</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8B%AC%E5%8F%B7%E5%8C%B9%E9%85%8D"><span class="nav-number">4.2.</span> <span class="nav-text">括号匹配</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/23/golang%E5%AE%9A%E4%B9%89%E6%A0%88%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          golang定义栈的数据结构
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2020-03-23 21:03:44 / عُدل: 22:46:55" itemprop="dateCreated datePublished" datetime="2020-03-23T21:03:44+09:00">2020-03-23</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+东风夜放花千树，更吹落，星如雨。
+</blockquote>
+
+<h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p>栈是一种操作受限制的线性表，将允许进行插入、删除的一端称为栈顶，另一端称为栈底。看到这里你可能会觉得有点绕，其实数据结构很多的定义都很抽象，这是很正常的，下面我将类比一个生活中的常见实例帮助大家理解。</p>
+<p>我们在日常生活中洗盘子的时候，摞起来的盘子就是一个典型的栈结构。不管取还是放，总是要放在盘子堆的最上面操作。如果你想从一堆盘子的中间强行取一个盘子，那就有可能酿成大祸。</p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>我们在日常生活中，一摞盘子肯定有很多个而且是连续的，所以我们首先需要一个切片，并且我们日常生活中的盘子是不能无限的摞的，这点在计算机里也是同样的，计算机里也会有 Stack Overflow 的问题。 所以我们还需要一个容量的限制元素。 并且我们还需要频繁的对栈顶元素进行操作，所以我们还需要一个标记位 top 来标记栈顶元素的索引。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Stack <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 栈顶标记位</span></span><br><span class="line">    top <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStack</span><span class="params">(size <span class="keyword">int</span>)</span> *<span class="title">Stack</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Stack&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">int</span>,size),</span><br><span class="line">        <span class="comment">// 栈顶指针初始可以指向-1，也可以指向0，想一想为什么。</span></span><br><span class="line">        top:       <span class="number">0</span>,</span><br><span class="line">        size:      size,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初始化时要注意，我们这里返回的是一个 Stack 的指针，引用传递在系统中的开销比较小</p>
+<h3 id="栈的基本操作"><a href="#栈的基本操作" class="headerlink" title="栈的基本操作"></a>栈的基本操作</h3><p>对于一个栈来说，其基本操作分为以下四种。</p>
+<ul>
+<li>Push(e E) , 将一个数据类型为 E 的元素 e 放到栈顶。</li>
+<li>Pop() , 将栈顶元素取出。</li>
+<li>IsFul() , 栈是否满了。</li>
+<li>IsEmpty() , 栈是否空了。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Stack <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 栈顶标记位</span></span><br><span class="line">    top <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStack</span><span class="params">(size <span class="keyword">int</span>)</span> <span class="title">Stack</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Stack&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">int</span>, size),</span><br><span class="line">        top:       <span class="number">0</span>,</span><br><span class="line">        size:      size,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Push</span><span class="params">(e <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 把盘子摞上去</span></span><br><span class="line">    s.container[s.top] = e</span><br><span class="line">    <span class="comment">// 下一个能摞盘子的位置</span></span><br><span class="line">    s.top++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Pop</span><span class="params">()</span> <span class="params">(flag <span class="keyword">bool</span>, ret <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="comment">// 如果栈空了，你就无法拿到新盘子，所以flag此时为false</span></span><br><span class="line">    <span class="keyword">if</span> s.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>, ret</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 取出盘子</span></span><br><span class="line">    ret = s.container[s.top<span class="number">-1</span>]</span><br><span class="line">    <span class="comment">// 下一个能取盘子的位置</span></span><br><span class="line">    s.top--</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>, ret</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsFull</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == s.size &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    stack := NewStack(<span class="number">3</span>)</span><br><span class="line">    <span class="comment">// 先测试栈为空的时候能否Pop</span></span><br><span class="line">    fmt.Println(stack.Pop())</span><br><span class="line">    <span class="comment">// 测试Push是否正常</span></span><br><span class="line">    stack.Push(<span class="number">1</span>)</span><br><span class="line">    stack.Push(<span class="number">2</span>)</span><br><span class="line">    stack.Push(<span class="number">3</span>)</span><br><span class="line">    <span class="comment">// 如果栈为正常的，这里Pop打印顺序应该是3,2,1</span></span><br><span class="line">    fmt.Println(stack.Pop())</span><br><span class="line">    fmt.Println(stack.Pop())</span><br><span class="line">    fmt.Println(stack.Pop())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="栈的常见应用"><a href="#栈的常见应用" class="headerlink" title="栈的常见应用"></a>栈的常见应用</h3><h4 id="浏览器中的前进后退"><a href="#浏览器中的前进后退" class="headerlink" title="浏览器中的前进后退"></a>浏览器中的前进后退</h4><p>假设你现在是 N 年前的 Chrome 浏览器工程师， 你现在很苦恼，有的网页在打开下一个页面后就回不去上一级了，你现在急迫的想要一个后退的功能，请问要怎么样实现呢？</p>
+<p>仔细分析之后不难发现，所谓的后退，撤销等操作，其实就是一个栈的 Pop 操作，我们每次点击的网址, 或者进行的操作，都是被程序 Push 到了一个栈中，所以一旦我们点击撤销或后退时，总是可以返回我们最近一次的操作。这就是栈的最广泛的应用。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Stack <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">string</span></span><br><span class="line">    <span class="comment">// 栈顶标记位</span></span><br><span class="line">    top <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStack</span><span class="params">(size <span class="keyword">int</span>)</span> <span class="title">Stack</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Stack&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">string</span>, size),</span><br><span class="line">        top:       <span class="number">0</span>,</span><br><span class="line">        size:      size,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Push</span><span class="params">(e <span class="keyword">string</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    s.container[s.top] = e</span><br><span class="line">    s.top++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Pop</span><span class="params">()</span> <span class="params">(flag <span class="keyword">bool</span>, ret <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    <span class="comment">// 如果栈是空的，那么就不能继续 Pop 了</span></span><br><span class="line">    <span class="keyword">if</span> s.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>, ret</span><br><span class="line">    &#125;</span><br><span class="line">    ret = s.container[s.top<span class="number">-1</span>]</span><br><span class="line">    s.top--</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>, ret</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsFull</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == s.size &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    back := NewStack(<span class="number">3</span>)</span><br><span class="line">    <span class="comment">// 模拟每次点击网页时，浏览器会自push你的网址到栈中</span></span><br><span class="line">    back.Push(<span class="string">&quot;www.baidu.com&quot;</span>)</span><br><span class="line">    back.Push(<span class="string">&quot;www.bing.com&quot;</span>)</span><br><span class="line">    back.Push(<span class="string">&quot;www.goole.com&quot;</span>)</span><br><span class="line">    <span class="comment">// 每次点击后退时，就相当于是从栈中Pop了一个网址</span></span><br><span class="line">    fmt.Println(back.Pop())</span><br><span class="line">    fmt.Println(back.Pop())</span><br><span class="line">    fmt.Println(back.Pop())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="括号匹配"><a href="#括号匹配" class="headerlink" title="括号匹配"></a>括号匹配</h4><p>在现代的 IDE 中，我们的编辑器环境是十分智能的,我少打了一个括号，IDE 就自动给我画了一条红线。是不是非常的神奇。其实这个功能也是用栈实现的。下面来说一下思路：<br>若遇到左括号入栈，遇到右括号时将栈顶左括号出栈，则遍历完所有括号后 stack 仍然为空；如果遍历之后 stack 不为空，那么说明有多余的左括号。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Stack <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">byte</span></span><br><span class="line">    <span class="comment">// 栈顶标记位</span></span><br><span class="line">    top <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStack</span><span class="params">(size <span class="keyword">int</span>)</span> <span class="title">Stack</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Stack&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">byte</span>,size),</span><br><span class="line">        top:       <span class="number">0</span>,</span><br><span class="line">        size:      size,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Push</span> <span class="params">(e <span class="keyword">byte</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    s.container[s.top] = e</span><br><span class="line">    s.top++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Pop</span> <span class="params">()</span> <span class="params">(flag <span class="keyword">bool</span>,ret <span class="keyword">byte</span>)</span></span> &#123;</span><br><span class="line">    <span class="comment">// 如果栈是空的，那么就不能继续 Pop 了</span></span><br><span class="line">    <span class="keyword">if</span> s.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>,ret</span><br><span class="line">    &#125;</span><br><span class="line">    ret = s.container[s.top<span class="number">-1</span>]</span><br><span class="line">    s.top--</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>,ret</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsEmpty</span> <span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsFull</span> <span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == s.size &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IsValid</span><span class="params">(s <span class="keyword">string</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    stack := NewStack(<span class="number">100</span>)</span><br><span class="line">    <span class="comment">// 遍历括号字符串</span></span><br><span class="line">    <span class="keyword">for</span> _,v := <span class="keyword">range</span> s &#123;</span><br><span class="line">        <span class="keyword">if</span> v == <span class="string">&#x27;(&#x27;</span> &#123;</span><br><span class="line">            <span class="comment">// 由于golang中的字符串默认是unicode编码，所以我们要做一个强制类型转换</span></span><br><span class="line">            stack.Push(<span class="keyword">byte</span>(v))</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> v == <span class="string">&#x27;)&#x27;</span> &#123;</span><br><span class="line">            <span class="comment">// 如果flag不为true，说明栈已经到底了，可以直返回false</span></span><br><span class="line">            <span class="keyword">if</span> flag,top := stack.Pop(); flag == <span class="literal">true</span> &amp;&amp;top == <span class="string">&#x27;(&#x27;</span> &#123;</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 字符串遍历完后如果栈也空了，说明括号匹配</span></span><br><span class="line">    <span class="keyword">if</span> stack.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果栈不空，说明栈里还有多余的左括号</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    test1 := <span class="string">&quot;()()())&quot;</span></span><br><span class="line">    test2 := <span class="string">&quot;((()&quot;</span></span><br><span class="line">    test3 := <span class="string">&quot;()()()()&quot;</span></span><br><span class="line">    fmt.Println(IsValid(test1))</span><br><span class="line">    fmt.Println(IsValid(test2))</span><br><span class="line">    fmt.Println(IsValid(test3))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go/" rel="tag"># Go</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/03/22/go%E8%AF%AD%E8%A8%80%E5%B0%86interface%E5%8F%98%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BA%E5%9B%BA%E5%AE%9A%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8F%82%E6%95%B0/" rel="prev" title="go语言将interface变量转换为固定类型的参数">
+                  <i class="fa fa-chevron-left"></i> go语言将interface变量转换为固定类型的参数
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/03/23/golang%E5%AE%9A%E4%B9%89%E9%98%9F%E5%88%97%E5%92%8C%E5%BE%AA%E7%8E%AF%E9%98%9F%E5%88%97/" rel="next" title="golang定义队列和循环队列">
+                  golang定义队列和循环队列 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

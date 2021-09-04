@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="你那能叫活着么？你那只能叫没死。   基础知识因为CDN的存在，所以SSL需要分为两部分，一部分是浏览器到Cloudflare CDN服务器的传输加密，一部分是Cloudflare CDN服务器到你网站服务器之间的数据传输。一般来说，如果选择Off，那你的网站全程都没有SSL加密，如果选择Flexible，那么Cloudflare CDN服务器到你网站服务器之间是明文传输，有可能存在一定的被监听">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用Cloudflare和Nginx的相关配置">
+<meta property="og:url" content="https://swoole.app/2020/12/17/%E7%94%A8cloudflare%E5%92%8Cnginx%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="你那能叫活着么？你那只能叫没死。   基础知识因为CDN的存在，所以SSL需要分为两部分，一部分是浏览器到Cloudflare CDN服务器的传输加密，一部分是Cloudflare CDN服务器到你网站服务器之间的数据传输。一般来说，如果选择Off，那你的网站全程都没有SSL加密，如果选择Flexible，那么Cloudflare CDN服务器到你网站服务器之间是明文传输，有可能存在一定的被监听">
+<meta property="og:locale">
+<meta property="og:image" content="https://swoole.app/images/cloudflare-ssl.jpg">
+<meta property="article:published_time" content="2020-12-17T04:26:24.000Z">
+<meta property="article:modified_time" content="2020-12-17T05:37:48.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Nginx">
+<meta property="article:tag" content="Cloudflare">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://swoole.app/images/cloudflare-ssl.jpg">
+
+
+<link rel="canonical" href="https://swoole.app/2020/12/17/%E7%94%A8cloudflare%E5%92%8Cnginx%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2020/12/17/%E7%94%A8cloudflare%E5%92%8Cnginx%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/","path":"2020/12/17/用cloudflare和nginx的相关配置/","title":"用Cloudflare和Nginx的相关配置"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>用Cloudflare和Nginx的相关配置 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86%E6%B5%8F%E8%A7%88%E5%99%A8%E5%88%B0Cloudflare%E7%9A%84CDN"><span class="nav-number">2.</span> <span class="nav-text">加密浏览器到Cloudflare的CDN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86Cloudflare-CDN%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%88%B0%E4%BD%A0%E7%BD%91%E7%AB%99%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">加密Cloudflare CDN服务器到你网站服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Authenticated-Origin-Pulls"><span class="nav-number">4.</span> <span class="nav-text">使用Authenticated Origin Pulls</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%88%E6%9E%81%EF%BC%9A%E5%B1%8F%E8%94%BD%E9%9D%9ECloudflare-CDN%E7%9A%84%E8%AE%BF%E9%97%AE"><span class="nav-number">5.</span> <span class="nav-text">终极：屏蔽非Cloudflare CDN的访问</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/12/17/%E7%94%A8cloudflare%E5%92%8Cnginx%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          用Cloudflare和Nginx的相关配置
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2020-12-17 13:26:24 / عُدل: 14:37:48" itemprop="dateCreated datePublished" datetime="2020-12-17T13:26:24+09:00">2020-12-17</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+你那能叫活着么？你那只能叫没死。
+</blockquote>
+
+<h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><p>因为CDN的存在，所以SSL需要分为两部分，一部分是浏览器到Cloudflare CDN服务器的传输加密，一部分是Cloudflare CDN服务器到你网站服务器之间的数据传输。一般来说，如果选择Off，那你的网站全程都没有SSL加密，如果选择Flexible，那么Cloudflare CDN服务器到你网站服务器之间是明文传输，有可能存在一定的被监听风险，如果选择Full，则全程都是用SSL加密，但是并不校验网站服务器的证书有效性（所以当被中间人攻击时，仍然会有数据被监听的可能性），如果选择Full(strict)，那么不仅全程都SSL加密，并且Cloudflare会验证网站服务器证书，需要是受信任的证书或者由Cloudflare签署的专门用于服务器上的证书。</p>
+<img style="margin-left: 0;" src="/images/cloudflare-ssl.jpg">
+
+<h3 id="加密浏览器到Cloudflare的CDN"><a href="#加密浏览器到Cloudflare的CDN" class="headerlink" title="加密浏览器到Cloudflare的CDN"></a>加密浏览器到Cloudflare的CDN</h3><p>加密这一段流量非常简单，你只需要在上面的SSL设置中，选择Off以外的其他选项，即可完成这一段的SSL加密，默认情况下，免费版本的Cloudflare提供Universal SSL证书，这类证书目前基本被大多数浏览器所信任，只是在证书名称上你看到的可能是sni.cloudflare.com的域名。如果你希望提升SSL证书的兼容性，那可以在SSL/TLS下的Edge Certificates菜单中，单独订购SSL证书，独立证书5美金一个月，订购之后，您的证书就会像下图一样属于独立域名证书，兼容性也会更好，当然，如果你有钱（例如有的企业需要OV甚至EV证书），那么你可以购买Enterprise Plan后，选择上传自己的证书，只是价格么就贵了。</p>
+<h3 id="加密Cloudflare-CDN服务器到你网站服务器"><a href="#加密Cloudflare-CDN服务器到你网站服务器" class="headerlink" title="加密Cloudflare CDN服务器到你网站服务器"></a>加密Cloudflare CDN服务器到你网站服务器</h3><p>加密这一段流量，就需要您在Nginx上做HTTPS的配置了，一般情况下，订购一个受信任的证书总是费钱的，Cloudflare建议你使用他们的Origin CA，证书周期15年且免费，使用方法也非常简单，首先在SSL/TLS的Origin Server菜单下，选择”Create Certificate“，创建一张证书，选择Cloudflare创建CSR即可，域名和时常一般不用更改，创建之后，即可保存证书和私钥，Nginx一般使用pem格式，因此把证书和私钥保存成cert.pem和key.pem两个文件，并上传到你的服务器上。<br>第二步，打开你的Nginx配置，加入如下的设置(假设你的证书都储存在/usr/local/nginx/conf/ssl/目录下)</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">listen <span class="number">443</span> ssl http2;</span><br><span class="line">ssl_certificate    /usr/local/nginx/conf/ssl/cert.pem;</span><br><span class="line">ssl_certificate_key    /usr/local/nginx/conf/ssl/key.pem;</span><br></pre></td></tr></table></figure>
+<p>保存并重启你的Nginx服务器后，在SSL/TLS下选择Full(strict)模式，即可完成Cloudflare CDN服务器到你网站服务器之间的加密了。</p>
+<h3 id="使用Authenticated-Origin-Pulls"><a href="#使用Authenticated-Origin-Pulls" class="headerlink" title="使用Authenticated Origin Pulls"></a>使用Authenticated Origin Pulls</h3><p>Authenticated Origin Pulls保证了客户端在获取你网站服务器的内容时，需要提交客户端证书验证，否则不允许访问，这个设置通常可以进一步防止你的服务器数据被非Cloudflare CDN服务器访问，当你的源站全站采用CDN后，可以打开这个选项进一步提升安全性，在打开之前，需要在Nginx上做如下配置：</p>
+<ul>
+<li>下载Origin Pull证书：<a target="_blank" rel="noopener" href="https://support.cloudflare.com/hc/zh-cn/article_attachments/360044928032/origin-pull-ca.pem">https://support.cloudflare.com/hc/zh-cn/article_attachments/360044928032/origin-pull-ca.pem</a> ，并保存为origin-pull-ca.crt</li>
+<li>在Nginx的配置中，加入如下两行配置(假设你的证书都储存在/usr/local/nginx/conf/ssl/目录下)<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssl_client_certificate /usr/local/nginx/conf/ssl/origin-pull-ca.crt;</span><br><span class="line">ssl_verify_client on;</span><br></pre></td></tr></table></figure></li>
+<li>重启Nginx，此时再访问你的网站，会出现400错误，那说明Nginx已经配置成功，这个时候去Cloudflare后台打开Authenticated Origin Pulls的开关，即可实现对源站内容的进一步保护</li>
+</ul>
+<h3 id="终极：屏蔽非Cloudflare-CDN的访问"><a href="#终极：屏蔽非Cloudflare-CDN的访问" class="headerlink" title="终极：屏蔽非Cloudflare CDN的访问"></a>终极：屏蔽非Cloudflare CDN的访问</h3><p>当然，终极策略，我们可以考虑在Nginx上，屏蔽一切非Cloudflare CDN服务器的访问，我们可以在 <a target="_blank" rel="noopener" href="https://www.cloudflare.com/ips/">https://www.cloudflare.com/ips/</a> 看到所有Cloudflare使用的IP，我们可以在新建一个如下的cf.conf的配置，填写如下内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># https://www.cloudflare.com/ips</span></span><br><span class="line"><span class="comment"># IPv4</span></span><br><span class="line">allow <span class="number">173.245</span>.<span class="number">48.0</span>/<span class="number">20</span>;</span><br><span class="line">allow <span class="number">103.21</span>.<span class="number">244.0</span>/<span class="number">22</span>;</span><br><span class="line">allow <span class="number">103.22</span>.<span class="number">200.0</span>/<span class="number">22</span>;</span><br><span class="line">allow <span class="number">103.31</span>.<span class="number">4.0</span>/<span class="number">22</span>;</span><br><span class="line">allow <span class="number">141.101</span>.<span class="number">64.0</span>/<span class="number">18</span>;</span><br><span class="line">allow <span class="number">108.162</span>.<span class="number">192.0</span>/<span class="number">18</span>;</span><br><span class="line">allow <span class="number">190.93</span>.<span class="number">240.0</span>/<span class="number">20</span>;</span><br><span class="line">allow <span class="number">188.114</span>.<span class="number">96.0</span>/<span class="number">20</span>;</span><br><span class="line">allow <span class="number">197.234</span>.<span class="number">240.0</span>/<span class="number">22</span>;</span><br><span class="line">allow <span class="number">198.41</span>.<span class="number">128.0</span>/<span class="number">17</span>;</span><br><span class="line">allow <span class="number">162.158</span>.<span class="number">0.0</span>/<span class="number">15</span>;</span><br><span class="line">allow <span class="number">104.16</span>.<span class="number">0.0</span>/<span class="number">12</span>;</span><br><span class="line">allow <span class="number">172.64</span>.<span class="number">0.0</span>/<span class="number">13</span>;</span><br><span class="line">allow <span class="number">131.0</span>.<span class="number">72.0</span>/<span class="number">22</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment"># IPv6</span></span><br><span class="line">allow <span class="number">2400</span>:cb00::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2606</span>:<span class="number">4700</span>::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2803</span>:f800::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2405</span>:b500::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2405</span>:<span class="number">8100</span>::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2</span>a06:<span class="number">98</span>c0::/<span class="number">29</span>;</span><br><span class="line">allow <span class="number">2</span>c0f:f248::/<span class="number">32</span>;</span><br></pre></td></tr></table></figure>
+<p>然后，我们在Nginx的配置下，增加如下配置</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> cf.conf;</span><br><span class="line">deny all;</span><br></pre></td></tr></table></figure>
+<p>这样，所有非Nginx IP访问都会被拒绝，这样的话，整个源站的保护基本已经做到比较完善的程度了。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://jayshao.com/cloudflare-nginx-ssl/">https://jayshao.com/cloudflare-nginx-ssl/</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Nginx/" rel="tag"># Nginx</a>
+              <a href="/tags/Cloudflare/" rel="tag"># Cloudflare</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/22/javascript-code-plays-google-dinosaur-t-rex-game-automatically/" rel="prev" title="javascript-code-plays-google-dinosaur-t-rex-game-automatically">
+                  <i class="fa fa-chevron-left"></i> javascript-code-plays-google-dinosaur-t-rex-game-automatically
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/12/17/php-fpm%E5%AE%9A%E4%BD%8D%E6%85%A2%E8%84%9A%E6%9C%AC/" rel="next" title="php-fpm定位慢脚本">
+                  php-fpm定位慢脚本 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

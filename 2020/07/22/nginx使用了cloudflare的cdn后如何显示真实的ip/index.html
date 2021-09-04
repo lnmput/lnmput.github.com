@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="心有猛虎，细嗅蔷薇。   查看ngnix是否安装了http-real-ip模块1nginx -V  创建文件cloudflarehttps:&#x2F;&#x2F;www.cloudflare.com&#x2F;ips&#x2F; 12345678910111213141516171819202122232425262728293031vi &#x2F;etc&#x2F;nginx&#x2F;cloudflare;#Cloudflare ip addresses#">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nginx使用了cloudflare的cdn后如何显示真实的IP">
+<meta property="og:url" content="https://swoole.app/2020/07/22/nginx%E4%BD%BF%E7%94%A8%E4%BA%86cloudflare%E7%9A%84cdn%E5%90%8E%E5%A6%82%E4%BD%95%E6%98%BE%E7%A4%BA%E7%9C%9F%E5%AE%9E%E7%9A%84ip/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="心有猛虎，细嗅蔷薇。   查看ngnix是否安装了http-real-ip模块1nginx -V  创建文件cloudflarehttps:&#x2F;&#x2F;www.cloudflare.com&#x2F;ips&#x2F; 12345678910111213141516171819202122232425262728293031vi &#x2F;etc&#x2F;nginx&#x2F;cloudflare;#Cloudflare ip addresses#">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-07-22T04:50:13.000Z">
+<meta property="article:modified_time" content="2020-07-22T06:04:03.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Nginx">
+<meta property="article:tag" content="CDN">
+<meta property="article:tag" content="cloudflare">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2020/07/22/nginx%E4%BD%BF%E7%94%A8%E4%BA%86cloudflare%E7%9A%84cdn%E5%90%8E%E5%A6%82%E4%BD%95%E6%98%BE%E7%A4%BA%E7%9C%9F%E5%AE%9E%E7%9A%84ip/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2020/07/22/nginx%E4%BD%BF%E7%94%A8%E4%BA%86cloudflare%E7%9A%84cdn%E5%90%8E%E5%A6%82%E4%BD%95%E6%98%BE%E7%A4%BA%E7%9C%9F%E5%AE%9E%E7%9A%84ip/","path":"2020/07/22/nginx使用了cloudflare的cdn后如何显示真实的ip/","title":"nginx使用了cloudflare的cdn后如何显示真实的IP"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>nginx使用了cloudflare的cdn后如何显示真实的IP | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8Bngnix%E6%98%AF%E5%90%A6%E5%AE%89%E8%A3%85%E4%BA%86http-real-ip%E6%A8%A1%E5%9D%97"><span class="nav-number">1.</span> <span class="nav-text">查看ngnix是否安装了http-real-ip模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E6%96%87%E4%BB%B6cloudflare"><span class="nav-number">2.</span> <span class="nav-text">创建文件cloudflare</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9-etc-nginx-nginx-conf"><span class="nav-number">3.</span> <span class="nav-text">修改 &#x2F;etc&#x2F;nginx&#x2F;nginx.conf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E5%90%AF"><span class="nav-number">4.</span> <span class="nav-text">重启</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/07/22/nginx%E4%BD%BF%E7%94%A8%E4%BA%86cloudflare%E7%9A%84cdn%E5%90%8E%E5%A6%82%E4%BD%95%E6%98%BE%E7%A4%BA%E7%9C%9F%E5%AE%9E%E7%9A%84ip/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          nginx使用了cloudflare的cdn后如何显示真实的IP
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2020-07-22 13:50:13 / عُدل: 15:04:03" itemprop="dateCreated datePublished" datetime="2020-07-22T13:50:13+09:00">2020-07-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+心有猛虎，细嗅蔷薇。
+</blockquote>
+
+<h3 id="查看ngnix是否安装了http-real-ip模块"><a href="#查看ngnix是否安装了http-real-ip模块" class="headerlink" title="查看ngnix是否安装了http-real-ip模块"></a>查看ngnix是否安装了http-real-ip模块</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nginx -V</span><br></pre></td></tr></table></figure>
+
+<h3 id="创建文件cloudflare"><a href="#创建文件cloudflare" class="headerlink" title="创建文件cloudflare"></a>创建文件cloudflare</h3><p><a target="_blank" rel="noopener" href="https://www.cloudflare.com/ips/">https://www.cloudflare.com/ips/</a></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/nginx/cloudflare;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#Cloudflare ip addresses</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># - IPv4</span></span><br><span class="line">set_real_ip_from <span class="number">103.21</span>.<span class="number">244.0</span>/<span class="number">22</span>;</span><br><span class="line">set_real_ip_from <span class="number">103.22</span>.<span class="number">200.0</span>/<span class="number">22</span>;</span><br><span class="line">set_real_ip_from <span class="number">103.31</span>.<span class="number">4.0</span>/<span class="number">22</span>;</span><br><span class="line">set_real_ip_from <span class="number">104.16</span>.<span class="number">0.0</span>/<span class="number">12</span>;</span><br><span class="line">set_real_ip_from <span class="number">108.162</span>.<span class="number">192.0</span>/<span class="number">18</span>;</span><br><span class="line">set_real_ip_from <span class="number">131.0</span>.<span class="number">72.0</span>/<span class="number">22</span>;</span><br><span class="line">set_real_ip_from <span class="number">141.101</span>.<span class="number">64.0</span>/<span class="number">18</span>;</span><br><span class="line">set_real_ip_from <span class="number">162.158</span>.<span class="number">0.0</span>/<span class="number">15</span>;</span><br><span class="line">set_real_ip_from <span class="number">172.64</span>.<span class="number">0.0</span>/<span class="number">13</span>;</span><br><span class="line">set_real_ip_from <span class="number">173.245</span>.<span class="number">48.0</span>/<span class="number">20</span>;</span><br><span class="line">set_real_ip_from <span class="number">188.114</span>.<span class="number">96.0</span>/<span class="number">20</span>;</span><br><span class="line">set_real_ip_from <span class="number">190.93</span>.<span class="number">240.0</span>/<span class="number">20</span>;</span><br><span class="line">set_real_ip_from <span class="number">197.234</span>.<span class="number">240.0</span>/<span class="number">22</span>;</span><br><span class="line">set_real_ip_from <span class="number">198.41</span>.<span class="number">128.0</span>/<span class="number">17</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment"># - IPv6</span></span><br><span class="line">set_real_ip_from <span class="number">2400</span>:cb00::/<span class="number">32</span>;</span><br><span class="line">set_real_ip_from <span class="number">2405</span>:<span class="number">8100</span>::/<span class="number">32</span>;</span><br><span class="line">set_real_ip_from <span class="number">2405</span>:b500::/<span class="number">32</span>;</span><br><span class="line">set_real_ip_from <span class="number">2606</span>:<span class="number">4700</span>::/<span class="number">32</span>;</span><br><span class="line">set_real_ip_from <span class="number">2803</span>:f800::/<span class="number">32</span>;</span><br><span class="line">set_real_ip_from <span class="number">2</span>c0f:f248::/<span class="number">32</span>;</span><br><span class="line">set_real_ip_from <span class="number">2</span>a06:<span class="number">98</span>c0::/<span class="number">29</span>;</span><br><span class="line"></span><br><span class="line">real_ip_header CF-Connecting-IP;</span><br></pre></td></tr></table></figure>
+
+<h3 id="修改-etc-nginx-nginx-conf"><a href="#修改-etc-nginx-nginx-conf" class="headerlink" title="修改 /etc/nginx/nginx.conf"></a>修改 /etc/nginx/nginx.conf</h3><p>Open “/etc/nginx/nginx.conf” file with your favorite text editor and just add the following lines to your nginx.conf inside http{….} block.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">include</span> /etc/nginx/cloudflare;</span><br></pre></td></tr></table></figure>
+
+<h3 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nginx -s reload</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Nginx/" rel="tag"># Nginx</a>
+              <a href="/tags/CDN/" rel="tag"># CDN</a>
+              <a href="/tags/cloudflare/" rel="tag"># cloudflare</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/05/16/nginx%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E5%9C%96%E7%89%87%E8%A2%AB%E7%9B%9C%E9%80%A3hotlinkprotection/" rel="prev" title="Nginx如何防止圖片被盜連HotlinkProtection">
+                  <i class="fa fa-chevron-left"></i> Nginx如何防止圖片被盜連HotlinkProtection
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/17/nginx%E7%9A%84location%E5%8C%B9%E9%85%8D/" rel="next" title="nginx的location匹配">
+                  nginx的location匹配 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

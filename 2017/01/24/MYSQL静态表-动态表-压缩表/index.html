@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="我是主角，我不能死。  mysql在创建表的时候定义表的性质（也叫表的类型），共有三种：静态表，动态表，压缩表。默认是静态表，如果存在varchar、blob、text字段，表类型就是动态了。  静态表字段有固定长度，例如：char(20)。如果使用gbk字符集存储中文username，将占用40byte，如果username的实际内容没有达到 40byte，将会填充空格，以达到40byte。速">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MYSQL静态表-动态表-压缩表">
+<meta property="og:url" content="https://swoole.app/2017/01/24/MYSQL%E9%9D%99%E6%80%81%E8%A1%A8-%E5%8A%A8%E6%80%81%E8%A1%A8-%E5%8E%8B%E7%BC%A9%E8%A1%A8/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="我是主角，我不能死。  mysql在创建表的时候定义表的性质（也叫表的类型），共有三种：静态表，动态表，压缩表。默认是静态表，如果存在varchar、blob、text字段，表类型就是动态了。  静态表字段有固定长度，例如：char(20)。如果使用gbk字符集存储中文username，将占用40byte，如果username的实际内容没有达到 40byte，将会填充空格，以达到40byte。速">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-01-24T06:26:52.000Z">
+<meta property="article:modified_time" content="2018-03-27T13:34:24.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2017/01/24/MYSQL%E9%9D%99%E6%80%81%E8%A1%A8-%E5%8A%A8%E6%80%81%E8%A1%A8-%E5%8E%8B%E7%BC%A9%E8%A1%A8/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2017/01/24/MYSQL%E9%9D%99%E6%80%81%E8%A1%A8-%E5%8A%A8%E6%80%81%E8%A1%A8-%E5%8E%8B%E7%BC%A9%E8%A1%A8/","path":"2017/01/24/MYSQL静态表-动态表-压缩表/","title":"MYSQL静态表-动态表-压缩表"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>MYSQL静态表-动态表-压缩表 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E8%A1%A8"><span class="nav-number">1.</span> <span class="nav-text">静态表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%A1%A8"><span class="nav-number">2.</span> <span class="nav-text">动态表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%8B%E7%BC%A9%E8%A1%A8"><span class="nav-number">3.</span> <span class="nav-text">压缩表</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/01/24/MYSQL%E9%9D%99%E6%80%81%E8%A1%A8-%E5%8A%A8%E6%80%81%E8%A1%A8-%E5%8E%8B%E7%BC%A9%E8%A1%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MYSQL静态表-动态表-压缩表
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2017-01-24 15:26:52" itemprop="dateCreated datePublished" datetime="2017-01-24T15:26:52+09:00">2017-01-24</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2018-03-27 22:34:24" itemprop="dateModified" datetime="2018-03-27T22:34:24+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+我是主角，我不能死。
+</blockquote>
+mysql在创建表的时候定义表的性质（也叫表的类型），共有三种：静态表，动态表，压缩表。默认是静态表，如果存在varchar、blob、text字段，表类型就是动态了。
+
+<h3 id="静态表"><a href="#静态表" class="headerlink" title="静态表"></a>静态表</h3><p>字段有固定长度，例如：char(20)。如果使用gbk字符集存储中文username，将占用40byte，如果username的实际内容没有达到 40byte，将会填充空格，以达到40byte。速度很快，因为mysql知道username总是从第41个字节开始，容易缓存，出现问题后也容易恢 复（mysql知道记录的确切位置），需要更多的硬盘空间（如果有三个上面的字段，一条记录就会占120字节，即使实际只用了其中一部分）</p>
+<h3 id="动态表"><a href="#动态表" class="headerlink" title="动态表"></a>动态表</h3><p>字 段不定长（变长），这种表格式比较节省空间，但是复杂度更高，每条记录都有一个header，作用就是表明该记录有多长，所有的字符串列都是动态的（除非 小于4个字节，这种情况下，节省的空间可以忽略不计，增加的复杂度会反而会导致性能丢失），通常占用比静态表少的多地空间，但是必须经常维护（避免碎 片），例如：更新了用户名somebody为somebodyt，t不能立刻就出现在y的后面，因为空间被其他记录占用，对于出现碎片的列，每个新连接会 损失6个字节。而且出现问题后不容易重建（前面我说的静态表正好相反），如果碎片严重，有可能出现库爆炸（^_^）.</p>
+<p>不包括连接的动态记录的空间消耗可以用下面的公式计算：<br>3+(列数+7)/8+（字符列数）+数字列的打包尺寸+字符串长度+（空列的数量+7）/8</p>
+<p>每条记录的header可以表明那个字符串列是空的，那个数字列包含0（非空），在那种情况下不向磁盘存储，非空字符串包含一个长度字节加上字符串内容。</p>
+<h3 id="压缩表"><a href="#压缩表" class="headerlink" title="压缩表"></a>压缩表</h3><p>只读，使用很少的空间，用myisampack工具创建，表要少得多，每条记录分开压缩，所以不能同时访问，可以压缩静态表和动态表。<br>创建方法：myisampack [options] filename</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/01/23/%E5%AE%89%E8%A3%85phpRedisAdmin/" rel="prev" title="安装phpRedisAdmin">
+                  <i class="fa fa-chevron-left"></i> 安装phpRedisAdmin
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/02/05/git%E4%B8%A2%E5%BC%83%E6%9C%AC%E5%9C%B0%E4%BF%AE%E6%94%B9%E7%9A%84%E6%89%80%E6%9C%89%E6%96%87%E4%BB%B6/" rel="next" title="git丢弃本地修改的所有文件">
+                  git丢弃本地修改的所有文件 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

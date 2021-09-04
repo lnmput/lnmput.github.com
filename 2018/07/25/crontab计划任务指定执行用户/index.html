@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Muse","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="就算终有一散，也别辜负相遇。好好相遇，好好告别。   linux下可以通过配置crontab来定时执行任务，执行体可以是一条系统命令或自己写的一个脚本，同时可以指派用户来执行。配置crontab有两种方法。 使用crontab命令，例如添加一个新的或编辑已有的，使用：1crontab -e 就可以进入配置文件。此时配置crontab的执行者是当前登入用户，如果当前用户是root，需要为其他用户配">
+<meta property="og:type" content="article">
+<meta property="og:title" content="crontab计划任务指定执行用户">
+<meta property="og:url" content="https://swoole.app/2018/07/25/crontab%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1%E6%8C%87%E5%AE%9A%E6%89%A7%E8%A1%8C%E7%94%A8%E6%88%B7/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="就算终有一散，也别辜负相遇。好好相遇，好好告别。   linux下可以通过配置crontab来定时执行任务，执行体可以是一条系统命令或自己写的一个脚本，同时可以指派用户来执行。配置crontab有两种方法。 使用crontab命令，例如添加一个新的或编辑已有的，使用：1crontab -e 就可以进入配置文件。此时配置crontab的执行者是当前登入用户，如果当前用户是root，需要为其他用户配">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-07-25T03:10:10.000Z">
+<meta property="article:modified_time" content="2018-08-09T10:37:38.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/07/25/crontab%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1%E6%8C%87%E5%AE%9A%E6%89%A7%E8%A1%8C%E7%94%A8%E6%88%B7/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://swoole.app/2018/07/25/crontab%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1%E6%8C%87%E5%AE%9A%E6%89%A7%E8%A1%8C%E7%94%A8%E6%88%B7/","path":"2018/07/25/crontab计划任务指定执行用户/","title":"crontab计划任务指定执行用户"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>crontab计划任务指定执行用户 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设，欢迎咨询</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section">Home</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section">الوسوم</a></li>
+        <li class="menu-item menu-item-read"><a href="/read" rel="section">read</a></li>
+        <li class="menu-item menu-item-translate"><a href="/tags/translate" rel="section">translate</a></li>
+        <li class="menu-item menu-item-about"><a href="/about" rel="section">معلومات</a></li>
+        <li class="menu-item menu-item-site"><a href="/site" rel="section">site</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8crontab%E5%91%BD%E4%BB%A4%EF%BC%8C%E4%BE%8B%E5%A6%82%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E6%96%B0%E7%9A%84%E6%88%96%E7%BC%96%E8%BE%91%E5%B7%B2%E6%9C%89%E7%9A%84%EF%BC%8C%E4%BD%BF%E7%94%A8%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">使用crontab命令，例如添加一个新的或编辑已有的，使用：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E5%9C%A8-etc-crontab%E6%96%87%E4%BB%B6%E4%B8%AD%E6%B7%BB%E5%8A%A0%EF%BC%8C%E4%B8%8D%E8%BF%87%E9%9C%80%E8%A6%81%E6%98%AFroot%E8%BA%AB%E4%BB%BD%E3%80%82%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6%EF%BC%8C%E5%BA%94%E8%AF%A5%E4%BC%9A%E7%9C%8B%E5%88%B0%E7%B1%BB%E4%BC%BC%E4%B8%8B%E9%9D%A2%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="nav-number">2.</span> <span class="nav-text">直接在&#x2F;etc&#x2F;crontab文件中添加，不过需要是root身份。打开文件，应该会看到类似下面的信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%E9%97%AE%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">注意问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ubuntu%E6%B2%A1%E6%9C%89%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1%E6%97%A5%E5%BF%97%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">ubuntu没有计划任务日志解决办法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Debian%E7%B3%BB%E7%BB%9F"><span class="nav-number">5.</span> <span class="nav-text">Debian系统</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">一个专注记录外贸网站开发技术栈的个人博客</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/25/crontab%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1%E6%8C%87%E5%AE%9A%E6%89%A7%E8%A1%8C%E7%94%A8%E6%88%B7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          crontab计划任务指定执行用户
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2018-07-25 12:10:10" itemprop="dateCreated datePublished" datetime="2018-07-25T12:10:10+09:00">2018-07-25</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2018-08-09 19:37:38" itemprop="dateModified" datetime="2018-08-09T19:37:38+09:00">2018-08-09</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+就算终有一散，也别辜负相遇。好好相遇，好好告别。
+</blockquote>
+
+<p>linux下可以通过配置crontab来定时执行任务，执行体可以是一条系统命令或自己写的一个脚本，同时可以指派用户来执行。配置crontab有两种方法。</p>
+<h3 id="使用crontab命令，例如添加一个新的或编辑已有的，使用："><a href="#使用crontab命令，例如添加一个新的或编辑已有的，使用：" class="headerlink" title="使用crontab命令，例如添加一个新的或编辑已有的，使用："></a>使用crontab命令，例如添加一个新的或编辑已有的，使用：</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br></pre></td></tr></table></figure>
+<p>就可以进入配置文件。此时配置crontab的执行者是当前登入用户，如果当前用户是root，需要为其他用户配置，可以使用</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">crontab -e -u 用户名</span><br><span class="line"></span><br><span class="line">或</span><br><span class="line">su 用户名</span><br><span class="line">crontab -e</span><br></pre></td></tr></table></figure>
+<p>这种方法有一个缺点，就是当前系统中配置的crontab不在一个配置文件中，让管理员不方便查询系统到底有多少个crontab。</p>
+<h3 id="直接在-etc-crontab文件中添加，不过需要是root身份。打开文件，应该会看到类似下面的信息"><a href="#直接在-etc-crontab文件中添加，不过需要是root身份。打开文件，应该会看到类似下面的信息" class="headerlink" title="直接在/etc/crontab文件中添加，不过需要是root身份。打开文件，应该会看到类似下面的信息"></a>直接在/etc/crontab文件中添加，不过需要是root身份。打开文件，应该会看到类似下面的信息</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">SHELL=/bin/bash</span><br><span class="line">PATH=/sbin:/bin:/usr/sbin:/usr/bin</span><br><span class="line">MAILTO=root</span><br><span class="line">HOME=/</span><br><span class="line"></span><br><span class="line"><span class="comment"># For details see man 4 crontabs</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Example of job definition:</span></span><br><span class="line"><span class="comment"># .---------------- minute (0 - 59)</span></span><br><span class="line"><span class="comment"># |  .------------- hour (0 - 23)</span></span><br><span class="line"><span class="comment"># |  |  .---------- day of month (1 - 31)</span></span><br><span class="line"><span class="comment"># |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...</span></span><br><span class="line"><span class="comment"># |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat</span></span><br><span class="line"><span class="comment"># |  |  |  |  |</span></span><br><span class="line"><span class="comment"># *  *  *  *  * user-name command to be executed</span></span><br></pre></td></tr></table></figure>
+<p>要添加新的crontab，只需要在文件最后增加即可。注意这里面需要指定用户名；而方法1中则不需要，如果指定了，它会认为是命令的一部分，从而可能导致crontab执行失败。</p>
+<p>如果服务器都是有root来管理，建议添加crontab使用方法2，这样系统中的所有计划任务都在一起，一目了然。</p>
+<h3 id="注意问题"><a href="#注意问题" class="headerlink" title="注意问题"></a>注意问题</h3><p>我在配置Laravel的计划任务的时候有这样一条配置</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/crontab</span><br><span class="line"></span><br><span class="line"> * * * * www /bin/php /data/wwwroot/<span class="number">51</span>ito.io/ethgo/artisan schedule:run &gt;&gt; /dev/<span class="literal">null</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>正常保存以后发现计划任务并没有顺利执行， 随想这去查看日志</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tail -<span class="number">10</span> /<span class="keyword">var</span>/log/cron</span><br></pre></td></tr></table></figure>
+<p>发现</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">35</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24729</span>]: (www) CMD (/bin/php /data/wwwroot/<span class="number">51</span>ito.io/ethgo/artisan schedule:run &gt;&gt; /dev/<span class="literal">null</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span>)</span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">35</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24729</span>]: (CRON) <span class="built_in">ERROR</span> chdir failed (/home/www): No such file <span class="keyword">or</span> <span class="built_in">directory</span></span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">36</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24782</span>]: (www) CMD (/bin/php /data/wwwroot/<span class="number">51</span>ito.io/ethgo/artisan schedule:run &gt;&gt; /dev/<span class="literal">null</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span>)</span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">36</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24782</span>]: (CRON) <span class="built_in">ERROR</span> chdir failed (/home/www): No such file <span class="keyword">or</span> <span class="built_in">directory</span></span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">37</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24834</span>]: (www) CMD (/bin/php /data/wwwroot/<span class="number">51</span>ito.io/ethgo/artisan schedule:run &gt;&gt; /dev/<span class="literal">null</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span>)</span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">37</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24834</span>]: (CRON) <span class="built_in">ERROR</span> chdir failed (/home/www): No such file <span class="keyword">or</span> <span class="built_in">directory</span></span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">38</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24887</span>]: (www) CMD (/bin/php /data/wwwroot/<span class="number">51</span>ito.io/ethgo/artisan schedule:run &gt;&gt; /dev/<span class="literal">null</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span>)</span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">38</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24887</span>]: (CRON) <span class="built_in">ERROR</span> chdir failed (/home/www): No such file <span class="keyword">or</span> <span class="built_in">directory</span></span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">39</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24940</span>]: (www) CMD (/bin/php /data/wwwroot/<span class="number">51</span>ito.io/ethgo/artisan schedule:run &gt;&gt; /dev/<span class="literal">null</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span>)</span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">39</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24940</span>]: (CRON) <span class="built_in">ERROR</span> chdir failed (/home/www): No such file <span class="keyword">or</span> <span class="built_in">directory</span></span><br><span class="line">Jul <span class="number">25</span> <span class="number">12</span>:<span class="number">40</span>:<span class="number">01</span> ip-<span class="number">172</span>-<span class="number">31</span>-<span class="number">45</span>-<span class="number">45</span> CROND[<span class="number">24995</span>]: (www) CMD (/bin/php /data/wwwroot/<span class="number">51</span>ito.io/ethgo/artisan schedule:run &gt;&gt; /dev/<span class="literal">null</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<p>意思就是指定某一个执行计划任务的时候需要这个用户必须有家目录， 那么进行以下操作</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /home</span><br><span class="line">mkdir www</span><br><span class="line">chown -R www:www www</span><br></pre></td></tr></table></figure>
+<p>经过以上的一番操作， 正常运行</p>
+<h3 id="ubuntu没有计划任务日志解决办法"><a href="#ubuntu没有计划任务日志解决办法" class="headerlink" title="ubuntu没有计划任务日志解决办法"></a>ubuntu没有计划任务日志解决办法</h3><p>修改rsyslog</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/rsyslog.d/<span class="number">50</span>-<span class="keyword">default</span>.conf</span><br></pre></td></tr></table></figure>
+<p>搜索cron 把如下行之前的注释”#”去掉</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#cron.*   /var/log/cron.log </span></span><br></pre></td></tr></table></figure>
+<p>重启rsyslog</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo  service rsyslog  restart</span><br></pre></td></tr></table></figure>
+<p> 现在看看定时任务的日志</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tail -f /<span class="keyword">var</span>/log/cron.log</span><br></pre></td></tr></table></figure>
+
+<h3 id="Debian系统"><a href="#Debian系统" class="headerlink" title="Debian系统"></a>Debian系统</h3><p>重启</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/cron restart</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://www.netingcn.com/crontab-designate.html">http://www.netingcn.com/crontab-designate.html</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/07/25/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8eloquent%E4%B8%AD%E4%BD%BF%E7%94%A8appends/" rel="prev" title="为什么要在eloquent中使用appends">
+                  <i class="fa fa-chevron-left"></i> 为什么要在eloquent中使用appends
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/07/27/websocket%E7%9A%84%E8%87%AA%E5%8A%A8%E9%87%8D%E8%BF%9E%E5%AE%9E%E7%8E%B0/" rel="next" title="websocket的自动重连实现">
+                  websocket的自动重连实现 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
