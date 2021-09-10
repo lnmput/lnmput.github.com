@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">373</span>
+          <span class="site-state-item-count">374</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">146</span>
+        <span class="site-state-item-count">138</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,91 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/24/PHP-cURL%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%A8%A1%E6%8B%9F%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/07/24/PHP-cURL%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%A8%A1%E6%8B%9F%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82/" class="post-title-link" itemprop="url">PHP-cURL多线程模拟并发请求</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-07-24 19:58:49" itemprop="dateCreated datePublished" datetime="2017-07-24T19:58:49+09:00">2017-07-24</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-04-25 10:41:33" itemprop="dateModified" datetime="2018-04-25T10:41:33+09:00">2018-04-25</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+钱是买不到幸福的, 因为他本身就是幸福
+</blockquote>
+
+<h3 id="PHP-cURL所有函数列表："><a href="#PHP-cURL所有函数列表：" class="headerlink" title="PHP cURL所有函数列表："></a>PHP cURL所有函数列表：</h3><p><a target="_blank" rel="noopener" href="http://php.net/manual/zh/ref.curl.php]http://php.net/manual/zh/ref.curl.php">http://php.net/manual/zh/ref.curl.php]http://php.net/manual/zh/ref.curl.php</a></p>
+<p>以下是PHP中cURL多线程相关函数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">curl_multi_add_handle — 向curl批处理会话中添加单独的curl句柄</span><br><span class="line">curl_multi_close — 关闭一组cURL句柄</span><br><span class="line">curl_multi_exec — 运行当前 cURL 句柄的子连接</span><br><span class="line">curl_multi_getcontent — 如果设置了CURLOPT_RETURNTRANSFER，则返回获取的输出的文本流</span><br><span class="line">curl_multi_info_read — 获取当前解析的cURL的相关传输信息</span><br><span class="line">curl_multi_init — 返回一个新cURL批处理句柄</span><br><span class="line">curl_multi_remove_handle — 移除curl批处理句柄资源中的某个句柄资源</span><br><span class="line">curl_multi_select — 等待所有cURL批处理中的活动连接</span><br><span class="line">curl_multi_setopt — 为 cURL 并行处理设置一个选项</span><br><span class="line">curl_multi_strerror — <span class="keyword">Return</span> <span class="keyword">string</span> describing <span class="built_in">error</span> code</span><br></pre></td></tr></table></figure>
+<p>一般来说，想到要用这些函数时，目的显然应该是要同时请求多个URL，而不是一个一个依次请求，否则不如自己循环去调curl_exec好了。</p>
+<p>步骤总结如下：</p>
+<p>1、调用curl_multi_init，初始化一个批处理handle<br>2、循环调用 curl_multi_add_handle，往1中的批处理handle 添加curl_init来的子handle<br>3、持续调用 curl_multi_exec，直到所有子handle执行完毕。<br>4、根据需要循环调用 curl_multi_getcontent 获取结果<br>5、调用 curl_multi_remove_handle，并为每个字handle调用curl_close<br>6、调用 curl_multi_close</p>
+<p>以下是一个通过并发请求抓取网页的demo：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$urls</span> = <span class="keyword">array</span>(</span><br><span class="line">    <span class="string">&#x27;https://979137.com/&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;http://www.sina.com.cn/&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;http://www.sohu.com/&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;http://www.163.com/&#x27;</span></span><br><span class="line">);   </span><br><span class="line"><span class="comment">//1、初始化一个批处理handle</span></span><br><span class="line"><span class="variable">$mh</span> = curl_multi_init();</span><br><span class="line"> </span><br><span class="line"><span class="comment">//2、往批处理handle 添加curl_init来的子handle</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$urls</span> <span class="keyword">as</span> <span class="variable">$i</span> =&gt; <span class="variable">$url</span>) &#123;   </span><br><span class="line">    <span class="variable">$conn</span>[<span class="variable">$i</span>] = curl_init(<span class="variable">$url</span>);   </span><br><span class="line">    curl_setopt(<span class="variable">$conn</span>[<span class="variable">$i</span>], CURLOPT_HEADER, <span class="number">0</span>);   </span><br><span class="line">    curl_setopt(<span class="variable">$conn</span>[<span class="variable">$i</span>], CURLOPT_CONNECTTIMEOUT, <span class="number">60</span>);   </span><br><span class="line">    curl_setopt(<span class="variable">$conn</span>[<span class="variable">$i</span>], CURLOPT_RETURNTRANSFER, <span class="literal">true</span>);  </span><br><span class="line">    curl_multi_add_handle(<span class="variable">$mh</span>, <span class="variable">$conn</span>[<span class="variable">$i</span>]);   </span><br><span class="line">&#125;   </span><br><span class="line"></span><br><span class="line"><span class="comment">//3、并发执行，直到全部结束。</span></span><br><span class="line"><span class="keyword">do</span> &#123;   </span><br><span class="line">    curl_multi_exec(<span class="variable">$mh</span>, <span class="variable">$active</span>);   </span><br><span class="line">&#125; <span class="keyword">while</span> (<span class="variable">$active</span>);   </span><br><span class="line"> </span><br><span class="line"><span class="comment">//4、获取结果</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$urls</span> <span class="keyword">as</span> <span class="variable">$i</span> =&gt; <span class="variable">$url</span>) &#123;   </span><br><span class="line">    <span class="variable">$data</span> = curl_multi_getcontent(<span class="variable">$conn</span>[<span class="variable">$i</span>]);</span><br><span class="line">    <span class="keyword">echo</span> (<span class="variable">$data</span>);</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&#x27;&lt;hr /&gt;&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//5、移除子handle，并close子handle</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$urls</span> <span class="keyword">as</span> <span class="variable">$i</span> =&gt; <span class="variable">$url</span>) &#123;   </span><br><span class="line">  curl_multi_remove_handle(<span class="variable">$mh</span>,<span class="variable">$conn</span>[<span class="variable">$i</span>]);   </span><br><span class="line">  curl_close(<span class="variable">$conn</span>[<span class="variable">$i</span>]);   </span><br><span class="line">&#125;   </span><br><span class="line"> </span><br><span class="line"><span class="comment">//6、关闭批处理handle</span></span><br><span class="line">curl_multi_close(<span class="variable">$mh</span>);  </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://979137.com/archives/133.html">https://979137.com/archives/133.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -949,87 +1034,6 @@
 <p>composer require mustangostang/spyc<br>目前主流的方式，对于偏底层的扩展通过编译方式安装，对于偏应用的通过composer方式。</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/d8b75dbc852a">http://www.jianshu.com/p/d8b75dbc852a</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/06/15/php%E4%BD%BF%E7%94%A8fsockopen%E4%BC%A0%E9%80%81post%E5%88%B0%E5%88%AB%E7%9A%84url%E5%B9%B6%E5%8F%96%E5%BE%97%E5%9B%9E%E5%BA%94%E7%9A%84%E5%86%85%E5%AE%B9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="一个专注记录外贸网站开发技术栈的个人博客">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/06/15/php%E4%BD%BF%E7%94%A8fsockopen%E4%BC%A0%E9%80%81post%E5%88%B0%E5%88%AB%E7%9A%84url%E5%B9%B6%E5%8F%96%E5%BE%97%E5%9B%9E%E5%BA%94%E7%9A%84%E5%86%85%E5%AE%B9/" class="post-title-link" itemprop="url">php使用fsockopen传送post到别的url并取得回应的内容</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-06-15 14:49:22" itemprop="dateCreated datePublished" datetime="2017-06-15T14:49:22+09:00">2017-06-15</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:32:28" itemprop="dateModified" datetime="2018-03-27T22:32:28+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-几年前踏上火车那一刻都还没有意识到，从此故乡只有冬夏，再无春秋。
-</blockquote>
-如果不需要傳送參數或是使用GET method傳送
-
-<p>可以直接使用fopen()或是file_get_contents()函式獲得回應內容<br>但是如果需要不經過表單就送出POST給某URL<br>就需要使用curl相關函式或是fsockopen()傳送</p>
-<p>curl的用法比較簡單<br>可以咕狗看看(但是php必須要先安裝curl才可以用)<br>這邊要講的是fsockopen()</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//接收POST參數的URL</span></span><br><span class="line"><span class="variable">$url</span> = <span class="string">&#x27;http://www.google.com&#x27;</span>;</span><br><span class="line"><span class="comment">//POST參數,在這個陣列裡,索引是name,值是value,沒有限定組數</span></span><br><span class="line"><span class="variable">$postdata</span> = <span class="keyword">array</span>(<span class="string">&#x27;post_name&#x27;</span>=&gt;<span class="string">&#x27;post_value&#x27;</span>,<span class="string">&#x27;acc&#x27;</span>=&gt;<span class="string">&#x27;hsin&#x27;</span>,<span class="string">&#x27;nick&#x27;</span>=&gt;<span class="string">&#x27;joe&#x27;</span>);</span><br><span class="line"><span class="comment">//函式回覆的值就是取得的內容</span></span><br><span class="line"><span class="variable">$result</span> = sendpost(<span class="variable">$url</span>,<span class="variable">$postdata</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sendpost</span>(<span class="params"><span class="variable">$url</span>, <span class="variable">$data</span></span>)</span>&#123;</span><br><span class="line"><span class="comment">//先解析url 取得的資訊可以看看http://www.php.net/parse_url</span></span><br><span class="line"><span class="variable">$url</span> = parse_url(<span class="variable">$url</span>);</span><br><span class="line"><span class="variable">$url_port</span> = <span class="variable">$url</span>[<span class="string">&#x27;port&#x27;</span>]==<span class="string">&#x27;&#x27;</span>?((<span class="variable">$url</span>[<span class="string">&#x27;scheme&#x27;</span>]==<span class="string">&#x27;https&#x27;</span>)?<span class="number">443</span>:<span class="number">80</span>):<span class="variable">$url</span>[<span class="string">&#x27;port&#x27;</span>];</span><br><span class="line"><span class="keyword">if</span>(!<span class="variable">$url</span>) <span class="keyword">return</span> <span class="string">&quot;couldn&#x27;t parse url&quot;</span>;</span><br><span class="line"><span class="comment">//對要傳送的POST參數作處理</span></span><br><span class="line"><span class="variable">$encoded</span> = <span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="keyword">while</span>(<span class="keyword">list</span>(<span class="variable">$k</span>,<span class="variable">$v</span>)=each(<span class="variable">$data</span>))&#123;</span><br><span class="line">  <span class="variable">$encoded</span> .= (<span class="variable">$encoded</span>?<span class="string">&#x27;&amp;&#x27;</span>:<span class="string">&#x27;&#x27;</span>);</span><br><span class="line">  <span class="variable">$encoded</span> .= rawurlencode(<span class="variable">$k</span>).<span class="string">&quot;=&quot;</span>.rawurlencode(<span class="variable">$v</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//開啟一個socket</span></span><br><span class="line"><span class="variable">$fp</span> = fsockopen(<span class="variable">$url</span>[<span class="string">&#x27;host&#x27;</span>],<span class="variable">$url_port</span>);</span><br><span class="line"><span class="keyword">if</span>(!<span class="variable">$fp</span>) <span class="keyword">return</span> <span class="string">&quot;Failed to open socket to &quot;</span>.<span class="variable">$url</span>[<span class="string">&#x27;host&#x27;</span>];</span><br><span class="line"><span class="comment">//header的資訊</span></span><br><span class="line">fputs(<span class="variable">$fp</span>,<span class="string">&#x27;POST &#x27;</span>.<span class="variable">$url</span>[<span class="string">&#x27;path&#x27;</span>].(<span class="variable">$url</span>[<span class="string">&#x27;query&#x27;</span>]?<span class="string">&#x27;?&#x27;</span>.<span class="variable">$url</span>[<span class="string">&#x27;query&#x27;</span>]:<span class="string">&#x27;&#x27;</span>).<span class="string">&quot; HTTP/1.0rn&quot;</span>);</span><br><span class="line">fputs(<span class="variable">$fp</span>,<span class="string">&quot;Host: &quot;</span>.<span class="variable">$url</span>[<span class="string">&#x27;host&#x27;</span>].<span class="string">&quot;n&quot;</span>);</span><br><span class="line">fputs(<span class="variable">$fp</span>,<span class="string">&quot;Content-type: application/x-www-form-urlencodedn&quot;</span>);</span><br><span class="line">fputs(<span class="variable">$fp</span>,<span class="string">&quot;Content-length: &quot;</span>.strlen(<span class="variable">$encoded</span>).<span class="string">&quot;n&quot;</span>);</span><br><span class="line">fputs(<span class="variable">$fp</span>,<span class="string">&quot;Connection: closenn&quot;</span>);</span><br><span class="line">fputs(<span class="variable">$fp</span>,<span class="variable">$encoded</span>.<span class="string">&quot;n&quot;</span>);</span><br><span class="line"><span class="comment">//取得回應的內容</span></span><br><span class="line"><span class="variable">$line</span> = fgets(<span class="variable">$fp</span>,<span class="number">1024</span>);</span><br><span class="line"><span class="keyword">if</span>(!eregi(<span class="string">&quot;^HTTP/1.. 200&quot;</span>, <span class="variable">$line</span>)) <span class="keyword">return</span>;</span><br><span class="line"><span class="variable">$results</span> = <span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="variable">$inheader</span> = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span>(!feof(<span class="variable">$fp</span>))&#123;</span><br><span class="line">  <span class="variable">$line</span> = fgets(<span class="variable">$fp</span>,<span class="number">2048</span>);</span><br><span class="line">  <span class="keyword">if</span>(<span class="variable">$inheader</span>&amp;&amp;(<span class="variable">$line</span> == <span class="string">&quot;n&quot;</span> || <span class="variable">$line</span> == <span class="string">&quot;rn&quot;</span>))&#123;</span><br><span class="line">    <span class="variable">$inheader</span> = <span class="number">0</span>;</span><br><span class="line">  &#125;<span class="keyword">elseif</span>(!<span class="variable">$inheader</span>)&#123;</span><br><span class="line">    <span class="variable">$results</span> .= <span class="variable">$line</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">fclose(<span class="variable">$fp</span>);</span><br><span class="line"><span class="keyword">return</span> <span class="variable">$results</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://inspiregate.com/programming/php/26-php-to-use-fsockopen-to-send-post-to-another-url-and-get-to-respond-to-the-content.html">http://inspiregate.com/programming/php/26-php-to-use-fsockopen-to-send-post-to-another-url-and-get-to-respond-to-the-content.html</a></p>
 </blockquote>
 
       
