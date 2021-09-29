@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">376</span>
+          <span class="site-state-item-count">379</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,251 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/03/13/%E5%AF%BC%E8%87%B4mysql%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E7%9A%84%E5%87%A0%E7%A7%8D%E5%86%99%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/03/13/%E5%AF%BC%E8%87%B4mysql%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E7%9A%84%E5%87%A0%E7%A7%8D%E5%86%99%E6%B3%95/" class="post-title-link" itemprop="url">导致mysql索引失效的几种写法</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-03-13 18:06:43 / 修改时间：19:54:52" itemprop="dateCreated datePublished" datetime="2021-03-13T18:06:43+09:00">2021-03-13</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+人生若只如初见，何事秋风悲画扇
+</blockquote>
+
+<h3 id="使用-或者-lt-gt-导致索引失效"><a href="#使用-或者-lt-gt-导致索引失效" class="headerlink" title="使用!= 或者 &lt;&gt; 导致索引失效"></a>使用!= 或者 &lt;&gt; 导致索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> name` <span class="operator">!=</span> <span class="string">&#x27;冰峰&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>我们给name字段建立了索引，但是如果!= 或者 &lt;&gt; 这种都会导致索引失效，进行全表扫描，所以如果数据量大的话，谨慎使用</p>
+<h3 id="类型不一致导致的索引失效"><a href="#类型不一致导致的索引失效" class="headerlink" title="类型不一致导致的索引失效"></a>类型不一致导致的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span>` <span class="keyword">WHERE</span> height<span class="operator">=</span> <span class="number">175</span>;</span><br></pre></td></tr></table></figure>
+<p>height表字段类型是varchar，但是我查询的时候使用了数字类型，因为这个中间存在一个隐式的类型转换，所以就会导致索引失效，进行全表扫描。</p>
+<h3 id="函数导致的索引失效"><a href="#函数导致的索引失效" class="headerlink" title="函数导致的索引失效"></a>函数导致的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span>` <span class="keyword">WHERE</span> <span class="type">DATE</span>(create_time) <span class="operator">=</span> <span class="string">&#x27;2020-09-03&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>如果你的索引字段使用了索引，对不起，他是真的不走索引的</p>
+<h3 id="运算符导致的索引失效"><a href="#运算符导致的索引失效" class="headerlink" title="运算符导致的索引失效"></a>运算符导致的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span>` <span class="keyword">WHERE</span> age <span class="operator">-</span> <span class="number">1</span> <span class="operator">=</span> <span class="number">20</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="OR引起的索引失效"><a href="#OR引起的索引失效" class="headerlink" title="OR引起的索引失效"></a>OR引起的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> name` <span class="operator">=</span> <span class="string">&#x27;张三&#x27;</span> <span class="keyword">OR</span> height <span class="operator">=</span> <span class="string">&#x27;175&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>OR导致索引是在特定情况下的，并不是所有的OR都是使索引失效，如果OR连接的是同一个字段，那么索引不会失效，反之索引失效。</p>
+<h3 id="模糊搜索导致的索引失效"><a href="#模糊搜索导致的索引失效" class="headerlink" title="模糊搜索导致的索引失效"></a>模糊搜索导致的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> s.<span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> s <span class="keyword">WHERE</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> (<span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> u <span class="keyword">WHERE</span> u.name <span class="operator">=</span> s.name <span class="keyword">AND</span> u.name` <span class="operator">=</span> <span class="string">&#x27;冰峰&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> name` <span class="keyword">NOT</span> <span class="keyword">IN</span> (<span class="string">&#x27;冰峰&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>这两种用法，也将使索引失效。但是NOT IN 还是走索引的，千万不要误解为 IN 全部是不走索引的。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000023911554">https://segmentfault.com/a/1190000023911554</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/12/18/chromedriver%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/12/18/chromedriver%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">chromedriver安装</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-12-18 15:06:54" itemprop="dateCreated datePublished" datetime="2020-12-18T15:06:54+09:00">2020-12-18</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-16 23:21:32" itemprop="dateModified" datetime="2021-09-16T23:21:32+09:00">2021-09-16</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+被门夹过的核桃还能补脑嘛
+</blockquote>
+
+<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><ul>
+<li>win10 64 位系统</li>
+</ul>
+<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>下载地址： <a target="_blank" rel="noopener" href="http://chromedriver.storage.googleapis.com/index.html">http://chromedriver.storage.googleapis.com/index.html</a><br>注意： chrome版本必须和chromedriver版本相同，如果没有一模一样的版本，选择能包括它的版本即可<br>chrome版本的查看方式，打开地址<code>chrome://settings/help</code>即可<br><img style="margin-left: 0;" src="/images/chrome_version.png"></p>
+<img style="margin-left: 0;" src="/images/chrome_down.png">
+
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>将下载后的文件解压<code>chromedriver.exe</code>放到目录<code>C:\Program Files\bin</code>下,并记下这个目录，理论上可以放到本地的任何位置，全凭个人喜好<br><img style="margin-left: 0;" src="/images/chrome_pos.png"></p>
+<h3 id="配置环境变量"><a href="#配置环境变量" class="headerlink" title="配置环境变量"></a>配置环境变量</h3><p>将存放<code>chromedriver.exe</code>的目录添加到环境变量中<br><img style="margin-left: 0;" src="/images/setenv.png"></p>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>使用<code>win+r</code>快捷键调出 运行窗口， 并输入<code>cmd</code> 命令， 打开cmd窗口， 在窗口中输入<code>chromedriver</code>,是否能够正确显示版本号， 如不生效，可以尝试重启计算机<br><img style="margin-left: 0;" src="/images/cmd.png"></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/12/17/php-fpm%E5%AE%9A%E4%BD%8D%E6%85%A2%E8%84%9A%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/12/17/php-fpm%E5%AE%9A%E4%BD%8D%E6%85%A2%E8%84%9A%E6%9C%AC/" class="post-title-link" itemprop="url">php-fpm定位慢脚本</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2020-12-17 13:39:32 / 修改时间：14:44:06" itemprop="dateCreated datePublished" datetime="2020-12-17T13:39:32+09:00">2020-12-17</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+所谓的光辉岁月，并不是以后，闪耀的日子，而是无人问津时，你对梦想的偏执。
+</blockquote>
+
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>PHP-FPM 提供一个叫 慢日志 (slowlog) 的功能，来帮助我们定位执行慢的脚本。</p>
+<h3 id="开启"><a href="#开启" class="headerlink" title="开启"></a>开启</h3><p>以 PHP 7.2 为例，FPM 的配置信息位于：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/php/<span class="number">7.2</span>/fpm/pool.d/www.conf</span><br></pre></td></tr></table></figure>
+<p>相关配置项：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">; 慢日志的存储路径，默认 `<span class="variable">$pool</span>` 设置为 `www`</span><br><span class="line">slowlog = /<span class="keyword">var</span>/log/<span class="variable">$pool</span>.slow.log</span><br><span class="line"></span><br><span class="line">; 设置慢日志超时标准，设置为 <span class="number">0</span> 代表关闭慢日志</span><br><span class="line">request_slowlog_timeout = <span class="number">1</span>s</span><br><span class="line"></span><br><span class="line">; 慢日志记录脚本堆栈的深度</span><br><span class="line">request_slowlog_trace_depth = <span class="number">20</span></span><br></pre></td></tr></table></figure>
+<p>以上的配置翻译过来：指定 FPM 当发现有请求执行超过 1 秒钟的时候，将整个调用堆栈记录到 <code>/var/log/www.slow.log</code> 文件里，堆栈的深度不超过 20。</p>
+<p>你可以把 1s 改成其他值，如 10s。有了以上的设置，裁剪图像尺寸的方法、 网络 I/O 相关的一些请求都经常出现在 PHP 慢日志中。你可以根据自己的情况来选择调整或者忽略。</p>
+<h3 id="如何分析？"><a href="#如何分析？" class="headerlink" title="如何分析？"></a>如何分析？</h3><p>开启了慢日志，网站运行一段时间后，如果记录了较多的慢日志，如何进行有效分析？<br>可以使用 grep 命令来快速定位某个函数调用、或者脚本名称被记录的次数，记录的次数越多，优化的优先级就越高。以下是简单的 示例：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ grep -o <span class="string">&#x27;fetch_github_user&#x27;</span> /<span class="keyword">var</span>/log/www.slow.log | wc -l</span><br><span class="line"><span class="number">56</span></span><br><span class="line">$ grep -o <span class="string">&#x27;sendEmail&#x27;</span> /<span class="keyword">var</span>/log/www.slow.log | wc -l</span><br><span class="line"><span class="number">48</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>慢日志可以帮助我们定位到运用程序里的瓶颈，是一个非常好用的工具，也是每个 PHP 开发者都需要知道的工具。<br>需要注意的是，监控 Slowlog 和记录日志的过程会对 PHP 造成消耗， 切记 调试结束后，务必将其关闭。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -843,288 +1088,6 @@
 <p>让我们强调一下：await 字面的意思就是让 JavaScript 引擎等待直到 promise settle，然后以 promise 的结果继续执行。这个行为不会耗费任何 CPU 资源，因为引擎可以同时处理其他任务：执行其他脚本，处理事件等。</p>
 <p>相比于 promise.then，它只是获取 promise 的结果的一个更优雅的语法，同时也更易于读写。</p>
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/04/17/golang%E4%B9%8Bhttp-eof%E5%92%8Cconnection-reset-by-peer%E9%94%99%E8%AF%AF%E8%AF%A6%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/04/17/golang%E4%B9%8Bhttp-eof%E5%92%8Cconnection-reset-by-peer%E9%94%99%E8%AF%AF%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">golang之http-eof和connection-reset-by-peer错误详解</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-04-17 21:28:52" itemprop="dateCreated datePublished" datetime="2020-04-17T21:28:52+09:00">2020-04-17</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:56:56" itemprop="dateModified" datetime="2021-09-10T13:56:56+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-多花一點心思去說溫柔的話，那些話可能改變他人一生
-</blockquote>
-
-<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>使用net/http同时发起多个简单请求时，偶尔会出现EOF或connect: connection reset by peer的情况。明明就是一个很简单的例子，为何会出现这种情况呢？</p>
-<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">eq, err := http.NewRequest(method, url, body)</span><br><span class="line"><span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">resp, err := http.DefaultClient.Do(req)</span><br><span class="line"><span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">defer</span> resp.Body.Close()</span><br><span class="line"></span><br><span class="line">b, err := ioutil.ReadAll(resp.Body)</span><br><span class="line"><span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> b,<span class="literal">nil</span></span><br></pre></td></tr></table></figure>
-<p>如此简单的几行代码，在我们套上大并发以后，各种异常情况接踵而至，最常见的就是下面的几个：</p>
-<ul>
-<li>EOF</li>
-<li>connection reset by peer</li>
-</ul>
-<h3 id="探讨"><a href="#探讨" class="headerlink" title="探讨"></a>探讨</h3><p>HTTP也是针对TCP的一个封装，go得益于goroutine和channel，与其他语言的实现方式不太一样，它是直接起了两个协程，一个用于读（readLoop），一个用于写（writeLoop）。</p>
-<h4 id="conn-Read"><a href="#conn-Read" class="headerlink" title="conn.Read"></a>conn.Read</h4><ul>
-<li>socket无数据：read阻塞，直到有数据。</li>
-<li>socket有部分数据：如果socket中有部分数据，且长度小于一次Read操作所期望读出的数据长度，那么Read将会成功读出这部分数据并返回，而不是等待所有期望数据全部读取后再返回。</li>
-<li>socket有足够数据：如果socket中有数据，且长度大于等于一次Read操作所期望读出的数据长度，那么Read将会成功读出这部分数据并返回。这个情景是最符合我们对Read的期待的了：Read将用Socket中的数据将我们传入的slice填满后返回：n = 10, err = nil</li>
-<li>有数据，socket关闭：第一次Read成功读出了所有的数据，当第二次Read时，由于client端 socket关闭，Read返回EOF error；</li>
-<li>无数据，socket关闭：Read直接返回EOF error</li>
-</ul>
-<h4 id="conn-Write"><a href="#conn-Write" class="headerlink" title="conn.Write"></a>conn.Write</h4><ul>
-<li>成功写：Write调用返回的n与预期要写入的数据长度相等，且error = nil；</li>
-<li>写阻塞：当发送方将对方的接收缓冲区以及自身的发送缓冲区写满后，Write就会阻塞；</li>
-<li>写入部分数据：Write操作存在写入部分数据的情况，没有按照预期的写入所有数据，则需要循环写入。</li>
-</ul>
-<h3 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h3><p>通过上面的描述，我们大致已经明白了为何会出现EOF了，其实就是readLoop在进行读的时候，检测到socket被关闭了。在HTTP1.1，我们默认都是采用了Keep-Alive的，也就是会启动长连接，当server端断掉了该socket后，我们的EOF就出来了。所以尽量避免该情况发生的话，直接这样<code>req.Close = true</code>。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://dpjeep.com/golangzhi-http-eofxiang-jie/">https://dpjeep.com/golangzhi-http-eofxiang-jie/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/04/10/php%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E6%B7%BB%E5%8A%A0%E6%88%96%E8%80%85%E6%9B%BF%E6%8D%A2%E5%86%85%E5%AE%B9%E7%9A%84img%E6%A0%87%E7%AD%BE%E7%9A%84alt%E5%B1%9E%E6%80%A7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/04/10/php%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E6%B7%BB%E5%8A%A0%E6%88%96%E8%80%85%E6%9B%BF%E6%8D%A2%E5%86%85%E5%AE%B9%E7%9A%84img%E6%A0%87%E7%AD%BE%E7%9A%84alt%E5%B1%9E%E6%80%A7/" class="post-title-link" itemprop="url">php实现自动添加或者替换内容的IMG标签的alt属性</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2020-04-10 19:04:20 / 修改时间：20:11:36" itemprop="dateCreated datePublished" datetime="2020-04-10T19:04:20+09:00">2020-04-10</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-すぐ目（め）の前（まえ）にあっても、手（て）に入れる事（こと）が出来（でき）ないものがある
-</blockquote>
-
-<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p>在cms 开发中，SEO优化 一般需要把文章标题 设置为 img 的alt title 属性，那么内容多个 img 时，手动过于繁琐。</p>
-<h3 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h3><p>根据以上需求，那么使用正则找内容的 img 标签 ，进行添加或者替换即可</p>
-<h3 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$str</span> =<span class="string">&#x27;&lt;div class=&quot;wkBody&quot;&gt;</span></span><br><span class="line"><span class="string">                        &lt;div id=&quot;panelSummary&quot; class=&quot;abstract&quot;&gt;</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">                            &lt;span class=&quot;font28&quot;&gt;摘要：&lt;/span&gt;</span></span><br><span class="line"><span class="string">                            作为阿根廷种植面积第二大的红葡萄品种，伯纳达的发展潜力越来越大，逐渐成为阿根廷的希望之星。</span></span><br><span class="line"><span class="string">                            &lt;div id=&quot;pnlSummaryEN&quot; class=&quot;abs-en&quot;&gt;</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">                                &lt;span class=&quot;font28&quot;&gt;ABSTRACT：&lt;/span&gt;</span></span><br><span class="line"><span class="string">                                Bonarda is Argentina’s second most widely planted red grape, which may make a big splash in the coming years.</span></span><br><span class="line"><span class="string">                            </span></span><br><span class="line"><span class="string">    &lt;/div&gt;</span></span><br><span class="line"><span class="string">                        </span></span><br><span class="line"><span class="string">&lt;/div&gt;</span></span><br><span class="line"><span class="string">                        &lt;p&gt;</span></span><br><span class="line"><span class="string">    说到阿根廷葡萄酒，大家最先想到的可能是著名的&lt;a href=&quot;http://www.wine-world.com/s/grape?q=马尔贝克&amp;amp;token=ba782698-e5be-44f8-8e54-09eac16f02a9&amp;amp;from=user&quot; target=&quot;_blank&quot;&gt;马尔贝克&lt;/a&gt;（Malbec），毫无疑问，这个品种在阿根廷占据着绝对的主导地位。但是，除了马尔贝克以外，阿根廷还有一个发展潜力巨大的葡萄品种，它是阿根廷的希望之星——阿根廷种植面积第二大的葡萄品种伯纳达（Bonarda）。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　&lt;strong&gt;　1. 特征&lt;/strong&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p style=&quot;text-align: center;&quot;&gt;</span></span><br><span class="line"><span class="string">    &lt;strong&gt;&lt;a target=&quot;_blank&quot; href=&quot;/culture/pic/22571cf7-ee6b-4176-8efb-e02e4e9dd947/0&quot;&gt;&lt;img alt=&quot;除了马尔贝克，阿根廷还有伯纳达&quot; title=&quot;除了马尔贝克，阿根廷还有伯纳达&quot; src=&quot;/UserFiles/images/01-bonarda-161114.jpg&quot; style=&quot;width: 375px; height: 500px;&quot;&gt;&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p style=&quot;text-align: center;&quot;&gt;</span></span><br><span class="line"><span class="string">    &lt;span style=&quot;font-size:12px;&quot;&gt;图片来源：Wine Folly&lt;/span&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p&gt;</span></span><br><span class="line"><span class="string">    伯纳达葡萄酒初闻时果香扑鼻，带有糖渍黑樱桃、新鲜蓝莓和李子的香气。紧接着，香气变得更加复杂，散发出紫罗兰、五香、多香果和牡丹的气息。最后，经过橡木桶的酒还会有轻微的雪茄盒、甜无花果和巧克力等烟熏气息。入口时，伯纳达葡萄酒最先表现的也是果味，酒体中等，鲜酸多汁，单宁较低，余味顺滑，十分易饮。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　　伯纳达与马尔贝克一样拥有饱满的颜色，但伯纳达的单宁含量更低，酸度更高、更多汁。如果你不喜欢使用橡木桶的葡萄酒，那你可能会青睐伯纳达葡萄酒，因为大多数伯纳达葡萄酒少用甚至不用橡木桶。另外，伯纳达葡萄酒的酒精度很少超过13.5%。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　&lt;strong&gt;　2. 配餐&lt;/strong&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p style=&quot;text-align: center;&quot;&gt;</span></span><br><span class="line"><span class="string">    &lt;strong&gt;&lt;a target=&quot;_blank&quot; href=&quot;/culture/pic/22571cf7-ee6b-4176-8efb-e02e4e9dd947/1&quot;&gt;&lt;img alt=&quot;除了马尔贝克，阿根廷还有伯纳达&quot; title=&quot;除了马尔贝克，阿根廷还有伯纳达&quot; src=&quot;/UserFiles/images/02-cedar-plank-salmon-161115.jpg&quot; style=&quot;width: 550px; height: 333px;&quot;&gt;&lt;/a&gt;&lt;div style=&quot;width: 550px;&quot; class=&quot;addivstyle&quot;&gt;&lt;div id=&quot;testdiv&quot; style=&quot;width: 550px;&quot; class=&quot;adseconddiv&quot;&gt;&lt;a href=&quot;http://mall.wine-world.com/activity/activitypromotion10&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;http://images.wine-world.com/images/wineworldlogo.jpg&quot; style=&quot;left:2px;top:2px;width:102px;position: absolute;border: none;background: none;&quot;&gt;&lt;span style=&quot;position: absolute;left:120px;right:85px;top:10px;color: #FFF;text-align:left;&quot;&gt;开抢50元代金券，醉惠中级庄盛宴&lt;br&gt;30款中级庄美酒任君挑选，领券后下单直减50元！&lt;/span&gt;&lt;span class=&quot;qukankanstyle&quot; style=&quot;top: 20px;&quot;&gt;去看看&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/strong&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p style=&quot;text-align: center;&quot;&gt;</span></span><br><span class="line"><span class="string">    &lt;span style=&quot;font-size:12px;&quot;&gt;图片来源：Wine Folly&lt;/span&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p&gt;</span></span><br><span class="line"><span class="string">    伯纳达葡萄酒低单宁、高酸的特点使其可以与多种食物搭配，如鸡肉、牛肉、猪肉和鱼排等；而酒中轻微的棕色香料的风味也可以与菠萝、芒果、照烧汁等完美结合。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;strong&gt;　　3. 此伯纳达非彼伯纳达&lt;/strong&gt;&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　　阿根廷的伯纳达与其它地方的伯纳达很可能并不是同一个葡萄品种，也许阿根廷的伯纳达本不该被称为“伯纳达”。DNA检测表明阿根廷的伯纳达与法国萨瓦（Savoie）产区一种叫“Deuce Noir”的稀有葡萄是同一品种，跟纳帕谷（Napa Valley）古老葡萄园中的沙帮乐（Charbono）也是相同的品种。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　　实际上，真正的伯纳达葡萄指的是一组意大利葡萄，至少分为6种，其中最出名的是皮埃蒙特伯纳达（Bonarda Piemontese）。更容易引起混淆的是，意大利伦巴第（Lombardy）的奥尔特莱伯·帕韦斯（Oltrepo Pavese）产区所产的标有“伯纳达”的葡萄酒实际上是用科罗帝纳（Croatina）酿制而成的；&lt;a href=&quot;http://www.wine-world.com/s/area?q=皮埃蒙特&amp;amp;token=36d3dd49-745b-43f8-8bce-1b90ce3118b0&amp;amp;from=user&quot; target=&quot;_blank&quot;&gt;皮埃蒙特&lt;/a&gt;（Piedmont）有些酿酒师酿制的标有“伯纳达”的葡萄酒其实是用一种叫茹拉（Uva Rara）的葡萄酿制的。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　　所以，如果下次有人纠正你对阿根廷伯纳达的叫法时，不妨问问他们以上这两种标有“伯纳达”的葡萄酒为什么是用别的葡萄酿制的，他们最好能说出它们之间的联系。&lt;span style=&quot;font-size:12px;&quot;&gt;（文/Christina）&lt;/span&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">                        </span></span><br><span class="line"><span class="string">                        &lt;div id=&quot;pnlWineVersion2&quot;&gt;</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">                              &lt;p&gt;声明：本文版权属于“红酒世界网”，转载请保留版权信息。关注微信号“wine-world”，随时随地了解最新红酒资讯。&lt;/p&gt;</span></span><br><span class="line"><span class="string">                        </span></span><br><span class="line"><span class="string">&lt;/div&gt;</span></span><br><span class="line"><span class="string">                    &lt;/div&gt;&#x27;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="variable">$preg</span> = <span class="string">&quot;/&lt;img.*?src=[\&quot;|\&#x27;](.*?)[\&quot;|\&#x27;].*?&gt;/&quot;</span>;</span><br><span class="line"><span class="variable">$alt</span> = <span class="string">&quot;1234&quot;</span>;</span><br><span class="line"><span class="variable">$title</span> = <span class="string">&quot;123456&quot;</span>;</span><br><span class="line"><span class="variable">$img</span> = <span class="string">&#x27;&lt;img src=&quot;$1&quot; alt=&quot;&#x27;</span>.<span class="variable">$alt</span>.<span class="string">&#x27;&quot;title=&quot;&#x27;</span>.<span class="variable">$title</span>.<span class="string">&#x27;&quot;&gt;&#x27;</span>;</span><br><span class="line"><span class="variable">$data</span> = preg_replace(<span class="variable">$preg</span>,<span class="variable">$img</span>,<span class="variable">$str</span>);</span><br><span class="line">var_dump(<span class="variable">$data</span>);</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000007505546">https://segmentfault.com/a/1190000007505546</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/23/golang%E5%AE%9A%E4%B9%89%E5%8D%95%E5%90%91%E9%93%BE%E8%A1%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/03/23/golang%E5%AE%9A%E4%B9%89%E5%8D%95%E5%90%91%E9%93%BE%E8%A1%A8/" class="post-title-link" itemprop="url">golang定义单向链表</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-03-23 21:22:09" itemprop="dateCreated datePublished" datetime="2020-03-23T21:22:09+09:00">2020-03-23</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:56:25" itemprop="dateModified" datetime="2021-09-10T13:56:25+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-醉后不知天在水，满船清梦压星河
-</blockquote>
-
-<h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p>单向链表属于链表的一种，也叫单链表，单向即是说它的链接方向是单向的，它由若干个节点组成，每个节点都包含下一个节点的指针。</p>
-<p>其实关于链表，大家完全可以把他和数组进行类比学习，只不过数组由于申请的空间必须是连续地，所以有的时候内存地址可能分配不出足够的内存空间。链表的的内存空间可以不连续的特性就可以解决数组的痛点了。</p>
-<p>对于链表与数组的使用场景就是，如果你的数据需要经常的查询，那么数组更快。如果你的数据需要频繁的插入删除，链表比数组更快。</p>
-<ul>
-<li>创建单链表时无需指定链表的长度，这个比起数组结构更加有优势，而数组纵使实现成动态数组也是需要指定一个更大的数组长度，而且要把原来的数组元素一个个复制到新数组中。</li>
-<li>单链表中的节点删除操作很方便，它可以直接改变指针指向来实现删除操作，而某些场景下数组的删除会导致移动剩下的元素。</li>
-<li>单链表中的元素访问需要通过顺序访问，即要通过遍历的方式来寻找元素，而数组则可以使用随机访问，这点算是单链表的缺点。</li>
-</ul>
-<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="comment">// 节点的数据结构</span></span><br><span class="line"><span class="keyword">type</span> Node <span class="keyword">struct</span> &#123;</span><br><span class="line">    E <span class="keyword">int</span></span><br><span class="line">    Next *Node</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 链表的数据结构</span></span><br><span class="line"><span class="keyword">type</span> List <span class="keyword">struct</span> &#123;</span><br><span class="line">    dummyHead *Node</span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l List)</span> <span class="title">Head</span><span class="params">()</span> *<span class="title">Node</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> l.dummyHead</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l List)</span> <span class="title">Size</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> l.size</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 初始化一个节点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">initNode</span> <span class="params">(e <span class="keyword">int</span>)</span> *<span class="title">Node</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Node&#123;</span><br><span class="line">        E:e,</span><br><span class="line">        Next:<span class="literal">nil</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 初始化一个空链表</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">InitList</span> <span class="params">()</span> *<span class="title">List</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;List&#123;</span><br><span class="line">        dummyHead:initNode(<span class="number">0</span>),</span><br><span class="line">        size:<span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>虽然代码注释里写的是初始化一个空链表，却在里面实实在在地初始化了一个节点出来。这种技术叫做虚拟头结点，他的具体好处如下：</p>
-<blockquote>
-<p>防止单链表是空的而设的，当链表为空的时候,带头结点的头指针就指向头结点。如果当链表为空的时候,单链表没有带头结点,那么它的头指针就为 NULL。</p>
-</blockquote>
-<blockquote>
-<p>是为了方便单链表的特殊操作，插入在表头或者删除第一个结点。这样就保持了单链表操作的统一性。</p>
-</blockquote>
-<blockquote>
-<p>单链表加上头结点之后，无论单链表是否为空，头指针始终指向头结点，因此空表和非空表的处理也统一了，方便了单链表的操作，也减少了程序的复杂性和出现 bug 的机会。</p>
-</blockquote>
-<blockquote>
-<p>对单链表的多数操作应明确对哪个结点以及该结点的前驱。不带头结点的链表对首元结点、中间结点分别处理等；而带头结点的链表因为有头结点，首元结点、中间结点的操作相同，从而减少分支，使算法变得简单，流程清晰。</p>
-</blockquote>
-<h3 id="基本操作"><a href="#基本操作" class="headerlink" title="基本操作"></a>基本操作</h3><ul>
-<li>插入操作，其中又分为往一个索引对应的位置插入，往头结点后插入，在链表尾部插入三种插入方法。</li>
-<li>删除节点，其中又分为删除一个索引位置的节点，删除一个值对应的节点，删除第一个节点，删除尾节点。</li>
-<li>查询节点，同样分为查询某个索引值的节点，查询头部，查询尾部。</li>
-<li>修改节点，修改某个索引值对应的节点。</li>
-</ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 判断链表是否为空</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> this.size == <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 插入部分</span></span><br><span class="line"><span class="comment">// 在链表的第index索引个元素后插入元素,索引从0开始</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddIndex</span> <span class="params">(index,e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能插入了&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    prev := this.dummyHead</span><br><span class="line">    node := initNode(e)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        prev = prev.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 这里的步骤一定不能反过来，思考一下为什么</span></span><br><span class="line">    node.Next = prev.Next</span><br><span class="line">    prev.Next = node</span><br><span class="line">    this.size++</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表头添加元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddFirst</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    this.AddIndex(<span class="number">0</span>,e)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表尾部添加节点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddLast</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    this.AddIndex(this.size,e)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 查询部分</span></span><br><span class="line"><span class="comment">// 在链表中查询是否包括元素e</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Contains</span> <span class="params">(e <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> cur!=<span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> cur.E == e&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表中查询第index个元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Get</span> <span class="params">(index <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能查询&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cur.E</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">GetFirst</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Get(<span class="number">0</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">GetLast</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Get(this.size<span class="number">-1</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Node <span class="keyword">struct</span> &#123;</span><br><span class="line">    E <span class="keyword">int</span></span><br><span class="line">    Next *Node</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> List <span class="keyword">struct</span> &#123;</span><br><span class="line">    dummyHead *Node</span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l List)</span> <span class="title">Head</span><span class="params">()</span> *<span class="title">Node</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> l.dummyHead</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l List)</span> <span class="title">Size</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> l.size</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">initNode</span> <span class="params">(e <span class="keyword">int</span>)</span> *<span class="title">Node</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Node&#123;</span><br><span class="line">        E:e,</span><br><span class="line">        Next:<span class="literal">nil</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">InitList</span> <span class="params">()</span> *<span class="title">List</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;List&#123;</span><br><span class="line">        dummyHead:initNode(<span class="number">0</span>),</span><br><span class="line">        size:<span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> this.size == <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表的第index索引个元素后插入元素,索引从0开始</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddIndex</span> <span class="params">(index,e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能插入了&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    prev := this.dummyHead</span><br><span class="line">    node := initNode(e)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        prev = prev.Next</span><br><span class="line">    &#125;</span><br><span class="line">    node.Next = prev.Next</span><br><span class="line">    prev.Next = node</span><br><span class="line">    this.size++</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表头添加元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddFirst</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    this.AddIndex(<span class="number">0</span>,e)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表尾部添加节点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddLast</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    this.AddIndex(this.size,e)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表中查询第index个元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Get</span> <span class="params">(index <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能查询&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cur.E</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">GetFirst</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Get(<span class="number">0</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">GetLast</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Get(this.size<span class="number">-1</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表index个位置中放入元素e</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Set</span> <span class="params">(index,e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能置入&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    cur.E = e</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表中查询是否包括元素e</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Contains</span> <span class="params">(e <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> cur!=<span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> cur.E == e&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表中删除元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Remove</span> <span class="params">(index <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能删除&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    prev := this.dummyHead</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        prev = prev.Next</span><br><span class="line">    &#125;</span><br><span class="line">    retNode := prev.Next</span><br><span class="line">    prev.Next = retNode.Next</span><br><span class="line">    this.size--</span><br><span class="line">    <span class="keyword">return</span> retNode.E</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">RemoveFirst</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Remove(<span class="number">0</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">RemoveLast</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Remove(this.size<span class="number">-1</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 删除元素E</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">RemoveElement</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    prev := this.dummyHead</span><br><span class="line">    <span class="keyword">for</span> prev.Next != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> prev.E == e &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        prev = prev.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> prev.Next != <span class="literal">nil</span> &#123;</span><br><span class="line">        DelNode := prev.Next</span><br><span class="line">        prev.Next = DelNode.Next</span><br><span class="line">        DelNode = <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在Golang中，如果我们想对自建数据结构自定义在Println的时候打印出什么结果</span></span><br><span class="line"><span class="comment">// 就可以使用这种方式去自己构建打印的字符串格式</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">String</span> <span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> builder strings.Builder</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> cur != <span class="literal">nil</span> &#123;</span><br><span class="line">        fmt.Fprintf(&amp;builder,<span class="string">&quot;%d -&gt; &quot;</span>,cur.E)</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Fprintf(&amp;builder,<span class="string">&quot;NULL&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> builder.String()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    list := InitList()</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">5</span> ; i++  &#123;</span><br><span class="line">        list.AddLast(i)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(list)</span><br><span class="line">    fmt.Println(list.Contains(<span class="number">0</span>))</span><br><span class="line">    fmt.Println(list.Get(<span class="number">3</span>))</span><br><span class="line">    fmt.Println(list.RemoveLast())</span><br><span class="line">    fmt.Println(list.GetFirst())</span><br><span class="line">    <span class="comment">// 其他功能可以自行测试。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="链表的应用"><a href="#链表的应用" class="headerlink" title="链表的应用"></a>链表的应用</h3><h4 id="逆序一个链表"><a href="#逆序一个链表" class="headerlink" title="逆序一个链表"></a>逆序一个链表</h4><p>给定一个带头结点的单链表,请将其逆序。即如果单链表原来为 head -&gt; 1 -&gt; 2 -&gt; 3 -&gt; 4 -&gt; 5 -&gt; 6 -&gt; 7 。则逆序后变为 head -&gt; 7 -&gt; 6 -&gt; 5 -&gt; 4- &gt; 3 -&gt; 2 -&gt; 1。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在这个函数前需要将list.go的代码拷贝到这里</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span><span class="title">Reverse</span><span class="params">()</span></span>  &#123;</span><br><span class="line">    <span class="keyword">var</span> pre *Node</span><br><span class="line">    <span class="keyword">var</span> cur *Node</span><br><span class="line">    next := this.Head().Next</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> next != <span class="literal">nil</span> &#123;</span><br><span class="line">        cur = next.Next</span><br><span class="line">        next.Next = pre</span><br><span class="line">        pre = next</span><br><span class="line">        next = cur</span><br><span class="line">    &#125;</span><br><span class="line">    this.Head().Next = pre</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    list := InitList()</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">5</span> ; i++  &#123;</span><br><span class="line">        list.AddFirst(i)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(list)</span><br><span class="line">    list.Reverse()</span><br><span class="line">    fmt.Println(list)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="计算两个单链表所代表的的代数之和"><a href="#计算两个单链表所代表的的代数之和" class="headerlink" title="计算两个单链表所代表的的代数之和"></a>计算两个单链表所代表的的代数之和</h4><p>给定两个单链表,链表的每个结点代表一位数, 计算两个数的和。例如 : 输入链表 (3-&gt;1-&gt;5) 和链表 (5-&gt;9-&gt;2) ，输出: 8-&gt;0-&gt;8 ，即 513 + 295 = 808 ，注意个位数在链表头。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在这个函数前需要将list.go的代码拷贝到这里</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 把两个用链表表示的整数相加</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddTwoList</span><span class="params">(head1,head2 *Node)</span> *<span class="title">List</span></span> &#123;</span><br><span class="line">    <span class="comment">// 初始化一个新链表</span></span><br><span class="line">    newHead := InitList()</span><br><span class="line">    <span class="comment">// 因为有dummyHead，所以head的下一个节点才是真真正的头结点</span></span><br><span class="line">    p1 := head1.Next</span><br><span class="line">    p2 := head2.Next</span><br><span class="line">    carry := <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> p1 != <span class="literal">nil</span> || p2 != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="comment">// 如果p1到头就只需要添加p2，反之同理</span></span><br><span class="line">        <span class="keyword">if</span> p1 == <span class="literal">nil</span> &#123;</span><br><span class="line">            newHead.AddLast(p2.E+ + carry)</span><br><span class="line">            p2 = p2.Next</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> p2 == <span class="literal">nil</span> &#123;</span><br><span class="line">            newHead.AddLast(p1.E + carry)</span><br><span class="line">            p1 = p1.Next</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 计算本位的值</span></span><br><span class="line">        temp := (p1.E + p2.E + carry )%<span class="number">10</span></span><br><span class="line">        newHead.AddLast(temp)</span><br><span class="line">        <span class="comment">// 记录进位</span></span><br><span class="line">        carry = (p1.E + p2.E + carry )/<span class="number">10</span></span><br><span class="line">        p1 = p1.Next</span><br><span class="line">        p2 = p2.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newHead</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试代码和测试结果</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    list := InitList()</span><br><span class="line">    list2 := InitList()</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">6</span> ; i++  &#123;</span><br><span class="line">        list.AddFirst(i)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">6</span> ; i++  &#123;</span><br><span class="line">        list2.AddFirst(i+<span class="number">1</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(list)</span><br><span class="line">    fmt.Println(list2)</span><br><span class="line">    newlist := AddTwoList(list.Head(),list2.Head())</span><br><span class="line">    fmt.Println(newlist)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
     </div>
 

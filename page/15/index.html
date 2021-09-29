@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">376</span>
+          <span class="site-state-item-count">379</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,355 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/22/Github%E7%9A%84Restful-HTTP-API%E8%AE%BE%E8%AE%A1%E5%88%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/22/Github%E7%9A%84Restful-HTTP-API%E8%AE%BE%E8%AE%A1%E5%88%86%E8%A7%A3/" class="post-title-link" itemprop="url">Github的Restful-HTTP-API设计分解</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-03-22 15:46:39 / 修改时间：17:09:22" itemprop="dateCreated datePublished" datetime="2018-03-22T15:46:39+09:00">2018-03-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+在硝烟中想起冰棒汽水的味道
+和那些无所事事一整个夏天的年少
+</blockquote>
+
+<h3 id="什么是-RESTful"><a href="#什么是-RESTful" class="headerlink" title="什么是 RESTful"></a>什么是 RESTful</h3><p>RESTful 是一种软件设计风格，由 Roy Fielding 在他的 论文 中提出，全称为 Representational State Transfer，直译为表现层状态转移，或许可以解释为用 URL 定位资源，用 HTTP 动词描述操作，不用太纠结于定义，接下来我们会详细讨论。</p>
+<p>RESTful 风格的接口，目前来看，实现的最好的就是 Github API，经常被效仿。接下来我们通过分析 Github API 来引出我们的 API 设计原则。</p>
+<h3 id="为什么选择-RESTful"><a href="#为什么选择-RESTful" class="headerlink" title="为什么选择 RESTful"></a>为什么选择 RESTful</h3><p>我认为一套接口应该尽量满足以下几个原则：</p>
+<ul>
+<li>安全可靠，高效，易扩展。</li>
+<li>简单明了，可读性强，没有歧义。</li>
+<li>API 风格统一，调用规则，传入参数和返回数据有统一的标准。</li>
+</ul>
+<p>我们当然可以根据自己的经验，或者参考知名公司的接口总结设计出一套满足要求的接口，但是每个人对接口的理解不同，设计出来的接口也会有所不同，接口的命名，请求参数的格式，响应的结果，错误响应的错误码，等等很多地方都会有不一样的实现。当你去寻求一种设计理念来帮助我们设计出满足要求的接口，一定会发现 RESTful。<br>RESTful 的设计理念基于 HTTP 协议，因为 Roy Fielding 就是 HTTP 协议（1.0版和1.1版）的主要设计者。它是一种设计风格，没有规定我们一定如何实现，但是为我们提供了很好的设计理念。风格的统一，使得我们不需要过多的解释，就能让使用者明白该如何使用，同时也会有很多现成的工具来帮助我们实现 RESTful 风格的接口。</p>
+<h3 id="RESTful-设计原则"><a href="#RESTful-设计原则" class="headerlink" title="RESTful 设计原则"></a>RESTful 设计原则</h3><h4 id="1-HTTPS"><a href="#1-HTTPS" class="headerlink" title="1. HTTPS"></a>1. HTTPS</h4><p>HTTPS 为接口的安全提供了保障，可以有效防止通信被窃听和篡改。而且现在部署 HTTPS 的成本也越来越低，你可以通过 cerbot 等工具，方便快速的制作免费的安全证书，所以生产环境，请务必使用 HTTPS。</p>
+<blockquote>
+<p>另外注意，非 HTTPS 的 API 调用，不要重定向到 HTTPS，而要直接返回调用错误以禁止不安全的调用。</p>
+</blockquote>
+<h4 id="2-域名"><a href="#2-域名" class="headerlink" title="2. 域名"></a>2. 域名</h4><p>应当尽可能的将 API 与其主域名区分开，可以使用专用的域名，访问我们的 API，例如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.vxndy.com</span></span><br></pre></td></tr></table></figure>
+<p>或者可以放在主域名下，例如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//www.vxndy.com/api</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-版本控制"><a href="#3-版本控制" class="headerlink" title="3. 版本控制"></a>3. 版本控制</h4><p>随着业务的发展，需求的不断变化，API 的迭代是必然的，很可能当前版本正在使用，而我们就得开发甚至上线一个不兼容的新版本，为了让旧用户可以正常使用，为了保证开发的顺利进行，我们需要控制好 API 的版本。</p>
+<p>通常情况下，有两种做法：</p>
+<ul>
+<li>将版本号直接加入 URL 中<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.vxndy.com/v1</span></span><br><span class="line">https:<span class="comment">//api.vxndy.com/v2</span></span><br></pre></td></tr></table></figure></li>
+<li>使用 HTTP 请求头的 Accept 字段进行区分<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.larabbs.com/</span></span><br><span class="line">    Accept: application/prs.vxndy.v1+json</span><br><span class="line">    Accept: application/prs.vxndy.v2+json</span><br></pre></td></tr></table></figure>
+Github Api 虽然默认使用了第一种方法，但是其实是推荐并实现了第二种方法的，我们同样也尽量使用第二种方式。</li>
+</ul>
+<h4 id="4-用-URL-定位资源"><a href="#4-用-URL-定位资源" class="headerlink" title="4. 用 URL 定位资源"></a>4. 用 URL 定位资源</h4><p>在 RESTful 的架构中，所有的一切都表示资源，每一个 URL 都代表着一种资源，资源应当是一个名词，而且大部分情况下是名词的复数，尽量不要在 URL 中出现动词。<br>先来看看 github 的 例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GET /issues                                      列出所有的 issue</span><br><span class="line">GET /orgs/:org/issues                            列出某个项目的 issue</span><br><span class="line">GET /repos/:owner/:repo/issues/:number           获取某个项目的某个 issue</span><br><span class="line">POST /repos/:owner/:repo/issues                  为某个项目创建 issue</span><br><span class="line">PATCH /repos/:owner/:repo/issues/:number         修改某个 issue</span><br><span class="line">PUT /repos/:owner/:repo/issues/:number/lock      锁住某个 issue</span><br><span class="line">DELETE /repos/:owner/:repo/issues/:number/lock   接收某个 issue</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>例子中冒号开始的代表变量，例如 /repos/summerblue/larabbs/issues</p>
+</blockquote>
+<p>在 github 的实现中，我们可以总结出：</p>
+<ul>
+<li>资源的设计可以嵌套，表明资源与资源之间的关系。</li>
+<li>大部分情况下我们访问的是某个资源集合，想得到单个资源可以通过资源的 id 或number 等唯一标识获取。</li>
+<li>某些情况下，资源会是单数形式，例如某个项目某个 issue 的锁，每个 issue 只会有一把锁，所以它是单数。</li>
+</ul>
+<p>错误的例子</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST https:<span class="comment">//api.larabbs.com/createTopic</span></span><br><span class="line">GET https:<span class="comment">//api.larabbs.com/topic/show/1</span></span><br><span class="line">POST https:<span class="comment">//api.larabbs.com/topics/1/comments/create</span></span><br><span class="line">POST https:<span class="comment">//api.larabbs.com/topics/1/comments/100/delete</span></span><br></pre></td></tr></table></figure>
+
+<p>正确的例子</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST https:<span class="comment">//api.larabbs.com/topics</span></span><br><span class="line">GET https:<span class="comment">//api.larabbs.com/topics/1</span></span><br><span class="line">POST https:<span class="comment">//api.larabbs.com/topics/1/comments</span></span><br><span class="line">DELETE https:<span class="comment">//api.larabbs.com/topics/1/comments/100</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-用-HTTP-动词描述操作"><a href="#5-用-HTTP-动词描述操作" class="headerlink" title="5. 用 HTTP 动词描述操作"></a>5. 用 HTTP 动词描述操作</h4><p>HTTP 设计了很多动词，来表示不同的操作，RESTful 很好的利用的这一点，我们需要正确的使用 HTTP 动词，来表明我们要如何操作资源。<br>先来解释一个概念，幂等性，指一次和多次请求某一个资源应该具有同样的副作用，也就是一次访问与多次访问，对这个资源带来的变化是相同的。</p>
+<p>常用的动词及幂等性</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">动词	描述	                              是否幂等</span><br><span class="line">GET	获取资源，单个或多个	                  是</span><br><span class="line">POST	创建资源	                                  否</span><br><span class="line">PUT	更新资源，客户端提供完整的资源数据	          是</span><br><span class="line">PATCH	更新资源，客户端提供部分的资源数据	          否</span><br><span class="line">DELETE	删除资源	                                  是</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>为什么 PUT 是幂等的而 PATCH 是非幂等的，因为 PUT 是根据客户端提供了完整的资源数据，客户端提交什么就替换为什么，而 PATCH 有可能是根据客户端提供的参数，动态的计算出某个值，例如每次请求后资源的某个参数减1，所以多次调用，资源会有不同的变化。</p>
+</blockquote>
+<p>另外需要注意的是，GET 请求是安全的，不允许通过 GET 请求改变（更新或创建）资源，但是真实使用中，为了方便统计类的数据，会有一些例外情况，例如帖子详情，记录访问次数，每调用一次，访问次数 +1;</p>
+<h4 id="6-资源过滤"><a href="#6-资源过滤" class="headerlink" title="6. 资源过滤"></a>6. 资源过滤</h4><p>我们需要提供合理的参数供客户端过滤资源，例如</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">?state=closed: 不同状态的资源</span><br><span class="line">?page=<span class="number">2</span>&amp;per_page=<span class="number">100</span>：访问第几页数据，每页多少条。</span><br><span class="line">?sortby=name&amp;order=asc：指定返回结果按照哪个属性排序，以及排序顺序。</span><br></pre></td></tr></table></figure>
+
+<h4 id="7-正确使用状态码"><a href="#7-正确使用状态码" class="headerlink" title="7. 正确使用状态码"></a>7. 正确使用状态码</h4><p>HTTP 提供了丰富的状态码供我们使用，正确的使用状态码可以让响应数据更具可读性。</p>
+<ul>
+<li>200 OK - 对成功的 GET、PUT、PATCH 或 DELETE 操作进行响应。也可以被用在不创建新资源的 POST 操作上</li>
+<li>201 Created - 对创建新资源的 POST 操作进行响应。应该带着指向新资源地址的 Location 头</li>
+<li>202 Accepted - 服务器接受了请求，但是还未处理，响应中应该包含相应的指示信息，告诉客户端该去哪里查询关于本次请求的信息</li>
+<li>204 No Content - 对不会返回响应体的成功请求进行响应（比如 DELETE 请求）</li>
+<li>304 Not Modified - HTTP缓存header生效的时候用</li>
+<li>400 Bad Request - 请求异常，比如请求中的body无法解析</li>
+<li>401 Unauthorized - 没有进行认证或者认证非法</li>
+<li>403 Forbidden - 服务器已经理解请求，但是拒绝执行它</li>
+<li>404 Not Found - 请求一个不存在的资源</li>
+<li>405 Method Not Allowed - 所请求的 HTTP 方法不允许当前认证用户访问</li>
+<li>410 Gone - 表示当前请求的资源不再可用。当调用老版本 API 的时候很有用</li>
+<li>415 Unsupported Media Type - 如果请求中的内容类型是错误的</li>
+<li>422 Unprocessable Entity - 用来表示校验错误</li>
+<li>429 Too Many Requests - 由于请求频次达到上限而被拒绝访问</li>
+</ul>
+<h4 id="8-数据响应格式"><a href="#8-数据响应格式" class="headerlink" title="8. 数据响应格式"></a>8. 数据响应格式</h4><p>考虑到响应数据的可读性及通用性，默认使用 JSON 作为数据响应格式。如果客户端有需求使用其他的响应格式，例如 XML，需要在 Accept 头中指定需要的格式。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.vxndy.com/</span></span><br><span class="line">    Accept: application/prs.vxndy.v1+json</span><br><span class="line">    Accept: application/prs.vxndy.v1+xml</span><br></pre></td></tr></table></figure>
+
+<p>对于错误数据，默认使用如下结构：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x27;message&#x27; =&gt; &#x27;:message&#x27;,          <span class="comment">// 错误的具体描述</span></span><br><span class="line">&#x27;errors&#x27; =&gt; &#x27;:errors&#x27;,            <span class="comment">// 参数的具体错误描述，422 等状态提供</span></span><br><span class="line">&#x27;code&#x27; =&gt; &#x27;:code&#x27;,                <span class="comment">// 自定义的异常码</span></span><br><span class="line">&#x27;status_code&#x27; =&gt; &#x27;:status_code&#x27;,  <span class="comment">// http状态码</span></span><br><span class="line">&#x27;debug&#x27; =&gt; &#x27;:debug&#x27;,              <span class="comment">// debug 信息，非生产环境提供</span></span><br></pre></td></tr></table></figure>
+
+<p>例如</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;message&quot;</span>: <span class="string">&quot;422 Unprocessable Entity&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;errors&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;name&quot;</span>: [</span><br><span class="line">            <span class="string">&quot;姓名 必须为字符串。&quot;</span></span><br><span class="line">        ]</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;status_code&quot;</span>: <span class="number">422</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;message&quot;</span>: <span class="string">&quot;您无权访问该订单&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;status_code&quot;</span>: <span class="number">403</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="9-调用频率限制"><a href="#9-调用频率限制" class="headerlink" title="9. 调用频率限制"></a>9. 调用频率限制</h4><p>为了防止服务器被攻击，减少服务器压力，需要对接口进行合适的限流控制，需要在响应头信息中加入合适的信息，告知客户端当前的限流情况</p>
+<ul>
+<li>X-RateLimit-Limit :100 最大访问次数</li>
+<li>X-RateLimit-Remaining :93 剩余的访问次数</li>
+<li>X-RateLimit-Reset :1513784506 到该时间点，访问次数会重置为 X-RateLimit-Limit</li>
+</ul>
+<h4 id="10-编写文档"><a href="#10-编写文档" class="headerlink" title="10. 编写文档"></a>10. 编写文档</h4><p>为了方便用户使用，我们需要提供清晰的文档，尽可能包括以下几点</p>
+<ul>
+<li>包括每个接口的请求参数，每个参数的类型限制，是否必填，可选的值等。</li>
+<li>响应结果的例子说明，包括响应结果中，每个参数的释义。</li>
+<li>对于某一类接口，需要有尽量详细的文字说明，比如针对一些特定场景，接口应该如何调用。</li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://developer.github.com/v3/">https://developer.github.com/v3/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/20/%E9%9D%A2%E5%90%91%E5%88%87%E9%9D%A2%E7%BC%96%E7%A8%8BAOP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/20/%E9%9D%A2%E5%90%91%E5%88%87%E9%9D%A2%E7%BC%96%E7%A8%8BAOP/" class="post-title-link" itemprop="url">面向切面编程AOP</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-20 13:03:41" itemprop="dateCreated datePublished" datetime="2018-03-20T13:03:41+09:00">2018-03-20</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:14:11" itemprop="dateModified" datetime="2018-03-27T22:14:11+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我从来就没有太阳 所以不怕失去。
+</blockquote>
+
+<h3 id="什么是AOP？"><a href="#什么是AOP？" class="headerlink" title="什么是AOP？"></a>什么是AOP？</h3><p>AOP编程，也叫做面向切面编程，是一种非倾入式编程的方法，采用外部注入的方式来取代嵌入代码。可以实现非常好的模块低耦合。<br>假设你的框架有一个 Frameworkd::init方法，功能是初始化框架资源。现在有db，template的初始化也需要在这个阶段执行，传统的做法就是只能修改 Frameworkd::init在里面加入 db，template的方法调用。未来如果增加了新的模块，比如cache。那就需要修改Frameworkd::init的代码。这种做法显然是侵入性的。<br>当然也可以用hook list的方式来实现。在需要外部注入的地方加入一个hook list，遍历执行外部注入的接口。但远没有AOP强大，而且还需要不断加入hook list的遍历点。</p>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>假设我们要给程序中的每个方法在他们执行前后都要进行日志输出, 一般我们都会这么写</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Test</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 某个方法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doSomething</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 初始化 LOG</span></span><br><span class="line">        <span class="variable">$logger</span> = <span class="keyword">new</span> Log();</span><br><span class="line">        <span class="comment">// 写log</span></span><br><span class="line">        <span class="variable">$logger</span>-&gt;save(<span class="string">&#x27;before do something.&#x27;</span>);</span><br><span class="line">        <span class="comment">// 程序功能代码</span></span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">        <span class="comment">// 写log</span></span><br><span class="line">        <span class="variable">$logger</span>-&gt;save(<span class="string">&#x27;before do something.&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可是如果今天这个记录 log 的这个动作只是临时的，或是在未来可能会需要再加入不同的动作时 (例如邮件) ，难道我们还要在原有方法的代码里修修改改吗？有没有什麽方式能协助我们动态地把记录的动作插在原有动作之后呢？</p>
+<p>AOP 就是从这个角度所延伸出来的一种观念，它能协助我们在不侵入原有类别程式码的状况下，动态地为类别方法新增额外的权责；简单来说， AOP 主要的目的就是切入类别原有方法执行之前或之后，并安插我们想要执行的动作。</p>
+<h3 id="AOP和装饰者模式"><a href="#AOP和装饰者模式" class="headerlink" title="AOP和装饰者模式"></a>AOP和装饰者模式</h3><p>其实一开始我以为 AOP 和 Decorator 模式在 PHP 上的实作方式是差不多的，不过实际上还有是些许的差别。<br>一般在 Decorator 模式中，具体类别和 Wrapper 类别都会有个共同的祖先，亦即一个抽象类别或介面，因此所产生出来的物件对 Client 程式来说，其抽象型态可以说是一样的。</p>
+<p>但是在 AOP in PHP 中，我们必须透过一个代理类别来切入原有的类别方法裡，虽然这个代理类别也能够提供原有类别中的所有方法，但是实际上它却已经失去了与原有类别所拥有的抽象型态了。</p>
+<h3 id="用PHP实现AOP"><a href="#用PHP实现AOP" class="headerlink" title="用PHP实现AOP"></a>用PHP实现AOP</h3><p>首先先建一个类</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Test class</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TestClass</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Method 1</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> string $message</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">method1</span>(<span class="params"><span class="variable">$message</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;\n&quot;</span>, <span class="keyword">__METHOD__</span>, <span class="string">&quot;:\n&quot;</span>, <span class="variable">$message</span>, <span class="string">&quot;\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Method 2</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> int</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">method2</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;\n&quot;</span>, <span class="keyword">__METHOD__</span>, <span class="string">&quot;:\n&quot;</span>;</span><br><span class="line">        <span class="keyword">return</span> rand(<span class="number">1</span>, <span class="number">10</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Method 3</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">method3</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;\n&quot;</span>, <span class="keyword">__METHOD__</span>, <span class="string">&quot;:\n&quot;</span>;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Exception</span>(<span class="string">&#x27;Test Exception.&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个类别提供了三个方法，其中 method1 和 method2 只是简单的显示资料而已，而 method3 则会丢出一个异常。</p>
+<p>另外我们需要一个 Log 类：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Log</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Log</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * log message</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> string $message</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"><span class="variable">$message</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="variable">$message</span>, <span class="string">&quot;\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个 Log 类别只提供一个 save() 方法，以显示 log 讯息。</p>
+<p>现在我们要完成的目标如下：</p>
+<p>在 method1 执行前呼叫 Log::save() 。</p>
+<p>在 method2 执行后呼叫 Log::save() 。</p>
+<p>在 method3 发生异常时呼叫 Log::save() 。</p>
+<p>这里我用很简单的方式来做，那就是直接使用一个 Aspect 类：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Aspect</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Aspect</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Name of target class</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> string</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_className</span> = <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Target object</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> object</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_target</span> = <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Event callback</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_eventCallbacks</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Add object</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> object $target</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> Aspect</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">addObject</span>(<span class="params"><span class="variable">$target</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Aspect(<span class="variable">$target</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Contructor</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> object $target</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$target</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (is_object(<span class="variable">$target</span>)) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;_target = <span class="variable">$target</span>;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;_className = get_class(<span class="keyword">$this</span>-&gt;_target);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register event</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> string $eventName</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> string $methodName</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> callback $callback</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">_registerEvent</span>(<span class="params"><span class="variable">$eventName</span>, <span class="variable">$methodName</span>, <span class="variable">$callback</span>, <span class="variable">$args</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;_eventCallbacks[<span class="variable">$methodName</span>])) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;_eventCallbacks[<span class="variable">$methodName</span>] = <span class="keyword">array</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!is_callable(<span class="keyword">array</span>(<span class="keyword">$this</span>-&gt;_target, <span class="variable">$methodName</span>))) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Exception</span>(get_class(<span class="keyword">$this</span>-&gt;_target) . <span class="string">&#x27;::&#x27;</span> . <span class="variable">$methodName</span> . <span class="string">&#x27; is not exists.&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (is_callable(<span class="variable">$callback</span>)) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;_eventCallbacks[<span class="variable">$methodName</span>](<span class="variable">$eventName</span>) = <span class="keyword">array</span>(<span class="variable">$callback</span>, <span class="variable">$args</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="variable">$callbackName</span> = Aspect::getCallbackName(<span class="variable">$callback</span>);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Exception</span>(<span class="variable">$callbackName</span> . <span class="string">&#x27; is not callable.&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register &#x27;before&#x27; handler</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> string $methodName</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> callback $callback</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">before</span>(<span class="params"><span class="variable">$methodName</span>, <span class="variable">$callback</span>, <span class="variable">$args</span> = <span class="keyword">array</span>(<span class="params"></span>)</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_registerEvent(<span class="string">&#x27;before&#x27;</span>, <span class="variable">$methodName</span>, <span class="variable">$callback</span>, (<span class="keyword">array</span>) <span class="variable">$args</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register &#x27;after&#x27; handler</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> string $methodName</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> callback $callback</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">after</span>(<span class="params"><span class="variable">$methodName</span>, <span class="variable">$callback</span>, <span class="variable">$args</span> = <span class="keyword">array</span>(<span class="params"></span>)</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_registerEvent(<span class="string">&#x27;after&#x27;</span>, <span class="variable">$methodName</span>, <span class="variable">$callback</span>, (<span class="keyword">array</span>) <span class="variable">$args</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register &#x27;on catch exception&#x27; handler</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> string $methodName</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> callback $callback</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onCatchException</span>(<span class="params"><span class="variable">$methodName</span>, <span class="variable">$callback</span>, <span class="variable">$args</span> = <span class="keyword">array</span>(<span class="params"></span>)</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_registerEvent(<span class="string">&#x27;onCatchException&#x27;</span>, <span class="variable">$methodName</span>, <span class="variable">$callback</span>, (<span class="keyword">array</span>) <span class="variable">$args</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Trigger event</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> string $eventName</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">_trigger</span>(<span class="params"><span class="variable">$eventName</span>, <span class="variable">$methodName</span>, <span class="variable">$target</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;_eventCallbacks[<span class="variable">$methodName</span>](<span class="variable">$eventName</span>))) &#123;</span><br><span class="line">            <span class="keyword">list</span>(<span class="variable">$callback</span>, <span class="variable">$args</span>) = <span class="keyword">$this</span>-&gt;_eventCallbacks[<span class="variable">$methodName</span>](<span class="variable">$eventName</span>);</span><br><span class="line">            <span class="variable">$args</span>[] = <span class="variable">$target</span>;</span><br><span class="line">            call_user_func_array(<span class="variable">$callback</span>, <span class="variable">$args</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Execute method</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> string $methodName</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> array $args</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> mixed</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__call</span>(<span class="params"><span class="variable">$methodName</span>, <span class="variable">$args</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (is_callable(<span class="keyword">array</span>(<span class="keyword">$this</span>-&gt;_target, <span class="variable">$methodName</span>))) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">$this</span>-&gt;_trigger(<span class="string">&#x27;before&#x27;</span>, <span class="variable">$methodName</span>, <span class="keyword">$this</span>-&gt;_target);</span><br><span class="line">                <span class="variable">$result</span> = call_user_func_array(<span class="keyword">array</span>(<span class="keyword">$this</span>-&gt;_target, <span class="variable">$methodName</span>), <span class="variable">$args</span>);</span><br><span class="line">                <span class="keyword">$this</span>-&gt;_trigger(<span class="string">&#x27;after&#x27;</span>, <span class="variable">$methodName</span>, <span class="keyword">$this</span>-&gt;_target);</span><br><span class="line">                <span class="keyword">return</span> <span class="variable">$result</span> ? <span class="variable">$result</span> : <span class="literal">null</span>;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (<span class="built_in">Exception</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">                <span class="keyword">$this</span>-&gt;_trigger(<span class="string">&#x27;onCatchException&#x27;</span>, <span class="variable">$methodName</span>, <span class="variable">$e</span>);</span><br><span class="line">                <span class="keyword">throw</span> <span class="variable">$e</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Exception</span>(<span class="string">&quot;Call to undefined method <span class="subst">&#123;$this-&gt;_className&#125;</span>::<span class="subst">$methodName</span>.&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Get name of callback</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> callback $callback</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> string</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">getCallbackName</span>(<span class="params"><span class="variable">$callback</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$className</span>  = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="variable">$methodName</span> = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="keyword">if</span> (is_array(<span class="variable">$callback</span>) &amp;amp;&amp;amp; <span class="number">2</span> == count(<span class="variable">$callback</span>)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (is_object(<span class="variable">$callback</span>[<span class="number">0</span>])) &#123;</span><br><span class="line">            <span class="variable">$className</span> = get_class(<span class="variable">$callback</span>[<span class="number">0</span>]);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="variable">$className</span> = (<span class="keyword">string</span>) <span class="variable">$callback</span>[<span class="number">0</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$methodName</span> = (<span class="keyword">string</span>) <span class="variable">$callback</span>[<span class="number">1</span>];</span><br><span class="line">    &#125; <span class="keyword">elseif</span> (is_string(<span class="variable">$callback</span>)) &#123;</span><br><span class="line">    <span class="variable">$methodName</span> = <span class="variable">$callback</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$className</span> . ((<span class="variable">$className</span>) ? <span class="string">&#x27;::&#x27;</span> : <span class="string">&#x27;&#x27;</span>) . <span class="variable">$methodName</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个类别有点小长，简单说明如下：</p>
+<p>我们利用<code> Aspect::addObject()</code> 方法来指定要被切入的物件； <code>addObject()</code> 方法会回传一个透明的 <code>Aspect </code>物件。<br>利用 <code>before</code> 、 <code>after</code> 和 <code>onCatchException</code> 三个方法来指定切入的时机，它们会呼叫 <code>_registerEvent()</code> 方法来注册要执行的回呼函式 <code>(callback)</code> 。</p>
+<p>执行原来被切入物件的方法，这时会触动 <code>Aspect</code> 的 <code>__call()</code>方法，并在指定的切入时机呼叫      _trigger()` 方法来执行我们所切入的回呼函式。</p>
+<p>我们利用 Aspect 类别来对 TestClass 物件的三个方法切入 Log::save() ：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require_once</span> <span class="string">&#x27;Aspect.php&#x27;</span>;</span><br><span class="line"><span class="keyword">require_once</span> <span class="string">&#x27;TestClass.php&#x27;</span>;</span><br><span class="line"><span class="keyword">require_once</span> <span class="string">&#x27;Log.php&#x27;</span>;</span><br><span class="line"><span class="variable">$test</span> = Aspect::addObject(<span class="keyword">new</span> TestClass());</span><br><span class="line"><span class="variable">$logger</span> = <span class="keyword">new</span> Log();</span><br><span class="line"><span class="variable">$test</span>-&gt;before(<span class="string">&#x27;method1&#x27;</span>, <span class="keyword">array</span>(<span class="variable">$logger</span>, <span class="string">&#x27;save&#x27;</span>), <span class="string">&#x27;Log saved (method1).&#x27;</span>);</span><br><span class="line"><span class="variable">$test</span>-&gt;after(<span class="string">&#x27;method2&#x27;</span>, <span class="keyword">array</span>(<span class="variable">$logger</span>, <span class="string">&#x27;save&#x27;</span>), <span class="string">&#x27;Log saved (method2).&#x27;</span>);</span><br><span class="line"><span class="variable">$test</span>-&gt;onCatchException(<span class="string">&#x27;method3&#x27;</span>, <span class="keyword">array</span>(<span class="variable">$logger</span>, <span class="string">&#x27;save&#x27;</span>), <span class="string">&#x27;Log saved (method3).&#x27;</span>);</span><br><span class="line"><span class="comment">/* <span class="doctag">@var</span> $test TestClass */</span></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;=======\n&quot;</span>;</span><br><span class="line"><span class="variable">$test</span>-&gt;method1(<span class="string">&#x27;abc&#x27;</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;=======\n&quot;</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$test</span>-&gt;method2(), <span class="string">&quot;\n&quot;</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;=======\n&quot;</span>;</span><br><span class="line"><span class="variable">$test</span>-&gt;method3();</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;=======\n&quot;</span>;</span><br><span class="line"><span class="comment">/* 執行結果：</span></span><br><span class="line"><span class="comment">=======</span></span><br><span class="line"><span class="comment">Log saved (method1).</span></span><br><span class="line"><span class="comment">TestClass::method1:</span></span><br><span class="line"><span class="comment">abc</span></span><br><span class="line"><span class="comment">=======</span></span><br><span class="line"><span class="comment">TestClass::method2:</span></span><br><span class="line"><span class="comment">Log saved (method2).</span></span><br><span class="line"><span class="comment">8</span></span><br><span class="line"><span class="comment">=======</span></span><br><span class="line"><span class="comment">TestClass::method3:</span></span><br><span class="line"><span class="comment">Log saved (method3).</span></span><br><span class="line"><span class="comment">Exception: Test Exception. in TestClass.php on line 38</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://rango.swoole.com/archives/83">http://rango.swoole.com/archives/83</a><br><a target="_blank" rel="noopener" href="http://jaceju.net/2008-04-14-php-aop/">http://jaceju.net/2008-04-14-php-aop/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/20/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%99%BB%E5%BD%95%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/20/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%99%BB%E5%BD%95%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">微信小程序登录实现</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-03-20 10:14:46 / 修改时间：11:30:47" itemprop="dateCreated datePublished" datetime="2018-03-20T10:14:46+09:00">2018-03-20</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+嗯，对，你说得对。
+</blockquote>
+
+<h3 id="调用wx-login"><a href="#调用wx-login" class="headerlink" title="调用wx.login"></a>调用wx.login</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//app.js</span></span><br><span class="line">App(&#123;</span><br><span class="line">  <span class="attr">onLaunch</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    wx.login(&#123;</span><br><span class="line">      <span class="attr">success</span>: <span class="function"><span class="keyword">function</span>(<span class="params">res</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (res.code) &#123;</span><br><span class="line">          <span class="comment">//发起网络请求</span></span><br><span class="line">          wx.request(&#123;</span><br><span class="line">            <span class="attr">url</span>: <span class="string">&#x27;https://test.com/onLogin&#x27;</span>,</span><br><span class="line">            <span class="attr">data</span>: &#123;</span><br><span class="line">              <span class="attr">code</span>: res.code</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">&#x27;登录失败！&#x27;</span> + res.errMsg)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="onLogin接口-php实现"><a href="#onLogin接口-php实现" class="headerlink" title="onLogin接口,php实现"></a>onLogin接口,php实现</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$APPID</span> = <span class="string">&#x27;wxf007410...&#x27;</span>;</span><br><span class="line"><span class="variable">$SECRET</span> = <span class="string">&#x27;1bb26d74f33910588ee....&#x27;</span>;</span><br><span class="line"><span class="variable">$request</span> = request();</span><br><span class="line"><span class="variable">$code</span> = <span class="variable">$request</span>-&gt;code;</span><br><span class="line"><span class="variable">$url</span> = <span class="string">&#x27;https://api.weixin.qq.com/sns/jscode2session?appid=&#x27;</span>.<span class="variable">$APPID</span>.<span class="string">&#x27;&amp;secret=&#x27;</span>.<span class="variable">$SECRET</span>.<span class="string">&#x27;&amp;js_code=&#x27;</span>.<span class="variable">$code</span>.<span class="string">&#x27;&amp;grant_type=authorization_code&#x27;</span>;</span><br><span class="line"><span class="variable">$client</span> = <span class="keyword">new</span> \GuzzleHttp\Client();</span><br><span class="line"><span class="variable">$response</span> = <span class="variable">$client</span>-&gt;get(<span class="variable">$url</span>)-&gt;getBody()-&gt;getContents();</span><br></pre></td></tr></table></figure>
+<p>返回数据</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="string">&quot;session_key&quot;</span>:<span class="string">&quot;VUNQTngHJYeceYRrQpj0cQ==&quot;</span>,<span class="string">&quot;openid&quot;</span>:<span class="string">&quot;o3CTb4kuzH674QgeFsKhyoipfPi4&quot;</span>&#125;  </span><br></pre></td></tr></table></figure>
+
+<h3 id="登录成功后调用获取用户接口"><a href="#登录成功后调用获取用户接口" class="headerlink" title="登录成功后调用获取用户接口"></a>登录成功后调用获取用户接口</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">success: <span class="function"><span class="keyword">function</span> (<span class="params">res</span>) </span>&#123;</span><br><span class="line">	  <span class="comment">// 登录成功</span></span><br><span class="line">	  <span class="built_in">console</span>.log(res.data)</span><br><span class="line">	  wx.getUserInfo(&#123;</span><br><span class="line">	    <span class="attr">success</span>: <span class="function"><span class="keyword">function</span> (<span class="params">res</span>) </span>&#123;</span><br><span class="line">	      <span class="keyword">var</span> userInfo = res.userInfo</span><br><span class="line">	      <span class="keyword">var</span> nickName = userInfo.nickName</span><br><span class="line">	      <span class="keyword">var</span> avatarUrl = userInfo.avatarUrl</span><br><span class="line">	      <span class="keyword">var</span> gender = userInfo.gender <span class="comment">//性别 0：未知、1：男、2：女</span></span><br><span class="line">	      <span class="keyword">var</span> province = userInfo.province</span><br><span class="line">	      <span class="keyword">var</span> city = userInfo.city</span><br><span class="line">	      <span class="keyword">var</span> country = userInfo.country</span><br><span class="line"></span><br><span class="line">	      <span class="built_in">console</span>.log(<span class="string">&#x27;获取用户信息返回&#x27;</span>)</span><br><span class="line">	      <span class="built_in">console</span>.log(res);</span><br><span class="line">	    &#125;</span><br><span class="line">	  &#125;)</span><br></pre></td></tr></table></figure>
+<p>在登录状态下返回的信息包含敏感数据，将这些敏感数据提交到服务器进行解密</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;获取用户信息返回&#x27;</span>);</span><br><span class="line">	  <span class="built_in">console</span>.log(res);</span><br><span class="line">	  wx.request(&#123;</span><br><span class="line">	    <span class="attr">method</span>: <span class="string">&#x27;POST&#x27;</span>,</span><br><span class="line">	    <span class="attr">url</span>: <span class="string">&#x27;https://vxndy.com/user&#x27;</span>, <span class="comment">//仅为示例，并非真实的接口地址</span></span><br><span class="line">	    <span class="attr">data</span>: &#123;</span><br><span class="line">	      <span class="attr">rawData</span>: res.rawData,</span><br><span class="line">	      <span class="attr">signature</span>: res.signature,</span><br><span class="line">	      <span class="attr">encryptedData</span> : res.encryptedData,</span><br><span class="line">	      <span class="attr">iv</span> : res.iv</span><br><span class="line">	    &#125;,</span><br><span class="line">	    <span class="attr">header</span>: &#123;</span><br><span class="line">	      <span class="string">&#x27;content-type&#x27;</span>: <span class="string">&#x27;application/json&#x27;</span> <span class="comment">// 默认值</span></span><br><span class="line">	    &#125;,</span><br><span class="line">	    <span class="attr">success</span>: <span class="function"><span class="keyword">function</span> (<span class="params">res</span>) </span>&#123;</span><br><span class="line">	      <span class="built_in">console</span>.log(<span class="string">&#x27;调用解密接口返回&#x27;</span>)</span><br><span class="line">	      <span class="built_in">console</span>.log(res)</span><br><span class="line">	    &#125;</span><br><span class="line">	  &#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="user接口实现"><a href="#user接口实现" class="headerlink" title="user接口实现"></a>user接口实现</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$APPID</span> = <span class="string">&#x27;wxf0074104e....&#x27;</span>;</span><br><span class="line"><span class="variable">$request</span> = request();</span><br><span class="line"><span class="variable">$rawData</span> = <span class="variable">$request</span>-&gt;rawData;</span><br><span class="line"><span class="variable">$signature</span> = <span class="variable">$request</span>-&gt;signature;</span><br><span class="line"><span class="variable">$encryptedData</span> = <span class="variable">$request</span>-&gt;encryptedData;</span><br><span class="line"><span class="variable">$iv</span> = <span class="variable">$request</span>-&gt;iv;</span><br><span class="line"></span><br><span class="line"><span class="comment">//  解密数据</span></span><br><span class="line"><span class="variable">$path</span> = storage_path(<span class="string">&#x27;session_key&#x27;</span>);</span><br><span class="line">info(<span class="string">&#x27;从文件中获取session_key&#x27;</span>);</span><br><span class="line"><span class="variable">$session_key</span> = file_get_contents(<span class="variable">$path</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$pc</span> = <span class="keyword">new</span> \App\Wx\WXBizDataCrypt(<span class="variable">$APPID</span>, <span class="variable">$session_key</span>);</span><br><span class="line"><span class="variable">$errCode</span> = <span class="variable">$pc</span>-&gt;decryptData(<span class="variable">$encryptedData</span>, <span class="variable">$iv</span>, <span class="variable">$data</span> );</span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$errCode</span> == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> response()-&gt;json(<span class="variable">$data</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    info(<span class="string">&#x27;错误&#x27;</span>);</span><br><span class="line">    info(<span class="variable">$errCode</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;status&#x27;</span> =&gt; <span class="number">200</span>]);</span><br></pre></td></tr></table></figure>
+
+<p>返回的数据包括 openId 和 用户其他信息</p>
+<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><p>每次发起登录请求的时候应该先检测是否需要登录</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">wx.checkSession(&#123;</span><br><span class="line">  success: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="comment">//session 未过期，并且在本生命周期一直有效</span></span><br><span class="line">  &#125;,</span><br><span class="line">  fail: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="comment">//登录态过期</span></span><br><span class="line">    wx.login() <span class="comment">//重新登录</span></span><br><span class="line">    ....</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -799,294 +1148,6 @@
 
 <p>所有文件的自动载入需要在<code>spl_autoload_register</code>这个函数中通过<code>include_once</code>实现;</p>
 <h3 id="PSR"><a href="#PSR" class="headerlink" title="PSR"></a>PSR</h3><p>命名空间跟文件加载并无直接关系，只是有些语言，将命名空间结构和文件结构对应起来了。 以php为例，一般的命名空间结构，跟php文件结构是存在映射关系的，通过命名空间名称，就能算出该类的实际存储位置， 然后实例化的时候，会触发用设置的spl自动加载函数将文件引入。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/" class="post-title-link" itemprop="url">在PHP下理解和应用多态</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-03-01 11:18:28" itemprop="dateCreated datePublished" datetime="2018-03-01T11:18:28+09:00">2018-03-01</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:02:34" itemprop="dateModified" datetime="2018-03-27T22:02:34+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
- 后来我终于知道 ， 它并不是我的花 ，我只是恰好途径了它的盛放。 
-</blockquote>
-
-<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>封装是类的构建过程，php具有；php也具有继承的特性。唯独这个多态，php体现的十分模糊。原因是php是弱类型语言。<br>java的多态体现的十分清晰，大体分两类：父类引用指向子类对象；接口引用指向实现接口的类对象。java声明变量时都要给变量设定类型，所以存在什么父类引用和接口引用。而php则没有这点体现，php声明变量不需要给变量设定类型，一个变量可以指向不同的数据类型。所以，php不具有像java一样的多态。</p>
-<p>多态，作为面向对象编程中的一种设计模式，指的是通过遵循同一个interface，类可以有不同的功能实现（相当于说，有多种形态）。<br>在编程世界里，多态形式可以让我们的程序更加地模块化，易于扩展，而不是到处都是基于不同状态的条件判断，比如动不动就switch，动不动就层层嵌套if判断，这种情况下，十有八九是你的代码“有问题”了。</p>
-<h3 id="Interfaces"><a href="#Interfaces" class="headerlink" title="Interfaces"></a>Interfaces</h3><p>interface里可以定义方法名及相应参数，任何实现这个interface的类必须具体实现interface里定义的所有抽象方法，一个class可以实现多个interface</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 正确的做法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> <span class="keyword">implements</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// code that does this</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// code that does that</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;name = <span class="variable">$name</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 无效的做法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> <span class="keyword">implements</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 缺少 doThis()方法!</span></span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 这个方法必须也是public!</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 缺少 name 参数!</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h3><p>Abstract Class可以说是介于interface和普通class之间，它既可以通过abstract method的形式定义统一的接口，又可以定义具体的功能实现。一个扩展了该Abstract Class的普通class，必须得具体实现该Abstract Class的所有抽象方法。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">MyAbstract</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// do this</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">abstract</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">abstract</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="问题的引出"><a href="#问题的引出" class="headerlink" title="问题的引出"></a>问题的引出</h3><p>假设你有一个articleclass：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$author</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$date</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$category</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span>  <span class="title">__construct</span>(<span class="params"><span class="variable">$title</span>, <span class="variable">$author</span>, <span class="variable">$date</span>, <span class="variable">$category</span> = <span class="number">0</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;title = <span class="variable">$title</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;author = <span class="variable">$author</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;date = <span class="variable">$date</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;category = <span class="variable">$category</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>现在呢，你想添加一个方法，来以不同的形式输出article相关的信息，比如说XML格式，或者说JSON格式。<br>可能你一开始会想着这么来处理：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params"><span class="variable">$type</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$ret</span> = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="keyword">switch</span>(<span class="variable">$type</span>) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;XML&#x27;</span>:</span><br><span class="line">                <span class="variable">$ret</span> = <span class="string">&#x27;&lt;article&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;title&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;title . <span class="string">&#x27;&lt;/title&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;author&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;author . <span class="string">&#x27;&lt;/author&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;date&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;date . <span class="string">&#x27;&lt;/date&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;category&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;category . <span class="string">&#x27;&lt;/category&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;/article&gt;&#x27;</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;JSON&#x27;</span>:</span><br><span class="line">                <span class="variable">$array</span> = <span class="keyword">array</span>(<span class="string">&#x27;article&#x27;</span> =&gt; <span class="variable">$obj</span>);</span><br><span class="line">                <span class="variable">$ret</span> = json_encode(<span class="variable">$array</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$ret</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>虽然功能上能实现效果，但是看上去很糟糕，不是吗？假设，将来你又想加上其他的格式，那该怎么办？再加几个case判断，这代码得多臃肿呢？</p>
-<p>关于面向对象，有一个很重要的原则就是，一个class应该只做份内之事。每当你遇到大块的条件判断的时候，你就应该有所警醒，因为很可能这个时候你已经在同一个class或method下，硬要去做太多的事情了。那么这个时候，也就是该尝试多态实现了。</p>
-<h3 id="尝试解决"><a href="#尝试解决" class="headerlink" title="尝试解决"></a>尝试解决</h3><p>定义 Interface</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>具体实现 Interface</p>
-<p>XMLWriter可以这样来实现：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">XMLWriter</span> <span class="keyword">implements</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$ret</span> = <span class="string">&#x27;&lt;article&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;title&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;title . <span class="string">&#x27;&lt;/title&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;author&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;author . <span class="string">&#x27;&lt;/author&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;date&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;date . <span class="string">&#x27;&lt;/date&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;category&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;category . <span class="string">&#x27;&lt;/category&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;/article&gt;&#x27;</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$ret</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>JSONWriter：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JSONWriter</span> <span class="keyword">implements</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$array</span> = <span class="keyword">array</span>(<span class="string">&#x27;article&#x27;</span> =&gt; <span class="variable">$obj</span>);</span><br><span class="line">        <span class="keyword">return</span> json_encode(<span class="variable">$array</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这样每一种个的class只负责各自的那一件事。</p>
-<p>具体调用</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Writer <span class="variable">$writer</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$writer</span>-&gt;write(<span class="keyword">$this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这样article的write方法接收的是一个实现了Writer这个interface的具体类，article不再需要关注具体该用什么样的格式，那已经不是它要负责的了，交给背后具体的Writer去处理就好了。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://pilishen.com/posts/Understanding-and-Applying-Polymorphism-in-PHP">http://pilishen.com/posts/Understanding-and-Applying-Polymorphism-in-PHP</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/01/%E4%BD%A0%E7%9A%84%E8%BA%AB%E6%9D%90%E5%B0%B1%E6%98%AF%E4%BD%A0%E7%9A%84%E9%98%B6%E5%B1%82/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/01/%E4%BD%A0%E7%9A%84%E8%BA%AB%E6%9D%90%E5%B0%B1%E6%98%AF%E4%BD%A0%E7%9A%84%E9%98%B6%E5%B1%82/" class="post-title-link" itemprop="url">你的身材就是你的阶层</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-03-01 09:39:26 / 修改时间：10:48:57" itemprop="dateCreated datePublished" datetime="2018-03-01T09:39:26+09:00">2018-03-01</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-人与人拼到最后，拼的就是身体。身材好，就是一种实力。
-</blockquote>
-这是个以貌取人的时代，没人有义务透过你臃肿的身材，去发现你优秀的内心。
-你的身材，就是你的名片。
-它能折射出你内在的品质、性格、习惯……千万别因身材让人看低了你的层次。
-
-<h3 id="这是一个看身材的时代"><a href="#这是一个看身材的时代" class="headerlink" title="这是一个看身材的时代"></a>这是一个看身材的时代</h3><p>去年曾有一条新闻：上海某著名小学招新生，面试家长，看家长身材，肥胖的不要。<br>这条新闻一出，顿时家长们炸了锅。有赞同此举的家长留言：<br>“我觉得非常好，肥胖的人自我管理能力差，还怪小孩不听话。”<br>“我觉得太赞了。自我管理能力低下的家长肯定无力配合超一流的教育啊。老外的私立学校也很严格，有钱都能进的你愿意往里挤吗？”<br>“我觉得看家长身材肥胖可以反映出一些问题的，首先肥胖不是短时间形成的，应该是长期不注意饮食和运动造成的。<br>家长连自己都没管好，你相信他们会管好孩子吗？自己都没有信心去坚持的东西，还会指望他们鼓励孩子去坚持？”<br>“教育孩子最好的方法是让自己变得优秀，给孩子做榜样。如果想让你的孩子成为你想象中的那个人，那么，你先成为那个人吧。”……<br>这个社会对胖子太残忍了—-找对象时被嫌弃，找工作时受歧视，好不容易找到对象结婚生子了吧，以为生活总算上了正轨，结果，没想到身材还能影响下一代的教育。<br>果然，这是个看身材的时代。<br>别以为你年长，就不用看身材了，没想到，作为家长，还要看身材。<br>如果你是胖子，孩子都要被你拖累。</p>
-<h3 id="身材好，也是一种实力"><a href="#身材好，也是一种实力" class="headerlink" title="身材好，也是一种实力"></a>身材好，也是一种实力</h3><p>一个人的身材，25岁前，是爹妈给的；25岁之后，是自己修的。<br>能管好自己身材的人，往往能管理好自己的生活和工作。反之，臃肿的身材背后，可能是一团乱糟糟的生活。<br>我们公司副总裁，来自法国的欧总，就是个身材超好的高富帅，不过，是个50多岁的老帅哥。<br>他每天5:30起床，然后去操场跑步。有一段时间要参加“汉马”—-武汉马拉松赛，所以他更是加大了训练量。<br>欧总管理着公司最重要也是最忙碌的制造领域，每天提前半小时上班，还经常出差，别看他一把年纪了，可每天精力旺盛得像个小伙子。<br>的确，当领导要讲资历、论能力，但更要拼体力。经常的出差，坐飞机、坐火车，不规律的作息，没有良好的体质是吃不消的。<br>我的同事老张，就是因为胖，工作一直没有得到升迁。肥胖真的会影响一个人的职业生涯。<br>有一次，领导召开一个内容枯燥的会议。胖人精力不好，特别容易打瞌睡，老张听着听着竟然睡着了，脑袋还时不时“小鸡啄米”。<br>圆桌会议室里，他正好坐领导对面，领导重重地咳嗽了两声，老张从睡梦中惊醒，继续听讲。结果没一会儿，他又犯起困来，领导一一收在眼底。<br>肥胖，给工作带来影响，生活质量也大打折扣，还谈什么奋斗拼搏呢？<br>人与人拼到最后，拼的就是身体。身材好，就是一种实力。</p>
-<h3 id="你的身材，就是你的阶层"><a href="#你的身材，就是你的阶层" class="headerlink" title="你的身材，就是你的阶层"></a>你的身材，就是你的阶层</h3><p>判断一个人的阶层，最简单的办法，就是看TA的身材。<br>正如保罗·福塞尔在《格调》一书中所说：<br>“你的体重就是你社会等级的宣言。一百年前，肥胖是成功的标志。但那样的日子已经一去不复返了。今天，肥胖是中下阶层的标志。与中上层阶级和中产阶级相比，中下阶层的肥胖者是前者的四倍。”<br>CCL领导力调研也表明：《财富》500强公司的首席执行官中找不到一个体重超标的人。<br>想想也是。那些受过良好教育、有强烈进取心、努力奋斗、事业有成的人，象普京、奥巴马、马云、李彦宏、俞敏洪……大多都是身材匀称、温文尔雅的人。<br>而那些家境贫困、庸庸碌碌、不思进取的人群，我们更容易看到大腹便便、体态臃肿、举止粗鲁的人。<br>英国纪录片《人生7年》也印证了这一事实。该片选择了14个不同阶层的孩子进行跟踪拍摄，每七年记录一次：从7岁开始、14岁、21岁……一直到56岁。<br>这是完全的真人秀，记录了普通英国人的人生。<br>片中的一对精英阶级夫妇 56岁时依然保持着好身材；由原中产阶级晋升为精英阶级的教授夫妻和公务员夫妻，体型也不错<br>而那些底层阶级长大的男人们，虽然有几个年轻时也英俊帅气，但最终他们几乎全都成了胖子或秃子，尤其是他们的妻子，身材变形得更厉害。<br>外国如此，中国也趋于这样。<br>索福瑞集团的调研显示，在中国，中低收入群体已占肥胖人口中的绝大多数比例。<br>为什么这个社会穷人越胖，富人越瘦？</p>
-<h3 id="瘦很昂贵，你胖，因为你穷"><a href="#瘦很昂贵，你胖，因为你穷" class="headerlink" title="瘦很昂贵，你胖，因为你穷"></a>瘦很昂贵，你胖，因为你穷</h3><p>造成肥胖的原因，除遗传的影响外，主要就是不合理的饮食及运动量太少。<br>油炸食物、快餐等垃圾食品都让人容易变胖。而吃进去这么多热量，不运动，就会产生肥胖。<br>很多穷人没有生活，只有生存。<br>他们经常加班、熬夜、缺少睡眠、暴饮暴食或饮食不规律；生存的压力山大，哪有时间和精力去锻炼身体、控制饮食？<br>况且他们受教育程度普遍不高，也难有身材管理的意识和知识。所以，穷人的“过劳肥”越来越多。<br>而富人正相反。越来越多的富人意识到，拥有健康的身体是一笔无价的财富。<br>他们有时间有金钱对身体进行投资，他们愿意选择绿色、有机、低热量的食物，舍得在健身上花时间，也承担得起上健身房、请私人教练的大把银子。<br>国内曾有一项关于财富和运动关系的报告，数据显示：那些拥有财富更多的人倾向于更多的运动。大数据显示，每日行走8000步以上的人群平均收入高于8000步以下人群6.4%。<br>果然，好身材就像奢侈品，多属于富人阶层。<br>瘦很昂贵，穷人消费不起。你胖，是因为你穷。</p>
-<h3 id="你的身材里藏着自律"><a href="#你的身材里藏着自律" class="headerlink" title="你的身材里藏着自律"></a>你的身材里藏着自律</h3><p>身材和时间金钱有关，没错，但关系更大的是，自律和意志力。<br>正如网上对《人生7年》的评价：<br>人人都只看到了精英阶层与生俱来优越的家庭条件和社会地位，羡慕他们有私家健身房，有私教，认为他们能有健康体魄、匀称的身材是理所当然的，可是又有谁看到他们在饮食控制、健身等方面的自律？<br>这种自律，远远强于底层阶级。<br>要知道那些有六块腹肌的男人和永远保持好身材的女人，他们拥有你想象不到的自律和意志力。<br>钟汉良曾晒过他的早餐，只有一片面包，几个蘑菇。<br>郭富城，坚持健身二十余年，每天最少跑步半小时。即使到外地，也会要求入住24小时开放健身房的酒店，要是酒店没有健身房的话，他会自备绳子在房间跳绳。<br>刘德华，为了拥有六块腹肌与紧实的胸肌线条，把家里变成了健身房。开演唱会前他会坚持长跑练气，拍戏时他会利用空挡举哑铃，每天再忙也要运动。<br>严歌苓，不仅在写作上自律，还会在繁忙的工作中，坚持锻炼身体，游泳和跑步。她在餐厅等朋友时，还不忘趴地上做平板支撑。<br>她说：“形象是女人的纪律”。<br>正是几十年如一日，钢铁般的意志自律着，所以她60多岁了，仍保持着纤细的身材和优雅的状态……<br>人人都知道“管住嘴，迈开腿”的道理，可又有几人能像他们这样做到呢？ </p>
-<blockquote>
-<p>转载自公众号:少女兔</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/02/23/laravel-helpers-make-life-easier/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/02/23/laravel-helpers-make-life-easier/" class="post-title-link" itemprop="url">laravel-helpers-make-life-easier</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-02-23 18:08:20" itemprop="dateCreated datePublished" datetime="2018-02-23T18:08:20+09:00">2018-02-23</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:15:49" itemprop="dateModified" datetime="2018-03-27T22:15:49+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-在没有充分的知识作为前提的情况下，
-即使行了万里路，
-也不过是邮差而已。
-</blockquote>
-There are a ton of helper methods in Laravel that make development more efficient. If you work with the framework, I encourage you to see what helpers you can introduce in your day-to-day work. In this blog post, I’d like to point out a few of my favorites.
-
-<h3 id="data-get"><a href="#data-get" class="headerlink" title="data_get"></a>data_get</h3><p>The data_get() helper allows you to get a value from an array or object with dot notation. This functions similarly to array_get() as well. The optional third parameter can be used to supply a default value if the key is not found.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$array</span> = [<span class="string">&#x27;albums&#x27;</span> =&gt; [<span class="string">&#x27;rock&#x27;</span> =&gt; [<span class="string">&#x27;count&#x27;</span> =&gt; <span class="number">75</span>]]];</span><br><span class="line"></span><br><span class="line"><span class="variable">$count</span> = data_get(<span class="variable">$array</span>, <span class="string">&#x27;albums.rock.count&#x27;</span>); <span class="comment">// 75</span></span><br><span class="line"><span class="variable">$avgCost</span> = data_get(<span class="variable">$array</span>, <span class="string">&#x27;albums.rock.avg_cost&#x27;</span>, <span class="number">0</span>); <span class="comment">// 0</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$object</span>-&gt;albums-&gt;rock-&gt;count = <span class="number">75</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$count</span> = data_get(<span class="variable">$object</span>, <span class="string">&#x27;albums.rock.count&#x27;</span>); <span class="comment">// 75</span></span><br><span class="line"><span class="variable">$avgCost</span> = data_get(<span class="variable">$object</span>, <span class="string">&#x27;albums.rock.avg_cost&#x27;</span>, <span class="number">0</span>); <span class="comment">// 0</span></span><br></pre></td></tr></table></figure>
-
-<p>If you use a “wildcard” (*) in your dot notation, Laravel will return an array of results.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$array</span> = [<span class="string">&#x27;albums&#x27;</span> =&gt; [<span class="string">&#x27;rock&#x27;</span> =&gt; [<span class="string">&#x27;count&#x27;</span> =&gt; <span class="number">75</span>], <span class="string">&#x27;punk&#x27;</span> =&gt; [<span class="string">&#x27;count&#x27;</span> =&gt; <span class="number">12</span>]]];</span><br><span class="line"><span class="variable">$counts</span> = data_get(<span class="variable">$array</span>, <span class="string">&#x27;albums.*.count&#x27;</span>); <span class="comment">// [75, 12]</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="str-plural"><a href="#str-plural" class="headerlink" title="str_plural"></a>str_plural</h3><p>The str_plural() helper converts a string to its plural form. Currently, only English is supported. The optional second parameter will allow the helper to choose the plural or singular form. The helper is also smart enough to help with “uncountable” or special case words.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">tr_plural(<span class="string">&#x27;dog&#x27;</span>); <span class="comment">// dogs</span></span><br><span class="line">str_plural(<span class="string">&#x27;cat&#x27;</span>); <span class="comment">// cats</span></span><br><span class="line"></span><br><span class="line">str_plural(<span class="string">&#x27;dog&#x27;</span>, <span class="number">2</span>); <span class="comment">// dogs</span></span><br><span class="line">str_plural(<span class="string">&#x27;cat&#x27;</span>, <span class="number">1</span>); <span class="comment">// cat</span></span><br><span class="line"></span><br><span class="line">str_plural(<span class="string">&#x27;child&#x27;</span>); <span class="comment">// children</span></span><br><span class="line">str_plural(<span class="string">&#x27;person&#x27;</span>); <span class="comment">// people</span></span><br><span class="line">str_plural(<span class="string">&#x27;fish&#x27;</span>); <span class="comment">// fish</span></span><br><span class="line">str_plural(<span class="string">&#x27;deer&#x27;</span>, <span class="number">2</span>); <span class="comment">// deer</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="route"><a href="#route" class="headerlink" title="route"></a>route</h3><p>The route() helper generates a URL for the specified named route. The optional second argument will accept additional route parameters. If additional parameters aren’t named Laravel will try it’s best to match them to the attributes on the route then will add any remaining parameters to the end of the URL.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;burgers&#x27;</span>, <span class="string">&#x27;BurgersController@index&#x27;</span>)-&gt;name(<span class="string">&#x27;burgers&#x27;</span>);</span><br><span class="line">route(<span class="string">&#x27;burgers&#x27;</span>); <span class="comment">// http://example.com/burgers</span></span><br><span class="line">route(<span class="string">&#x27;burgers&#x27;</span>, [<span class="string">&#x27;order_by&#x27;</span> =&gt; <span class="string">&#x27;price&#x27;</span>]); <span class="comment">// http://example.com/burgers?order_by=price</span></span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">&#x27;burgers/&#123;id&#125;&#x27;</span>, <span class="string">&#x27;BurgersController@show&#x27;</span>)-&gt;name(<span class="string">&#x27;burgers.show&#x27;</span>);</span><br><span class="line">route(<span class="string">&#x27;burgers.show&#x27;</span>, <span class="number">1</span>); <span class="comment">// http://example.com/burgers/1</span></span><br><span class="line">route(<span class="string">&#x27;burgers.show&#x27;</span>, [<span class="string">&#x27;id&#x27;</span> =&gt; <span class="number">1</span>]); <span class="comment">// http://example.com/burgers/1</span></span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">&#x27;employees/&#123;id&#125;/&#123;name&#125;&#x27;</span>, <span class="string">&#x27;EmployeesController@show&#x27;</span>)-&gt;name(<span class="string">&#x27;employees.show&#x27;</span>);</span><br><span class="line">route(<span class="string">&#x27;employees.show&#x27;</span>, [<span class="number">5</span>, <span class="string">&#x27;chris&#x27;</span>]); <span class="comment">// http://example.com/employees/5/chris</span></span><br><span class="line">route(<span class="string">&#x27;employees.show&#x27;</span>, [<span class="string">&#x27;id&#x27;</span> =&gt; <span class="number">5</span>, <span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;chris&#x27;</span>]); <span class="comment">// http://example.com/employees/5/chris</span></span><br><span class="line">route(<span class="string">&#x27;employees.show&#x27;</span>, [<span class="string">&#x27;id&#x27;</span> =&gt; <span class="number">5</span>, <span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;chris&#x27;</span>, <span class="string">&#x27;hide&#x27;</span> =&gt; <span class="string">&#x27;email&#x27;</span>]); <span class="comment">// http://example.com/employees/5/chris?hide=email</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="abort-if"><a href="#abort-if" class="headerlink" title="abort_if"></a>abort_if</h3><p>The abort_if() helper throws an exception if the given expression evaluates to true. The optional third parameter will accept a custom response text, and the optional fourth argument will accept an array of headers.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">abort_if(! Auth::user()-&gt;isAdmin(), <span class="number">403</span>);</span><br><span class="line">abort_if(! Auth::user()-&gt;isAdmin(), <span class="number">403</span>, <span class="string">&#x27;Sorry, you are not an admin&#x27;</span>);</span><br><span class="line">abort_if(Auth::user()-&gt;isCustomer(), <span class="number">403</span>);</span><br></pre></td></tr></table></figure>
-<p>So many of us have done something similar to the below example, and the abort_if() helper can cut it down to one line.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// In &quot;admin&quot; specific controller</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (! Auth::user()-&gt;isAdmin()) &#123;</span><br><span class="line">        abort(<span class="number">403</span>, <span class="string">&#x27;Sorry, you are not an admin&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// better!</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    abort_if(! Auth::user()-&gt;isAdmin(), <span class="number">403</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="optional"><a href="#optional" class="headerlink" title="optional"></a>optional</h3><p>The optional() helper allows you to access properties or call methods on an object. If the given object is null, properties and methods will return null instead of causing an error.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// User 1 exists, with account</span></span><br><span class="line"><span class="variable">$user1</span> = User::find(<span class="number">1</span>);</span><br><span class="line"><span class="variable">$accountId</span> = <span class="variable">$user1</span>-&gt;account-&gt;id; <span class="comment">// 123</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// User 2 exists, without account</span></span><br><span class="line"><span class="variable">$user2</span> = User::find(<span class="number">2</span>);</span><br><span class="line"><span class="variable">$accountId</span> = <span class="variable">$user2</span>-&gt;account-&gt;id; <span class="comment">// PHP Error: Trying to get property of non-object</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Fix without optional()</span></span><br><span class="line"><span class="variable">$accountId</span> = <span class="variable">$user2</span>-&gt;account ? <span class="variable">$user2</span>-&gt;account-&gt;id : <span class="literal">null</span>; <span class="comment">// null</span></span><br><span class="line"><span class="variable">$accountId</span> = <span class="variable">$user2</span>-&gt;account-&gt;id ?? <span class="literal">null</span>; <span class="comment">// null</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Fix with optional()</span></span><br><span class="line"><span class="variable">$accountId</span> = optional(<span class="variable">$user2</span>-&gt;account)-&gt;id; <span class="comment">// null</span></span><br></pre></td></tr></table></figure>
-<p>The optional() helper is ideal when using objects you might not own or calling nested data within Eloquent relationships that may, or may not, be available.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-news.com/5-laravel-helpers-make-life-easier">https://laravel-news.com/5-laravel-helpers-make-life-easier</a></p>
-</blockquote>
 
       
     </div>

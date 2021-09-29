@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">376</span>
+          <span class="site-state-item-count">379</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,289 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/16/mysql%E4%B8%AD%E7%9A%84%E5%AD%97%E7%AC%A6%E5%92%8C%E5%AD%97%E8%8A%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/07/16/mysql%E4%B8%AD%E7%9A%84%E5%AD%97%E7%AC%A6%E5%92%8C%E5%AD%97%E8%8A%82/" class="post-title-link" itemprop="url">mysql中的字符和字节</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-07-16 09:49:49" itemprop="dateCreated datePublished" datetime="2017-07-16T09:49:49+09:00">2017-07-16</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-04-17 18:10:22" itemprop="dateModified" datetime="2018-04-17T18:10:22+09:00">2018-04-17</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+只是我回首来时路的每一步都走的好孤独。
+</blockquote>
+
+<p>1.一个汉字占多少长度与编码有关：</p>
+<ul>
+<li>UTF－8：一个汉字＝3个字节</li>
+<li>GBK：一个汉字＝2个字节</li>
+</ul>
+<p>2.varchar(n)表示n个字符，无论汉字和英文，MySQL都能存入n个字符，仅是实际字节长度有所区别</p>
+<p>php 把一个汉字认作几个字节:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$str</span>=<span class="string">&#x27;我&#x27;</span>;</span><br><span class="line"><span class="keyword">echo</span> strlen(<span class="variable">$str</span>);  <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
+<p>输出 3,UTF-8编码下, 一个汉字被认作3个字节长度.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$str</span>=<span class="string">&#x27;我&#x27;</span>;</span><br><span class="line"><span class="keyword">echo</span> mb_strlen(<span class="variable">$str</span>);  <span class="comment">// 1</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="整型"><a href="#整型" class="headerlink" title="整型"></a>整型</h3><h4 id="tinyint"><a href="#tinyint" class="headerlink" title="tinyint"></a>tinyint</h4><p>占用一个字节(B), 8位(b)<br>有符号: -2的7次方(-128) - +2的7次方-1(127)<br>无符号: 0 - +2的8次方-1(255)</p>
+<h4 id="smallint"><a href="#smallint" class="headerlink" title="smallint"></a>smallint</h4><p>占用二个字节(B), 16位(b)<br>有符号: -2的15次方(-32768) - +2的15次方-1(32767)<br>无符号: 0 - +2的16次方-1(65535)</p>
+<h4 id="mediumint"><a href="#mediumint" class="headerlink" title="mediumint"></a>mediumint</h4><p>占用三个字节(B), 24位(b)<br>有符号: -2的15次方(-32768) - +2的15次方-1(32767)<br>无符号: 0 - +2的16次方-1(65535)</p>
+<h4 id="int"><a href="#int" class="headerlink" title="int"></a>int</h4><p>占用四个字节(B), 32位(b)<br>有符号: -2的31次方 - +2的31次方-1<br>无符号: 0 - +2的32次方-1</p>
+<h4 id="bigint"><a href="#bigint" class="headerlink" title="bigint"></a>bigint</h4><p>占用八个字节(B), 64位(b)<br>有符号: -2的63次方 - +2的63次方-1<br>无符号: 0 - +2的64次方-1</p>
+<blockquote>
+<p>重要说明：我们设计表所填的位数并不会影响到他所能存储的数值的大小，但是会影响到他所填充0 的效果<br>除了无符号(UNSIGNED)类型属性， 还有一个填充零(ZEROFILL)。 就是类型后面的位宽：<br>TINYINT(M)中的 M。如果这里的 M 是 3，那么默认显示三个数字，不足在其前面用零填充。<br>并且，这里的 M 和 TINYINT 中的最大值位数毫无关系，M 设置成 5 也可以。<br>如果你直接设置 ZEROFILL 属性，那么 UNSIGNED 属性也会自动被勾选，因为填充零的<br>首要条件就是无符号。填充零只是在显示的时候查看，而 MySQL 内部存储的还是没有填充<br>的数值。在 Navicat 中，设置了 ZEROFILL 属性也看不到填充的零，为了方便查阅，但在<br>MySQL 终端和 PHP 查询中，可以看到填充零。</p>
+</blockquote>
+<h3 id="字符串类型"><a href="#字符串类型" class="headerlink" title="字符串类型"></a>字符串类型</h3><p>char(2) 和 varchar(2) 都能存储 2个汉字,或者是两个英文字符.</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/15/websql%E7%9A%84%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/07/15/websql%E7%9A%84%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">websql的使用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-07-15 12:30:51" itemprop="dateCreated datePublished" datetime="2017-07-15T12:30:51+09:00">2017-07-15</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:25:05" itemprop="dateModified" datetime="2018-03-27T22:25:05+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+白嘉轩后来引以豪壮的是一生里娶过七房女人。
+——陈忠实《白鹿原》
+</blockquote>
+
+<p>需要注意的是，HTML5已经会放弃Web SQL Database 放弃的原因如下：</p>
+<p>This document was on the W3C Recommendation track but specification work has stopped. The specification reached an impasse: all interested implementors have used the same SQL backend (Sqlite), but we need multiple independent implementations to proceed along a standardisation path.<br>大概意思是：<br>该文件是W3C推荐标准，但规范的制定工作已经停止。该规范陷入僵局：所有感兴趣的实现者都使用了相同的SQL后端（SQLite的），但我们需要多个独立的实现沿着规范化的路径进行。 </p>
+<p>Web SQL Database 是一个运行在Html5环境下可以用Js执行CRUD的Web数据库。<br>在介绍它的使用前，先搞清几个误区： </p>
+<ul>
+<li>1、 webSQL是运行在浏览器环境的一个数据库，其数据持久化在客户端。所以不要试图连接自己的mySQL等真正意义上的数据库。不仅仅是权限，更多的是安全问题。 </li>
+<li>2、对webSQL的修改，只是修改了了本地数据，如果要将数据持久化到远程数据库服务器，还是要走接口的。 </li>
+<li>3、对于简单的数据存储，能用localStorage就，就不要再用webSQL了。除非是处理关系型数据库，这个时候用webSQL最合适不过了。</li>
+</ul>
+<p>在使用webSQL对数据进行增删查改之前，先介绍三个核心方法：</p>
+<ul>
+<li>1、openDatabase：这个方法使用现有数据库或创建新数据库创建数据库对象。</li>
+<li>2、transaction：这个方法允许我们根据情况控制事务提交或回滚。 </li>
+<li>3、executeSql：这个方法用于执行真实的SQL查询。</li>
+</ul>
+<h2 id="第一步：打开连接并创建数据库"><a href="#第一步：打开连接并创建数据库" class="headerlink" title="第一步：打开连接并创建数据库"></a>第一步：打开连接并创建数据库</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> config = &#123;  </span><br><span class="line">     <span class="attr">name</span>: <span class="string">&#x27;student&#x27;</span>,</span><br><span class="line">     <span class="attr">version</span>: <span class="string">&quot;1.0&quot;</span>,</span><br><span class="line">     <span class="attr">desc</span>: <span class="string">&#x27;学生表&#x27;</span>,</span><br><span class="line">     <span class="attr">size</span>: <span class="number">1024</span> * <span class="number">1024</span></span><br><span class="line"> &#125;;</span><br><span class="line"><span class="keyword">var</span> dataBase = <span class="built_in">window</span>.openDatabase(config.name, config.version, config.desc, config.size,<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;&#125;);  </span><br><span class="line"><span class="keyword">if</span> (!dataBase) &#123;  </span><br><span class="line">    alert(<span class="string">&quot;数据库创建失败！&quot;</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    alert(<span class="string">&quot;数据库创建成功！&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>解释一下openDatabase方法打开一个已经存在的数据库，如果数据库不存在，它还可以创建数据库。几个参数意义分别是：</p>
+<p>1，数据库名称。<br>2，版本号 目前为1.0(暂时不理解)<br>3，对数据库的描述。<br>4，设置数据的大小。<br>5，回调函数(可省略)。<br>初次调用时创建数据库，以后就是建立连接了。 创建的是一个sqllite数据库，完全可以用sqllite developer 打开文件，可以看到里面的数据。</p>
+<h2 id="第二步：创建数据表"><a href="#第二步：创建数据表" class="headerlink" title="第二步：创建数据表"></a>第二步：创建数据表</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.createTable=<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;  </span><br><span class="line">  dataBase.transaction( <span class="function"><span class="keyword">function</span>(<span class="params">tx</span>) </span>&#123; </span><br><span class="line">    tx.executeSql(</span><br><span class="line">        <span class="string">&quot;create table if not exists stu (id REAL UNIQUE, name TEXT)&quot;</span>, </span><br><span class="line">        [], </span><br><span class="line">        <span class="function"><span class="keyword">function</span>(<span class="params">tx,result</span>)</span>&#123; alert(<span class="string">&#x27;创建stu表成功&#x27;</span>); &#125;, </span><br><span class="line">        <span class="function"><span class="keyword">function</span>(<span class="params">tx, error</span>)</span>&#123; alert(<span class="string">&#x27;创建stu表失败:&#x27;</span> + error.message); </span><br><span class="line">    &#125;);</span><br><span class="line"> &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>executeSql函数有四个参数，其意义分别是：<br>1）表示查询的字符串，使用的SQL语言是SQLite 3.6.19。<br>2）插入到查询中问号所在处的字符串数据。<br>3）成功时执行的回调函数。返回两个参数：tx和执行的结果。<br>4）一个失败时执行的回调函数。返回两个参数：tx和失败的错误信息。</p>
+<h2 id="第三步：执行增删改查"><a href="#第三步：执行增删改查" class="headerlink" title="第三步：执行增删改查"></a>第三步：执行增删改查</h2><h3 id="添加数据："><a href="#添加数据：" class="headerlink" title="添加数据："></a>添加数据：</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.insert = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;  </span><br><span class="line">  dataBase.transaction(<span class="function"><span class="keyword">function</span> (<span class="params">tx</span>) </span>&#123;</span><br><span class="line">            tx.executeSql(</span><br><span class="line">        <span class="string">&quot;insert  into  stu (id, name) values(?, ?)&quot;</span>,</span><br><span class="line">        [id, <span class="string">&#x27;徐明祥&#x27;</span>],</span><br><span class="line">        <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; alert(<span class="string">&#x27;添加数据成功&#x27;</span>); &#125;,</span><br><span class="line">        <span class="function"><span class="keyword">function</span> (<span class="params">tx, error</span>) </span>&#123; alert(<span class="string">&#x27;添加数据失败: &#x27;</span> + error.message); </span><br><span class="line">        &#125; );</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="查询数据"><a href="#查询数据" class="headerlink" title="查询数据"></a>查询数据</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.query = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;  </span><br><span class="line">  dataBase.transaction(<span class="function"><span class="keyword">function</span> (<span class="params">tx</span>) </span>&#123;</span><br><span class="line">            tx.executeSql(</span><br><span class="line">        <span class="string">&quot;select  *  from  stu&quot;</span>, [],</span><br><span class="line">         <span class="function"><span class="keyword">function</span> (<span class="params">tx, result</span>) </span>&#123;  <span class="comment">//执行成功的回调函数</span></span><br><span class="line">             <span class="comment">//在这里对result 做你想要做的事情吧...........</span></span><br><span class="line">            &#125;,</span><br><span class="line">         <span class="function"><span class="keyword">function</span> (<span class="params">tx, error</span>) </span>&#123;</span><br><span class="line">            alert(<span class="string">&#x27;查询失败: &#x27;</span> + error.message);</span><br><span class="line">         &#125; );</span><br><span class="line">      &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码中执行成功的回调函数有一参数result。 result：查询出来的数据集。其数据类型为 SQLResultSet ，就如同C#中的DataTable。<br>SQLResultSet 的定义为： </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">interface SQLResultSet &#123; </span><br><span class="line">readonly attribute long insertId; </span><br><span class="line">readonly attribute long rowsAffected; </span><br><span class="line">readonly attribute SQLResultSetRowList rows; </span><br><span class="line">&#125;; </span><br></pre></td></tr></table></figure>
+<p>其中最重要的属性—SQLResultSetRowList 类型的 rows 是数据集的“行” 。<br>rows 有两个属性：length、item 。<br>故，获取查询结果的某一行某一列的值 ：result.rows[i].item[fieldname] 。</p>
+<h3 id="更新数据"><a href="#更新数据" class="headerlink" title="更新数据"></a>更新数据</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.update = <span class="function"><span class="keyword">function</span> (<span class="params">id, name</span>) </span>&#123;  </span><br><span class="line">    dataBase.transaction(<span class="function"><span class="keyword">function</span> (<span class="params">tx</span>) </span>&#123;</span><br><span class="line">            tx.executeSql(</span><br><span class="line">        <span class="string">&quot;update  stu  set  name =  ?  where  id= ?&quot;</span>,</span><br><span class="line">        [name, id],</span><br><span class="line">         <span class="function"><span class="keyword">function</span> (<span class="params">tx, result</span>) </span>&#123;</span><br><span class="line">         &#125;,</span><br><span class="line">        <span class="function"><span class="keyword">function</span> (<span class="params">tx, error</span>) </span>&#123;</span><br><span class="line">            alert(<span class="string">&#x27;更新失败: &#x27;</span> + error.message);</span><br><span class="line">        &#125;);</span><br><span class="line">   &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="删除数据"><a href="#删除数据" class="headerlink" title="删除数据"></a>删除数据</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.del = <span class="function"><span class="keyword">function</span> (<span class="params">id</span>) </span>&#123;</span><br><span class="line">           dataBase.transaction(<span class="function"><span class="keyword">function</span> (<span class="params">tx</span>) </span>&#123;</span><br><span class="line">           tx.executeSql(</span><br><span class="line">       <span class="string">&quot;delete  from  stu  where  id= ?&quot;</span>,</span><br><span class="line">       [id],</span><br><span class="line">        <span class="function"><span class="keyword">function</span> (<span class="params">tx, result</span>) </span>&#123;</span><br><span class="line">        &#125;,</span><br><span class="line">       <span class="function"><span class="keyword">function</span> (<span class="params">tx, error</span>) </span>&#123;</span><br><span class="line">           alert(<span class="string">&#x27;删除失败: &#x27;</span> + error.message);</span><br><span class="line">       &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="删除数据表"><a href="#删除数据表" class="headerlink" title="删除数据表"></a>删除数据表</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.dropTable = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">             dataBase.transaction(<span class="function"><span class="keyword">function</span> (<span class="params">tx</span>) </span>&#123;</span><br><span class="line">           tx.executeSql(<span class="string">&#x27;drop  table  stu&#x27;</span>);</span><br><span class="line">       &#125;);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/11/jquery%E7%9A%84%E8%BF%87%E6%BB%A4%E9%80%89%E6%8B%A9%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/07/11/jquery%E7%9A%84%E8%BF%87%E6%BB%A4%E9%80%89%E6%8B%A9%E5%99%A8/" class="post-title-link" itemprop="url">jquery的过滤选择器</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-07-11 21:06:55" itemprop="dateCreated datePublished" datetime="2017-07-11T21:06:55+09:00">2017-07-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:20:10" itemprop="dateModified" datetime="2018-03-27T22:20:10+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+永远年轻，永远热泪盈眶
+</blockquote>
+### 基本过滤选择器(重点掌握下列八个)
+:first 选取第一个元素 $("div:first").css("color","red");
+:last 选取最后一个元素 $("div:last").css("color","red");
+:not 除去指定的选择器外的元素 $("div:not").css("color","red");
+:even 选取索引号是偶数的元素 $("div:even").css("color","red");
+:odd 选取索引号是奇数的元素 $('div:odd').css("color","red");
+:eq(index) 选取第index个元素 $('div:eq(5)').css("color","red");
+:gt(index) 选取索引号大于index的元素 $('div:gt(8)').css("color","red");
+:lt(index) 选取索引号小于index的元素$('div:lt(3)').css("color","red");
+
+<h3 id="属性过滤选择器（六个必须记住）"><a href="#属性过滤选择器（六个必须记住）" class="headerlink" title="属性过滤选择器（六个必须记住）"></a>属性过滤选择器（六个必须记住）</h3><p>:[attribute] 选取拥有此属性的元素 $(‘div:[attribute]’).css(‘background-color’,’red’);<br>:[attribute=value] 选取属性值为value的元素 $(‘div:[attribute=text]’)<br>:[attribute!=value] 选取属性值不为value的元素 $(‘div:[attribute!=text]’)<br>:[attribute^=value] 选取属性值以value开始的元素 $(‘div:[attribute^=text]’)<br>:[attribute$=value] 选取属性值以value结尾的元素 $(‘div:[attribute$=text]’)<br>:[attribute*=value] 选取属性值包含value的元素 $(‘div:[attribute*=text]’)</p>
+<h3 id="内容过滤选择器（四个必须记住）"><a href="#内容过滤选择器（四个必须记住）" class="headerlink" title="内容过滤选择器（四个必须记住）"></a>内容过滤选择器（四个必须记住）</h3><p>:contains 选取包含文本的text的元素 $(‘div:contains(.mini)’).css(“color”,”red”);<br>:has(id选择器名称、Class选择器名称) 选取含有选择器所匹配的元素 $(‘div:has(.mini)’).css(“color”,”red”);<br>:empty 选取不包含子元素的元素 $(‘div:empty’).css(“color”,”red”);<br>:parent 选取包含子元素的元素 $(‘div:parent’).css(“color”,”red”);</p>
+<h3 id="子元素过滤选择器（记住八个）"><a href="#子元素过滤选择器（记住八个）" class="headerlink" title="子元素过滤选择器（记住八个）"></a>子元素过滤选择器（记住八个）</h3><p>:nth-child(index) 选取每个父节点下第index个元素、偶数元素或奇数元素。<br><code>$(&#39;div.one :nth-child(8)&#39;).css(&#39;background-color&#39;,&#39;#900&#39;);</code><br>:first-child 选取每个父元素下的第一个子元素 $(‘div.one :first-child(8)’).css(‘color’,’red’);<br>:last-child 选取每个父元素下的最后一个子元素 $(‘div.one :last-child(8)’).css(‘color’,’red’);<br>:only-child 选取只有一个子元素的元素 $(‘div.one :only-child(8)’).css(‘color’,’red’);<br>:enabled 选取所有可用的元素 $(‘#form1 input:enabled’).val(“vaotoo.com”);<br>:disabled 选取所有不可用的元素 $(‘#form1 input:disabled’).val(“vaotoo.com”);<br>:checked 选取所有被选中的元素(一般为（HTML中）RadioButton、CheckBox标记);<br><code>$(&#39;input:checked&#39;).text(&quot;vaotoo.com&quot;);</code><br>:selected 选取被选中的选项元素 select下拉列表标记中的option=select</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;select:selected&#x27;</span>).each(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  str += $(<span class="built_in">this</span>).text()+<span class="string">&quot;,&quot;</span>;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="可见性过滤选择器-两个"><a href="#可见性过滤选择器-两个" class="headerlink" title="可见性过滤选择器(两个)"></a>可见性过滤选择器(两个)</h3><p>:hidden<br>:visibal</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -733,243 +1016,6 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$function</span> = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;ABC&quot;</span>;</span><br><span class="line">&#125;;</span><br><span class="line">serialize(<span class="variable">$function</span>); <span class="comment">// would throw error</span></span><br></pre></td></tr></table></figure>
 <p>You can try this:</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">emailCallback</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;ZendMail_&#x27;</span> . microtime(<span class="literal">true</span>) . <span class="string">&#x27;.tmp&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$callback</span> = <span class="string">&quot;emailCallback&quot;</span> ;</span><br><span class="line"></span><br><span class="line">serialize(<span class="variable">$callback</span>); <span class="comment">// success</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/06/08/WebWorker%E9%80%9A%E4%BF%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/06/08/WebWorker%E9%80%9A%E4%BF%A1/" class="post-title-link" itemprop="url">WebWorker通信</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-06-08 09:37:06" itemprop="dateCreated datePublished" datetime="2017-06-08T09:37:06+09:00">2017-06-08</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-25 10:41:02" itemprop="dateModified" datetime="2018-04-25T10:41:02+09:00">2018-04-25</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-生活就是这样，
-在你最糟的时候，会遇到最好的人。
-</blockquote>
-
-<h3 id="Web-Worker是什么"><a href="#Web-Worker是什么" class="headerlink" title="Web Worker是什么"></a>Web Worker是什么</h3><p>Web Worker 是HTML5标准的一部分，这一规范定义了一套 API，它允许一段JavaScript程序运行在主线程之外的另外一个线程中。Web Worker 规范中定义了两类工作线程，分别是专用线程Dedicated Worker和共享线程 Shared Worker，其中，Dedicated Worker只能为一个页面所使用，而Shared Worker则可以被多个页面所共享，本文示例为专用线程Dedicated Worker。<br>web worker 是运行在后台的 JavaScript，不会影响页面的性能。</p>
-<h3 id="例子一-简单通信"><a href="#例子一-简单通信" class="headerlink" title="例子一: 简单通信"></a>例子一: 简单通信</h3><p>index.html</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdn.bootcss.com/socket.io/1.7.2/socket.io.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span><span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> worker = <span class="keyword">new</span> Worker(<span class="string">&quot;task.js&quot;</span>);</span></span><br><span class="line"><span class="javascript">worker.postMessage(</span></span><br><span class="line"><span class="javascript">        &#123;</span></span><br><span class="line"><span class="javascript"><span class="attr">id</span>:<span class="number">1</span>,</span></span><br><span class="line"><span class="javascript"><span class="attr">msg</span>:<span class="string">&#x27;Hello World&#x27;</span></span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript">    );</span></span><br><span class="line"><span class="javascript">worker.onmessage=<span class="function"><span class="keyword">function</span>(<span class="params">message</span>)</span>&#123;</span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> data = message.data;</span></span><br><span class="line"><span class="javascript"><span class="built_in">console</span>.log(<span class="built_in">JSON</span>.stringify(data));</span></span><br><span class="line"><span class="javascript">worker.terminate();</span></span><br><span class="line"><span class="javascript">&#125;;</span></span><br><span class="line"><span class="javascript">worker.onerror=<span class="function"><span class="keyword">function</span>(<span class="params">error</span>)</span>&#123;</span></span><br><span class="line"><span class="javascript"><span class="built_in">console</span>.log(error.filename,error.lineno,error.message);</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>task.js</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">onmessage= <span class="function"><span class="keyword">function</span>(<span class="params">message</span>)</span>&#123;</span><br><span class="line"><span class="keyword">var</span> data=message.data;</span><br><span class="line">data.msg = <span class="string">&#x27;Hi from task.js&#x27;</span>;</span><br><span class="line">postMessage(data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="例子二-计数功能"><a href="#例子二-计数功能" class="headerlink" title="例子二: 计数功能"></a>例子二: 计数功能</h3><p>index.html</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> worker = <span class="keyword">new</span> Worker(<span class="string">&quot;task.js&quot;</span>);</span></span><br><span class="line"><span class="javascript">worker.onmessage=<span class="function"><span class="keyword">function</span>(<span class="params">message</span>)</span>&#123;</span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> data = message.data;</span></span><br><span class="line"><span class="javascript"><span class="built_in">console</span>.log(<span class="built_in">JSON</span>.stringify(data));</span></span><br><span class="line"><span class="javascript"><span class="comment">//终止woker</span></span></span><br><span class="line"><span class="javascript">        <span class="comment">//worker.terminate();</span></span></span><br><span class="line"><span class="javascript">&#125;;</span></span><br><span class="line"><span class="javascript">worker.onerror=<span class="function"><span class="keyword">function</span>(<span class="params">error</span>)</span>&#123;</span></span><br><span class="line"><span class="javascript"><span class="built_in">console</span>.log(error.filename,error.lineno,error.message);</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>task.js</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> i=<span class="number">0</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">timedCount</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">i=i+<span class="number">1</span>;</span><br><span class="line">postMessage(i);</span><br><span class="line"><span class="built_in">setTimeout</span>(<span class="string">&quot;timedCount()&quot;</span>,<span class="number">500</span>);</span><br><span class="line">&#125;</span><br><span class="line">timedCount();</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/05/31/%E5%A2%9E%E5%B9%BF%E8%B4%A4%E6%96%87/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/05/31/%E5%A2%9E%E5%B9%BF%E8%B4%A4%E6%96%87/" class="post-title-link" itemprop="url">增广贤文</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2017-05-31 14:19:59 / 修改时间：15:22:44" itemprop="dateCreated datePublished" datetime="2017-05-31T14:19:59+09:00">2017-05-31</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-迷茫...
-</blockquote>
-人情似纸张张薄，世事如棋局局新。贫居闹市无人问，富在深山有远亲。不信但看宴中酒，杯杯先敬富贵人。门前拴上高头马，不是亲来也是亲。门前放根讨饭棍，亲戚故友不上门。世人结交需黄金，黄金不多交不深，纵令然诺暂相许，终是悠悠路行心。有钱有酒多兄弟，急难何曾见一人。酒肉朋友朝朝有，无钱无势亲不亲。相逢好比初相识，到老终无怨恨心。胜者为王败者寇，只重衣冠不重人。三贫三富不到老，十年兴败多少人。在官三日人问我，离官三日我问人。古人不见今时月，今月曾经照古人。近水楼台先得月，向阳花木易为春。谁人背后无人说，那个人前不说人。百炼化身成铁汉，三缄其口学金人。十分伶俐使七分，常留三分与儿孙。如若十分都使尽，远在儿孙近在身。长江后浪推前浪，世上新人赶旧人。君子乐得做君子，小人枉自做小人。山中自有千年树，世上难逢百岁人。岂无远道思亲泪，不及高堂念子心。堂上二老是活佛，何用灵山朝世尊。平生不作皱眉事，世上应无切齿人。越奸越狡越贫穷，奸狡原来天不容。富贵若从奸狡起，世间呆汉喝西风。求人须求大丈夫，济人须济急时无。茫茫四海人无数，那个男儿是丈夫。人情似水分高下，世事如云任卷舒。入山不怕伤人虎，只怕人情两面刀。无求到处人情好，不饮随它酒价高。知事少时烦恼少，识人多处是非多。秋至满山皆秀色，春来无处不花香。贫无达士将金赠，病有高人说药方。美人卖笑千金易，壮士穷途一饭难。少时总觉为人易，华年方知立业难。用心计较般般错，退步思量事事难。世上闲愁千万斛，不教一点上眉端。毁身每是作恶日，成名皆在行善时。莫把真心空计较，唯有大德享万年。谗言败坏真君子，美色消磨狂少年。神仙难断阴骘命，皇天不昧苦心人。人恶人怕天不怕，人善人欺天不欺。善恶到头终有报，只争来早与来迟。平生不做亏心事，半夜敲门心不惊。万事劝人休瞒昧，举头三尺有神明。鬼神可敬不可谄，怨家宜解不宜结。人生何处不相逢，莫因小怨动声色。好义固为人所钦，贪利乃为鬼所笑。贤者不炫己之长，君子不夺人所好。善业可为须着力，是非闲杂莫劳心。良田不由心田置，产业变为冤业折。千年田地八百主，田是主人人是客。阴地不如心地好，命运在人不在天。有理问得君王倒，有钱难买子孙贤。不求金玉重重贵，但愿儿孙个个贤。枯木逢春犹再岁，人无两度再少年。水暖水寒鱼自知，花开花谢春不管。蜗牛角上校雌雄，石火光中争长短。留心学到古人难，立脚怕随流欲转。少而寡欲颜常好，老不求官梦也闲。妙药难医冤孽病，横财不富命穷人。多情自古空遗恨，好梦由来最易醒。命中只有八合米，走尽天下难满升。知恩报恩天下少，反面无情世间多。荣宠旁边辱等待，贫贱背后福跟随。各人生死各人了，管人闲事受人磨。易涨易退山溪水，易反易覆小人心。红粉佳人休说老，风流浪子莫叫贫。龙游浅水遭虾戏，虎落平阳被犬欺。得食猫儿强似虎，褪毛鸾凤不如鸡。为人莫作千年计，三十河东四十西。当路莫栽荆棘树，它年免挂子孙衣。天上众星皆拱北，世间无水不朝东。笋因落箨方成竹，鱼为奔波始化龙。屋漏偏遭连夜雨，船慢又遇顶头风。记得少年骑竹马，看看又是白头翁。美人绝色原妖物，乱世多财是祸根。畜牲易度人难度，宁度畜牲不度人。天作棋盘星作子，水有源头木有根。昨日花开今日谢，百年人有万年心。北邙荒冢无贫富，玉垒浮云变古今。世事茫茫难自料，清风明月冷看人。守口不谈新旧事，知心难得两三人。欲知世情须尝胆，会尽人情暗点头。是非只为多开口，烦恼皆因强出头。人生七十古来稀，问君还有几春秋。莺花犹怕春光老，岂可教人枉度春。一年之计在于春，一日之计在于晨。一家之计在于和，一生之计在于勤。一朝天子一朝臣，一辈新鲜一辈陈。一苗露水一苗草，一层山水一层人。闷坐书馆闲操心，看来全是论古今。书中有真就有假，世人认假不认真。假作真时真亦假，真作假时假也真。真真假假难分解，假者自假真自真。回忆世情般般假，借假修真破迷津。由来富贵三更梦，何必楚楚苦用心。识透人情惊破胆，看穿世间心胆寒。白璧易埋千古恨，黄金难买一身闲。人生究竟归何处，看破放下随万缘。佛法浩瀚广无边，度尽人间苦和难。开启自性真智慧，笑游清秀山水间。
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/05/27/laravel%E8%87%AA%E5%AE%9A%E4%B9%89%E5%88%86%E9%A1%B5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/05/27/laravel%E8%87%AA%E5%AE%9A%E4%B9%89%E5%88%86%E9%A1%B5/" class="post-title-link" itemprop="url">laravel自定义分页</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-05-27 14:13:32" itemprop="dateCreated datePublished" datetime="2017-05-27T14:13:32+09:00">2017-05-27</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:16:42" itemprop="dateModified" datetime="2018-03-27T22:16:42+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-当斧头来到树林里的时候，好多树都说，至少它的把手是我们自己人。
-</blockquote>
-Let’s say that you have an array of data, e.g results from a search query, and you want to paginate them.
-
-<p>Laravel provides pagination for Eloquent results out of the box, but for custom data we need to do the pagination manually.</p>
-<p>Let see how in the next example:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Pagination</span>\<span class="title">LengthAwarePaginator</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Collection</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SearchController</span> <span class="keyword">extends</span> <span class="title">Controller</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">search</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line"></span><br><span class="line">        <span class="variable">$searchResults</span> = [</span><br><span class="line">            <span class="string">&#x27;item1&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;item2&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;item3&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;item4&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;item5&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;item6&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;item7&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;item8&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;item9&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;item10&#x27;</span></span><br><span class="line">            ];</span><br><span class="line"></span><br><span class="line">        <span class="comment">//Get current page form url e.g. &amp;page=6</span></span><br><span class="line">        <span class="variable">$currentPage</span> = LengthAwarePaginator::resolveCurrentPage();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//Create a new Laravel collection from the array data</span></span><br><span class="line">        <span class="variable">$collection</span> = <span class="keyword">new</span> Collection(<span class="variable">$searchResults</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//Define how many items we want to be visible in each page</span></span><br><span class="line">        <span class="variable">$perPage</span> = <span class="number">5</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//Slice the collection to get the items to display in current page</span></span><br><span class="line">        <span class="variable">$currentPageSearchResults</span> = <span class="variable">$collection</span>-&gt;slice(<span class="variable">$currentPage</span> * <span class="variable">$perPage</span>, <span class="variable">$perPage</span>)-&gt;all();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//Create our paginator and pass it to the view</span></span><br><span class="line">        <span class="variable">$paginatedSearchResults</span>= <span class="keyword">new</span> LengthAwarePaginator(<span class="variable">$currentPageSearchResults</span>, count(<span class="variable">$collection</span>), <span class="variable">$perPage</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> view(<span class="string">&#x27;search&#x27;</span>, [<span class="string">&#x27;results&#x27;</span> =&gt; <span class="variable">$paginatedSearchResults</span>]);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>Now in the view add the following:</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@foreach ($results as $result)</span><br><span class="line">   <span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;&#123; $result &#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">@endforeach</span><br><span class="line"></span><br><span class="line">&lt;?php echo $results-&gt;render(); ?&gt;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://psampaz.github.io/custom-data-pagination-with-laravel-5/">http://psampaz.github.io/custom-data-pagination-with-laravel-5/</a></p>
-</blockquote>
-
       
     </div>
 

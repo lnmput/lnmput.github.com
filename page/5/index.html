@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">376</span>
+          <span class="site-state-item-count">379</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,272 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/10/16/go%E8%AF%AD%E8%A8%80%E4%B8%AD%E7%9A%84%E6%8E%A5%E5%8F%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/10/16/go%E8%AF%AD%E8%A8%80%E4%B8%AD%E7%9A%84%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Go语言中的接口</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-10-16 15:53:00" itemprop="dateCreated datePublished" datetime="2019-10-16T15:53:00+09:00">2019-10-16</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:57:58" itemprop="dateModified" datetime="2021-09-10T13:57:58+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+世界上最廉价的东西就是男人一事无成时的温柔。
+</blockquote>
+
+<p>Go 语言也提供了接口类型，使得我们可以面向接口编程，将实现和接口分离。在我看来，软件的抽象之美也应该以此来表达，和 Java 语言不同的是 Go 并不是那么 “强制”，它使用了一种 鸭子类型 的方式让动态类型成为可能。</p>
+<h3 id="Duck-Typing"><a href="#Duck-Typing" class="headerlink" title="Duck Typing"></a>Duck Typing</h3><p>在 Go 中没有 implements 和 extends 这种关键字，这对我们而言反倒轻松了一些，它认为 Go 的接口就像鸭子测试里的描述：</p>
+<blockquote>
+<p>当看到一只鸟走起来像鸭子、游泳起来像鸭子、叫起来也像鸭子，那么这只鸟就可以被称为鸭子。</p>
+</blockquote>
+<p>在鸭子类型中，关注点在于对象的行为，能作什么；而不是关注对象所属的类型。例如，在不使用鸭子类型的语言中，我们可以编写一个函数，它接受一个类型为 “鸭子” 的对象，并调用它的 “走” 和 “叫” 方法。</p>
+<p>在使用鸭子类型的语言中，这样的一个函数可以接受一个任意类型的对象，并调用它的 “走” 和 “叫” 方法。如果这些需要被调用的方法不存在，那么将引发一个运行时错误。</p>
+<p>任何拥有这样的正确的 “走” 和 “叫” 方法的对象都可被函数接受的这种行为引出了以上表述，这种决定类型的方式因此得名。</p>
+<h3 id="举个例子"><a href="#举个例子" class="headerlink" title="举个例子"></a>举个例子</h3><p>我们用 Go 语言来实现一个鸭子类型：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Duck <span class="keyword">interface</span> &#123;</span><br><span class="line">    Swim()    <span class="comment">// 游泳</span></span><br><span class="line">    Feathers() <span class="comment">// 羽毛</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里使用 Go 提供的 interface 关键字定义了一个鸭子接口类型，这个接口中提供了鸭子的两种行为：游泳和羽毛是什么样的，但是没有提供实现。</p>
+<h3 id="组合接口"><a href="#组合接口" class="headerlink" title="组合接口"></a>组合接口</h3><p>现在我们给鸭子再添加一种嘎嘎叫的能力，一种方式是在原有的接口上添加 “嘎嘎叫” 方法，这样做的话就表示所有的鸭子都应该拥有此能力，假设我们的玩具鸭并不能开口嘎嘎叫，所以它没有这种能力。这时候我们可以将会嘎嘎叫的鸭子单独定义一种类型，在 Go 可以使用组合的方式来实现：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> QuackDuck <span class="keyword">interface</span> &#123;</span><br><span class="line">    Quack()  <span class="comment">// 嘎嘎叫</span></span><br><span class="line">    Duck     <span class="comment">// 嵌入接口</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>样 QuackDuck 类型就拥有了之前 Duck 提供的两种抽象能力，同时还应该拥有嘎嘎叫的能力。</p>
+<h3 id="接口实现"><a href="#接口实现" class="headerlink" title="接口实现"></a>接口实现</h3><p>前面我们只给出了鸭子的能力定义，还没有任何实现，由于 Go 中没有继承和实现的关键字，想成为上述接口的实现非常简单，只要实现它们定义的方法就可以了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// RealDuck - 真正的鸭子</span></span><br><span class="line"><span class="keyword">type</span> RealDuck <span class="keyword">struct</span> &#123; &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(RealDuck)</span> <span class="title">Swim</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;用鸭璞向后划水&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(RealDuck)</span> <span class="title">Feathers</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;遇到水也不会湿的羽毛&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(RealDuck)</span> <span class="title">Quack</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;嘎~ 嘎~ 嘎~&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ToyDuck - 玩具鸭</span></span><br><span class="line"><span class="keyword">type</span> ToyDuck <span class="keyword">struct</span> &#123; &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(ToyDuck)</span> <span class="title">Swim</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;以固定的速度向前移动&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(ToyDuck)</span> <span class="title">Feathers</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;白色的固定的塑料羽毛&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="接口使用"><a href="#接口使用" class="headerlink" title="接口使用"></a>接口使用</h3><p>接下来我们可以使用一下这个类型了：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> duck Duck</span><br><span class="line">duck = ToyDuck&#123;&#125;</span><br><span class="line">duck.Swim()</span><br><span class="line">duck.Feathers()</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/10/05/go%E8%AF%AD%E8%A8%80%E4%B8%AD%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BD%BF%E7%94%A8%E6%8C%87%E9%92%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/10/05/go%E8%AF%AD%E8%A8%80%E4%B8%AD%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BD%BF%E7%94%A8%E6%8C%87%E9%92%88/" class="post-title-link" itemprop="url">Go语言中什么时候使用指针</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-10-05 22:47:42" itemprop="dateCreated datePublished" datetime="2019-10-05T22:47:42+09:00">2019-10-05</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:53:31" itemprop="dateModified" datetime="2021-09-10T13:53:31+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+当快乐到来时，我就不再思考人生
+当寂寞来临时，我就低头努力读书
+</blockquote>
+
+<p>什么是指针：即一个指针变量指向一个值的内存地址。</p>
+<h3 id="使用值类型和指针类型的区别"><a href="#使用值类型和指针类型的区别" class="headerlink" title="使用值类型和指针类型的区别"></a>使用值类型和指针类型的区别</h3><p>首先，我们来看一个计算面积的代码，如下所示。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Rect <span class="keyword">struct</span> &#123;                               <span class="comment">//定义一个结构体</span></span><br><span class="line">    width  <span class="keyword">float64</span></span><br><span class="line">    length <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rect Rect)</span> <span class="title">area</span><span class="params">()</span> <span class="title">float64</span></span> &#123;               <span class="comment">//定义一个方法，按值传递</span></span><br><span class="line">	<span class="keyword">return</span> rect.width * rect.length</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rect *Rect)</span> <span class="title">area1</span><span class="params">()</span> <span class="title">float64</span></span> &#123;            <span class="comment">//定义一个方法，按指针传递</span></span><br><span class="line">    rect.width *= <span class="number">2</span></span><br><span class="line">    rect.length *= <span class="number">2</span></span><br><span class="line">    <span class="keyword">return</span> rect.width * rect.length</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> rect = <span class="built_in">new</span>(Rect)     <span class="comment">//使用new函数创建一个结构体指针rect，也就是说rect的类型是*Rect</span></span><br><span class="line">    rect.width = <span class="number">100</span></span><br><span class="line">    rect.length = <span class="number">200</span></span><br><span class="line">    fmt.Println(<span class="string">&quot;Width:&quot;</span>, rect.width, <span class="string">&quot;Length:&quot;</span>, rect.length,<span class="string">&quot;Area:&quot;</span>, rect.area())  <span class="comment">//通过结构体指针类型的变量调用area()方法</span></span><br><span class="line">    fmt.Println(<span class="string">&quot;Width:&quot;</span>, rect.width, <span class="string">&quot;Length:&quot;</span>, rect.length,<span class="string">&quot;Area:&quot;</span>, rect.area1())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在Go语言中，默认是按值传递。当一个变量当作参数传递的时候，会创建一个变量的副本，然后传递给函数或者方法，你可以看到这个副本的地址和变量的地址是不一样的。当变量当做指针被传递的时候，一个新的指针被创建，它指向变量同样的内存地址，所以你可以将这个指针看成原始变量指针的副本。</p>
+<p>故此</p>
+<ul>
+<li>1.是否使用结构体指针，取决于是否要在函数内部改变传递进来的参数的值。如果你的struct足够大，使用指针可以加快效率。如果不使用指针，在函数内部则无法修改struct中的值。</li>
+<li>2.结构体赋值默认是按值传递，你要改变原来的那个值，要使用指针（即如果你要修改对象本身，那就要传指针，否则修改的是副本）。</li>
+</ul>
+<h3 id="go什么情况下使用指针"><a href="#go什么情况下使用指针" class="headerlink" title="go什么情况下使用指针"></a>go什么情况下使用指针</h3><ul>
+<li>推荐在方法上使用指针（前提是这个类型不是 map、slice 等引用类型）</li>
+<li>当结构体较大的时候使用指针会更高效，可以避免内存拷贝，“结构较大” 到底多大才算大可能需要自己或团队衡量，如超过 5 个字段或者根据结构体内存占用来计算</li>
+<li>如果要修改结构体内部的数据或状态必须使用指针</li>
+<li>如果方法的receiver是map、slice 、channel等引用类型不要使用指针</li>
+<li>小数据类型如 bool、int 等没必要使用指针传递</li>
+<li>如果该函数会修改receiver或变量等，使用指针</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/09/05/safari%E6%89%8B%E6%9C%BA%E6%B5%8F%E8%A7%88%E5%99%A8%E7%82%B9%E5%87%BB%E4%BA%8B%E4%BB%B6%E5%A4%B1%E6%95%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/09/05/safari%E6%89%8B%E6%9C%BA%E6%B5%8F%E8%A7%88%E5%99%A8%E7%82%B9%E5%87%BB%E4%BA%8B%E4%BB%B6%E5%A4%B1%E6%95%88/" class="post-title-link" itemprop="url">safari手机浏览器点击事件失效</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2019-09-05 15:25:29 / 修改时间：16:33:05" itemprop="dateCreated datePublished" datetime="2019-09-05T15:25:29+09:00">2019-09-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+天之涯，地之角，知交半零落。
+一瓢浊酒尽余欢，今宵别梦寒。
+</blockquote>
+
+<h3 id="添加点击事件"><a href="#添加点击事件" class="headerlink" title="添加点击事件"></a>添加点击事件</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="built_in">document</span>).on(<span class="string">&#x27;click&#x27;</span>, <span class="string">&#x27;#MenuToggle&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    $(<span class="string">&quot;#divBox&quot;</span>).addClass(<span class="string">&quot;box-overflow&quot;</span>);</span><br><span class="line">    $(<span class="string">&quot;.divBoxOverlay&quot;</span>).addClass(<span class="string">&quot;push-overlay&quot;</span>);</span><br><span class="line">    $(<span class="string">&quot;.divBoxOverlay&quot;</span>).on(<span class="string">&#x27;touchmove&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123;</span><br><span class="line">        e.preventDefault();</span><br><span class="line">    &#125;);</span><br><span class="line">    $(<span class="string">&quot;#topMenu&quot;</span>).addClass(<span class="string">&quot;animate-translate&quot;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">document</span>.addEventListener(<span class="string">&#x27;click&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (e.target &amp;&amp; e.target.matches(<span class="string">&#x27;#btn&#x27;</span>)) &#123;</span><br><span class="line">    <span class="built_in">window</span>.alert(<span class="string">&#x27;hello ios safari&#x27;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>iOS 的 Safari 下，委托点击事件在某些情况下会出现点击失效</p>
+<h3 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h3><ul>
+<li>最简单的，给 CSS 加上 cursor: pointer；</li>
+<li>停止委托，直接给 #btn 绑定事件处理器；</li>
+<li>给div元素加上 onclick=’void(0);’；</li>
+<li>将 div 换成其它不受该 bug 特性影响的元素，比如 a、button 等。</li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event#Safari_Mobile">https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event#Safari_Mobile</a><br><a target="_blank" rel="noopener" href="https://blog.zfanw.com/ios-safari-click-not-working/">https://blog.zfanw.com/ios-safari-click-not-working/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -816,275 +1082,6 @@
 <p>以上。</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://webbibouroku.com/Blog/Article/composer-killed">https://webbibouroku.com/Blog/Article/composer-killed</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/11/10/git%E6%81%A2%E5%A4%8D%E8%A2%AB%E5%88%A0%E9%99%A4%E7%9A%84%E6%96%87%E4%BB%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/11/10/git%E6%81%A2%E5%A4%8D%E8%A2%AB%E5%88%A0%E9%99%A4%E7%9A%84%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">git恢复被删除的文件</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-11-10 23:03:32" itemprop="dateCreated datePublished" datetime="2018-11-10T23:03:32+09:00">2018-11-10</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 14:01:02" itemprop="dateModified" datetime="2021-09-10T14:01:02+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-寂寞空庭春欲晚，梨花满地不开门。
-</blockquote>
-大多数我们是不知道在何时删除了某个文件，通过下面这个命令我们可以查看在哪个 commit 中删除了哪些文件。
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git log --diff-filter=D --summary</span><br></pre></td></tr></table></figure>
-执行这个命令后效果如下：
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">commit <span class="number">6</span>dcf1e6332e2f0cc10902b995a6efda72b88ebc4</span><br><span class="line">Author: 某某 &lt;lnmput@gmail.com&gt;</span><br><span class="line">Date:   Fri Nov <span class="number">16</span> <span class="number">17</span>:<span class="number">58</span>:<span class="number">27</span> <span class="number">2018</span> +<span class="number">0800</span></span><br><span class="line"></span><br><span class="line">    修改页面</span><br><span class="line"></span><br><span class="line"> delete mode <span class="number">100644</span> <span class="keyword">public</span>/themes/lal/fdssf.php</span><br><span class="line"></span><br><span class="line">commit cef7eed4b38360a4f3f6ea70c173654df30c486f</span><br><span class="line">Author: 某某 &lt;lnmput@gmail.com&gt;</span><br><span class="line">Date:   Wed Nov <span class="number">7</span> <span class="number">17</span>:<span class="number">25</span>:<span class="number">44</span> <span class="number">2018</span> +<span class="number">0800</span></span><br><span class="line"></span><br><span class="line">    调整代码结构</span><br><span class="line"></span><br><span class="line"> delete mode <span class="number">100644</span> app/Http/Controllers/Homes.php</span><br><span class="line"> delete mode <span class="number">100644</span> app/Http/Requests/AddressAddRequest.php</span><br><span class="line"> delete mode <span class="number">100644</span> app/Http/Requests/Web/AddressStoreRequest.php</span><br><span class="line"></span><br><span class="line">commit <span class="number">572110</span>f5deed9d3ff76ccc9a7da75c0e5ed324ce</span><br><span class="line">Author: 某某 &lt;lnmput@gmail.com&gt;</span><br><span class="line">Date:   Wed Nov <span class="number">7</span> <span class="number">00</span>:<span class="number">04</span>:<span class="number">51</span> <span class="number">2018</span> +<span class="number">0800</span></span><br><span class="line"></span><br><span class="line">    更新缓存</span><br><span class="line"></span><br><span class="line"> delete mode <span class="number">100644</span> app/Console/Commands/InitCommand.php</span><br></pre></td></tr></table></figure>
-比如我想恢复 ic_selected.png 这个文件，我们可以看到删除该文件对应的 commit id :f541888b0e7255cc6aa22a277f3dd9fe5502e5e2。
-
-<p>接下来我们执行下面这个命令</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout <span class="variable">$commit</span>~<span class="number">1</span> filename</span><br></pre></td></tr></table></figure>
-
-<p>这个命令会检出该 commit 的上一个提交中的文件，因为我们是在该 commit 中删除的文件，所以需要在上一个 commit 才能恢复出文件。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/41ad0dcfd8da">https://www.jianshu.com/p/41ad0dcfd8da</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/11/10/laravel%E5%BC%80%E5%8F%91facebook%E7%99%BB%E5%BD%95%E5%8A%9F%E8%83%BD/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/11/10/laravel%E5%BC%80%E5%8F%91facebook%E7%99%BB%E5%BD%95%E5%8A%9F%E8%83%BD/" class="post-title-link" itemprop="url">Laravel开发facebook登录功能</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-11-10 23:02:20" itemprop="dateCreated datePublished" datetime="2018-11-10T23:02:20+09:00">2018-11-10</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-11-16 22:25:19" itemprop="dateModified" datetime="2018-11-16T22:25:19+09:00">2018-11-16</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-若教眼底无离恨，不信人间有白头。
-</blockquote>
-
-<h3 id="Step-1-Install-Socialite-Package"><a href="#Step-1-Install-Socialite-Package" class="headerlink" title="Step 1: Install Socialite Package"></a>Step 1: Install Socialite Package</h3><p>In first step we will install Socialite Package that provide fb api to connect with facebook. So, first open your terminal and run bellow command:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> laravel/socialite</span><br></pre></td></tr></table></figure>
-<p>After install above package we should add providers and aliases in config file, Now open <code>config/app.php</code> file and add service provider and alias.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;providers&#x27;</span> =&gt; [</span><br><span class="line">	....</span><br><span class="line">	Laravel\Socialite\SocialiteServiceProvider::class,</span><br><span class="line">],</span><br><span class="line"><span class="string">&#x27;aliases&#x27;</span> =&gt; [</span><br><span class="line">	....</span><br><span class="line">	<span class="string">&#x27;Socialite&#x27;</span> =&gt; Laravel\Socialite\Facades\Socialite::class,</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
-<h3 id="Step-2-Create-Facebook-App"><a href="#Step-2-Create-Facebook-App" class="headerlink" title="Step 2: Create Facebook App"></a>Step 2: Create Facebook App</h3><p>In this step we need facebook app id and secret that way we can get information of other user. so if you don’t have facebook app account then you can create from here : <a target="_blank" rel="noopener" href="https://developers.facebook.com/apps">https://developers.facebook.com/apps</a> and after create account you can copy client id and secret.<br>Now you have to set app id, secret and call back url in config file so open config/services.php and .env file then set id and secret this way:<br><code>config/services.php</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> [</span><br><span class="line">	....</span><br><span class="line">    <span class="string">&#x27;facebook&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;client_id&#x27;</span> =&gt; env(<span class="string">&#x27;FACEBOOK_CLIENT_ID&#x27;</span>),</span><br><span class="line">        <span class="string">&#x27;client_secret&#x27;</span> =&gt; env(<span class="string">&#x27;FACEBOOK_CLIENT_SECRET&#x27;</span>),</span><br><span class="line">        <span class="string">&#x27;redirect&#x27;</span> =&gt; env(<span class="string">&#x27;FACEBOOK_CALLBACK_URL&#x27;</span>),</span><br><span class="line">    ],</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
-<p><code>.env</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FACEBOOK_CLIENT_ID=xxxxxxxxx</span><br><span class="line">FACEBOOK_CLIENT_SECRET=xxxxxxx</span><br><span class="line">FACEBOOK_CALLBACK_URL=http:<span class="comment">//localhost:8000/auth/facebook/callback</span></span><br></pre></td></tr></table></figure>
-<h3 id="Step-3-Create-Migration-and-Model"><a href="#Step-3-Create-Migration-and-Model" class="headerlink" title="Step 3: Create Migration and Model"></a>Step 3: Create Migration and Model</h3><p>In this step first we have to create migration for add facebook_id in your user table. so let’s create new migration and bellow column this way:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">Schema</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Schema</span>\<span class="title">Blueprint</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Migrations</span>\<span class="title">Migration</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AddNewColunmUsersTable</span> <span class="keyword">extends</span> <span class="title">Migration</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Run the migrations.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">up</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Schema::table(<span class="string">&quot;users&quot;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$table</span>-&gt;string(<span class="string">&#x27;facebook_id&#x27;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Reverse the migrations.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">down</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Schema::table(<span class="string">&quot;users&quot;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$table</span>-&gt;dropColumn(<span class="string">&#x27;facebook_id&#x27;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Now add addNew() in User model, that method will check if facebook id already exists then it will return object and if not exists then create new user and return user object. so open user model and put bellow code:<br><code>app/User.php</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Notifications</span>\<span class="title">Notifiable</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Auth</span>\<span class="title">User</span> <span class="title">as</span> <span class="title">Authenticatable</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">extends</span> <span class="title">Authenticatable</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">use</span> <span class="title">Notifiable</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The attributes that are mass assignable.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$fillable</span> = [</span><br><span class="line">        <span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;email&#x27;</span>, <span class="string">&#x27;password&#x27;</span>, <span class="string">&#x27;facebook_id&#x27;</span></span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The attributes that should be hidden for arrays.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$hidden</span> = [</span><br><span class="line">        <span class="string">&#x27;password&#x27;</span>, <span class="string">&#x27;remember_token&#x27;</span>,</span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">addNew</span>(<span class="params"><span class="variable">$input</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$check</span> = <span class="built_in">static</span>::where(<span class="string">&#x27;facebook_id&#x27;</span>,<span class="variable">$input</span>[<span class="string">&#x27;facebook_id&#x27;</span>])-&gt;first();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(is_null(<span class="variable">$check</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">static</span>::create(<span class="variable">$input</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$check</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="Step-4-Create-New-Routes"><a href="#Step-4-Create-New-Routes" class="headerlink" title="Step 4: Create New Routes"></a>Step 4: Create New Routes</h3><p>In this step we need to create routes for facebook login, so you need to add following route on bellow file.<br><code>routes/web.php</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;facebook&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">&#x27;facebook&#x27;</span>);</span><br><span class="line">&#125;);</span><br><span class="line">Route::get(<span class="string">&#x27;auth/facebook&#x27;</span>, <span class="string">&#x27;Auth\FacebookController@redirectToFacebook&#x27;</span>);</span><br><span class="line">Route::get(<span class="string">&#x27;auth/facebook/callback&#x27;</span>, <span class="string">&#x27;Auth\FacebookController@handleFacebookCallback&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="Step-5-Create-New-FacebookController"><a href="#Step-5-Create-New-FacebookController" class="headerlink" title="Step 5: Create New FacebookController"></a>Step 5: Create New FacebookController</h3><p>we need to add new controller and method of facebook auth that method will handle facebook callback url and etc, first put bellow code on your FacebookController.php file.<br><code>app/Http/Controllers/Auth/FacebookController.php</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>\<span class="title">Auth</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">User</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>\<span class="title">Controller</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Socialite</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Exception</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Auth</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FacebookController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Create a new controller instance.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">redirectToFacebook</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Socialite::driver(<span class="string">&#x27;facebook&#x27;</span>)-&gt;redirect();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Create a new controller instance.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handleFacebookCallback</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="variable">$user</span> = Socialite::driver(<span class="string">&#x27;facebook&#x27;</span>)-&gt;user();</span><br><span class="line">            <span class="variable">$create</span>[<span class="string">&#x27;name&#x27;</span>] = <span class="variable">$user</span>-&gt;getName();</span><br><span class="line">            <span class="variable">$create</span>[<span class="string">&#x27;email&#x27;</span>] = <span class="variable">$user</span>-&gt;getEmail();</span><br><span class="line">            <span class="variable">$create</span>[<span class="string">&#x27;facebook_id&#x27;</span>] = <span class="variable">$user</span>-&gt;getId();</span><br><span class="line"></span><br><span class="line">            <span class="variable">$userModel</span> = <span class="keyword">new</span> User;</span><br><span class="line">            <span class="variable">$createdUser</span> = <span class="variable">$userModel</span>-&gt;addNew(<span class="variable">$create</span>);</span><br><span class="line">            Auth::loginUsingId(<span class="variable">$createdUser</span>-&gt;id);</span><br><span class="line">            <span class="keyword">return</span> redirect()-&gt;route(<span class="string">&#x27;home&#x27;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (<span class="built_in">Exception</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> redirect(<span class="string">&#x27;auth/facebook&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Step-6-Create-Blade-File"><a href="#Step-6-Create-Blade-File" class="headerlink" title="Step 6: Create Blade File"></a>Step 6: Create Blade File</h3><p>Ok, now at last we need to add blade view so first create new file facebook.blade.php file and put bellow code:<br><code>resources/views/facebook.blade.php</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@<span class="keyword">extends</span>(<span class="string">&#x27;layouts.app&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@section(<span class="string">&#x27;content&#x27;</span>)</span><br><span class="line">&lt;div <span class="class"><span class="keyword">class</span>=&quot;<span class="title">container</span>&quot;&gt;</span></span><br><span class="line"><span class="class">  &lt;<span class="title">div</span> <span class="title">class</span>=&quot;<span class="title">row</span>&quot;&gt;</span></span><br><span class="line"><span class="class">        &lt;<span class="title">div</span> <span class="title">class</span>=&quot;<span class="title">col</span>-<span class="title">md</span>-12 <span class="title">row</span>-<span class="title">block</span>&quot;&gt;</span></span><br><span class="line"><span class="class">            &lt;<span class="title">a</span> <span class="title">href</span>=&quot;</span>&#123;&#123; url(<span class="string">&#x27;auth/facebook&#x27;</span>) &#125;&#125;<span class="string">&quot; class=&quot;</span>btn btn-lg btn-primary btn-block<span class="string">&quot;&gt;</span></span><br><span class="line"><span class="string">                &lt;strong&gt;Login With Facebook&lt;/strong&gt;</span></span><br><span class="line"><span class="string">            &lt;/a&gt;     </span></span><br><span class="line"><span class="string">        &lt;/div&gt;</span></span><br><span class="line"><span class="string">    &lt;/div&gt;</span></span><br><span class="line"><span class="string">&lt;/div&gt;</span></span><br><span class="line"><span class="string">@endsection</span></span><br></pre></td></tr></table></figure>
-<p>Ok, now you are ready to use open your browser and check here : URL + ‘/facebook’.</p>
-<p>I hope it can help you…..</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://itsolutionstuff.com/post/laravel-56-login-with-facebook-with-socialiteexample.html">https://itsolutionstuff.com/post/laravel-56-login-with-facebook-with-socialiteexample.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/09/08/laravel%E4%B8%ADeloquent%E4%BA%8B%E4%BB%B6%E4%B8%AD%E7%9A%84updated%E5%92%8Csaved%E5%8E%9F%E4%BE%86%E4%B8%8D%E4%B8%80%E6%A8%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/09/08/laravel%E4%B8%ADeloquent%E4%BA%8B%E4%BB%B6%E4%B8%AD%E7%9A%84updated%E5%92%8Csaved%E5%8E%9F%E4%BE%86%E4%B8%8D%E4%B8%80%E6%A8%A3/" class="post-title-link" itemprop="url">Laravel中Eloquent事件中的Updated和Saved原來不一樣</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-09-08 14:44:20 / 修改时间：22:44:34" itemprop="dateCreated datePublished" datetime="2018-09-08T14:44:20+09:00">2018-09-08</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-受任于败军之际，奉命于危难之间，尔来二十有一年矣。
-</blockquote>
-
-<p>當一個新模型初次被儲存，將會觸發 creating 以及 created 事件。如果一個模型已經存在於資料庫而且呼叫了 save 方法，將會觸發 updating 和 updated 事件。然而，在這兩個狀況下，都將會觸發 saving 和 saved 事件。</p>
-<p>Laravel 在資料更新的時候會觸發兩個事件：updated 和 saved。單從官方文件的說明，saved 看起來像是一個方便開發者統一管理新增/更新動作的事件，讓重複的程式碼可以不用被寫在兩個地方（created 和 updated），但是其實 saved 和 updated 的觸發時機是不一樣的。</p>
-<p>接來看一下 Laravel eloquent 的原始碼。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 495 行</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$options</span> = []</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;exists) &#123;</span><br><span class="line">        <span class="variable">$saved</span> = <span class="keyword">$this</span>-&gt;isDirty() ?</span><br><span class="line">                    <span class="keyword">$this</span>-&gt;performUpdate(<span class="variable">$query</span>) : <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$saved</span>) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;finishSave(<span class="variable">$options</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$saved</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 552 行</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">finishSave</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$options</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;fireModelEvent(<span class="string">&#x27;saved&#x27;</span>, <span class="literal">false</span>);</span><br><span class="line">    <span class="keyword">$this</span>-&gt;syncOriginal();</span><br><span class="line">    <span class="keyword">if</span> (Arr::get(<span class="variable">$options</span>, <span class="string">&#x27;touch&#x27;</span>, <span class="literal">true</span>)) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;touchOwners();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 569 行</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">performUpdate</span>(<span class="params">Builder <span class="variable">$query</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="variable">$dirty</span> = <span class="keyword">$this</span>-&gt;getDirty();</span><br><span class="line">    <span class="keyword">if</span> (count(<span class="variable">$dirty</span>) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;setKeysForSaveQuery(<span class="variable">$query</span>)-&gt;update(<span class="variable">$dirty</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;fireModelEvent(<span class="string">&#x27;updated&#x27;</span>, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>應該盡量使用 updated 而不是 saved 來判斷資料是否更新<br>可以看到在觸發 updated 之前會先做一次 getDirty() 的檢查，其實就是在檢查這次更新的資料是不是真的有改動資料的值；相反的，saved 不管值有沒有改動都會觸發。如果沒注意到這個差別的話，這在實務上其實會造成一些問題。</p>
-<p>例如，我們通常會把資料的結果快取起來，以減少對資料庫的查詢次數。因此當資料有變動的時候，就會需要把對應的快取刪除。為了避免有漏刪的部分，會把刪除快取的動作綁定在 eloquent 事件中。認清 updated 和 saved 之後，就會知道這個動作應該是要綁在 updated；若是綁在 saved 上，就會造成多餘的快取動作，增加機器的成本。當快取數量一多，又有用到類似 redis scan 這種較耗時的功能來找出需要刪除的快取時，對於機器的效能影響更大。</p>
-<p>使用 updated 也仍會可能有漏網之魚</p>
-<p>但是，要注意的是，即使使用了 updated 也不能說完全避免這件事的發生。這時候又要再看一次 Larvel eloquent 的原始碼了。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 3093 行</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getDirty</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$dirty</span> = [];</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="keyword">$this</span>-&gt;attributes <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$value</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (! array_key_exists(<span class="variable">$key</span>, <span class="keyword">$this</span>-&gt;original)) &#123;</span><br><span class="line">            <span class="variable">$dirty</span>[<span class="variable">$key</span>] = <span class="variable">$value</span>;</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (<span class="variable">$value</span> !== <span class="keyword">$this</span>-&gt;original[<span class="variable">$key</span>] &amp;&amp;</span><br><span class="line">                             ! <span class="keyword">$this</span>-&gt;originalIsNumericallyEquivalent(<span class="variable">$key</span>)) &#123;</span><br><span class="line">            <span class="variable">$dirty</span>[<span class="variable">$key</span>] = <span class="variable">$value</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$dirty</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以發現 Laravel 判斷值有沒有改動的比較依據來自於，我們一開始 select 出來的欄位，跟這次要變動的欄位。意思就是，如果我們只 select 了 A 欄位出來，但是更新的是 B 欄位時，即使更動後 B 欄位的值跟更動之前一模一樣，Laravel 仍會把此視為資料的值有所改動。</p>
-<p>不過這仍在可以接受的範圍之內。畢竟每個更新之前，若要為了拿到所有欄位而又再多查詢一次資料庫，可能會是一件更浪費資源的事情。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://medium.com/@lynnlin827/laravel-eloquent-%E4%BA%8B%E4%BB%B6%E4%B8%AD%E7%9A%84-updated-%E5%92%8C-saved-%E5%8E%9F%E4%BE%86%E4%B8%8D%E4%B8%80%E6%A8%A3-caa8ef0ddbc">https://medium.com/@lynnlin827/laravel-eloquent-%E4%BA%8B%E4%BB%B6%E4%B8%AD%E7%9A%84-updated-%E5%92%8C-saved-%E5%8E%9F%E4%BE%86%E4%B8%8D%E4%B8%80%E6%A8%A3-caa8ef0ddbc</a></p>
 </blockquote>
 
       

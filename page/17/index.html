@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">376</span>
+          <span class="site-state-item-count">379</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,271 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/24/%E8%AF%B4%E8%AF%B4laravel%E7%AE%A1%E9%81%93pipeline%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/24/%E8%AF%B4%E8%AF%B4laravel%E7%AE%A1%E9%81%93pipeline%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">说说laravel管道pipeline的实现</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-24 09:19:26" itemprop="dateCreated datePublished" datetime="2018-01-24T09:19:26+09:00">2018-01-24</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:09:01" itemprop="dateModified" datetime="2018-03-27T22:09:01+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我来过，我战斗过，我不在乎结局。
+</blockquote>
+Laravel中比较优雅的实现了MiddleWare. 主要用来层层递进的处理Request.
+
+<h3 id="Pipeline对象"><a href="#Pipeline对象" class="headerlink" title="Pipeline对象"></a>Pipeline对象</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">new</span> Pipeline())</span><br><span class="line">     -&gt;send(<span class="variable">$passable</span>) <span class="comment">// 待处理对象，要经过流水线的对象（比如request对象）</span></span><br><span class="line">     -&gt;through(<span class="variable">$middlewares</span>) <span class="comment">// 流水线上的各个环节（中间件）</span></span><br><span class="line">     -&gt;via(<span class="string">&#x27;handle&#x27;</span>) <span class="comment">// 指定每个环节的处理方法，比如 Authenticate::handle</span></span><br><span class="line">     -&gt;then(<span class="variable">$handler</span>); <span class="comment">// 尽头，最后的处理（返回时，则是源头）</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="then-方法"><a href="#then-方法" class="headerlink" title="then()方法"></a>then()方法</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">then</span>(<span class="params"><span class="built_in">Closure</span> <span class="variable">$destination</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$pipeline</span> = array_reduce(</span><br><span class="line">        array_reverse(<span class="keyword">$this</span>-&gt;pipes), <span class="keyword">$this</span>-&gt;carry(), <span class="keyword">$this</span>-&gt;prepareDestination(<span class="variable">$destination</span>)</span><br><span class="line">    );</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$pipeline</span>(<span class="keyword">$this</span>-&gt;passable);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>$this-&gt;pipes 是我们的中间件数组:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">2018</span>-<span class="number">01</span>-<span class="number">24</span> <span class="number">08</span>:<span class="number">55</span>:<span class="number">58</span>] local.INFO: <span class="keyword">array</span> (</span><br><span class="line">  <span class="number">0</span> =&gt; <span class="string">&#x27;App\\Http\\Middleware\\EncryptCookies&#x27;</span>,</span><br><span class="line">  <span class="number">1</span> =&gt; <span class="string">&#x27;Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse&#x27;</span>,</span><br><span class="line">  <span class="number">2</span> =&gt; <span class="string">&#x27;Illuminate\\Session\\Middleware\\StartSession&#x27;</span>,</span><br><span class="line">  <span class="number">3</span> =&gt; <span class="string">&#x27;Illuminate\\View\\Middleware\\ShareErrorsFromSession&#x27;</span>,</span><br><span class="line">  <span class="number">4</span> =&gt; <span class="string">&#x27;App\\Http\\Middleware\\VerifyCsrfToken&#x27;</span>,</span><br><span class="line">  <span class="number">5</span> =&gt; <span class="string">&#x27;Illuminate\\Auth\\Middleware\\Authenticate&#x27;</span>,</span><br><span class="line">  <span class="number">6</span> =&gt; <span class="string">&#x27;Illuminate\\Routing\\Middleware\\SubstituteBindings&#x27;</span>,</span><br><span class="line">)  </span><br></pre></td></tr></table></figure>
+
+<h3 id="carry-方法"><a href="#carry-方法" class="headerlink" title="carry()方法"></a>carry()方法</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">carry</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$stack</span>, <span class="variable">$pipe</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$passable</span></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$stack</span>, <span class="variable">$pipe</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable">$pipe</span> <span class="keyword">instanceof</span> <span class="built_in">Closure</span>) &#123;</span><br><span class="line">                <span class="comment">// If the pipe is an instance of a Closure, we will just call it directly but</span></span><br><span class="line">                <span class="comment">// otherwise we&#x27;ll resolve the pipes out of the container and call it with</span></span><br><span class="line">                <span class="comment">// the appropriate method and arguments, returning the results back out.</span></span><br><span class="line">                <span class="keyword">return</span> <span class="variable">$pipe</span>(<span class="variable">$passable</span>, <span class="variable">$stack</span>);</span><br><span class="line">            &#125; <span class="keyword">elseif</span> (! is_object(<span class="variable">$pipe</span>)) &#123;</span><br><span class="line">                <span class="keyword">list</span>(<span class="variable">$name</span>, <span class="variable">$parameters</span>) = <span class="keyword">$this</span>-&gt;parsePipeString(<span class="variable">$pipe</span>);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// If the pipe is a string we will parse the string and resolve the class out</span></span><br><span class="line">                <span class="comment">// of the dependency injection container. We can then build a callable and</span></span><br><span class="line">                <span class="comment">// execute the pipe function giving in the parameters that are required.</span></span><br><span class="line">                <span class="variable">$pipe</span> = <span class="keyword">$this</span>-&gt;getContainer()-&gt;make(<span class="variable">$name</span>);</span><br><span class="line"></span><br><span class="line">                <span class="variable">$parameters</span> = array_merge([<span class="variable">$passable</span>, <span class="variable">$stack</span>], <span class="variable">$parameters</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// If the pipe is already an object we&#x27;ll just make a callable and pass it to</span></span><br><span class="line">                <span class="comment">// the pipe as-is. There is no need to do any extra parsing and formatting</span></span><br><span class="line">                <span class="comment">// since the object we&#x27;re given was already a fully instantiated object.</span></span><br><span class="line">                <span class="variable">$parameters</span> = [<span class="variable">$passable</span>, <span class="variable">$stack</span>];</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$pipe</span>-&gt;&#123;<span class="keyword">$this</span>-&gt;method&#125;(...<span class="variable">$parameters</span>);</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里使用了<code>array_reduce</code>和闭包, 在闭包中判断, 如果是迭代就执行这个迭代.<br><code>$this-&gt;method</code> 这个方法是<code>handle</code>, 也是每次我们需要自定义中间件时需要实现的方法.</p>
+<h3 id="简化说明"><a href="#简化说明" class="headerlink" title="简化说明"></a>简化说明</h3><p>先看下面这段代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="string">&#x27;AAAA&#x27;</span>];</span><br><span class="line"></span><br><span class="line"><span class="variable">$res</span> = array_reduce(<span class="variable">$arr</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (is_null(<span class="variable">$carry</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&#x27;Carry IS NULL&#x27;</span> . <span class="variable">$item</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>此时的数组长度为1，并且没有指定初始值, 故仅仅会迭代一次,返回一个闭包 use（$carry = null, $item = ‘AAAA’），当我们执行（$res()）这个闭包时，得到的结果为Carry IS NULLAAAA</p>
+<p>然后我们再看另外一段代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="string">&#x27;AAAA&#x27;</span>, <span class="string">&#x27;BBBB&#x27;</span>];</span><br><span class="line"></span><br><span class="line"><span class="variable">$res</span> = array_reduce(<span class="variable">$arr</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (is_null(<span class="variable">$carry</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&#x27;Carry IS NULL&#x27;</span> . <span class="variable">$item</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$carry</span> <span class="keyword">instanceof</span> \<span class="built_in">Closure</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$carry</span>() . <span class="variable">$item</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>我们新增了一个条件判断，若当前迭代的值是一个闭包，返回该闭包的执行结果。<br>当我们执行这个闭包时，满足$carry instanceof \Closure，得到结果Carry IS NULLAAAABBBB。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-china.org/articles/5206/the-use-of-php-built-in-function-array-reduce-in-laravel">https://laravel-china.org/articles/5206/the-use-of-php-built-in-function-array-reduce-in-laravel</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/23/php%E7%9A%84%E5%89%A9%E4%BD%99%E5%8F%82%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/23/php%E7%9A%84%E5%89%A9%E4%BD%99%E5%8F%82%E6%95%B0/" class="post-title-link" itemprop="url">php的剩余参数</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-23 18:27:51" itemprop="dateCreated datePublished" datetime="2018-01-23T18:27:51+09:00">2018-01-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:31:07" itemprop="dateModified" datetime="2018-03-27T22:31:07+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+没想到，我已经这么老了.
+</blockquote>
+PHP在用户自定义函数中支持可变数量的参数列表。在 `PHP 5.6` 及以上的版本中，由 ... 语法实现；在 PHP 5.5 及更早版本中，使用函数 `func_num_args()`，`func_get_arg()`，和 `func_get_args()` 。
+
+<h3 id="代表全体参数"><a href="#代表全体参数" class="headerlink" title="代表全体参数"></a>代表全体参数</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params">...<span class="variable">$numbers</span></span>) </span>&#123;</span><br><span class="line">  dump(<span class="variable">$numbers</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sum(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+<p>这里的<code>$numbers</code>的结果就是一个数组;</p>
+<h3 id="解压一个数组"><a href="#解压一个数组" class="headerlink" title="解压一个数组"></a>解压一个数组</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params"><span class="variable">$a</span>, <span class="variable">$b</span></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="variable">$a</span> + <span class="variable">$b</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> add(...[<span class="number">1</span>, <span class="number">2</span>]).<span class="string">&quot;\n&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$a</span> = [<span class="number">1</span>, <span class="number">2</span>];</span><br><span class="line"><span class="keyword">echo</span> add(...<span class="variable">$a</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="只能用在参数的最后"><a href="#只能用在参数的最后" class="headerlink" title="只能用在参数的最后"></a>只能用在参数的最后</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"><span class="variable">$header</span>,...<span class="variable">$numbers</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$acc</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$numbers</span> <span class="keyword">as</span> <span class="variable">$n</span>) &#123;</span><br><span class="line">        <span class="variable">$acc</span> += <span class="variable">$n</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$header</span>.<span class="variable">$acc</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> sum(<span class="string">&#x27;结果是:&#x27;</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+<p>打印结果: 结果是:10</p>
+<h3 id="PHP5-6之前的操作"><a href="#PHP5-6之前的操作" class="headerlink" title="PHP5.6之前的操作"></a>PHP5.6之前的操作</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$acc</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">foreach</span> (func_get_args() <span class="keyword">as</span> <span class="variable">$n</span>) &#123;</span><br><span class="line">        <span class="variable">$acc</span> += <span class="variable">$n</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$acc</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> sum(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>在ES6中也有相似的用法…</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://php.net/manual/zh/functions.arguments.php">http://php.net/manual/zh/functions.arguments.php</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/23/%E7%94%A8array-map%E5%92%8Carray-reduce%E6%9B%BF%E4%BB%A3foreach%E5%BE%AA%E7%8E%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/23/%E7%94%A8array-map%E5%92%8Carray-reduce%E6%9B%BF%E4%BB%A3foreach%E5%BE%AA%E7%8E%AF/" class="post-title-link" itemprop="url">用array_map和array_reduce替代foreach循环</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-01-23 11:07:07 / 修改时间：13:13:34" itemprop="dateCreated datePublished" datetime="2018-01-23T11:07:07+09:00">2018-01-23</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+零落成泥碾作尘，只有香如故。
+</blockquote>
+
+
+
+<h3 id="array-map"><a href="#array-map" class="headerlink" title="array_map"></a>array_map</h3><p>返回用户自定义函数作用后的数组<br>向array_map传入数组，出来的还是数组，而不是上面array_reduce()的一个值。所以，array_map()最简单的就是把 callback函数作用到每个数组的值上，最常见的场景就是 intval()、trim()  数组中的值，在一些框架的源码中也经常见到，比如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = <span class="keyword">array</span>(<span class="string">&#x27;2&#x27;</span>,<span class="string">&#x27;3&#x27;</span>,<span class="string">&#x27;4&#x27;</span>,<span class="string">&#x27;5&#x27;</span>);</span><br><span class="line">array_map(<span class="string">&#x27;intval&#x27;</span> , <span class="variable">$arr</span>);</span><br><span class="line">array_map(<span class="string">&#x27;htmlspecialchars&#x27;</span> , <span class="variable">$arr</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="array-reduce"><a href="#array-reduce" class="headerlink" title="array_reduce"></a>array_reduce</h3><p>使用回调函数迭代地将数组简化为单一的值<br>使用array_reduce()替代foreach()循环最常用的一个业务场景也许就是数组求和，比如:</p>
+<h4 id="使用foreach"><a href="#使用foreach" class="headerlink" title="使用foreach"></a>使用foreach</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="string">&#x27;2&#x27;</span>,<span class="string">&#x27;3&#x27;</span>,<span class="string">&#x27;4&#x27;</span>,<span class="string">&#x27;5&#x27;</span>];</span><br><span class="line">array_map(<span class="string">&#x27;intval&#x27;</span> , <span class="variable">$arr</span>);</span><br><span class="line">array_map(<span class="string">&#x27;htmlspecialchars&#x27;</span> , <span class="variable">$arr</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用array-reduce"><a href="#使用array-reduce" class="headerlink" title="使用array_reduce"></a>使用array_reduce</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$nums</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">6</span>];</span><br><span class="line"><span class="variable">$sum</span> = array_reduce(<span class="variable">$nums</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$res</span>, <span class="variable">$num</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$res</span> + <span class="variable">$num</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">dd(<span class="variable">$sum</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="array-reduce带初始值"><a href="#array-reduce带初始值" class="headerlink" title="array_reduce带初始值"></a>array_reduce带初始值</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="string">&#x27;AAAA&#x27;</span>, <span class="string">&#x27;BBBB&#x27;</span>, <span class="string">&#x27;CCCC&#x27;</span>];</span><br><span class="line"><span class="variable">$res</span> = array_reduce(<span class="variable">$arr</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$carry</span> . <span class="variable">$item</span>;</span><br><span class="line">&#125;, <span class="string">&#x27;所有字符:&#x27;</span>);</span><br><span class="line">dd(<span class="variable">$res</span>);</span><br><span class="line"><span class="comment">// 所有字符:AAAABBBBCCCC</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="扩展array-filter"><a href="#扩展array-filter" class="headerlink" title="扩展array_filter"></a>扩展array_filter</h3><p>该函数把输入数组中的每个键值传给回调函数。如果回调函数返回 true，则把输入数组中的当前键值返回结果数组中。数组键名保持不变。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">odd</span>(<span class="params"><span class="variable">$var</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="variable">$var</span> % <span class="number">2</span> == <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">even</span>(<span class="params"><span class="variable">$var</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="variable">$var</span> % <span class="number">2</span> == <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$array1</span> = [<span class="string">&quot;a&quot;</span>=&gt;<span class="number">1</span>, <span class="string">&quot;b&quot;</span>=&gt;<span class="number">2</span>, <span class="string">&quot;c&quot;</span>=&gt;<span class="number">3</span>, <span class="string">&quot;d&quot;</span>=&gt;<span class="number">4</span>, <span class="string">&quot;e&quot;</span>=&gt;<span class="number">5</span>];</span><br><span class="line"><span class="variable">$array2</span> = [<span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>, <span class="number">11</span>, <span class="number">12</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;Odd : &quot;</span>;</span><br><span class="line">dump(array_filter(<span class="variable">$array1</span>, <span class="string">&quot;odd&quot;</span>));</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;Even: &quot;</span>;</span><br><span class="line">dump(array_filter(<span class="variable">$array2</span>, <span class="string">&quot;even&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.tanteng.me/2015/07/array-map-reduce-foreach/">https://blog.tanteng.me/2015/07/array-map-reduce-foreach/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -876,312 +1141,6 @@
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://syd192.github.io/2016/11/15/hexo-learn/">https://syd192.github.io/2016/11/15/hexo-learn/</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/10/SEO%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/10/SEO%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/" class="post-title-link" itemprop="url">SEO优化实战</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-10 09:35:54" itemprop="dateCreated datePublished" datetime="2018-01-10T09:35:54+09:00">2018-01-10</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 21:52:41" itemprop="dateModified" datetime="2018-03-27T21:52:41+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我要把我向往的风景，变成我走过的路。
-</blockquote>
-
-<h3 id="TDK优化"><a href="#TDK优化" class="headerlink" title="TDK优化"></a>TDK优化</h3><p>TDK为<code>title</code>,<code>description</code>,<code>keywords</code>三个的统称。当然<code>title</code>是最有用的，是非常值得优化的；而<code>keywords</code>因为以前被seo人员过度使用，所以现在对这个进行优化对搜索引擎是没用的，这里就不说了；<code>description</code>的描述会直接显示在搜索的介绍中，所以对用户的判断是否点击还是非常有效的。</p>
-<h4 id="title优化"><a href="#title优化" class="headerlink" title="title优化"></a>title优化</h4><p><code>title</code>的分隔符一般有<code>,</code> <code>，</code> <code>_</code> <code>-</code> 等，其中<code>_</code>对百度比较友好，而<code>-</code>对谷歌比较友好，第四个为空格，英文站点可以使用<code>，</code>中文少用。<code>title</code>长度一般pc端大概30个中文，移动端20个，超过则会截断为省略号。</p>
-<p>因为业务关系，我们做的更多的是针对百度搜索引擎的优化，所以这里把百度搜索引擎优化的建议分享下：</p>
-<p>title格式：<br>首页：网站名称 或者 网站名称_提供服务介绍or产品介绍<br>频道页：频道名称_网站名称<br>文章页：文章title_频道名称_网站名称<br>如果你的文章标题不是很长，还可以加入点关键词进去，如文章title_关键词_网站名称</p>
-<p>推荐做法：<br>每个网页应该有一个独一无二的标题，切忌所有的页面都使用同样的默认标题<br>标题要主题明确，包含这个网页中最重要的内容<br>简明精练，不罗列与网页内容不相关的信息<br>用户浏览通常是从左到右的，重要的内容应该放到title的靠前的位置<br>使用用户所熟知的语言描述。如果你有中、英文两种网站名称，尽量使用用户熟知的那一种做为标题描述</p>
-<h4 id="description优化"><a href="#description优化" class="headerlink" title="description优化"></a>description优化</h4><p><code>description</code>不是权值计算的参考因素，这个标签存在与否不影响网页权值，只会用做搜索结果摘要的一个选择目标。其长度pc端大概为78个中文，移动端为50个，超过则会截断为省略号。</p>
-<p>百度推荐做法为：<br>网站首页、频道页、产品参数页等没有大段文字可以用做摘要的网页最适合使用<code>description</code><br>准确的描述网页，不要堆砌关键词<br>为每个网页创建不同的<code>description</code>，避免所有网页都使用同样的描述<br>长度合理，不过长不过短</p>
-<h3 id="页面内容优化"><a href="#页面内容优化" class="headerlink" title="页面内容优化"></a>页面内容优化</h3><h4 id="使用html5结构"><a href="#使用html5结构" class="headerlink" title="使用html5结构"></a>使用html5结构</h4><p>果条件允许（如移动端，兼容ie9+，如果ie8+就针对ie8引入html5.js吧），是时候开始考虑使用html5语义化标签。如header,footer,section,aside,nav,article等</p>
-<h4 id="唯一的H1标题"><a href="#唯一的H1标题" class="headerlink" title="唯一的H1标题"></a>唯一的H1标题</h4><p>每个页面都应该有个唯一的h1标题，但不是每个页面的h1标题都是站点名称。（但html5中h1标题是可以多次出现的，每个具有结构大纲的标签都可以拥有自己独立的h1标题，如<code>header</code>,<code>footer</code>,<code>section</code>,<code>aside</code>,<code>article</code>）</p>
-<p>首页的h1标题为站点名称，内页的h1标题为各个内页的标题，如分类页用分类的名字，详细页用详细页标题作为h1标题</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 首页 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span> <span class="attr">class</span>=<span class="string">&quot;page-tt&quot;</span>&gt;</span>腾讯课堂<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 分类页 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span> <span class="attr">class</span>=<span class="string">&quot;page-tt&quot;</span>&gt;</span>前端开发在线培训视频教程<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 详细页 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span> <span class="attr">class</span>=<span class="string">&quot;page-tt&quot;</span>&gt;</span>html5+CSS3<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="img设置alt属性"><a href="#img设置alt属性" class="headerlink" title="img设置alt属性"></a>img设置alt属性</h4><p>img必须设置alt属性，如果宽度和高度固定请同时设置固定的值</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;&quot;</span> <span class="attr">alt</span>=<span class="string">&quot;seo优化实战&quot;</span> <span class="attr">width</span>=<span class="string">&quot;200&quot;</span> <span class="attr">height</span>=<span class="string">&quot;100&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="nofollow"><a href="#nofollow" class="headerlink" title="nofollow"></a>nofollow</h4><p>对不需要跟踪爬行的链接，设置nofollow。可用在博客评论、论坛帖子、社会化网站、留言板等地方，也可用于广告链接，还可用于隐私政策，用户条款，登录等。如下代码表示该链接不需要跟踪爬行，可以阻止蜘蛛爬行及传递权重。</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;http://example.com&quot;</span> <span class="attr">rel</span>=<span class="string">&quot;nofollow&quot;</span>&gt;</span>no follow 链接<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h4><p>内容方面考虑：</p>
-<ul>
-<li>自然写作</li>
-<li>高质量原创内容</li>
-<li>吸引阅读的写作手法</li>
-<li>突出卖点</li>
-<li>增强信任感</li>
-<li>引导进一步行为</li>
-</ul>
-<p>用户体验方面考虑：</p>
-<ul>
-<li>排版合理、清晰、美观、字体、背景易于阅读</li>
-<li>实质内容处在页面最重要位置，用户一眼就能看到</li>
-<li>实质内容与广告能够清晰区分</li>
-<li>第一屏就有实质内容，而不是需要下拉页面才能看到</li>
-<li>广告数量不宜过多，位置不应该妨碍用户阅读</li>
-<li>如果图片、视频有利于用户理解页面内容，尽量制作图片、视频等</li>
-<li>避免过多弹窗</li>
-</ul>
-<h3 id="URL优化"><a href="#URL优化" class="headerlink" title="URL优化"></a>URL优化</h3><h4 id="URL设计原则："><a href="#URL设计原则：" class="headerlink" title="URL设计原则："></a>URL设计原则：</h4><ul>
-<li>越短越好</li>
-<li>避免太多参数</li>
-<li>目录层次尽量少</li>
-<li>文件及目录名具描述性</li>
-<li>URL中包括关键词(中文除外)</li>
-<li>字母全部小写</li>
-<li>连词符使用-而不是_</li>
-<li>目录形式而非文件形式</li>
-<li>URL静态化</li>
-</ul>
-<p>以现在搜索引擎的爬行能力是可以不用做静态化的，但是从收录难易度，用户体验及社会化分享，静态简短的URL都是更有利的。</p>
-<h4 id="URL规范化"><a href="#URL规范化" class="headerlink" title="URL规范化"></a>URL规范化</h4><p>1、统一连接</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http://www.domainname.com</span><br><span class="line">http://domainname.com</span><br><span class="line">http://www.domainname.com/index.html</span><br><span class="line">http://domainname.com/index.html</span><br></pre></td></tr></table></figure>
-<p>以上四个其实都是首页，虽然不会给访客造成什么麻烦，但对于搜索引擎来说就是四条网址，并且内容相同，很可能会被误认为是作弊手段，而且当搜索引擎要规范化网址时，需要从这些选择当中挑一个最好的代表，但是挑的这个不一定是你想要的。所以最好自己就规范好。</p>
-<p>2、301跳转<br>第一种是URL发生改变，一定要把旧的地址301指向新的，不然之前做的一些收录权重什么的全白搭了。</p>
-<p>第二种是一些cms系统，极有可能会造成多个路径对应同一篇文章。如drupal默认的路径是以node/nid，但是如果启用了path token，就可以自己自定义路径。这样一来就有两条路径对应同一篇文章。所以可以启用301，最终转向一个路径。</p>
-<p>3、canonical<br>这个标签表示页面的唯一性（这个标签以前百度不支持，现在支持），用在平时参数传递的时候，如：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//:ke.qq.com/download/app.html</span><br><span class="line">//:ke.qq.com/download/app.html?from=123</span><br><span class="line">//:ke.qq.com/download/app.html?from=456</span><br></pre></td></tr></table></figure>
-<p>以上三个表示三个页面，但其实后两个只是想表明从哪来的而已，所以为了确保这三个为同一个页面，我们在head上加上canonical标签。</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;cononical&quot;</span> <span class="attr">href</span>=<span class="string">&quot;//:ke.qq.com/download/download/app.html&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="robots"><a href="#robots" class="headerlink" title="robots"></a>robots</h3><p>搜索引擎蜘蛛访问网站时会第一个访问robots.txt文件，robots.txt用于指导搜索引擎蜘蛛禁止抓取网站某些内容或只允许抓取那些内容，放在站点根目录。<br>User-agent 表示以下规则适用哪个蜘蛛，*表示所有<br>#表示注释<br>Disallow 表示禁止抓取的文件或目录，必须每个一行，分开写<br>Allow 表示允许抓取的文件或目录，必须每个一行，分开写<br>Sitemap 表示站点XML地图，注意S大写</p>
-<h3 id="sitemap"><a href="#sitemap" class="headerlink" title="sitemap"></a>sitemap</h3><p>站点地图格式分为HTML和XML两种。</p>
-<p>HTML版本的是普通的HTML页面sitemap.html，用户可以直接访问，可以列出站点的所有主要链接，建议不超过100条。</p>
-<p>XML版本的站点地图是google在2005年提出的，由XML标签组成，编码为utf-8，罗列页面所有的URL。其格式如下：</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">urlset</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">url</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">loc</span>&gt;</span>//ke.qq.com<span class="tag">&lt;/<span class="name">loc</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">lastmod</span>&gt;</span>2015-12-28<span class="tag">&lt;/<span class="name">lastmod</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">changefreq</span>&gt;</span>always<span class="tag">&lt;/<span class="name">changefreq</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">priority</span>&gt;</span>1.0<span class="tag">&lt;/<span class="name">priority</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">  ...</span><br><span class="line"><span class="tag">&lt;/<span class="name">urlset</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>其中urlset,url,loc三个为必须标签，lastmod,changefreq,priority为可选标签。</p>
-<p>lastmod表示页面最后一次更新时间。</p>
-<p>changefreq表示文件更新频率，有以下几种取值：always, hourly, daily, weekly, monthly, yearly, never。其中always表示一直变动，每次访问页面内容都不同；而never表示从来不变。</p>
-<p>priority表示URL相对重要程度，取值范围为0.0-1.0，1.0表示最重要，一般用在网站首页，对应的0.0就是最不重要的，默认重要程度为0.5。（注意这里的重要度是我们标记的，并不代表搜索引擎真的就完全按照我们设置的重要度来排列）</p>
-<p>sitemap.xml不能超过10M，而且每个sitemap文件中url的条数不要超过5万条，当你的sitemap文件很大的时候，可以分解为多个文件。如下分为两条，一条为基础，一条为产品详细页。</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">sitemapindex</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">sitemap</span>&gt;</span><span class="tag">&lt;<span class="name">loc</span>&gt;</span>//ke.qq.com/sitemap-basic.xml<span class="tag">&lt;/<span class="name">loc</span>&gt;</span><span class="tag">&lt;<span class="name">lastmod</span>&gt;</span>2015-12-28T02:10Z<span class="tag">&lt;/<span class="name">lastmod</span>&gt;</span><span class="tag">&lt;/<span class="name">sitemap</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">sitemap</span>&gt;</span><span class="tag">&lt;<span class="name">loc</span>&gt;</span>//ke.qq.com/sitemap-product.xml<span class="tag">&lt;/<span class="name">loc</span>&gt;</span><span class="tag">&lt;<span class="name">lastmod</span>&gt;</span>2015-12-28T02:10Z<span class="tag">&lt;/<span class="name">lastmod</span>&gt;</span><span class="tag">&lt;/<span class="name">sitemap</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">sitemapindex</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="SEO工具"><a href="#SEO工具" class="headerlink" title="SEO工具"></a>SEO工具</h3><p>百度搜索风云榜<br>百度指数<br>百度站长平台<br>meta seo inspector，检查标签的，谷歌插件<br>seo in china，百度收录的各种数据，谷歌插件<br>check my links，检查链接，谷歌插件<br>seo quake，统计各种数据，谷歌插件</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://imweb.io/topic/5682938b57d7a6c47914fc00">http://imweb.io/topic/5682938b57d7a6c47914fc00</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/09/laravel%E5%AE%9E%E7%8E%B0%E7%94%A8%E6%88%B7%E7%9A%84%E7%A6%81%E6%AD%A2%E7%99%BB%E9%99%86%E5%92%8C%E7%A6%81%E6%AD%A2%E6%B3%A8%E5%86%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/09/laravel%E5%AE%9E%E7%8E%B0%E7%94%A8%E6%88%B7%E7%9A%84%E7%A6%81%E6%AD%A2%E7%99%BB%E9%99%86%E5%92%8C%E7%A6%81%E6%AD%A2%E6%B3%A8%E5%86%8C/" class="post-title-link" itemprop="url">laravel实现用户的禁止登陆和禁止注册</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-09 22:11:29" itemprop="dateCreated datePublished" datetime="2018-01-09T22:11:29+09:00">2018-01-09</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:17:11" itemprop="dateModified" datetime="2018-03-27T22:17:11+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你跑得慢，听到的是骂声，你跑得快，听到的就是风声。
-</blockquote>
-
-<h3 id="禁止登录"><a href="#禁止登录" class="headerlink" title="禁止登录"></a>禁止登录</h3><p>app\Http\Controllers\Auth\LoginController.php<br>users表增加一个status字段，并重写两个方法</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">attemptLogin</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="variable">$request</span>-&gt;merge([</span><br><span class="line">    <span class="string">&#x27;status&#x27;</span> =&gt; <span class="literal">true</span></span><br><span class="line">  ]);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;guard()-&gt;attempt(</span><br><span class="line">    <span class="keyword">$this</span>-&gt;credentials(<span class="variable">$request</span>), <span class="variable">$request</span>-&gt;filled(<span class="string">&#x27;remember&#x27;</span>)</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">credentials</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">return</span> <span class="variable">$request</span>-&gt;only(<span class="keyword">$this</span>-&gt;username(), <span class="string">&#x27;password&#x27;</span>, <span class="string">&#x27;status&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="禁止注册"><a href="#禁止注册" class="headerlink" title="禁止注册"></a>禁止注册</h3><p>app\Http\Controllers\Auth\RegisterController.php<br>修改前：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">$this</span>-&gt;middleware(<span class="string">&#x27;guest&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>修改后：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">$this</span>-&gt;middleware(<span class="string">&#x27;auth&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/09/json%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BE%8E%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/09/json%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BE%8E%E5%8C%96/" class="post-title-link" itemprop="url">json字符串美化</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-09 18:29:49" itemprop="dateCreated datePublished" datetime="2018-01-09T18:29:49+09:00">2018-01-09</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:19:50" itemprop="dateModified" datetime="2018-03-27T22:19:50+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你多学一样本事，就少说一句求人的话
-</blockquote>
-如果我们需要向我们的用用户展示一段`json`数据, 直接展示效果就会非常差,需要做一点点改变
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&quot;button&quot;</span>).click(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> url = $(<span class="string">&quot;input&quot;</span>).val();</span><br><span class="line">    <span class="built_in">console</span>.log(url);</span><br><span class="line">    axios.post(<span class="string">&#x27;/api/E1WWrhcuN0xm&#x27;</span>, &#123;</span><br><span class="line">        <span class="attr">url</span> : url</span><br><span class="line">    &#125;)</span><br><span class="line">        .then(<span class="function"><span class="keyword">function</span> (<span class="params">response</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (response.data) &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(response.data);</span><br><span class="line">                $(<span class="string">&quot;pre&quot;</span>).html(<span class="built_in">JSON</span>.stringify(response.data, <span class="literal">null</span>, <span class="number">2</span>)).parent().removeClass(<span class="string">&#x27;hidden&#x27;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">        .catch(<span class="function"><span class="keyword">function</span> (<span class="params">error</span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(error);</span><br><span class="line">        &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
 
       
     </div>
