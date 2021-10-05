@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">381</span>
+          <span class="site-state-item-count">382</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,87 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/06/11/PHP-MySQL%E6%8C%81%E4%B9%85%E8%BF%9E%E6%8E%A5-mysql-pconnect/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/06/11/PHP-MySQL%E6%8C%81%E4%B9%85%E8%BF%9E%E6%8E%A5-mysql-pconnect/" class="post-title-link" itemprop="url">PHP-MySQL持久连接-mysql_pconnect</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-06-11 11:12:05" itemprop="dateCreated datePublished" datetime="2017-06-11T11:12:05+09:00">2017-06-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:54:57" itemprop="dateModified" datetime="2018-03-27T21:54:57+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+别人说你变了，是因为你没有按照他的想法活罢了。。。 
+</blockquote>
+先来一段 PHP 连接 MySQL 的经典代码：
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$con</span> = mysql_connect(<span class="string">&quot;localhost&quot;</span>, <span class="string">&quot;root&quot;</span>, <span class="string">&quot;123456&quot;</span>);</span><br><span class="line"><span class="keyword">if</span> (!<span class="variable">$con</span>) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&quot;Could not connect: &quot;</span> . mysql_error());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// some code</span></span><br><span class="line">mysql_close(<span class="variable">$con</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+### mysql_pconnect
+首先，当连接的时候本函数将先尝试寻找一个在同一个主机上用同样的用户名和密码已经打开的（持久）连接，如果找到，则返回此连接标识而不打开新连接。
+
+<p>其次，当脚本执行完毕后到 SQL 服务器的连接不会被关闭，此连接将保持打开以备以后使用（mysql_close() 不会关闭由 mysql_pconnect() 建立的连接）。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// pconnect.php</span></span><br><span class="line"><span class="variable">$con</span> = mysql_pconnect(<span class="string">&quot;localhost&quot;</span>, <span class="string">&quot;root&quot;</span>, <span class="string">&quot;123456&quot;</span>);</span><br><span class="line"><span class="comment">// connect.php</span></span><br><span class="line"><span class="comment">// $con = mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;123456&quot;);</span></span><br><span class="line"><span class="keyword">if</span> (!<span class="variable">$con</span>) &#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">&#x27;Could not connect: &#x27;</span> . mysql_error());</span><br><span class="line">&#125;</span><br><span class="line">sleep(<span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>注意，此种连接仅能用于模块版本的 PHP。(我用的是 Nginx+PHP-FPM 模式，而非 Apache+php_module 模式。 )</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -884,86 +965,6 @@ Elasticsearch把每条数据叫做Document，然后提交到Index中。
 <li>在事件文件中:<br>app\Events\UserCreated.php<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="variable">$post</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$post</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">$this</span>-&gt;post = <span class="variable">$post</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="Observer写法-推荐"><a href="#Observer写法-推荐" class="headerlink" title="Observer写法(推荐)"></a>Observer写法(推荐)</h3><p><a target="_blank" rel="noopener" href="https://laravel-china.org/articles/6657/model-events-and-observer-in-laravel">https://laravel-china.org/articles/6657/model-events-and-observer-in-laravel</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/05/04/mysql%E4%B8%ADFIND-IN-SET%E7%9A%84%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/05/04/mysql%E4%B8%ADFIND-IN-SET%E7%9A%84%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">mysql中FIND_IN_SET的使用方法</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-05-04 16:41:47" itemprop="dateCreated datePublished" datetime="2017-05-04T16:41:47+09:00">2017-05-04</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-25 10:47:46" itemprop="dateModified" datetime="2018-04-25T10:47:46+09:00">2018-04-25</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我想用余生为你暖一盏茶，晚风微扬时勿忘归家。
-</blockquote>
-
-<h3 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h3><p>在mysql中，有时我们在做数据库查询时，需要得到某字段中包含某个值的记录，但是它也不是用like能解决的，使用like可能查到我们不想要的记录，它比like更精准，这时候mysql的<code>FIND_IN_SET</code>函数就派上用场了.</p>
-<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>str 要查询的字符串</p>
-<p>area 字段名 参数以”,”分隔 如 (1,2,6,8)</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">where</span> FIND_IN_SET(<span class="string">&#x27;1&#x27;</span>,area)</span><br></pre></td></tr></table></figure>
-
-<h3 id="FIND-IN-SET和like的区别"><a href="#FIND-IN-SET和like的区别" class="headerlink" title="FIND_IN_SET和like的区别"></a>FIND_IN_SET和like的区别</h3><p>like是广泛的模糊匹配，字符串中没有分隔符，Find_IN_SET 是精确匹配，字段值以英文”,”分隔，Find_IN_SET查询的结果要小于like查询的结果。</p>
 
       
     </div>

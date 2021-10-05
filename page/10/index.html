@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">381</span>
+          <span class="site-state-item-count">382</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,132 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/nginx%E7%9A%84%E9%85%8D%E7%BD%AE%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%92%8C%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/14/nginx%E7%9A%84%E9%85%8D%E7%BD%AE%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%92%8C%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%89/" class="post-title-link" itemprop="url">nginx的配置虚拟主机负载均衡和反向代理三</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-14 15:38:40 / 修改时间：17:13:50" itemprop="dateCreated datePublished" datetime="2018-06-14T15:38:40+09:00">2018-06-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+老吾老，以及人之老；幼吾幼，以及人之幼。
+</blockquote>
+
+<h3 id="nginx中的-location-正则模块"><a href="#nginx中的-location-正则模块" class="headerlink" title="nginx中的 location 正则模块"></a>nginx中的 location 正则模块</h3><p>首先看下location 正则匹配的使用。</p>
+<p>还记得之前是如何用location来定位.php文件的吗?</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">location ~ \.php$ &#123;</span><br><span class="line">        fastcgi_pass   <span class="number">127.0</span>.<span class="number">0.1</span>:<span class="number">9000</span>; </span><br><span class="line">        fastcgi_index  index.php;</span><br><span class="line">        <span class="keyword">include</span>        fastcgi.conf;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们用~来表示location开启正则匹配, 这样：location ~。</p>
+<p>还可以用这个来匹配静态资源，缓存它们，设置过期时间：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">location ~ .*\.(gif|jpg|jpeg|bmp|png|ico|txt|mp3|mp4|swf)&#123;</span><br><span class="line">    expires <span class="number">15</span>d;</span><br><span class="line">&#125;</span><br><span class="line">location ~ .*\.(css|js)&#123;</span><br><span class="line">    expires <span class="number">12</span>h;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>expires 用来设置HTTP应答中的Expires和Cache-Control的头标时间，来告诉浏览器访问这个静态文件时，不用再去请求服务器，直接从本地缓存读取就可以了。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">语法： expires [time|epoch|max|off]</span><br><span class="line">默认值： expires off</span><br><span class="line">作用域： http, server, location</span><br></pre></td></tr></table></figure>
+
+<p>可以在time值中使用正数或负数。“Expires”头标的值将通过当前系统时间加上您设定的 time 值来获得。</p>
+<p>可以设置的参数如下：</p>
+<ul>
+<li>epoch 指定“Expires”的值为 1 January, 1970, 00:00:01 GMT。 </li>
+<li>max 指定“Expires”的值为 31 December 2037 23:59:59 GMT，“Cache-Control”的值为10年。 </li>
+<li>-1 指定“Expires”的值为 服务器当前时间 -1s,即永远过期 </li>
+<li>负数：Cache-Control: no-cache </li>
+<li>正数或零：Cache-Control: max-age = #, # 会转换为指定时间的秒数。比如：1d、2h、3m。 </li>
+<li>off 表示不修改“Expires”和“Cache-Control”的值</li>
+</ul>
+<p>比如再看个例子:</p>
+<p>控制图片等过期时间为30天</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location~ \.(gif|jpg|jpeg|png|bmp|ico)$ &#123;</span><br><span class="line">        expires <span class="number">30</span>d;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们还可以控制哪一个文件目录的时间，比如控制匹配/resource/或者/mediatorModule/里所有的文件缓存设置到最长时间。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location ~ /(resource|mediatorModule)/ &#123;</span><br><span class="line">        root    /opt/demo;</span><br><span class="line">        expires max;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="URL重写模块（Rewrite）"><a href="#URL重写模块（Rewrite）" class="headerlink" title="URL重写模块（Rewrite）"></a>URL重写模块（Rewrite）</h3><p>重写模块与很多模块一起使用。先看一下是怎么用的，看2个例子，然后我们再一点一点讲每个的使用方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">location /download/ &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="variable">$forbidden</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span>   <span class="number">403</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="variable">$slow</span>) &#123;</span><br><span class="line">    limit_rate  <span class="number">10</span>k;</span><br><span class="line">  &#125;</span><br><span class="line">  rewrite  ^/(download/.*)/media/(.*)\..*$  /$<span class="number">1</span>/mp3/$<span class="number">2</span>.mp3    <span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    root   html;</span><br><span class="line">    index  index.html index.htm;</span><br><span class="line">    rewrite ^/bbs/(.*)$ http:<span class="comment">//192.168.18.201/forum/$1;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="break"><a href="#break" class="headerlink" title="break"></a>break</h4><p>break 和变成语言中的用法一样，就是跳出某个逻辑。</p>
+<p>语法：break<br>默认值：none<br>使用字段：server, location, if</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!-f <span class="variable">$request_filename</span>) &#123;</span><br><span class="line">  <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面这个例子就是在if里面使用break,意思是如果访问的文件名不存在，就跳出。</p>
+<h4 id="if"><a href="#if" class="headerlink" title="if"></a>if</h4><p>语法：if (condition) { … }<br>默认值：none<br>使用字段：server, location</p>
+<p>if 判断一个条件，如果条件成立，则后面的大括号内的语句将执行，相关配置从上级继承。</p>
+<p>可以在判断语句中指定下列值：</p>
+<ul>
+<li>一个变量的名称；不成立的值为：空字符传”“或者一些用“0”开始的字符串。</li>
+<li>一个使用=或者!=运算符的比较语句。</li>
+<li>使用符号<del>*和</del>模式匹配的正则表达式：</li>
+<li>~为区分大小写的匹配。</li>
+<li>~*不区分大小写的匹配（firefox匹配FireFox）。</li>
+<li>!<del>和!</del>*意为“不匹配的”。</li>
+<li>使用-f和!-f检查一个文件是否存在。</li>
+<li>使用-d和!-d检查一个目录是否存在。</li>
+<li>使用-e和!-e检查一个文件，目录或者软链接是否存在。</li>
+<li>使用-x和!-x检查一个文件是否为可执行文件。</li>
+</ul>
+<p>我们一一来举例看看。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable">$http_user_agent</span> ~ MSIE) &#123;</span><br><span class="line">  rewrite  ^(.*)$  /msie/$<span class="number">1</span>  <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>$http_user_agent变量获取浏览器的agent，使用~ 来匹配大小写<br>用户如果使用的IE 浏览器，就执行if 里面的操作。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable">$request_method</span> = POST ) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">405</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>$request_method变量获取请求的方法，使用=来判断是否等于POST 。如果复合，就执行if 里面的操作。</p>
+<p>```php<br>if (!-f $request_filename) {<br>  break;<br>  proxy_pass  <a target="_blank" rel="noopener" href="http://127.0.0.1/">http://127.0.0.1</a>;<br>}<br>``<br>$request_filename变量获取请求的文件名，使用!-f来匹配文件，如果不是一个文件名，就执行if 里面的逻辑。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.zybuluo.com/phper/note/133244">https://www.zybuluo.com/phper/note/133244</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1267,94 +1393,6 @@ Honesty is the best policy.
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://www.itlipeng.cn/2015/12/24/%E5%9C%A8-laravel-%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%A4%9A%E4%B8%AA%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE/">https://www.itlipeng.cn/2015/12/24/%E5%9C%A8-laravel-%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%A4%9A%E4%B8%AA%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE/</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/02/browser-sync%E6%96%87%E4%BB%B6%E7%9B%91%E5%90%AC%E5%A4%B1%E8%B4%A5%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/02/browser-sync%E6%96%87%E4%BB%B6%E7%9B%91%E5%90%AC%E5%A4%B1%E8%B4%A5%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" class="post-title-link" itemprop="url">browser-sync文件监听失败的解决方案</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-02 09:44:04 / 修改时间：10:50:17" itemprop="dateCreated datePublished" datetime="2018-06-02T09:44:04+09:00">2018-06-02</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-两岸青山相对出，孤帆一片日边来
-</blockquote>
-
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>为了方便实时预览前端开发过程中修改源码后的页面，推荐一个非常实用的工具，browser-sync。</p>
-<p>安装使用方式请自行到官网<a target="_blank" rel="noopener" href="https://browsersync.io/%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3%EF%BC%8C%E4%BB%93%E5%BA%93%E5%9C%B0%E5%9D%80%E5%9C%A8%E8%BF%99%E9%87%8Chttps://github.com/BrowserSync/browser-sync">https://browsersync.io/参考文档，仓库地址在这里https://github.com/BrowserSync/browser-sync</a></p>
-<p>GetStart中官网给出的CLI示例命令为：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">browser-sync start --server --files <span class="string">&quot;css/*.css&quot;</span></span><br></pre></td></tr></table></figure>
-<p>我将其写到到npm命令中，package.json 相关内容如下：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">  <span class="string">&quot;scripts&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;dev&quot;</span>: <span class="string">&quot;browser-sync start --server --files &#x27;css/*.css&#x27;&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;devDependencies&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;browser-sync&quot;</span>: <span class="string">&quot;^2.18.13&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>接着执行 <code>npm run dev</code>，控制台输出一切正常。</p>
-<p>然而，当我修改 <code>css/style.css</code> 这个文件的时候，发现浏览器并没有刷新，这说明 <code>browser-sync</code> 并未成功监听 <code>css/*.css</code> 文件的修改。</p>
-<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>为此，我翻了一遍 <code>browser-sync</code> 的<code>issue</code>，发现有人遇到相同的问题，也给出了解决方案。</p>
-<p>问题出在命令行参数上，仔细对比，我们也会发现：</p>
-<p>我写的CLI命令为</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">browser-sync start --server --files <span class="string">&#x27;css/*.css&#x27;</span></span><br></pre></td></tr></table></figure>
-<p>而官方CLI命令为</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">browser-sync start --server --files <span class="string">&quot;css/*.css&quot;</span></span><br></pre></td></tr></table></figure>
-<p>问题就出在分号的不同上（browser-sync没能解析单引号的内容）</p>
-<p>解决<br>因此，我将 npm命令 中的 ‘ 替换为 &quot; 即可解决问题。更改后的 package.json 内容如下：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">  <span class="string">&quot;scripts&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;dev&quot;</span>: <span class="string">&quot;browser-sync start --server --files \&quot;css/*.css\&quot;&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;devDependencies&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;browser-sync&quot;</span>: <span class="string">&quot;^2.18.13&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/pwc1996/article/details/76849876">https://blog.csdn.net/pwc1996/article/details/76849876</a></p>
 
       
     </div>

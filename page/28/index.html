@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">381</span>
+          <span class="site-state-item-count">382</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,76 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/17/%E4%BD%BF%E7%94%A8php%E6%8C%89%E8%A1%8C%E5%AF%BC%E5%85%A5txt%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%80%E4%B8%AA%E5%9D%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/07/17/%E4%BD%BF%E7%94%A8php%E6%8C%89%E8%A1%8C%E5%AF%BC%E5%85%A5txt%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%80%E4%B8%AA%E5%9D%91/" class="post-title-link" itemprop="url">使用php按行导入txt文件的一个坑</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2017-07-17 10:12:35 / 修改时间：11:19:26" itemprop="dateCreated datePublished" datetime="2017-07-17T10:12:35+09:00">2017-07-17</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+岁月你别催，该来的我不推。
+岁月你别催，走远的我不追。
+</blockquote>
+问题产品原因: windows 和  linux 换行符不一致; 所以必须存入数据库之前对一些不可见的符号过滤;
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$file</span> = <span class="variable">$request</span>-&gt;file(<span class="string">&#x27;femails&#x27;</span>);</span><br><span class="line"><span class="variable">$emails</span> = file_get_contents(<span class="variable">$file</span>-&gt;getRealPath());</span><br><span class="line"><span class="variable">$emails</span> = explode(PHP_EOL, <span class="variable">$emails</span>);</span><br><span class="line"><span class="variable">$ids</span> = [];</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$emails</span> <span class="keyword">as</span> <span class="variable">$email</span>) &#123;</span><br><span class="line">    <span class="variable">$result</span> = preg_replace(<span class="string">&#x27;/[\x00-\x1F\x80-\xFF]/&#x27;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$email</span>);</span><br><span class="line">    <span class="variable">$recipient</span> = Recipient::firstOrCreate(</span><br><span class="line">        [</span><br><span class="line">            <span class="string">&#x27;email&#x27;</span> =&gt; trim(<span class="variable">$result</span>)</span><br><span class="line">        ],</span><br><span class="line">        [</span><br><span class="line">            <span class="string">&#x27;is_use&#x27;</span> =&gt; <span class="number">1</span></span><br><span class="line">        ]</span><br><span class="line">    );</span><br><span class="line">    array_push(<span class="variable">$ids</span>, <span class="variable">$recipient</span>-&gt;id);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -953,87 +1023,6 @@
 
 <h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>很多时候，接收到不是网页 POST 过来的数据，而是可能通过其他方式 POST 过来的 “text/xml” 格式的数据，这些内容无法解析成 $_POST 数组，这个时候我们就需要原始的 POST 数据进行处理。</p>
 <h3 id="重要"><a href="#重要" class="headerlink" title="重要"></a>重要</h3><p>PHP 7 已经取消了 $HTTP_RAW_POST_DATA，请用 php://input 代替。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/06/11/PHP-MySQL%E6%8C%81%E4%B9%85%E8%BF%9E%E6%8E%A5-mysql-pconnect/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/06/11/PHP-MySQL%E6%8C%81%E4%B9%85%E8%BF%9E%E6%8E%A5-mysql-pconnect/" class="post-title-link" itemprop="url">PHP-MySQL持久连接-mysql_pconnect</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-06-11 11:12:05" itemprop="dateCreated datePublished" datetime="2017-06-11T11:12:05+09:00">2017-06-11</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 21:54:57" itemprop="dateModified" datetime="2018-03-27T21:54:57+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-别人说你变了，是因为你没有按照他的想法活罢了。。。 
-</blockquote>
-先来一段 PHP 连接 MySQL 的经典代码：
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$con</span> = mysql_connect(<span class="string">&quot;localhost&quot;</span>, <span class="string">&quot;root&quot;</span>, <span class="string">&quot;123456&quot;</span>);</span><br><span class="line"><span class="keyword">if</span> (!<span class="variable">$con</span>) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&quot;Could not connect: &quot;</span> . mysql_error());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// some code</span></span><br><span class="line">mysql_close(<span class="variable">$con</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-### mysql_pconnect
-首先，当连接的时候本函数将先尝试寻找一个在同一个主机上用同样的用户名和密码已经打开的（持久）连接，如果找到，则返回此连接标识而不打开新连接。
-
-<p>其次，当脚本执行完毕后到 SQL 服务器的连接不会被关闭，此连接将保持打开以备以后使用（mysql_close() 不会关闭由 mysql_pconnect() 建立的连接）。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// pconnect.php</span></span><br><span class="line"><span class="variable">$con</span> = mysql_pconnect(<span class="string">&quot;localhost&quot;</span>, <span class="string">&quot;root&quot;</span>, <span class="string">&quot;123456&quot;</span>);</span><br><span class="line"><span class="comment">// connect.php</span></span><br><span class="line"><span class="comment">// $con = mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;123456&quot;);</span></span><br><span class="line"><span class="keyword">if</span> (!<span class="variable">$con</span>) &#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">&#x27;Could not connect: &#x27;</span> . mysql_error());</span><br><span class="line">&#125;</span><br><span class="line">sleep(<span class="number">10</span>)</span><br></pre></td></tr></table></figure>
-<p>注意，此种连接仅能用于模块版本的 PHP。(我用的是 Nginx+PHP-FPM 模式，而非 Apache+php_module 模式。 )</p>
 
       
     </div>
