@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">382</span>
+          <span class="site-state-item-count">383</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,95 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/05/09/Laravel%E4%B8%AD%E7%9A%84%E6%A8%A1%E5%9E%8B%E4%BA%8B%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/05/09/Laravel%E4%B8%AD%E7%9A%84%E6%A8%A1%E5%9E%8B%E4%BA%8B%E4%BB%B6/" class="post-title-link" itemprop="url">Laravel中的模型事件</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-05-09 15:59:46" itemprop="dateCreated datePublished" datetime="2017-05-09T15:59:46+09:00">2017-05-09</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:18:58" itemprop="dateModified" datetime="2018-03-27T22:18:58+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+人生本无意义，唯有寻趣。
+</blockquote>
+### 一个简单的例子
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Event::listen(<span class="string">&#x27;eloquent.created: App\User&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">Log::info(<span class="string">&#x27;haha&#x27;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">&#x27;hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">\App\User::forceCreate([</span><br><span class="line"><span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;yangzie&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;email&#x27;</span> =&gt; <span class="string">&#x27;yang11@qq.ttt&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;password&#x27;</span> =&gt;bcrypt(str_random(<span class="number">6</span>))</span><br><span class="line">    ]);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+### 比较规整的写法
+
+<ul>
+<li><p>在Providers\EventServiceProvider.php 添加:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="variable">$listen</span> = [</span><br><span class="line">	<span class="string">&#x27;App\Events\UserCreated&#x27;</span> =&gt; [</span><br><span class="line">	<span class="string">&#x27;App\Listeners\NotifyAdminUserCreated&#x27;</span>,</span><br><span class="line">	],</span><br><span class="line">];</span><br></pre></td></tr></table></figure></li>
+<li><p>执行命令:<br>会生成两个文件<br>Events/UserCreated.php<br>Listeners/NotifyAdminUserCreated.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan event:generate</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ul>
+<li>在User 模型中:<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Events</span>\<span class="title">UserCreated</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$events</span> = [</span><br><span class="line">	<span class="string">&#x27;created&#x27;</span> =&gt; UserCreated::class</span><br><span class="line">];</span><br></pre></td></tr></table></figure></li>
+<li>在监听文件中<br>app\Listeners\NotifyAdminUserCreated.php<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params">UserCreated <span class="variable">$event</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="variable">$post</span> = <span class="variable">$event</span>-&gt;post;</span><br><span class="line">	\Log::info(<span class="variable">$post</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>在事件文件中:<br>app\Events\UserCreated.php<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="variable">$post</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$post</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">$this</span>-&gt;post = <span class="variable">$post</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="Observer写法-推荐"><a href="#Observer写法-推荐" class="headerlink" title="Observer写法(推荐)"></a>Observer写法(推荐)</h3><p><a target="_blank" rel="noopener" href="https://laravel-china.org/articles/6657/model-events-and-observer-in-laravel">https://laravel-china.org/articles/6657/model-events-and-observer-in-laravel</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -941,92 +1030,6 @@ sql_mode是个很容易被忽视的变量，默认值是空值，在这种设置
 
 <h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">trace_sql</span>(<span class="params"><span class="variable">$dump</span> = <span class="literal">false</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    DB::listen(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$event</span></span>) <span class="keyword">use</span>(<span class="params"><span class="variable">$dump</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$dump</span>) &#123;</span><br><span class="line">            dump(<span class="variable">$event</span>-&gt;sql);</span><br><span class="line">            dump(<span class="variable">$event</span>-&gt;bindings);</span><br><span class="line">        &#125;</span><br><span class="line">        Log::info(<span class="variable">$event</span>-&gt;sql);</span><br><span class="line">        Log::info(<span class="variable">$event</span>-&gt;bindings);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    trace_sql();</span><br><span class="line">    <span class="variable">$query</span> = Order::query();</span><br><span class="line">    <span class="comment">//$query-&gt;whereBetween(&#x27;updated_at&#x27;,[Carbon::today(), Carbon::tomorrow()]);</span></span><br><span class="line">    <span class="variable">$query</span>-&gt;whereHas(<span class="string">&#x27;incomeExpenditure&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$query</span></span>) </span>&#123;</span><br><span class="line">       <span class="variable">$query</span>-&gt;whereBetween(<span class="string">&#x27;created_at&#x27;</span>,[Carbon::today(), Carbon::tomorrow()])-&gt;where(<span class="string">&#x27;value&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, <span class="number">0</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="variable">$orders</span> = <span class="variable">$query</span>-&gt;where(<span class="string">&#x27;status&#x27;</span>, <span class="string">&#x27;paid&#x27;</span>)-&gt;with(<span class="string">&#x27;products&#x27;</span>)-&gt;orderBy(<span class="string">&#x27;updated_at&#x27;</span>, <span class="string">&#x27;desc&#x27;</span>)-&gt;paginate(<span class="number">1000</span>);</span><br><span class="line">    <span class="variable">$datas</span> = <span class="keyword">$this</span>-&gt;todayStatistics();</span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">&#x27;home.index&#x27;</span>, [<span class="string">&#x27;orders&#x27;</span> =&gt; <span class="variable">$orders</span>, <span class="string">&#x27;datas&#x27;</span> =&gt; <span class="variable">$datas</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/03/27/nginx%E7%9A%84%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E8%B7%B5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/03/27/nginx%E7%9A%84%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E8%B7%B5/" class="post-title-link" itemprop="url">nginx的反向代理和负载均衡实践</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-03-27 08:58:36" itemprop="dateCreated datePublished" datetime="2017-03-27T08:58:36+09:00">2017-03-27</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:34:03" itemprop="dateModified" datetime="2018-03-27T22:34:03+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-有些人让你对明天充满期许，却再也没有出现在你的明天里。
-</blockquote>
-### apache的配置
-使用 Apache 模拟出两个站点,分别使用8081和8082端口
-访问:
-http://121.42.176.99:8081/
-http://121.42.176.99:8082/
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">Listen <span class="number">8081</span></span><br><span class="line">&lt;VirtualHost *:<span class="number">8081</span>&gt;</span><br><span class="line">    ServerAdmin webmaster@dummy-host2.example.com</span><br><span class="line">    DocumentRoot <span class="string">&quot;/usr/local/httpd/htdocs/test&quot;</span></span><br><span class="line">    DirectoryIndex index.html index.php</span><br><span class="line">    ServerName <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line">    ErrorLog <span class="string">&quot;logs/dummy-host2.example.com-error_log&quot;</span></span><br><span class="line">    CustomLog <span class="string">&quot;logs/dummy-host2.example.com-access_log&quot;</span> common</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line">&lt;<span class="built_in">Directory</span> <span class="string">&quot;/usr/local/httpd/htdocs/test&quot;</span>&gt;</span><br><span class="line">    Options FollowSymLinks</span><br><span class="line">    AllowOverride  all</span><br><span class="line">    allow <span class="keyword">from</span> all</span><br><span class="line">    <span class="keyword">Require</span> all granted</span><br><span class="line">&lt;/<span class="built_in">Directory</span>&gt;</span><br><span class="line">Listen <span class="number">8082</span></span><br><span class="line">&lt;VirtualHost *:<span class="number">8082</span>&gt;</span><br><span class="line">    ServerAdmin webmaster@dummy-host2.example.com</span><br><span class="line">    DocumentRoot <span class="string">&quot;/usr/local/httpd/htdocs/test1&quot;</span></span><br><span class="line">    DirectoryIndex index.html index.php</span><br><span class="line">    ServerName <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line">    ErrorLog <span class="string">&quot;logs/dummy-host2.example.com-error_log&quot;</span></span><br><span class="line">    CustomLog <span class="string">&quot;logs/dummy-host2.example.com-access_log&quot;</span> common</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line">&lt;<span class="built_in">Directory</span> <span class="string">&quot;/usr/local/httpd/htdocs/test&quot;</span>&gt;</span><br><span class="line">    Options FollowSymLinks</span><br><span class="line">    AllowOverride  all</span><br><span class="line">    allow <span class="keyword">from</span> all</span><br><span class="line">    <span class="keyword">Require</span> all granted</span><br><span class="line">&lt;/<span class="built_in">Directory</span>&gt;</span><br></pre></td></tr></table></figure>
-网站的内容index.php 打印出服务器变量: var_export($_SERVER);
-
-<h3 id="反向代理nginx"><a href="#反向代理nginx" class="headerlink" title="反向代理nginx"></a>反向代理nginx</h3><p>nginx 默认使用80端口,<a target="_blank" rel="noopener" href="http://121.42.176.99/">http://121.42.176.99/</a><br>配置:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_passs http:<span class="comment">//localhost:8081</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>之后重启nginx<br>这时候访问<a target="_blank" rel="noopener" href="http://121.42.176.99/,%E5%B0%B1%E4%BC%9A%E8%AE%BF%E9%97%AE%E7%9A%84%E6%98%AFapache%E7%9A%848081%E7%AB%AF%E5%8F%A3">http://121.42.176.99/,就会访问的是apache的8081端口</a></p>
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>我们发现获取到的服务器信息不正确:<br> 1、HTTP_HOST:localhost:8081<br> 2、REMOTE_ADDR：127.0.0.1 (客户端的IP）<br>这会对我们的开发造成“迷茫”，因此要在nginx配置里加入<br>1、proxy_set_header Host $host;<br>2、proxy_set_header  X-Real-IP $remote_addr;</p>
-<p>其他的一些设置请google;</p>
 
       
     </div>
