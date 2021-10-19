@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">383</span>
+          <span class="site-state-item-count">384</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,79 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/06/05/laravel%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E5%AF%BC%E8%87%B4php%E8%BF%9B%E7%A8%8B%E5%86%85%E5%AD%98%E8%80%97%E5%B0%BD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/06/05/laravel%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E5%AF%BC%E8%87%B4php%E8%BF%9B%E7%A8%8B%E5%86%85%E5%AD%98%E8%80%97%E5%B0%BD/" class="post-title-link" itemprop="url">Laravel大量数据库查询导致php进程内存耗尽</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2019-06-05 12:39:26 / 修改时间：13:47:16" itemprop="dateCreated datePublished" datetime="2019-06-05T12:39:26+09:00">2019-06-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+行路难，不在水，不在山，只在人情反覆间
+</blockquote>
+
+<p>Laravel框架默认存储每次请求(每次命令行执行也相当于一次请求)的所有数据库查询语句！！！<br>在普通的http中数据库请求语句并不多，所有不会导致问题，但是需要大量数据库查询的命令行工具就显然不能这么干，</p>
+<h3 id="禁用query日志"><a href="#禁用query日志" class="headerlink" title="禁用query日志"></a>禁用query日志</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DB::connection()-&gt;disableQueryLog();  <span class="comment">//禁用query log</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="打印sql"><a href="#打印sql" class="headerlink" title="打印sql"></a>打印sql</h3><p>在 <code>AppServiceProvider.php</code> 的 boot 方法中添加如下内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (env(<span class="string">&#x27;APP_ENV&#x27;</span>) === <span class="string">&#x27;local&#x27;</span>) &#123;</span><br><span class="line">        DB::connection()-&gt;enableQueryLog();</span><br><span class="line">        Event::listen(<span class="string">&#x27;kernel.handled&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$request</span>, <span class="variable">$response</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> ( <span class="variable">$request</span>-&gt;has(<span class="string">&#x27;sql-debug&#x27;</span>) ) &#123;</span><br><span class="line">                <span class="variable">$queries</span> = DB::getQueryLog();</span><br><span class="line">                dd(<span class="variable">$queries</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -983,82 +1056,6 @@ Hope is a good thing and maybe the best of things. And no good thing ever dies.
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://laravel-news.com/laravel-collections-when-method">https://laravel-news.com/laravel-collections-when-method</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/09/05/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%88%86%E5%B8%81%E9%A1%B9%E7%9B%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/09/05/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%88%86%E5%B8%81%E9%A1%B9%E7%9B%AE/" class="post-title-link" itemprop="url">区块链分币项目</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-09-05 08:36:29 / 修改时间：09:48:58" itemprop="dateCreated datePublished" datetime="2018-09-05T08:36:29+09:00">2018-09-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我徒然学会了拒绝热闹，却还未透悟真正的冷清
-</blockquote>
-
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>一个使用虚拟货币进行交易的项目， 通过小金额的参与， 获得大的收益，架构上才用Laravel和Swooole相结合，Socket消息事实推送。</p>
-<h3 id="功能点"><a href="#功能点" class="headerlink" title="功能点"></a>功能点</h3><h4 id="首页展示"><a href="#首页展示" class="headerlink" title="首页展示"></a>首页展示</h4><p><img src="/images/box01.png"></p>
-<h4 id="倒计时购买页面"><a href="#倒计时购买页面" class="headerlink" title="倒计时购买页面"></a>倒计时购买页面</h4><p><img src="/images/box02.png"></p>
-<h4 id="邀请奖励页面"><a href="#邀请奖励页面" class="headerlink" title="邀请奖励页面"></a>邀请奖励页面</h4><p><img src="/images/box03.png"></p>
-<h4 id="开奖锁定倒计时页面"><a href="#开奖锁定倒计时页面" class="headerlink" title="开奖锁定倒计时页面"></a>开奖锁定倒计时页面</h4><p><img src="/images/box04.png"></p>
-<h4 id="中奖通知页面"><a href="#中奖通知页面" class="headerlink" title="中奖通知页面"></a>中奖通知页面</h4><p><img src="/images/box05.png"></p>
-<h4 id="自动充值页面"><a href="#自动充值页面" class="headerlink" title="自动充值页面"></a>自动充值页面</h4><p><img src="/images/box06.png"></p>
-<h4 id="提现页面"><a href="#提现页面" class="headerlink" title="提现页面"></a>提现页面</h4><p><img src="/images/box07.png"></p>
 
       
     </div>

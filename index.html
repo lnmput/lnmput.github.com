@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">383</span>
+          <span class="site-state-item-count">384</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,95 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/19/golang%E4%B8%AD%E7%9A%84string%E5%92%8Cbyte%E7%90%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/10/19/golang%E4%B8%AD%E7%9A%84string%E5%92%8Cbyte%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">golang中的string和byte理解</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-10-19 22:23:53 / 修改时间：22:37:24" itemprop="dateCreated datePublished" datetime="2021-10-19T22:23:53+09:00">2021-10-19</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+有些鸟儿是注定不会被关在牢笼里的，它们的每一片羽毛都闪耀着自由的光辉
+</blockquote>
+
+<p>Go语言中有两种可以储存一串字符的类型，分别是字符串<code>string</code>和<code>byte</code>类型数组<code>[]byte</code>，但是他们直接并不能直接使用等于号赋值，也不能单纯的转换，而是要通过切片来进行转换。</p>
+<h3 id="string转换成-byte"><a href="#string转换成-byte" class="headerlink" title="string转换成[]byte"></a>string转换成[]byte</h3><p>可以直接使用<code>[]byte(str)</code>强制转换。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> str <span class="keyword">string</span> = <span class="string">&quot;test&quot;</span></span><br><span class="line">    <span class="keyword">var</span> data []<span class="keyword">byte</span> = []<span class="keyword">byte</span>(str)</span><br><span class="line"></span><br><span class="line">    fmt.Println(<span class="string">&quot;string: &quot;</span>, str)	<span class="comment">// string: test</span></span><br><span class="line">    fmt.Println(<span class="string">&quot;[]byte: &quot;</span>, data)	<span class="comment">// []byte: [116 101 115 116]</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>可以看到<code>[]byte</code>输出的结果正是<code>string</code>的各个字符对应的<code>ASCII</code>码。<br>或者</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">String2Bytes</span><span class="params">(s <span class="keyword">string</span>)</span> []<span class="title">byte</span></span> &#123;</span><br><span class="line">    sh := (*reflect.StringHeader)(unsafe.Pointer(&amp;s))</span><br><span class="line">    bh := reflect.SliceHeader&#123;</span><br><span class="line">        Data: sh.Data,</span><br><span class="line">        Len:  sh.Len,</span><br><span class="line">        Cap:  sh.Len,</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> *(*[]<span class="keyword">byte</span>)(unsafe.Pointer(&amp;bh))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="byte转换成string"><a href="#byte转换成string" class="headerlink" title="[]byte转换成string"></a>[]byte转换成string</h3><p>要将<code>byte</code>数组转换成<code>string</code>不能直接转换，而需要将<code>[]byte</code>的切片转换。即使用<code>string(数组名[:])</code>进行转换。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> data [<span class="number">5</span>]<span class="keyword">byte</span></span><br><span class="line">	data[<span class="number">0</span>] = <span class="string">&#x27;T&#x27;</span></span><br><span class="line">	data[<span class="number">1</span>] = <span class="string">&#x27;E&#x27;</span></span><br><span class="line">	data[<span class="number">2</span>] = <span class="string">&#x27;S&#x27;</span></span><br><span class="line">	data[<span class="number">3</span>] = <span class="string">&#x27;T&#x27;</span></span><br><span class="line">	<span class="keyword">var</span> str <span class="keyword">string</span> = <span class="keyword">string</span>(data[:])</span><br><span class="line">	fmt.Println(<span class="string">&quot;[]byte: &quot;</span>, data)	<span class="comment">// []byte: [84 69 83 84 0]</span></span><br><span class="line">	fmt.Println(<span class="string">&quot;string: &quot;</span>, str)	<span class="comment">// string: TEST</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// []byte to string</span></span><br><span class="line">s2 := <span class="keyword">string</span>(b)</span><br></pre></td></tr></table></figure>
+<p>再或者</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Bytes2String</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> *(*<span class="keyword">string</span>)(unsafe.Pointer(&amp;b))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="二者区别"><a href="#二者区别" class="headerlink" title="二者区别"></a>二者区别</h3><p>对于[]byte与string而言，两者之间最大的区别就是string的值不能改变。这该如何理解呢？下面通过两个例子来说明。</p>
+<p>对于[]byte来说，以下操作是可行的：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">b := []<span class="keyword">byte</span>(<span class="string">&quot;Hello Gopher!&quot;</span>)</span><br><span class="line">b [<span class="number">1</span>] = <span class="string">&#x27;T&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>string，修改操作是被禁止的：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">&quot;Hello Gopher!&quot;</span></span><br><span class="line">s[<span class="number">1</span>] = <span class="string">&#x27;T&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>而string能支持这样的操作：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">&quot;Hello Gopher!&quot;</span></span><br><span class="line">s = <span class="string">&quot;Tello Gopher!&quot;</span></span><br></pre></td></tr></table></figure>
+<p>字符串的值不能被更改，但可以被替换。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -960,117 +1049,6 @@ This trait provides a temporary($relationship) method on your model for you to a
 <p>删除已编译对象的 <code>make clean</code> 也是可用的，并且允许你增量构建失败时强制重新构建扩展。 另外 <code>phpize</code> 提供了一个清理选项 <code>phpize --clean</code>。该命令将删除所有 <code>phpize</code> 导入的文件和通过 <code>/configure</code> 脚本生成的文件。</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://learnku.com/docs/php-internals/php7/building_extensions/6849">https://learnku.com/docs/php-internals/php7/building_extensions/6849</a><br><a target="_blank" rel="noopener" href="https://digitalist-tech.se/blogg/webp-enabling-php-gd-library">https://digitalist-tech.se/blogg/webp-enabling-php-gd-library</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/09/10/golang%E7%94%9F%E6%88%90%E9%9A%8F%E6%9C%BA%E6%95%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/09/10/golang%E7%94%9F%E6%88%90%E9%9A%8F%E6%9C%BA%E6%95%B0/" class="post-title-link" itemprop="url">golang生成随机数</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2021-09-10 13:31:34 / 修改时间：13:56:05" itemprop="dateCreated datePublished" datetime="2021-09-10T13:31:34+09:00">2021-09-10</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-人为什么害怕独处呢？
-
-<p>因为人在独处的时候，总是会听到心里深处的声音，这个心灵深处的声音会不断逼问你，你这一生到底想干嘛？</p>
-</blockquote>
-
-<h3 id="Pseudorandom-numbers"><a href="#Pseudorandom-numbers" class="headerlink" title="Pseudorandom numbers"></a>Pseudorandom numbers</h3><p>The <code>math/rand</code> package provided by the Go Standard Library gives us pseudo-random number generators (PRNG), also called deterministic random bit generators.</p>
-<p>As with all pseudo number generators, any number generated through <code>math/rand</code> is not really random by default, as being deterministic it will always print the same value each time.</p>
-<p>As an example, try running this code which introduces <code>rand.Intn(n)</code>, which returns a random number between <code>0</code> and <code>n - 1</code>.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;math/rand&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>You’ll always see the same sequence every time you run the program. The random number changes inside the program, but every time you run it, you’ll get the same output:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">11</span></span><br><span class="line"><span class="number">27</span></span><br><span class="line"><span class="number">17</span></span><br><span class="line"><span class="number">29</span></span><br><span class="line"><span class="number">1</span></span><br></pre></td></tr></table></figure>
-
-<p>This is because by default the seed is always the same, the number 1. To actually get a random number, you need to provide a unique seed for your program. You really want to not forget seeding, and instead properly seed our pseudonumber generator. How?</p>
-<p>Use <code>rand.Seed()</code> before calling any <code>math/rand</code> method, passing an <code>int64</code> value. You just need to seed once in your program, not every time you need a random number. The most used seed is the current time, converted to <code>int64</code> by UnixNano with <code>rand.Seed(time.Now().UnixNano())</code>:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;math/rand&quot;</span></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    rand.Seed(time.Now().UnixNano())</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">    fmt.Println(rand.Intn(<span class="number">30</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Remember that due to its sandboxing, the Go Playground always begins with the same time, so this code won’t work as expected. Try it on a real environment, and the numbers that previosly didn’t change, they will now print differently each time you run the program.</p>
-<p>Some common examples are listed below for ease of reuse:</p>
-<h3 id="Generate-a-random-integer"><a href="#Generate-a-random-integer" class="headerlink" title="Generate a random integer"></a>Generate a random integer</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;math/rand&quot;</span></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Returns an int &gt;= min, &lt; max</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">randomInt</span><span class="params">(min, max <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> min + rand.Intn(max-min)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    rand.Seed(time.Now().UnixNano())</span><br><span class="line">    fmt.Println(randomInt(<span class="number">1</span>, <span class="number">11</span>)) <span class="comment">//get an int in the 1...10 range</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Generate-a-random-string"><a href="#Generate-a-random-string" class="headerlink" title="Generate a random string"></a>Generate a random string</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;math/rand&quot;</span></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Returns an int &gt;= min, &lt; max</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">randomInt</span><span class="params">(min, max <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> min + rand.Intn(max-min)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Generate a random string of A-Z chars with len = l</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">randomString</span><span class="params">(<span class="built_in">len</span> <span class="keyword">int</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    bytes := <span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="built_in">len</span>)</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>; i++ &#123;</span><br><span class="line">        bytes[i] = <span class="keyword">byte</span>(randomInt(<span class="number">65</span>, <span class="number">90</span>))</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">string</span>(bytes)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    rand.Seed(time.Now().UnixNano())</span><br><span class="line">    fmt.Println(randomString(<span class="number">10</span>)) <span class="comment">// print 10 chars</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Will return 10 chars in uppercase format. Change</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bytes[i] = <span class="keyword">byte</span>(randomInt(<span class="number">65</span>, <span class="number">90</span>))</span><br></pre></td></tr></table></figure>
-<p>to</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bytes[i] = <span class="keyword">byte</span>(randomInt(<span class="number">97</span>, <span class="number">122</span>))</span><br></pre></td></tr></table></figure>
-<p>for just lowercase.</p>
-<p>If you instead want to have a pool of specific chars to pick from, use</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;math/rand&quot;</span></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> pool = <span class="string">&quot;_:$%&amp;/()&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Generate a random string of A-Z chars with len = l</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">randomString</span><span class="params">(l <span class="keyword">int</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    bytes := <span class="built_in">make</span>([]<span class="keyword">byte</span>, l)</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; l; i++ &#123;</span><br><span class="line">        bytes[i] = pool[rand.Intn(<span class="built_in">len</span>(pool))]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">string</span>(bytes)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    rand.Seed(time.Now().UnixNano())</span><br><span class="line">    fmt.Println(randomString(<span class="number">1000</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Change len(pool) to utf8.RuneCountInString(pool) if you use non-ascii strings, as len() counts the bytes, but not all chars take just one byte in Unicode - see <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/12668681/how-to-get-the-number-of-characters-in-a-string">https://stackoverflow.com/questions/12668681/how-to-get-the-number-of-characters-in-a-string</a>.</p>
-<h3 id="Generate-a-random-array-of-integers"><a href="#Generate-a-random-array-of-integers" class="headerlink" title="Generate a random array of integers"></a>Generate a random array of integers</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;math/rand&quot;</span></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">randomArray</span><span class="params">(<span class="built_in">len</span> <span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">    a := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="built_in">len</span>)</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt;= <span class="built_in">len</span><span class="number">-1</span>; i++ &#123;</span><br><span class="line">        a[i] = rand.Intn(<span class="built_in">len</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> a</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    rand.Seed(time.Now().UnixNano())</span><br><span class="line">    fmt.Println(randomArray(<span class="number">10</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Crypto-level-random-numbers"><a href="#Crypto-level-random-numbers" class="headerlink" title="Crypto-level random numbers"></a>Crypto-level random numbers</h3><p>Go also provides a Cryptographically secure pseudorandom number generator (CSPRNG) in the standard library package crypto.rand</p>
-<p>So you might question, why should I even use the pseudo-number random generator library provided by <code>math/rand</code> instead? Well, it depends on the use case. <code>math/rand</code> is much faster for applications that don’t need crypto-level or security-related random data generation. crypto.rand is suited for secure and crypto-ready usage, but it’s slower.</p>
-<p>What it should be used for? For example, generating passwords, CSRF tokens, session keys, or anything remotely related to security.</p>
-<p>It does not rely on the current time, like we did in the previous examples in math/rand, but instead it uses the operating system CSPRNG APIs: the CryptGenRandom API on Windows, and <code>/dev/urandom/</code> on all the others (<code>Linux, OSX, *nix</code>)</p>
-<p>You get 256 random bytes directly with</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;crypto/rand&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    key := [<span class="number">256</span>]<span class="keyword">byte</span>&#123;&#125;</span><br><span class="line">    _, err := rand.Read(key[:])</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(err)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(key)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>I’m taking a code sample from Matt Silverlock: you can make it more general and create a random bytes generation function</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// GenerateRandomBytes returns securely generated random bytes.</span></span><br><span class="line"><span class="comment">// It will return an error if the system&#x27;s secure random</span></span><br><span class="line"><span class="comment">// number generator fails to function correctly, in which</span></span><br><span class="line"><span class="comment">// case the caller should not continue.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GenerateRandomBytes</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="params">([]<span class="keyword">byte</span>, error)</span></span> &#123;</span><br><span class="line">    b := <span class="built_in">make</span>([]<span class="keyword">byte</span>, n)</span><br><span class="line">    _, err := rand.Read(b)</span><br><span class="line">    <span class="comment">// Note that err == nil only if we read len(b) bytes.</span></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> b, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>and using this, a random string generation function,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// GenerateRandomString returns a URL-safe, base64 encoded</span></span><br><span class="line"><span class="comment">// securely generated random string.</span></span><br><span class="line"><span class="comment">// It will return an error if the system&#x27;s secure random</span></span><br><span class="line"><span class="comment">// number generator fails to function correctly, in which</span></span><br><span class="line"><span class="comment">// case the caller should not continue.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GenerateRandomString</span><span class="params">(s <span class="keyword">int</span>)</span> <span class="params">(<span class="keyword">string</span>, error)</span></span> &#123;</span><br><span class="line">    b, err := GenerateRandomBytes(s)</span><br><span class="line">    <span class="keyword">return</span> base64.URLEncoding.EncodeToString(b), err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://flaviocopes.com/go-random/">https://flaviocopes.com/go-random/</a></p>
 </blockquote>
 
       
