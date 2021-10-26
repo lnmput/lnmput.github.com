@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">384</span>
+          <span class="site-state-item-count">389</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,458 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/12/06/%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E4%B8%8B%E8%BD%BD%E5%9B%BE%E7%89%87%E7%9A%84%E7%88%AC%E8%99%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/12/06/%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E4%B8%8B%E8%BD%BD%E5%9B%BE%E7%89%87%E7%9A%84%E7%88%AC%E8%99%AB/" class="post-title-link" itemprop="url">一个简单的下载图片的爬虫</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-12-06 22:37:05" itemprop="dateCreated datePublished" datetime="2016-12-06T22:37:05+09:00">2016-12-06</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:00:27" itemprop="dateModified" datetime="2018-03-27T22:00:27+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你为什么从事喜剧行业？人们总是嘲笑我，所以我想，去他妈的，干脆收他们点儿钱！
+</blockquote>
+一个简单的下载图片的爬虫
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line">headers = &#123;<span class="string">&#x27;User-Agent&#x27;</span>:<span class="string">&quot;Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36&quot;</span>&#125;</span><br><span class="line">all_url = <span class="string">&#x27;http://www.mzitu.com/all&#x27;</span></span><br><span class="line">start_html = requests.get(all_url,  headers=headers)</span><br><span class="line">Soup = BeautifulSoup(start_html.text, <span class="string">&#x27;lxml&#x27;</span>)</span><br><span class="line"></span><br><span class="line">all_a = Soup.find(<span class="string">&#x27;div&#x27;</span>, class_=<span class="string">&#x27;all&#x27;</span>).find_all(<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> a <span class="keyword">in</span> all_a:</span><br><span class="line">    title = a.get_text()</span><br><span class="line">    href = a.get(<span class="string">&#x27;href&#x27;</span>)</span><br><span class="line">    html = requests.get(href, headers=headers)</span><br><span class="line">    html_Soup = BeautifulSoup(html.text, <span class="string">&#x27;lxml&#x27;</span>)</span><br><span class="line">    max_span = html_Soup.findAll(<span class="string">&#x27;span&#x27;</span>)[<span class="number">10</span>].get_text()</span><br><span class="line">    <span class="keyword">for</span> page <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="built_in">int</span>(max_span) + <span class="number">1</span>):</span><br><span class="line">        page_url = href + <span class="string">&#x27;/&#x27;</span> + <span class="built_in">str</span>(page)</span><br><span class="line">        img_html = requests.get(page_url, headers=headers)</span><br><span class="line">        img_Soup = BeautifulSoup(img_html.text, <span class="string">&#x27;lxml&#x27;</span>)</span><br><span class="line">        img_url = img_Soup.find(<span class="string">&#x27;div&#x27;</span>, class_=<span class="string">&#x27;main-image&#x27;</span>).find(<span class="string">&#x27;img&#x27;</span>)[<span class="string">&#x27;src&#x27;</span>]</span><br><span class="line">        name = img_url[-<span class="number">9</span>:-<span class="number">4</span>]</span><br><span class="line">        img = requests.get(img_url, headers=headers)</span><br><span class="line">        f = <span class="built_in">open</span>(name + <span class="string">&#x27;.jpg&#x27;</span>, <span class="string">&#x27;ab&#x27;</span>)</span><br><span class="line">        f.write(img.content)</span><br><span class="line">        f.close()</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/12/04/laravel5-2%E4%BD%BF%E7%94%A8JWT/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/12/04/laravel5-2%E4%BD%BF%E7%94%A8JWT/" class="post-title-link" itemprop="url">laravel5.2使用JWT</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-12-04 13:45:40" itemprop="dateCreated datePublished" datetime="2016-12-04T13:45:40+09:00">2016-12-04</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:16:02" itemprop="dateModified" datetime="2018-03-27T22:16:02+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+more less
+</blockquote>
+
+<p>JWT stand for Json Web Token. JWT will helps to create authentication and connect front-end and back-end function. JWT through we can create login and register API. So first we have to install “tymon/jwt-auth” package in laravel 5.2.</p>
+<h3 id="JWT-Installation"><a href="#JWT-Installation" class="headerlink" title="JWT Installation"></a>JWT Installation</h3><p>First fire following command on your terminal.</p>
+<p>Installation Package</p>
+<p><code>composer require tymon/jwt-auth</code><br>After install this package, Now open config/app.php file and add service provider and aliase.<br><code>config/app.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;providers&#x27;</span> =&gt; [</span><br><span class="line">	....</span><br><span class="line">	<span class="string">&#x27;Tymon\JWTAuth\Providers\JWTAuthServiceProvider&#x27;</span>,</span><br><span class="line">],</span><br><span class="line"><span class="string">&#x27;aliases&#x27;</span> =&gt; [</span><br><span class="line">	....</span><br><span class="line">	<span class="string">&#x27;JWTAuth&#x27;</span> =&gt; <span class="string">&#x27;Tymon\JWTAuth\Facades\JWTAuth&#x27;</span></span><br><span class="line">],</span><br></pre></td></tr></table></figure>
+<p>Now we need to publish JWT configration file, that way we can change configration like token expire time etc. so, let’s fire bellow command.</p>
+<p><code>php artisan vendor:publish --provider=&quot;Tymon\JWTAuth\Providers\JWTAuthServiceProvider&quot;</code><br>At last on installation, we have to generate jwt key, fire bellow command on your terminal.</p>
+<p><code>php artisan jwt:generate</code></p>
+<h3 id="Create-API-Route"><a href="#Create-API-Route" class="headerlink" title="Create API Route"></a>Create API Route</h3><p>Now we require to create create route for API, in bellow route you can see i use two middleware “api” and “cors”. cors is not mandatory, but when you call api and found like:</p>
+<p>“Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at <a target="_blank" rel="noopener" href="http://test.com/api/register">http://test.com/api/register</a>. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing).”</p>
+<p>Then you have two must be create cors middleware by following link : Ajax - Cross-Origin Request Blocked in Larave 5?.</p>
+<p><code>app/Http/routes.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Route::group([<span class="string">&#x27;middleware&#x27;</span> =&gt; [<span class="string">&#x27;api&#x27;</span>,<span class="string">&#x27;cors&#x27;</span>],<span class="string">&#x27;prefix&#x27;</span> =&gt; <span class="string">&#x27;api&#x27;</span>], <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    Route::post(<span class="string">&#x27;register&#x27;</span>, <span class="string">&#x27;APIController@register&#x27;</span>);</span><br><span class="line">    Route::post(<span class="string">&#x27;login&#x27;</span>, <span class="string">&#x27;APIController@login&#x27;</span>);</span><br><span class="line">    Route::group([<span class="string">&#x27;middleware&#x27;</span> =&gt; <span class="string">&#x27;jwt-auth&#x27;</span>], <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    	Route::post(<span class="string">&#x27;get_user_details&#x27;</span>, <span class="string">&#x27;APIController@get_user_details&#x27;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>In above i use also added jwt-auth for token is valid or not. so we must need to create jwt-auth middleware and first fire following command.</p>
+<p><code>php artisan make:middleware authJWT</code><br>On now you can check on Middleware(app/Http/Middleware) directory, you can find authJWT.php file and put bellow code on that file.</p>
+<p><code>app/Http/Middleware/authJWT.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Middleware</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">JWTAuth</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Exception</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">authJWT</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="variable">$user</span> = JWTAuth::toUser(<span class="variable">$request</span>-&gt;input(<span class="string">&#x27;token&#x27;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (<span class="built_in">Exception</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable">$e</span> <span class="keyword">instanceof</span> \Tymon\JWTAuth\Exceptions\TokenInvalidException)&#123;</span><br><span class="line">                <span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;error&#x27;</span>=&gt;<span class="string">&#x27;Token is Invalid&#x27;</span>]);</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span> (<span class="variable">$e</span> <span class="keyword">instanceof</span> \Tymon\JWTAuth\Exceptions\TokenExpiredException)&#123;</span><br><span class="line">                <span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;error&#x27;</span>=&gt;<span class="string">&#x27;Token is Expired&#x27;</span>]);</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                <span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;error&#x27;</span>=&gt;<span class="string">&#x27;Something is wrong&#x27;</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$next</span>(<span class="variable">$request</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Ok, now register new created middleware on Kernel.php(app/Http/Kernel.php) file and append following line.</p>
+<p><code>app/Http/Kernel.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Http</span>\<span class="title">Kernel</span> <span class="title">as</span> <span class="title">HttpKernel</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Kernel</span> <span class="keyword">extends</span> <span class="title">HttpKernel</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	...</span><br><span class="line">	...</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$routeMiddleware</span> = [</span><br><span class="line">        ...</span><br><span class="line">        <span class="string">&#x27;jwt-auth&#x27;</span> =&gt; \App\Http\Middleware\authJWT::class,</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Create-Controller"><a href="#Create-Controller" class="headerlink" title="Create Controller"></a>Create Controller</h3><p>Here we have to create controller that will manage all route request. so first create “APIController” and put bellow code.</p>
+<p><code>app/Http/Controllers/APIController.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Http</span>\<span class="title">Request</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">User</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Hash</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">JWTAuth</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">APIController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">register</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;        </span><br><span class="line">    	<span class="variable">$input</span> = <span class="variable">$request</span>-&gt;all();</span><br><span class="line">    	<span class="variable">$input</span>[<span class="string">&#x27;password&#x27;</span>] = Hash::make(<span class="variable">$input</span>[<span class="string">&#x27;password&#x27;</span>]);</span><br><span class="line">    	User::create(<span class="variable">$input</span>);</span><br><span class="line">        <span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;result&#x27;</span>=&gt;<span class="literal">true</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">login</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    	<span class="variable">$input</span> = <span class="variable">$request</span>-&gt;all();</span><br><span class="line">    	<span class="keyword">if</span> (!<span class="variable">$token</span> = JWTAuth::attempt(<span class="variable">$input</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;result&#x27;</span> =&gt; <span class="string">&#x27;wrong email or password.&#x27;</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        	<span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;result&#x27;</span> =&gt; <span class="variable">$token</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">get_user_details</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    	<span class="variable">$input</span> = <span class="variable">$request</span>-&gt;all();</span><br><span class="line">    	<span class="variable">$user</span> = JWTAuth::toUser(<span class="variable">$input</span>[<span class="string">&#x27;token&#x27;</span>]);</span><br><span class="line">        <span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;result&#x27;</span> =&gt; <span class="variable">$user</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Test-API-from-Front-end"><a href="#Test-API-from-Front-end" class="headerlink" title="Test API from Front-end"></a>Test API from Front-end</h3><p>Don’t forgot to change <a target="_blank" rel="noopener" href="http://learnl52.hd/">http://learnl52.hd</a> = your site url.</p>
+<p>Now we are ready to check our API from front-end side. i did make jquery ajax request example but you can also call API in angularjs. first fire register api that will return just success if user created success fully.</p>
+<p>Call Register API</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">	<span class="attr">url</span>: <span class="string">&quot;http://learnl52.hd/api/register&quot;</span>,</span><br><span class="line">	<span class="attr">dataType</span>: <span class="string">&quot;json&quot;</span>,</span><br><span class="line">	<span class="attr">type</span>: <span class="string">&quot;POST&quot;</span>,</span><br><span class="line">	<span class="attr">data</span>: &#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;HD&quot;</span>,<span class="string">&quot;email&quot;</span>:<span class="string">&quot;test@gmail.com&quot;</span>,<span class="string">&quot;password&quot;</span>:<span class="string">&quot;123456&quot;</span>&#125;,</span><br><span class="line">	<span class="attr">success</span>: <span class="function"><span class="keyword">function</span> (<span class="params">data</span>) </span>&#123;</span><br><span class="line">		alert(<span class="string">&quot;user created successfully&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>Now you can fire login API, this API will return token in result if, email and password will not wrong. that token you have to pass in all other route that way you can identify this user is current login user so fire following way:</p>
+<p>Call Login API</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">	<span class="attr">url</span>: <span class="string">&quot;http://learnl52.hd/api/login&quot;</span>,</span><br><span class="line">	<span class="attr">dataType</span>: <span class="string">&quot;json&quot;</span>,</span><br><span class="line">	<span class="attr">type</span>: <span class="string">&quot;POST&quot;</span>,</span><br><span class="line">	<span class="attr">data</span>: &#123;<span class="string">&quot;email&quot;</span>:<span class="string">&quot;test@gmail.com&quot;</span>,<span class="string">&quot;password&quot;</span>:<span class="string">&quot;123456&quot;</span>&#125;,</span><br><span class="line">	<span class="attr">success</span>: <span class="function"><span class="keyword">function</span> (<span class="params">data</span>) </span>&#123;</span><br><span class="line">		alert(data.result)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>At last we can fire get_user_details API, This API will take only one paramete token, token is that you find on login API. this API will return all users details if your token is valid, if token is not valid then return error message. fire ajax like this way:</p>
+<p>Call Get User Details API</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">	<span class="attr">url</span>: <span class="string">&quot;http://learnl52.hd/api/get_user_details&quot;</span>,</span><br><span class="line">	<span class="attr">dataType</span>: <span class="string">&quot;json&quot;</span>,</span><br><span class="line">	<span class="attr">type</span>: <span class="string">&quot;POST&quot;</span>,</span><br><span class="line">	<span class="attr">data</span>: &#123;<span class="string">&quot;token&quot;</span>:your toke here&#125;,</span><br><span class="line">	<span class="attr">success</span>: <span class="function"><span class="keyword">function</span> (<span class="params">data</span>) </span>&#123;</span><br><span class="line">		<span class="built_in">console</span>.log(data)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="add"><a href="#add" class="headerlink" title="add"></a>add</h3><p>Require the barryvdh/laravel-cors package in your composer.json and update your dependencies.</p>
+<p><code>composer require barryvdh/laravel-cors</code><br>Add the Cors\ServiceProvider to your<code>config/app.php</code>providers array:</p>
+<p><code>Barryvdh\Cors\ServiceProvider::class,</code></p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://itsolutionstuff.com/post/laravel-52-api-using-jwt-authentication-tutorial-from-scratch-exampleexample.html">http://itsolutionstuff.com/post/laravel-52-api-using-jwt-authentication-tutorial-from-scratch-exampleexample.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/12/02/flex%E5%B8%83%E5%B1%80%E6%96%B9%E5%BC%8F%E4%B9%8B%E5%AD%90%E5%85%83%E7%B4%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/12/02/flex%E5%B8%83%E5%B1%80%E6%96%B9%E5%BC%8F%E4%B9%8B%E5%AD%90%E5%85%83%E7%B4%A0/" class="post-title-link" itemprop="url">flex布局方式之子元素</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-12-02 14:44:04" itemprop="dateCreated datePublished" datetime="2016-12-02T14:44:04+09:00">2016-12-02</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:23:27" itemprop="dateModified" datetime="2018-03-27T22:23:27+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+　你必须很努力，才能看上去毫不费力
+</blockquote>
+最近学习了微信小程序，才接触到了这一布局方式，大概试了一下，记录之
+
+<h3 id="1-布局html"><a href="#1-布局html" class="headerlink" title="1. 布局html"></a>1. 布局html</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;container&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item item1&quot;</span>&gt;</span>1<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item item2&quot;</span>&gt;</span>2<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item item3&quot;</span>&gt;</span>3<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item item4&quot;</span>&gt;</span>4<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item item5&quot;</span>&gt;</span>5<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item item6&quot;</span>&gt;</span>6<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item item7&quot;</span>&gt;</span>7<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item item8&quot;</span>&gt;</span>8<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item item9&quot;</span>&gt;</span>9<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-order-属性"><a href="#2-order-属性" class="headerlink" title="2.order 属性"></a>2.order 属性</h3><p>order属性定义项目的排列顺序。数值越小，排列越靠前，默认为0。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.item1</span>&#123;</span><br><span class="line">	<span class="attribute">order</span>: <span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item2</span>&#123;</span><br><span class="line">	<span class="attribute">order</span>: <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-flex-grow属性"><a href="#3-flex-grow属性" class="headerlink" title="3. flex-grow属性"></a>3. flex-grow属性</h3><p>即如果子元素在父容器的横向上还没有撑满，左或者右都存在空间<br>flex-grow属性定义项目的放大比例，默认为0，即如果存在剩余空间，也不放大。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.item1</span>&#123;</span><br><span class="line">	<span class="attribute">order</span>: <span class="number">2</span>;</span><br><span class="line">	<span class="attribute">flex-grow</span>: <span class="number">2</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果三个元素都设置这样的属性，则由这三个元素一起撑满剩余的部分</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.item1</span>&#123;</span><br><span class="line">	<span class="attribute">flex-grow</span>: <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item2</span>&#123;</span><br><span class="line">	<span class="attribute">order</span>: <span class="number">1</span>;</span><br><span class="line">	<span class="attribute">flex-grow</span>: <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item3</span>&#123;</span><br><span class="line">	<span class="attribute">flex-grow</span>: <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="4-flex-shrink属性"><a href="#4-flex-shrink属性" class="headerlink" title="4. flex-shrink属性"></a>4. flex-shrink属性</h3><p>如果所有的子元素的宽度已经超过了父容器的宽度，而且设置了不能换行，这时候如果某个元素设置了这样的属性，<br>flex-shrink属性定义了项目的缩小比例，默认为1，即如果空间不足，该项目将缩小。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.item2</span>&#123;</span><br><span class="line">	<span class="attribute">flex-shrink</span>: <span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item3</span>&#123;</span><br><span class="line">	<span class="attribute">flex-shrink</span>: <span class="number">2</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/12/02/flex%E5%B8%83%E5%B1%80%E6%96%B9%E5%BC%8F%E4%B9%8B%E7%88%B6%E5%AE%B9%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/12/02/flex%E5%B8%83%E5%B1%80%E6%96%B9%E5%BC%8F%E4%B9%8B%E7%88%B6%E5%AE%B9%E5%99%A8/" class="post-title-link" itemprop="url">flex布局方式之父容器</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-12-02 14:43:57" itemprop="dateCreated datePublished" datetime="2016-12-02T14:43:57+09:00">2016-12-02</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:23:21" itemprop="dateModified" datetime="2018-03-27T22:23:21+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+没有学到死，就往死里学。
+</blockquote>
+最近学习了微信小程序，才接触到了这一布局方式，大概试了一下，记录：
+
+<p>使用方式：</p>
+<h3 id="1-html"><a href="#1-html" class="headerlink" title="1. html"></a>1. html</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;container&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item&quot;</span>&gt;</span>1<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item&quot;</span>&gt;</span>2<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item&quot;</span>&gt;</span>3<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item&quot;</span>&gt;</span>4<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item&quot;</span>&gt;</span>5<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item&quot;</span>&gt;</span>6<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item&quot;</span>&gt;</span>7<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item&quot;</span>&gt;</span>8<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;item&quot;</span>&gt;</span>9<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-定义基本css样式："><a href="#2-定义基本css样式：" class="headerlink" title="2. 定义基本css样式："></a>2. 定义基本css样式：</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">body</span>&#123;</span><br><span class="line">	<span class="attribute">background</span>: <span class="number">#c0ffb6</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.container</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">150px</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">200px</span>;</span><br><span class="line">	<span class="attribute">background-color</span>: <span class="number">#4cae4c</span>;</span><br><span class="line">	<span class="attribute">margin</span>: <span class="number">2px</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-设置父容器为flex布局："><a href="#3-设置父容器为flex布局：" class="headerlink" title="3. 设置父容器为flex布局："></a>3. 设置父容器为flex布局：</h3><ul>
+<li>div 块儿级元素<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.container</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">display</span>: flex;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>或者 行内元素<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.container</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">display</span>: inline-flex;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+设为Flex布局以后，子元素的float、clear和vertical-align属性将失效</li>
+</ul>
+<h3 id="4-flex-direction-属性："><a href="#4-flex-direction-属性：" class="headerlink" title="4. flex-direction 属性："></a>4. flex-direction 属性：</h3><p>决定容器里面元素的排列方式<br>横向排列<br>横向反转排列<br>纵向排列<br>纵向反转排列</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.container</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">display</span>: flex;</span><br><span class="line">	<span class="attribute">flex-direction</span>: column;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="5-flex-wrap-属性"><a href="#5-flex-wrap-属性" class="headerlink" title="5. flex-wrap 属性"></a>5. flex-wrap 属性</h3><p>横向排列的子元素是否换行<br>在子元素的大小超出了父容器的大小以后是换行显示<br>不换行： nowrap  设置了不换行以后，子元素的大小将。。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.container</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">display</span>: flex;</span><br><span class="line">	<span class="attribute">flex-direction</span>: row;</span><br><span class="line">	<span class="attribute">flex-wrap</span>: nowrap;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">650px</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">200px</span>;</span><br><span class="line">	<span class="attribute">background-color</span>: <span class="number">#4cae4c</span>;</span><br><span class="line">	<span class="attribute">margin</span>: <span class="number">2px</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="6-justify-content-属性"><a href="#6-justify-content-属性" class="headerlink" title="6. justify-content 属性"></a>6. justify-content 属性</h3><p>子元素的对齐方式<br>左对齐<br>右对齐<br>居中显示<br>相等间隔</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.container</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">display</span>: flex;</span><br><span class="line">	<span class="attribute">flex-direction</span>: row;</span><br><span class="line">	<span class="attribute">flex-wrap</span>: nowrap;</span><br><span class="line">	<span class="attribute">justify-content</span>: space-around;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="7-align-items"><a href="#7-align-items" class="headerlink" title="7. align-items:"></a>7. align-items:</h3><p>决定子元素在垂直位置上的对齐方式</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.container</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">display</span>: flex;</span><br><span class="line">	<span class="attribute">flex-direction</span>: row;</span><br><span class="line">	<span class="attribute">flex-wrap</span>: nowrap;</span><br><span class="line">	<span class="attribute">justify-content</span>: space-around;</span><br><span class="line">	<span class="attribute">align-items</span>: flex-end;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="8-align-self-属性"><a href="#8-align-self-属性" class="headerlink" title="8. align-self 属性"></a>8. align-self 属性</h3><p>决定当前元素的对齐方式，用于覆盖父容器的align-items 属性</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.container</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">	<span class="attribute">display</span>: flex;</span><br><span class="line">	<span class="attribute">flex-direction</span>: row;</span><br><span class="line">	<span class="attribute">flex-wrap</span>: nowrap;</span><br><span class="line">	<span class="attribute">align-items</span>: center;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item</span>&#123;</span><br><span class="line">	<span class="attribute">width</span>: <span class="number">450px</span>;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">200px</span>;</span><br><span class="line">	<span class="attribute">background-color</span>: <span class="number">#4cae4c</span>;</span><br><span class="line">	<span class="attribute">margin</span>: <span class="number">2px</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item1</span>&#123;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">120px</span>;</span><br><span class="line">	<span class="attribute">align-self</span>: flex-end;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item2</span>&#123;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">100px</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item3</span>&#123;</span><br><span class="line">	<span class="attribute">height</span>: <span class="number">150px</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html">http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/12/01/laravel%E5%92%8Cnginx%E7%9A%84404/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/12/01/laravel%E5%92%8Cnginx%E7%9A%84404/" class="post-title-link" itemprop="url">laravel和nginx的404</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-12-01 09:02:31" itemprop="dateCreated datePublished" datetime="2016-12-01T09:02:31+09:00">2016-12-01</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-04-25 10:36:54" itemprop="dateModified" datetime="2018-04-25T10:36:54+09:00">2018-04-25</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+是谁来自山川湖海，却囿于昼夜、厨房与爱。
+</blockquote>
+
+<h3 id="laravel的404"><a href="#laravel的404" class="headerlink" title="laravel的404"></a>laravel的404</h3><ul>
+<li>配置404页面<br>在<code>resources\views\errors\404.blade.php</code>，如果配置了该页面，那么访问任何一个不存在的路由，就会显示到该页面，同时返回的状态码也会是404，同样，也可以通过代码<code>abort(404);</code>来展示出404页面，如果在你的视图文件中没有配置404.blade.php 页面，那么访问一个不存在的路由就会引起程序报错。</li>
+</ul>
+<h3 id="nginx的404"><a href="#nginx的404" class="headerlink" title="nginx的404"></a>nginx的404</h3><ul>
+<li>配置404页面<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen  <span class="number">80</span>;</span><br><span class="line">    server_name  www.la51.dev la51.dev;</span><br><span class="line">    root   <span class="string">&quot;D:/phpStudy/WWW/la51/public&quot;</span>;</span><br><span class="line">    fastcgi_intercept_errors on;</span><br><span class="line">    error_page <span class="number">404</span>  /<span class="number">404</span>.html ;</span><br><span class="line">    location / &#123;</span><br><span class="line">        index  index.html index.htm index.php;</span><br><span class="line">        <span class="comment">#autoindex  on;</span></span><br><span class="line">        try_files <span class="variable">$uri</span> <span class="variable">$uri</span>/ /index.php?<span class="variable">$query_string</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>404.html在网站的根目录下，关键的两句，`fastcgi_intercept_errors on;error_page 404  /404.html ;这样访问一个不存在的页面，即使没有在laravel中做相关的配置，也能在路由不存在时跳转到404页面；</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -573,456 +1025,6 @@ ES中的聚合被分为两大类：Metric度量和bucket桶（原谅我英语差
 </blockquote>
 
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="comment"># @Author: LoveNight</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup <span class="keyword">as</span> BS</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ZhiHuClient</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;&quot;&quot;连接知乎的工具类，维护一个Session</span></span><br><span class="line"><span class="string">    2015.11.11</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    用法：</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    client = ZhiHuClient()</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    # 第一次使用时需要调用此方法登录一次，生成cookie文件</span></span><br><span class="line"><span class="string">    # 以后可以跳过这一步</span></span><br><span class="line"><span class="string">    client.login(&quot;username&quot;, &quot;password&quot;)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    # 用这个session进行其他网络操作，详见requests库</span></span><br><span class="line"><span class="string">    session = client.getSession()</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 网址参数是账号类型</span></span><br><span class="line">    TYPE_PHONE_NUM = <span class="string">&quot;phone_num&quot;</span></span><br><span class="line">    TYPE_EMAIL = <span class="string">&quot;email&quot;</span></span><br><span class="line">    loginURL = <span class="string">r&quot;http://www.zhihu.com/login/&#123;0&#125;&quot;</span></span><br><span class="line">    homeURL = <span class="string">r&quot;http://www.zhihu.com&quot;</span></span><br><span class="line">    captchaURL = <span class="string">r&quot;http://www.zhihu.com/captcha.gif&quot;</span></span><br><span class="line"></span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">&quot;User-Agent&quot;</span>: <span class="string">&quot;Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36&quot;</span>,</span><br><span class="line">        <span class="string">&quot;Accept&quot;</span>: <span class="string">&quot;text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8&quot;</span>,</span><br><span class="line">        <span class="string">&quot;Accept-Encoding&quot;</span>: <span class="string">&quot;gzip, deflate&quot;</span>,</span><br><span class="line">        <span class="string">&quot;Host&quot;</span>: <span class="string">&quot;www.zhihu.com&quot;</span>,</span><br><span class="line">        <span class="string">&quot;Upgrade-Insecure-Requests&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    captchaFile = os.path.join(sys.path[<span class="number">0</span>], <span class="string">&quot;captcha.gif&quot;</span>)</span><br><span class="line">    cookieFile = os.path.join(sys.path[<span class="number">0</span>], <span class="string">&quot;cookie&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self</span>):</span></span><br><span class="line">        os.chdir(sys.path[<span class="number">0</span>])  <span class="comment"># 设置脚本所在目录为当前工作目录</span></span><br><span class="line"></span><br><span class="line">        self.__session = requests.Session()</span><br><span class="line">        self.__session.headers = self.headers  <span class="comment"># 用self调用类变量是防止将来类改名</span></span><br><span class="line">        <span class="comment"># 若已经有 cookie 则直接登录</span></span><br><span class="line">        self.__cookie = self.__loadCookie()</span><br><span class="line">        <span class="keyword">if</span> self.__cookie:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;检测到cookie文件，直接使用cookie登录&quot;</span>)</span><br><span class="line">            self.__session.cookies.update(self.__cookie)</span><br><span class="line">            soup = BS(self.<span class="built_in">open</span>(<span class="string">r&quot;http://www.zhihu.com/&quot;</span>).text, <span class="string">&quot;html.parser&quot;</span>)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;已登陆账号： %s&quot;</span> % soup.find(<span class="string">&quot;span&quot;</span>, class_=<span class="string">&quot;name&quot;</span>).getText())</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;没有找到cookie文件，请调用login方法登录一次！&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 登录</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">login</span>(<span class="params">self, username, password</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        验证码错误返回：</span></span><br><span class="line"><span class="string">        &#123;&#x27;errcode&#x27;: 1991829, &#x27;r&#x27;: 1, &#x27;data&#x27;: &#123;&#x27;captcha&#x27;: &#x27;请提交正确的验证码 :(&#x27;&#125;, &#x27;msg&#x27;: &#x27;请提交正确的验证码 :(&#x27;&#125;</span></span><br><span class="line"><span class="string">        登录成功返回：</span></span><br><span class="line"><span class="string">        &#123;&#x27;r&#x27;: 0, &#x27;msg&#x27;: &#x27;登陆成功&#x27;&#125;</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        self.__username = username</span><br><span class="line">        self.__password = password</span><br><span class="line">        self.__loginURL = self.loginURL.<span class="built_in">format</span>(self.__getUsernameType())</span><br><span class="line">        <span class="comment"># 随便开个网页，获取登陆所需的_xsrf</span></span><br><span class="line">        html = self.<span class="built_in">open</span>(self.homeURL).text</span><br><span class="line">        soup = BS(html, <span class="string">&quot;html.parser&quot;</span>)</span><br><span class="line">        _xsrf = soup.find(<span class="string">&quot;input&quot;</span>, &#123;<span class="string">&quot;name&quot;</span>: <span class="string">&quot;_xsrf&quot;</span>&#125;)[<span class="string">&quot;value&quot;</span>]</span><br><span class="line">        <span class="comment"># 下载验证码图片</span></span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            captcha = self.<span class="built_in">open</span>(self.captchaURL).content</span><br><span class="line">            <span class="keyword">with</span> <span class="built_in">open</span>(self.captchaFile, <span class="string">&quot;wb&quot;</span>) <span class="keyword">as</span> output:</span><br><span class="line">                output.write(captcha)</span><br><span class="line">            <span class="comment"># 人眼识别</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;=&quot;</span> * <span class="number">50</span>)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;已打开验证码图片，请识别！&quot;</span>)</span><br><span class="line">            subprocess.call(self.captchaFile, shell=<span class="literal">True</span>)</span><br><span class="line">            captcha = <span class="built_in">input</span>(<span class="string">&quot;请输入验证码：&quot;</span>)</span><br><span class="line">            os.remove(self.captchaFile)</span><br><span class="line">            <span class="comment"># 发送POST请求</span></span><br><span class="line">            data = &#123;</span><br><span class="line">                <span class="string">&quot;_xsrf&quot;</span>: _xsrf,</span><br><span class="line">                <span class="string">&quot;password&quot;</span>: self.__password,</span><br><span class="line">                <span class="string">&quot;remember_me&quot;</span>: <span class="string">&quot;true&quot;</span>,</span><br><span class="line">                self.__getUsernameType(): self.__username,</span><br><span class="line">                <span class="string">&quot;captcha&quot;</span>: captcha</span><br><span class="line">            &#125;</span><br><span class="line">            res = self.__session.post(self.__loginURL, data=data)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;=&quot;</span> * <span class="number">50</span>)</span><br><span class="line">            <span class="comment"># print(res.text) # 输出脚本信息，调试用</span></span><br><span class="line">            <span class="keyword">if</span> res.json()[<span class="string">&quot;r&quot;</span>] == <span class="number">0</span>:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">&quot;登录成功&quot;</span>)</span><br><span class="line">                self.__saveCookie()</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">&quot;登录失败&quot;</span>)</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">&quot;错误信息 ---&gt;&quot;</span>, res.json()[<span class="string">&quot;msg&quot;</span>])</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getUsernameType</span>(<span class="params">self</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;判断用户名类型</span></span><br><span class="line"><span class="string">        经测试，网页的判断规则是纯数字为phone_num，其他为email</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> self.__username.isdigit():</span><br><span class="line">            <span class="keyword">return</span> self.TYPE_PHONE_NUM</span><br><span class="line">        <span class="keyword">return</span> self.TYPE_EMAIL</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__saveCookie</span>(<span class="params">self</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;cookies 序列化到文件</span></span><br><span class="line"><span class="string">        即把dict对象转化成字符串保存</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(self.cookieFile, <span class="string">&quot;w&quot;</span>) <span class="keyword">as</span> output:</span><br><span class="line">            cookies = self.__session.cookies.get_dict()</span><br><span class="line">            json.dump(cookies, output)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;=&quot;</span> * <span class="number">50</span>)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;已在同目录下生成cookie文件：&quot;</span>, self.cookieFile)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__loadCookie</span>(<span class="params">self</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;读取cookie文件，返回反序列化后的dict对象，没有则返回None&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> os.path.exists(self.cookieFile):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;=&quot;</span> * <span class="number">50</span>)</span><br><span class="line">            <span class="keyword">with</span> <span class="built_in">open</span>(self.cookieFile, <span class="string">&quot;r&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">                cookie = json.load(f)</span><br><span class="line">                <span class="keyword">return</span> cookie</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">open</span>(<span class="params">self, url, delay=<span class="number">0</span>, timeout=<span class="number">10</span></span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;打开网页，返回Response对象&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> delay:</span><br><span class="line">            time.sleep(delay)</span><br><span class="line">        <span class="keyword">return</span> self.__session.get(url, timeout=timeout)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">getSession</span>(<span class="params">self</span>):</span></span><br><span class="line">        <span class="keyword">return</span> self.__session</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    client = ZhiHuClient()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 第一次使用时需要调用此方法登录一次，生成cookie文件</span></span><br><span class="line">    <span class="comment"># 以后可以跳过这一步</span></span><br><span class="line">    client.login(<span class="string">&quot;username&quot;</span>, <span class="string">&quot;password&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 用这个session进行其他网络操作，详见requests库</span></span><br><span class="line">    session = client.getSession()</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/11/07/Mysql%E6%8E%92%E5%BA%8F%E8%A7%84%E5%88%99utf8-unicode-ci%E4%B8%8Eutf8-general-ci%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/11/07/Mysql%E6%8E%92%E5%BA%8F%E8%A7%84%E5%88%99utf8-unicode-ci%E4%B8%8Eutf8-general-ci%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">MySQL排序规则utf8_unicode_ci与utf8_general_ci的区别</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-11-07 09:58:49" itemprop="dateCreated datePublished" datetime="2016-11-07T09:58:49+09:00">2016-11-07</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-29 20:05:15" itemprop="dateModified" datetime="2018-03-29T20:05:15+09:00">2018-03-29</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-某天，你无端想起一个人，她曾让你对明天有所期许，但是却完全没有出现在你的明天里。
-</blockquote>
-
-<h3 id="概括"><a href="#概括" class="headerlink" title="概括"></a>概括</h3><p>MySQL支持30多种字符集的70多种 校对规则。字符集和它们的默认校对规则可以通过<code>SHOW CHARACTER SET</code>语句显示；<br>ci是 case insensitive, 即 “大小写不敏感”, a 和 A 会在字符判断中会被当做一样的;<br>bin 是二进制, a 和 A 会别区别对待.<br>例如你运行:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">table</span> <span class="keyword">WHERE</span> txt <span class="operator">=</span> <span class="string">&#x27;a&#x27;</span></span><br></pre></td></tr></table></figure>
-<p>那么在utf8_bin中你就找不到 txt = ‘A’ 的那一行, 而 utf8_general_ci 则可以.<br>utf8_general_ci 不区分大小写，这个你在注册用户名和邮箱的时候就要使用。<br>utf8_general_cs 区分大小写，如果用户名和邮箱用这个 就会照成不良后果<br>utf8_bin:字符串每个字符串用二进制数据编译存储。 区分大小写，而且可以存二进制的内容</p>
-<h3 id="一句话"><a href="#一句话" class="headerlink" title="一句话"></a>一句话</h3><p>对与general来说 ß = s 是为true的,但是对于unicode来说 ß = ss 才是为true的，其实他们的差别主要在德语和法语上，所以对于我们中国人来说，一般使用general，因为general更快,如果你对德语和法语的对比有更高的要求，才使用unicode，它比general更准确一些（按照德语和法语的标准来说，在对比或者排序上更准确）<br>utf8_unicode_ci比较准确，utf8_general_ci速度比较快。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/11/05/mysql%E4%BC%98%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/11/05/mysql%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">mysql优化</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-11-05 13:33:22" itemprop="dateCreated datePublished" datetime="2016-11-05T13:33:22+09:00">2016-11-05</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-25 10:36:02" itemprop="dateModified" datetime="2018-04-25T10:36:02+09:00">2018-04-25</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我预见了未来，那里面没有你
-</blockquote>
-
-<h3 id="慢查询"><a href="#慢查询" class="headerlink" title="慢查询"></a>慢查询</h3><ul>
-<li>查看慢查询日志是否开启：show variables like ‘slow_query_log’;</li>
-<li>如果没有开启：则设置set global log_queries_not_using_indexes=on;</li>
-<li>查询记录慢查询时间：show variables like ‘long_query_time’;</li>
-<li>设置慢查询记录时间：set global long_query_time=2;</li>
-<li>开启慢查询：set global slow_query_log=on;</li>
-<li>查看慢查询的日志位置：show variables like ‘slow%’;</li>
-</ul>
-<h3 id="数据库监控"><a href="#数据库监控" class="headerlink" title="数据库监控"></a>数据库监控</h3><ul>
-<li>QPS</li>
-<li>TPS</li>
-<li>并发数 Threads_running</li>
-<li>主从复制</li>
-<li>对服务器资源，磁盘空间</li>
-<li>read_only参数</li>
-<li>最大连接数 max_connections</li>
-<li>当前连接数 Threads_connected</li>
-</ul>
-<h3 id="centos-系统参数优化"><a href="#centos-系统参数优化" class="headerlink" title="centos 系统参数优化"></a>centos 系统参数优化</h3><h4 id="内核相关参数-etc-sysctl-conf"><a href="#内核相关参数-etc-sysctl-conf" class="headerlink" title="内核相关参数 /etc/sysctl.conf"></a>内核相关参数 /etc/sysctl.conf</h4><ul>
-<li>net.core.somaxconn = 65535</li>
-<li>net.core.netdev_max_backlog = 65535</li>
-<li>net.ipv4.tcp_max_syn_backlog = 65535</li>
-<li>net.ipv4.tcp_fin_timeout = 10</li>
-<li>net.ipv4.tcp_tw_reuse = 1</li>
-<li>net.ipv4.tcp_tw_recycle = 1</li>
-<li>内存相关</li>
-<li>kernel.shmmax = 42955555 这个参数应该设置的足够大，以便能在一个共享内存段下容纳整个的Innodb缓冲池的大小</li>
-<li>增加资源限制  /etc/security/limit.conf 打开文件的限制</li>
-<li>磁盘调度策略 /sys/block/devname/queue/scheduler</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/10/26/python%E7%9A%84%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/10/26/python%E7%9A%84%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/" class="post-title-link" itemprop="url">python的多进程和多线程</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-10-26 22:52:57" itemprop="dateCreated datePublished" datetime="2016-10-26T22:52:57+09:00">2016-10-26</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:26:09" itemprop="dateModified" datetime="2018-03-27T22:26:09+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我曾经听人说过，当你不可以再拥有的时候。你唯一可以做的，就是让自己不要忘记。
-</blockquote>
-### 简述
-很多同学都听说过，现代操作系统比如Mac OS X，UNIX，Linux，Windows等，都是支持“多任务”的操作系统。
-
-<p>什么叫“多任务”呢？简单地说，就是操作系统可以同时运行多个任务。打个比方，你一边在用浏览器上网，一边在听MP3，一边在用Word赶作业，这就是多任务，至少同时有3个任务正在运行。还有很多任务悄悄地在后台同时运行着，只是桌面上没有显示而已。</p>
-<p>现在，多核CPU已经非常普及了，但是，即使过去的单核CPU，也可以执行多任务。由于CPU执行代码都是顺序执行的，那么，单核CPU是怎么执行多任务的呢？</p>
-<p>答案就是操作系统轮流让各个任务交替执行，任务1执行0.01秒，切换到任务2，任务2执行0.01秒，再切换到任务3，执行0.01秒……这样反复执行下去。表面上看，每个任务都是交替执行的，但是，由于CPU的执行速度实在是太快了，我们感觉就像所有任务都在同时执行一样。</p>
-<p>真正的并行执行多任务只能在多核CPU上实现，但是，由于任务数量远远多于CPU的核心数量，所以，操作系统也会自动把很多任务轮流调度到每个核心上执行。</p>
-<p>对于操作系统来说，一个任务就是一个进程（Process），比如打开一个浏览器就是启动一个浏览器进程，打开一个记事本就启动了一个记事本进程，打开两个记事本就启动了两个记事本进程，打开一个Word就启动了一个Word进程。</p>
-<p>有些进程还不止同时干一件事，比如Word，它可以同时进行打字、拼写检查、打印等事情。在一个进程内部，要同时干多件事，就需要同时运行多个“子任务”，我们把进程内的这些“子任务”称为线程（Thread）。</p>
-<p>由于每个进程至少要干一件事，所以，一个进程至少有一个线程。当然，像Word这种复杂的进程可以有多个线程，多个线程可以同时执行，多线程的执行方式和多进程是一样的，也是由操作系统在多个线程之间快速切换，让每个线程都短暂地交替运行，看起来就像同时执行一样。当然，真正地同时执行多线程需要多核CPU才可能实现。</p>
-<p>我们前面编写的所有的Python程序，都是执行单任务的进程，也就是只有一个线程。如果我们要同时执行多个任务怎么办？</p>
-<p>有两种解决方案：</p>
-<p>一种是启动多个进程，每个进程虽然只有一个线程，但多个进程可以一块执行多个任务。</p>
-<p>还有一种方法是启动一个进程，在一个进程内启动多个线程，这样，多个线程也可以一块执行多个任务。</p>
-<p>当然还有第三种方法，就是启动多个进程，每个进程再启动多个线程，这样同时执行的任务就更多了，当然这种模型更复杂，实际很少采用。</p>
-<p>总结一下就是，多任务的实现有3种方式：</p>
-<p>多进程模式；<br>多线程模式；<br>多进程+多线程模式。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/10/26/python%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%93%E5%8F%96%E5%92%8C%E5%AD%98%E5%82%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/10/26/python%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%93%E5%8F%96%E5%92%8C%E5%AD%98%E5%82%A8/" class="post-title-link" itemprop="url">python大数据抓取和存储</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-10-26 20:54:22" itemprop="dateCreated datePublished" datetime="2016-10-26T20:54:22+09:00">2016-10-26</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:27:21" itemprop="dateModified" datetime="2018-03-27T22:27:21+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-愿你梦里有喝不完的酒，
-醒来后能酩酊大醉地过完这一生。
-你要照顾好你黑色的头发，
-挑剔的胃和爱笑的眼睛。
-我已经原谅了从前的自己，就像谅解了一个野心勃勃的傻逼，体恤了一个笨手笨脚的勇士，释怀了一个难以启齿的秘密。
-</blockquote>
-### mongodb
-安装这里就不再赘述
-安装pymongo：
-1. pip install wheel
-2. 下载找对应 的 whl 文件
-    https://pypi.python.org/pypi/pymongo#downloads
-3. pip install whl   文件的正确位置
-
-
-<h3 id="插入数据"><a href="#插入数据" class="headerlink" title="插入数据"></a>插入数据</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span>  pymongo</span><br><span class="line">client = pymongo.MongoClient(<span class="string">&#x27;localhost&#x27;</span>,<span class="number">27017</span>)</span><br><span class="line">dbname = client[<span class="string">&#x27;dbname&#x27;</span>]</span><br><span class="line">tbname = dbname[<span class="string">&#x27;tbname&#x27;</span>]</span><br><span class="line">path = <span class="string">&#x27;demo.txt&#x27;</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(path,<span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    lines = f.readlines()</span><br><span class="line">    <span class="keyword">for</span> index,line <span class="keyword">in</span> <span class="built_in">enumerate</span>(lines):</span><br><span class="line">        data = &#123;</span><br><span class="line">            <span class="string">&#x27;index&#x27;</span>:index,</span><br><span class="line">            <span class="string">&#x27;line&#x27;</span>:line,</span><br><span class="line">            <span class="string">&#x27;words&#x27;</span>:<span class="built_in">len</span>(line.split())</span><br><span class="line">        &#125;</span><br><span class="line">        tbname.insert_one(data)</span><br></pre></td></tr></table></figure>
-<h3 id="读取数据"><a href="#读取数据" class="headerlink" title="读取数据"></a>读取数据</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span>  pymongo</span><br><span class="line">client = pymongo.MongoClient(<span class="string">&#x27;localhost&#x27;</span>,<span class="number">27017</span>)</span><br><span class="line">dbname = client[<span class="string">&#x27;dbname&#x27;</span>]</span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> tbname.find():</span><br><span class="line">    <span class="built_in">print</span>(item)</span><br><span class="line"></span><br><span class="line"><span class="comment">#或者</span></span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> tbname.find(&#123;<span class="string">&#x27;words&#x27;</span>:<span class="number">0</span>&#125;):</span><br><span class="line">    <span class="built_in">print</span>(item)</span><br></pre></td></tr></table></figure>
-<h3 id="大数据抓取"><a href="#大数据抓取" class="headerlink" title="大数据抓取"></a>大数据抓取</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 一般爬取的有多个列表页和每个列表页下的多个内容页</span></span><br><span class="line"><span class="comment"># 事先会把需要爬取的URL放到数据库里</span></span><br><span class="line"><span class="comment"># 一般的错误处理</span></span><br><span class="line"><span class="comment"># 过滤掉一些不正确的url地址</span></span><br><span class="line"><span class="comment"># 需要抓取的页面中的元素不存在</span></span><br><span class="line"><span class="comment"># 页面访问错误，比如404，500这样的错误有可能会引起爬虫报错</span></span><br><span class="line"><span class="comment"># 监控程序，用于监控已经爬取的数据量的多少或者url的多少</span></span><br></pre></td></tr></table></figure>
-<h3 id="实例代码"><a href="#实例代码" class="headerlink" title="实例代码"></a>实例代码</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#头部</span></span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> pymongo</span><br><span class="line"></span><br><span class="line">client =pymongo.MongoClient(<span class="string">&#x27;localhost&#x27;</span>,<span class="number">27017</span>)</span><br><span class="line">db58 = client[<span class="string">&#x27;db58&#x27;</span>]</span><br><span class="line">tb58 = db58[<span class="string">&#x27;tb58&#x27;</span>]</span><br><span class="line">tb58item = db58[<span class="string">&#x27;tb58item&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 读取具体内容</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_links_from</span>(<span class="params">channel,pages</span>):</span></span><br><span class="line">    list_view = <span class="string">&#x27;&#123;&#125;/pn&#123;&#125;&#x27;</span>.<span class="built_in">format</span>(channel,<span class="built_in">str</span>(pages))</span><br><span class="line">    wb_data = requests.get(list_view)</span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">    soup = BeautifulSoup(wb_data.text,<span class="string">&#x27;lxml&#x27;</span>)</span><br><span class="line">    <span class="keyword">if</span> soup.find(<span class="string">&#x27;td&#x27;</span>,<span class="string">&#x27;t&#x27;</span>):</span><br><span class="line">        <span class="keyword">for</span> link <span class="keyword">in</span> soup.select(<span class="string">&#x27;td.t &gt; a.t&#x27;</span>):</span><br><span class="line">            item_link = link.get(<span class="string">&#x27;href&#x27;</span>).split(<span class="string">&#x27;?&#x27;</span>)[<span class="number">0</span>]</span><br><span class="line">            tb58.insert_one(item_link)</span><br><span class="line">            <span class="built_in">print</span>(item_link)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"><span class="comment"># 产生多页</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_all_links_from</span>(<span class="params">channel</span>):</span></span><br><span class="line">    <span class="keyword">for</span> num  <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">101</span>):</span><br><span class="line">        get_links_from(channel,num)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 监控程序，实时显示数据库中的数据量</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> page_parsing <span class="keyword">import</span> tb58item</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    <span class="built_in">print</span>(tb58item.find().count())</span><br><span class="line">    time.sleep(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/10/25/python%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%BD%E8%B1%A1%E7%90%86%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/10/25/python%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%BD%E8%B1%A1%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">python的一些抽象理解</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-10-25 09:02:11" itemprop="dateCreated datePublished" datetime="2016-10-25T09:02:11+09:00">2016-10-25</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:26:14" itemprop="dateModified" datetime="2018-03-27T22:26:14+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-除了现实中的蝇营狗苟，我的心中还住着星辰大海
-</blockquote>
-### 关于导入
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> urllib.request <span class="keyword">import</span> urlopen</span><br><span class="line"><span class="comment"># 在urllib库里查找request模块，只导入一个urlopen函数</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-### range用法
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#代表从1到5(不包含5)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">5</span>):</span><br><span class="line">    <span class="built_in">print</span>(i)</span><br><span class="line"></span><br><span class="line"><span class="comment">#代表从1到5，间隔2(不包含5)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">5</span>,<span class="number">2</span>):</span><br><span class="line">    <span class="built_in">print</span>(i)</span><br><span class="line"></span><br><span class="line"><span class="comment">#代表从0到5(不包含5)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>):</span><br><span class="line">    <span class="built_in">print</span>(i)</span><br></pre></td></tr></table></figure>
-### 时间的用法
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 格式化当前时间</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="built_in">print</span> (time.strftime(<span class="string">&quot;%Y-%m-%d %H:%M:%S&quot;</span>, time.localtime()))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 休息间隔2秒</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">    time.sleep(<span class="number">2</span>)</span><br><span class="line">    <span class="built_in">print</span>(i)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 当前时间戳</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="built_in">print</span>(time.time())</span><br></pre></td></tr></table></figure>
-### format 格式化
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_links_from</span>(<span class="params">channel,pages</span>):</span></span><br><span class="line">    list_view = <span class="string">&#x27;&#123;&#125;/pn&#123;&#125;&#x27;</span>.<span class="built_in">format</span>(channel,<span class="built_in">str</span>(pages))</span><br><span class="line">    wb_data = requests.get(list_view)</span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">    soup = BeautifulSoup(wb_data.text,<span class="string">&#x27;lxml&#x27;</span>)</span><br><span class="line">    <span class="keyword">if</span> soup.find(<span class="string">&#x27;td&#x27;</span>,<span class="string">&#x27;t&#x27;</span>):</span><br><span class="line">        <span class="keyword">for</span> link <span class="keyword">in</span> soup.select(<span class="string">&#x27;td.t &gt; a.t&#x27;</span>):</span><br><span class="line">            item_link = link.get(<span class="string">&#x27;href&#x27;</span>).split(<span class="string">&#x27;?&#x27;</span>)[<span class="number">0</span>]</span><br><span class="line">            tb58.insert_one(item_link)</span><br><span class="line">            <span class="built_in">print</span>(item_link)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
-### if else 结构
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">number = <span class="number">23</span></span><br><span class="line">guess = <span class="built_in">int</span>(<span class="built_in">input</span>(<span class="string">&#x27;请输入一个整数：&#x27;</span>))      <span class="comment">#等待输入整数</span></span><br><span class="line"><span class="keyword">if</span> guess == number:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;恭喜，你猜对了。&#x27;</span>)    <span class="comment"># 新块从这里开始</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;(但你没有获得任何奖品！)&#x27;</span>)    <span class="comment"># 新块在这里结束</span></span><br><span class="line"><span class="keyword">elif</span> guess &lt; number:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;不对，你猜的有点儿小&#x27;</span>)    <span class="comment"># 另一个块</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;不对，你猜的有点大&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;完成&#x27;</span>)</span><br><span class="line"><span class="comment"># if语句执行完后，最后的语句总是被执行</span></span><br></pre></td></tr></table></figure>
-### pass
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#1、空语句 do nothing</span></span><br><span class="line"><span class="comment">#2、保证格式完整</span></span><br><span class="line"><span class="comment">#3、保证语义完整</span></span><br><span class="line">以<span class="keyword">if</span>语句为例，在c或c++/java中：</span><br><span class="line"><span class="keyword">if</span>(true)  </span><br><span class="line">;//do nothing  </span><br><span class="line"><span class="keyword">else</span>  </span><br><span class="line">&#123;  </span><br><span class="line">//do something  </span><br><span class="line">&#125;  </span><br><span class="line"><span class="comment"># 而在python中</span></span><br><span class="line"><span class="keyword">if</span> true:  </span><br><span class="line"><span class="keyword">pass</span> <span class="comment">#do nothing  </span></span><br><span class="line"><span class="keyword">else</span>:  </span><br><span class="line"><span class="comment">#do something  </span></span><br></pre></td></tr></table></figure>
-### map函数
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># map()函数接收两个参数，一个是函数，一个是序列，map将传入的函数依次作</span></span><br><span class="line"><span class="comment">#用到序列的每个元素并把结果作为新的list返回。</span></span><br><span class="line"><span class="comment">#在python3里面，map()的返回值已经不再是list,而是iterators</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">f</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">return</span> x * x</span><br><span class="line">a = <span class="built_in">map</span>(f, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>])</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">list</span>(a))</span><br></pre></td></tr></table></figure>
-### 导入函数和变量
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 位于同一个文件夹下两个py文件</span></span><br><span class="line"><span class="comment"># demo.py,定义一个函数和变量</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">haha</span>():</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;haha&#x27;</span>)</span><br><span class="line"><span class="built_in">list</span> = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># test.py,调用这个函数和变量</span></span><br><span class="line"><span class="keyword">import</span> demo</span><br><span class="line">test.haha()</span><br><span class="line"><span class="built_in">print</span>(test.<span class="built_in">list</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 也可以选择仅仅导入函数或者变量</span></span><br><span class="line"><span class="keyword">from</span> test <span class="keyword">import</span> haha</span><br><span class="line">haha()</span><br></pre></td></tr></table></figure>
       
     </div>
 

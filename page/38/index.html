@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">384</span>
+          <span class="site-state-item-count">389</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,445 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/15/%E9%A2%84%E9%98%B2CSRF%E6%94%BB%E5%87%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/08/15/%E9%A2%84%E9%98%B2CSRF%E6%94%BB%E5%87%BB/" class="post-title-link" itemprop="url">预防CSRF攻击</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-15 19:18:44" itemprop="dateCreated datePublished" datetime="2016-08-15T19:18:44+09:00">2016-08-15</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:13:59" itemprop="dateModified" datetime="2018-03-27T22:13:59+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你这么擅长安慰他人，一定度过了很多自己安慰自己的日子吧
+</blockquote>
+
+<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><p>CSRF（Cross-site request forgery），中文名称：跨站请求伪造，也被称为：one click attack/session riding，缩写为：CSRF/XSRF。<br>那么CSRF到底能够干嘛呢？你可以这样简单的理解：攻击者可以盗用你的登陆信息，以你的身份模拟发送各种请求。攻击者只要借助少许的社会工程学的诡计，例如通过QQ等聊天软件发送的链接(有些还伪装成短域名，用户无法分辨)，攻击者就能迫使Web应用的用户去执行攻击者预设的操作。例如，当用户登录网络银行去查看其存款余额，在他没有退出时，就点击了一个QQ好友发来的链接，那么该用户银行帐户中的资金就有可能被转移到攻击者指定的帐户中。<br>所以遇到CSRF攻击时，将对终端用户的数据和操作指令构成严重的威胁；当受攻击的终端用户具有管理员帐户的时候，CSRF攻击将危及整个Web应用程序。</p>
+<h3 id="CSRF的攻击过程"><a href="#CSRF的攻击过程" class="headerlink" title="CSRF的攻击过程"></a>CSRF的攻击过程</h3><p>要完成一次CSRF攻击，受害者必须依次完成两个步骤 ：<br>1.登录受信任网站A，并在本地生成Cookie 。<br>2.在不退出A的情况下，访问危险网站B。<br>看到这里，读者也许会问：“如果我不满足以上两个条件中的任意一个，就不会受到CSRF的攻击”。是的，确实如此，但你不能保证以下情况不会发生：<br>你不能保证你登录了一个网站后，不再打开一个tab页面并访问另外的网站，特别现在浏览器都是支持多tab的。<br>你不能保证你关闭浏览器了后，你本地的Cookie立刻过期，你上次的会话已经结束。<br>上图中所谓的攻击网站，可能是一个存在其他漏洞的可信任的经常被人访问的网站。<br>因此对于用户来说很难避免在登陆一个网站之后不点击一些链接进行其他操作，所以随时可能成为CSRF的受害者。<br>CSRF攻击主要是因为Web的隐式身份验证机制，Web的身份验证机制虽然可以保证一个请求是来自于某个用户的浏览器，但却无法保证该请求是用户批准发送的</p>
+<h3 id="如何预防CSRF"><a href="#如何预防CSRF" class="headerlink" title="如何预防CSRF"></a>如何预防CSRF</h3><p>CSRF的防御可以从服务端和客户端两方面着手，防御效果是从服务端着手效果比较好，现在一般的CSRF防御也都在服务端进行。<br>服务端的预防CSRF攻击的方式方法有多种，但思想上都是差不多的，主要从以下2个方面入手：<br>1、正确使用GET,POST和Cookie；<br>2、在非GET请求中增加伪随机数；</p>
+<p>为每个用户生成一个唯一的cookie token，所有表单都包含同一个伪随机值，这种方案最简单，因为攻击者不能获得第三方的Cookie(理论上)，所以表单中的数据也就构造失败，但是由于用户的Cookie很容易由于网站的XSS漏洞而被盗取，所以这个方案必须要在没有XSS的情况下才安全。<br>每个请求使用验证码，这个方案是完美的，因为要多次输入验证码，所以用户友好性很差，所以不适合实际运用。<br>不同的表单包含一个不同的伪随机值，我们在4.4小节介绍“如何防止表单多次递交”时介绍过此方案，复用相关代码，实现如下：</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/11/git-stash%E7%9A%84%E7%94%A8%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/08/11/git-stash%E7%9A%84%E7%94%A8%E6%B3%95/" class="post-title-link" itemprop="url">git-stash的用法</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-11 23:50:19" itemprop="dateCreated datePublished" datetime="2016-08-11T23:50:19+09:00">2016-08-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-06-21 14:56:03" itemprop="dateModified" datetime="2018-06-21T14:56:03+09:00">2018-06-21</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+生活总是有很多出人意料的事情，比如，你以为我要举个例子。
+</blockquote>
+
+<h3 id="应用前提"><a href="#应用前提" class="headerlink" title="应用前提"></a>应用前提</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">分支里面的代码如果没有提交commit ，那么切换到其他分支下还是可以看</span><br><span class="line">到(git status)这个分支下的代码.</span><br><span class="line"></span><br><span class="line">但是如果我们现在想要切换到别的分支但是同时又不想提交commit我们的代码</span><br><span class="line">该如何处理？</span><br></pre></td></tr></table></figure>
+<h3 id="git-stash"><a href="#git-stash" class="headerlink" title="git stash"></a>git stash</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">在你切换分支前，运行：git stash 就可以了</span><br><span class="line">当你在其他分支改好了代码并切换回当前分支的时候，请git stash pop </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="相关命令"><a href="#相关命令" class="headerlink" title="相关命令"></a>相关命令</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">git stash</span><br><span class="line">保存当前的工作进度。会分别对暂存区和工作区的状态进行保存</span><br><span class="line"></span><br><span class="line">git stash save <span class="string">&quot;message...&quot;</span></span><br><span class="line">这条命令实际上是第一条 git stash 命令的完整版</span><br><span class="line"></span><br><span class="line">git stash <span class="keyword">list</span></span><br><span class="line">显示进度列表。此命令显然暗示了git stash 可以多次保存工作进度，并用在恢复时候进行选择</span><br><span class="line"></span><br><span class="line">git stash pop [--index] [&lt;stash&gt;]</span><br><span class="line">如果不使用任何参数，会恢复最新保存的工作进度，</span><br><span class="line">并将恢复的工作进度从存储的工作进度列表中清除。</span><br><span class="line">如果提供参数（来自 git stash <span class="keyword">list</span> 显示的列表），则从该 &lt;stash&gt; 中恢复。恢复完毕也将从进度列表中删除 &lt;stash&gt;。</span><br><span class="line">选项--index 除了恢复工作区的文件外，还尝试恢复暂存区。</span><br><span class="line"></span><br><span class="line">git stash apply [--index] [&lt;stash&gt;]</span><br><span class="line">除了不删除恢复的进度之外，其余和 git stash pop 命令一样</span><br><span class="line"></span><br><span class="line">git stash clear</span><br><span class="line">删除所有存储的进度</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/11/ssdb%E4%B8%80%E4%B8%AA%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84nosql%E6%95%B0%E6%8D%AE%E5%BA%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/08/11/ssdb%E4%B8%80%E4%B8%AA%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84nosql%E6%95%B0%E6%8D%AE%E5%BA%93/" class="post-title-link" itemprop="url">ssdb一个高性能的nosql数据库</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-11 22:26:19" itemprop="dateCreated datePublished" datetime="2016-08-11T22:26:19+09:00">2016-08-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:52:04" itemprop="dateModified" datetime="2018-03-27T21:52:04+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+某天，你无端想起一个人，她曾让你对明天有所期许，但是却完全没有出现在你的明天里。
+</blockquote>
+
+<h3 id="简要说明"><a href="#简要说明" class="headerlink" title="简要说明"></a>简要说明</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">一个高性能的支持丰富数据结构的 NoSQL 数据库, 用于替代 Redis.</span><br><span class="line">基于google/leveldb 开发SSDB是一个开源的高性能数据库服务器, </span><br><span class="line">使用Google 的 LevelDB作为存储引擎, 大家有可能没听过leveldb的名字，</span><br><span class="line">但是淘宝的开源nosql tair大家应该有所耳闻吧，他也是基于leveldb做的开发。</span><br><span class="line">ssdb支持T级别的数据, 同时支持类似Redis中的zset和hash等数据结构,</span><br><span class="line">在同时需求高性能和大数据的条件下, 是一个可以代替Redis的方案.</span><br><span class="line">ssdb是一个持久化存储的KV系统，和Memcached、Redis这种内存型的KV系统不同，</span><br><span class="line">ssdb不会像Redis一样狂吃内存，而是将大部分数据存储到磁盘上。</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">wget --no-check-certificate https:<span class="comment">//github.com/ideawu/ssdb/archive/master.zip</span></span><br><span class="line">unzip master</span><br><span class="line">cd ssdb-master</span><br><span class="line">make</span><br><span class="line"><span class="comment"># optional, install ssdb in /usr/local/ssdb</span></span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># start master</span></span><br><span class="line">./ssdb-server ssdb.conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># or start as daemon</span></span><br><span class="line">./ssdb-server -d ssdb.conf</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require_once</span>(<span class="string">&#x27;SSDB.php&#x27;</span>);</span><br><span class="line"><span class="variable">$ssdb</span> = <span class="keyword">new</span> SimpleSSDB(<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">8888</span>);</span><br><span class="line"><span class="variable">$resp</span> = <span class="variable">$ssdb</span>-&gt;set(<span class="string">&#x27;key&#x27;</span>, <span class="string">&#x27;123&#x27;</span>);</span><br><span class="line"><span class="variable">$resp</span> = <span class="variable">$ssdb</span>-&gt;get(<span class="string">&#x27;key&#x27;</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$resp</span>; <span class="comment">// output: 123</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="关于leveldb"><a href="#关于leveldb" class="headerlink" title="关于leveldb"></a>关于leveldb</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">LevelDB是google开源的一个key-value存储引擎库，类似于开源的Lucene索引库一样。</span><br><span class="line">其他的软件开发者可以利用该库做二次开发，来满足定制需求。</span><br><span class="line">LevelDB采用日志式的写方式来提高写性能，但是牺牲了部分读性能。</span><br><span class="line">为了弥补牺牲了的读性能，一些人提议使用SSD作为存储介质。</span><br></pre></td></tr></table></figure>
+
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">修改ssdb.conf文件，把ip改成<span class="number">0.0</span>.<span class="number">0.0</span>，允许外网访问</span><br><span class="line">高级应用可以查看主从这一块儿</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://ssdb.io/zh_cn/">http://ssdb.io/zh_cn/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/10/php%E4%B8%89%E7%A7%8D%E5%B7%A5%E4%BD%9C%E6%96%B9%E5%BC%8F-CGI%E6%A8%A1%E5%BC%8F-FastCGI%E6%A8%A1%E5%BC%8F-Apache%E7%9A%84mod-php/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/08/10/php%E4%B8%89%E7%A7%8D%E5%B7%A5%E4%BD%9C%E6%96%B9%E5%BC%8F-CGI%E6%A8%A1%E5%BC%8F-FastCGI%E6%A8%A1%E5%BC%8F-Apache%E7%9A%84mod-php/" class="post-title-link" itemprop="url">php三种工作方式-CGI模式-FastCGI模式-Apache的mod_php</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-10 23:04:19" itemprop="dateCreated datePublished" datetime="2016-08-10T23:04:19+09:00">2016-08-10</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2016-08-11 00:21:59" itemprop="dateModified" datetime="2016-08-11T00:21:59+09:00">2016-08-11</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+“跑呀跑呀跑呀跑呀，拼命努力着追上前面那个被目光期许的自己，生怕抓不住时光，只有和你一起的时候，才觉得不如就这样老了吧，也不算太辜负。”
+</blockquote>
+### CGI
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CGI英文全程是 Command Gateway <span class="class"><span class="keyword">Interface</span>，通常翻译为公共网关接口，</span></span><br><span class="line"><span class="class">是<span class="title">HTTP</span>服务器与机器上的其他程序进行通信的一个接口。</span></span><br><span class="line"><span class="class">这个“其他程序”可以是使用任何计算机语言进行编 写，例如<span class="title">php</span>，<span class="title">python</span>，<span class="title">perl</span>等等。</span></span><br><span class="line"><span class="class">它通过<span class="title">CGI</span>这个接口从<span class="title">HTTP</span>服务器取得输入，然后把运行结果又通过<span class="title">CGI</span>这个接口交给<span class="title">HTTP</span>服务器， 而<span class="title">HTTP</span>服务器把这个结果送给浏览器。</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">CGI</span> 的出现让<span class="title">WEB</span>从静态变为动态，随着<span class="title">web</span>的越来越普及，很多的网站都需要有动态的页面，</span></span><br><span class="line"><span class="class">以便与浏览者进行交互。<span class="title">CGI</span>的缺点也越来越突出，因为<span class="title">HTTP</span> 要生成一个动态页面，</span></span><br><span class="line"><span class="class">系统就必须启动一个新的进程以运行<span class="title">CGI</span>程序，</span></span><br><span class="line"><span class="class">不断的<span class="title">fork</span>是一项很消耗时间和资源的工作。</span></span><br></pre></td></tr></table></figure>
+<h3 id="FastCGI"><a href="#FastCGI" class="headerlink" title="FastCGI"></a>FastCGI</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">FastCGIFastCGI是可伸缩架构的CGI开放扩展，</span><br><span class="line">其主要行为是将CGI解释器进程保持在内存中并因此获得较高的性能。</span><br><span class="line">传统的CGI 解释器的反复加载是CGI性能低下的主要原因，</span><br><span class="line">如果CGI解释器保持在内存中并接受FastCGI进程管理器调度，</span><br><span class="line">则可以提供良好的性能、伸缩性等 。在上述情况中，你可以想象 CGI通常有多慢。</span><br><span class="line">每一个Web请求PHP都必须重新解析php.ini、重新载入全部扩展并重初始化全部数据结构。</span><br><span class="line">使用FastCGI，所有这些 都只在进程启动时发生一次。一个额外的好处是，</span><br><span class="line">持续数据库连接(Persistent database connection)可以工作。</span><br></pre></td></tr></table></figure>
+
+<h3 id="mod-php"><a href="#mod-php" class="headerlink" title="mod_php"></a>mod_php</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">在lamp体系中，对于apache端的php的配置，我们最常用的就是mod_php，</span><br><span class="line">它把php作为apache一个内置的模块.让apache http服务器本身能够支持php语言，</span><br><span class="line">不需要每一个请求就启动php解释器来解释php.</span><br><span class="line"></span><br><span class="line">和把webserver与php绑定起来的方式不同，</span><br><span class="line">fastcgi是http服务器与你的或其它机器上的程序进行“交谈”的一种工具，</span><br><span class="line">相当于一 个程序接口。它可以接受来自web服务器的请求，解释输入信息，</span><br><span class="line">将处理后的结果返回给服务器等。mod_fastcgi就是在apache下支持 fastcgi协议的模块。</span><br><span class="line"></span><br><span class="line">在lamp体系中，mod_php是最常使用的工作方式。在这种模式下，</span><br><span class="line">php被编译为apache的一个内置模块，在启动加载的时候，</span><br><span class="line">当有一个php请求过来，直接在httpd进程里完成了php的解释运行，将结果返回。</span><br></pre></td></tr></table></figure>
+
+<h3 id="mod-fastcgi"><a href="#mod-fastcgi" class="headerlink" title="mod_fastcgi"></a>mod_fastcgi</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mod_fastcgi就是在apache下支持 fastcgi协议的模块。</span><br><span class="line">fastcgi实例和apache分离开来，这两者可以分开来部署。</span><br><span class="line">他们之间的通信通过tcp或者unix sock来完成。使用ext方式，</span><br><span class="line">fastcgi实例是独立运行的。</span><br></pre></td></tr></table></figure>
+
+<h3 id="FPM"><a href="#FPM" class="headerlink" title="FPM"></a>FPM</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FPM（FastCGI 进程管理器）用于替换 PHP FastCGI 的大部分附加功能，</span><br><span class="line">对于高负载网站是非常有用的。</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://blog.shiliuvip.com/391.html">http://blog.shiliuvip.com/391.html</a><br><a target="_blank" rel="noopener" href="http://php.net/manual/zh/install.fpm.php">http://php.net/manual/zh/install.fpm.php</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/07/PHP%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E7%AE%80%E5%8D%95%E7%90%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/08/07/PHP%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E7%AE%80%E5%8D%95%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">PHP生成器的简单理解</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-07 20:15:30" itemprop="dateCreated datePublished" datetime="2016-08-07T20:15:30+09:00">2016-08-07</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2017-07-19 19:02:44" itemprop="dateModified" datetime="2017-07-19T19:02:44+09:00">2017-07-19</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+最初不相识，最终不相认
+</blockquote>
+生成器允许你在 foreach 代码块中写代码来迭代一组数据而不需要在内存中创建一个数组, 那会使你的内存达到上限，或者会占据可观的处理时间。相反，你可以写一个生成器函数，就像一个普通的自定义函数一样, 和普通函数只返回一次不同的是, 生成器可以根据需要 yield 多次，以便生成需要迭代的值。
+一个简单的例子就是使用生成器来重新实现 range() 函数。 标准的 range() 函数需要在内存中生成一个数组包含每一个在它范围内的值，然后返回该数组, 结果就是会产生多个很大的数组。 比如，调用 range(0, 1000000) 将导致内存占用超过 100 MB。
+做为一种替代方法, 我们可以实现一个 xrange() 生成器, 只需要足够的内存来创建 Iterator 对象并在内部跟踪生成器的当前状态，这样只需要不到1K字节的内存。
+### 简单理解
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">官方的定义中：生成器就是简单的迭代器。</span><br><span class="line">不同于标准的PHP迭代器，PHP的生成器并不要求你一定要在一个重量级的类中实现<span class="built_in">Iterator</span>接口。</span><br><span class="line">相反，生成器会按需求计算并交出迭代值。这对应用程序的性能有着深远的意义。想想吧，</span><br><span class="line">一个标准的PHP迭代器通常都是基于内存中全部计算过的数据集进行迭代。这样做效率不高。</span><br><span class="line">尤其是大量可计算的公式化数据集。使用生成器我们可以动态的计算并交出下一个值而不占用</span><br><span class="line">宝贵的系统内存，这就是我们使用生成器的原因。</span><br></pre></td></tr></table></figure>
+### 创建一个生成器
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">myGenerator</span>(<span class="params"></span>) </span>&#123;  </span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value1&#x27;</span>;  </span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value2&#x27;</span>;  </span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value3&#x27;</span>;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+### 使用这个生成器
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="keyword">foreach</span> (myGenerator() <span class="keyword">as</span> <span class="variable">$yieldedValue</span>) &#123;  </span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$yieldedValue</span>, PHP_EOL;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+结果：
+value1
+value2
+value3
+
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><ul>
+<li>Range生成器（糟糕的实现）</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeRange</span>(<span class="params"><span class="variable">$length</span></span>) </span>&#123;  </span><br><span class="line">    <span class="variable">$dataset</span> = [];  </span><br><span class="line">    <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="variable">$length</span>; <span class="variable">$i</span>++) &#123;  </span><br><span class="line">        <span class="variable">$dataset</span>[] = <span class="variable">$i</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$dataset</span>;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="variable">$customRange</span> = makeRange(<span class="number">1000000</span>);  </span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$customRange</span> <span class="keyword">as</span> <span class="variable">$i</span>) &#123;  </span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$i</span>, PHP_EOL;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>Range生成器（好的实现）</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeRange</span>(<span class="params"><span class="variable">$length</span></span>) </span>&#123;  </span><br><span class="line">    <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="variable">$length</span>; <span class="variable">$i</span>++) &#123;  </span><br><span class="line">        <span class="keyword">yield</span> <span class="variable">$i</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">foreach</span> (makeRange(<span class="number">1000000</span>) <span class="keyword">as</span> <span class="variable">$i</span>) &#123;  </span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$i</span>, PHP_EOL;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>上面的例子并不实用。但是，联想一下所有你可能用来计算的数据集。序列数（例如斐波纳挈数）就是很典型的例子。同样你还可以遍历文件流资源。想象一下，如果你需要遍历一个4G的逗号分隔值（CSV）文件，而你的虚拟个人服务器（VPS）上PHP只分配了1G的内存。你根本没法把整个文件读取到内存中。</p>
+<ul>
+<li>CSV生成器</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getRows</span>(<span class="params"><span class="variable">$file</span></span>) </span>&#123;  </span><br><span class="line">    <span class="variable">$handle</span> = fopen(<span class="variable">$file</span>, <span class="string">&#x27;rb&#x27;</span>);  </span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$handle</span> === <span class="literal">false</span>) &#123;  </span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Exception</span>();  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">while</span> (feof(<span class="variable">$handle</span>) === <span class="literal">false</span>) &#123;  </span><br><span class="line">        <span class="keyword">yield</span> fgetcsv(<span class="variable">$handle</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">    fclose(<span class="variable">$handle</span>);  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">foreach</span> (getRows(<span class="string">&#x27;data.csv&#x27;</span>) <span class="keyword">as</span> <span class="variable">$row</span>) &#123;  </span><br><span class="line">    print_r(<span class="variable">$row</span>);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<h3 id="接收参数"><a href="#接收参数" class="headerlink" title="接收参数"></a>接收参数</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">printer</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        printf(<span class="string">&quot;receive: %s\n&quot;</span>, <span class="keyword">yield</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$printer</span> = printer();</span><br><span class="line"></span><br><span class="line"><span class="variable">$printer</span>-&gt;send(<span class="string">&#x27;hello&#x27;</span>);</span><br><span class="line"><span class="variable">$printer</span>-&gt;send(<span class="string">&#x27;world&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>生成器的确使用了很少的内存却大大简化了某些任务。如果你需要更强大的功能诸如重置、快进、或者数据集的检索，你最好还是自定义一个实现Iterator interface接口的类，或者使用PHP现成的Standard PHP Library（SPL）迭代器。</p>
+<p><code>yield</code> 和 <code>return</code> 都会返回值，但区别在于一个 return 是返回既定结果，一次返回完毕就不再返回新的结果，而 yield 是不断产出直到无法产出为止。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://blog.csdn.net/bandita/article/details/47723815">http://blog.csdn.net/bandita/article/details/47723815</a><br><a target="_blank" rel="noopener" href="https://laravel-china.org/articles/1430/single-php-generator-complete-knowledge-generator-implementation-process">https://laravel-china.org/articles/1430/single-php-generator-complete-knowledge-generator-implementation-process</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -591,446 +1030,6 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 直接使用！对于熟悉MVC的亲知道这个意义之所在！</span></span><br><span class="line"><span class="variable">$user</span> = <span class="keyword">new</span> ORM(<span class="string">&#x27;user&#x27;</span>);  <span class="comment">// ORM都有自己的规则，这里直接使用了MySQL的表名</span></span><br><span class="line"><span class="variable">$user</span>-&gt;name = <span class="string">&#x27;fancy&#x27;</span>;    <span class="comment">// MySQL的表的字段就是$user对象的成员变量</span></span><br><span class="line"><span class="variable">$user</span>-&gt;save();            <span class="comment">// 掉用ORM提供的接口函数</span></span><br></pre></td></tr></table></figure>
 <h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><blockquote>
 <p>在某些复杂的sql中有性能问题</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/28/%E5%85%B3%E4%BA%8E%E5%87%BA%E7%8E%B0php-m%E5%92%8Cphpinfo%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/07/28/%E5%85%B3%E4%BA%8E%E5%87%BA%E7%8E%B0php-m%E5%92%8Cphpinfo%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">关于出现php-m和phpinfo不一致的问题</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-07-28 09:44:23" itemprop="dateCreated datePublished" datetime="2016-07-28T09:44:23+09:00">2016-07-28</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 21:58:14" itemprop="dateModified" datetime="2018-03-27T21:58:14+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我前半生最强烈三次心跳，分别发生在上课被老师点名 ，下楼梯一脚踩空， 和你对我微笑的时候！
-</blockquote>
-### 本文系转载
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">命令查看：</span><br><span class="line">php -m</span><br><span class="line">which php</span><br></pre></td></tr></table></figure>
-昨天有个学员私聊我，说他的`php -m`和在`apache` 中运行`phpinfo`不一致(这力默认`apache`是把`php`编译成模块的)，譬如模块加载不一致。
-
-<p>理论上这是不可能的。除非你的PHP做了特别的设置（此处不表，-c参数即可搞定), 默认情况下,两者都是一致的。</p>
-<p>经过我一番询问，发现并没有特别之处。于是我也纳闷了、抑郁了、纠结了。这也引起了我的“执着心”，我很讨厌在这种问题上还能卡住。于是我告诉那位学员，今天不找出原因咱两一起“切腹”。学员弱弱的答应了。。。。</p>
-<p>然而，经过我一步步询问确认（注意：我不帮学员远程调试，这是游戏规则）。终于发现了问题。接下来放出原因，大家可能也会碰到</p>
-<p>1、学员执行的是<code>php -m</code> .并不是类似 <code>/usr/local/php/bin/php -m</code>  这说明他的PHP存在于某个环境变量路径里。</p>
-<p>2、也就是恰恰上面这个原因给忽略了。我们一直始终认为 他的环境变量是正确的。</p>
-<p>3、最后，我让他执行了 重新编译PHP。问题依旧。（此时学员已经有切腹的愿望）</p>
-<p>4、最后，我让它（就是它）执行了 <code>which php</code> .这时发现它的PHP在 <code>/usr/bin</code> 里面。</p>
-<p>5、也就是说不管他怎么编译PHP，最终执行的php -m 的那个PHP可执行程序 永远是定位在 /usr/bin里面的那个老PHP</p>
-<p>6、学员已经忘了怎么操作使之 <code>/usr/bin</code>里也有个PHP</p>
-<p>7、解决方法如下：删掉 <code>/usr/bin</code>里面的那个老PHP 。把环境变量 设置到<code>/usr/local/php/bin</code>里。</p>
-<p>8、再次执行 php -m 一切正常了。</p>
-<p>本次解决问题的结论是：</p>
-<p>  不要相信一些“你认为不可能出错的步骤”。往往有的步骤你觉得“绝对不可能出错”，而问题恰恰就在你最信任的步骤里。 交朋友也是，往往你最最信任的人也是最有可能在关键部分干你一菊花的人。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.hishenyi.com/archives/1095">http://www.hishenyi.com/archives/1095</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/27/Mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/07/27/Mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">Mysql性能优化</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-07-27 22:17:13" itemprop="dateCreated datePublished" datetime="2016-07-27T22:17:13+09:00">2016-07-27</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:40:12" itemprop="dateModified" datetime="2018-03-27T22:40:12+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-想戴上最美的面具，又想卸下所有的伪装。
-</blockquote>
-### 常用命令
-- 连接数
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">如果是root帐号，你能看到所有用户的当前连接</span><br><span class="line">如果是其它普通帐号，只能看到自己占用的连接</span><br><span class="line">show processlist; 列出前<span class="number">100</span>条</span><br><span class="line">show full processlist; 全部列出</span><br><span class="line">show <span class="keyword">global</span> variables like <span class="string">&#x27;%connections%&#x27;</span>; 查看整个MySQL实例的最大连接数限制</span><br><span class="line">max_connections 就是整个MySQL实例的最大连接数限制</span><br><span class="line">max_user_connections 是单个用户的最大连接数，这里未指明是哪个用户，是任意一个用户</span><br><span class="line"></span><br><span class="line">查看某个用户的最大连接数，<span class="number">0</span>表示不限制：</span><br><span class="line">select user,max_user_connections <span class="keyword">from</span> mysql.user where user=<span class="string">&#x27;root&#x27;</span>;</span><br><span class="line">通过设置这个值，防止某个指定用户使用过多的连接资源。默认是<span class="number">0</span>，不限制。</span><br><span class="line"> </span><br><span class="line">上面<span class="number">3</span>个参数的关系是：</span><br><span class="line">max_user_connections &lt; 实例 max_user_connections &lt; max_connections</span><br><span class="line"> </span><br><span class="line">整个MySQL实例，曾经同时最大连接数，包括很多用户连接数之和：</span><br><span class="line">show <span class="keyword">global</span> status like <span class="string">&#x27;%max_used_connections%&#x27;</span>;</span><br><span class="line"></span><br><span class="line">修改mysql最大连接数：</span><br><span class="line">打开my.ini，修改max_connections=<span class="number">100</span>(默认为<span class="number">100</span>)。</span><br><span class="line"></span><br><span class="line">使用连接池减少mysql的连接数</span><br></pre></td></tr></table></figure>
-- 查看状态
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show status;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/27/PHP7-Swoole%E5%BC%80%E5%8F%91%E8%B6%85%E9%AB%98%E6%80%A7%E8%83%BD%E5%90%8E%E5%8F%B0%E7%A8%8B%E5%BA%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/07/27/PHP7-Swoole%E5%BC%80%E5%8F%91%E8%B6%85%E9%AB%98%E6%80%A7%E8%83%BD%E5%90%8E%E5%8F%B0%E7%A8%8B%E5%BA%8F/" class="post-title-link" itemprop="url">PHP7+Swoole开发超高性能后台程序</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-07-27 21:32:54" itemprop="dateCreated datePublished" datetime="2016-07-27T21:32:54+09:00">2016-07-27</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:29:02" itemprop="dateModified" datetime="2018-03-27T22:29:02+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-父母在时，人生尚有来处。
-父母去时，人生只剩归途。
-</blockquote>
-
-<h3 id="Yaf-Phalcon"><a href="#Yaf-Phalcon" class="headerlink" title="Yaf/Phalcon"></a>Yaf/Phalcon</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Yaf是一个C语言编写的PHP框架</span><br><span class="line">Phalcon 是开源、全功能栈、使用 C 扩展编写、针对高性能优化的 PHP <span class="number">5</span> 框架。 </span><br><span class="line">开发者不需要学习和使用 C 语言的功能，可以直接使用。</span><br></pre></td></tr></table></figure>
-<h3 id="QPS"><a href="#QPS" class="headerlink" title="QPS"></a>QPS</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">每秒查询率QPS是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准，在因特网上，</span><br><span class="line">作为域名系统服务器的机器的性能经常用每秒查询率来衡量。对应fetches/sec，</span><br><span class="line">即每秒的响应请求数，也即是最大吞吐能力。 </span><br></pre></td></tr></table></figure>
-<h3 id="如何实现1W-的QPS"><a href="#如何实现1W-的QPS" class="headerlink" title="如何实现1W+的QPS"></a>如何实现1W+的QPS</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>.IO操作要足够快，或者异步</span><br><span class="line">常见的IO操作有，Mysql,Redis,CURL,磁盘读写</span><br><span class="line"><span class="number">2</span>.CPU消耗足够少</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="为什么不用C"><a href="#为什么不用C" class="headerlink" title="为什么不用C++"></a>为什么不用C++</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">学习成本高</span><br><span class="line">开发周期长</span><br><span class="line">调试难度大</span><br><span class="line">机器的时间可以用钱购买，人的时间无法用钱购买</span><br></pre></td></tr></table></figure>
-<h3 id="提升PHP性能"><a href="#提升PHP性能" class="headerlink" title="提升PHP性能"></a>提升PHP性能</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">使用PHP7，性能至少提高一倍</span><br><span class="line">使用yaf/phalcon</span><br><span class="line">使用swoole应用服务器</span><br></pre></td></tr></table></figure>
-<h3 id="什么是Swoole"><a href="#什么是Swoole" class="headerlink" title="什么是Swoole"></a>什么是Swoole</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PHP的异步、并行、高性能网络通信引擎，使用纯C语言编写，</span><br><span class="line">提供了PHP语言的异步多线程服务器，异步TCP/UDP网络客户端，</span><br><span class="line">异步MySQL，异步Redis，数据库连接池，AsyncTask，消息队列，</span><br><span class="line">毫秒定时器，异步文件读写，异步DNS查询。 Swoole内置了Http/WebSocket服务器</span><br><span class="line">端/客户端、Http2.<span class="number">0</span>服务器端。Swoole可以广泛应用于互联网、移动通信、企业软件、</span><br><span class="line">云计算、网络游戏、物联网（IOT）、车联网、智能家居等领域。使用PHP+Swoole作</span><br><span class="line">为网络通信框架，可以使企业IT研发团队的效率大大提升，更加专注于开发创新产品。</span><br></pre></td></tr></table></figure>
-<h3 id="大量并发连接"><a href="#大量并发连接" class="headerlink" title="大量并发连接"></a>大量并发连接</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">基于epool实现异步IO处理</span><br><span class="line">选择Nginx和swoole</span><br></pre></td></tr></table></figure>
-<h3 id="超高性能架构"><a href="#超高性能架构" class="headerlink" title="超高性能架构"></a>超高性能架构</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PHP7 + swoole + yaf/phalcon + Redis</span><br></pre></td></tr></table></figure>
-<h3 id="超高性能统计运算程序"><a href="#超高性能统计运算程序" class="headerlink" title="超高性能统计运算程序"></a>超高性能统计运算程序</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">使用PHP <span class="keyword">Array</span> 全内存存储，计算数据，超大规模读写Redis会成为瓶颈</span><br><span class="line">使用Worker/Task进程实现数据的Map-Reduce</span><br><span class="line">使用PHP的SPL数据结构</span><br><span class="line">中间数据可以使用mysql内存表，汇总计算后删除数据</span><br><span class="line">PHP的GC非常靠谱，及时<span class="keyword">unset</span>掉不用的数据，连续运行无内存泄露</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/ThinkDevelopers/PHPConChina/tree/master/PHPCON2016">https://github.com/ThinkDevelopers/PHPConChina/tree/master/PHPCON2016</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/26/mysql%E7%94%A8%E6%88%B7%E7%9B%B8%E5%85%B3%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/07/26/mysql%E7%94%A8%E6%88%B7%E7%9B%B8%E5%85%B3%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">mysql用户相关操作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-07-26 22:45:49" itemprop="dateCreated datePublished" datetime="2016-07-26T22:45:49+09:00">2016-07-26</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 21:56:57" itemprop="dateModified" datetime="2018-03-27T21:56:57+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-那些最容易脸红的人，往往是最善良的。
-</blockquote>
-### 相关命令
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">查看所有用户</span><br><span class="line">select host,user <span class="keyword">from</span> user ;</span><br><span class="line">添加一个用户</span><br><span class="line">grant all on *.* to yangzie@<span class="string">&quot;%&quot;</span> identified by <span class="string">&quot;123&quot;</span> ; </span><br><span class="line">说明：</span><br><span class="line">all表示所有权限(包括增 删 改 查等权限)</span><br><span class="line">*.* 表示所有数据库，前面一个* 指的是库，后面指的是表</span><br><span class="line">yangzie为添加的用户名</span><br><span class="line"><span class="number">123</span>为密码，高版本的mysq会对密码的安全性做验证，简单的密码会导致命令执行失败</span><br><span class="line">%为匹配的所有主机，% 即可以使用其他连接工具像navicat远程连接</span><br><span class="line">删除一个用户</span><br><span class="line">delete <span class="keyword">from</span> mysql.user where user =<span class="string">&#x27;yushan&#x27;</span> ;</span><br><span class="line"></span><br><span class="line">所有的这些操作完成以后，记得刷新权限</span><br><span class="line">flush privileges;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/25/centos%E4%B8%8Bftp%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/07/25/centos%E4%B8%8Bftp%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/" class="post-title-link" itemprop="url">centos下ftp相关设置</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-07-25 22:56:59" itemprop="dateCreated datePublished" datetime="2016-07-25T22:56:59+09:00">2016-07-25</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-16 23:25:11" itemprop="dateModified" datetime="2021-09-16T23:25:11+09:00">2021-09-16</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你如今的气质里，藏着你走过的路，读过的书，和爱过的人。
-</blockquote>
-
-<h3 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h3><p>centos6.5 64位</p>
-<h3 id="步骤："><a href="#步骤：" class="headerlink" title="步骤："></a>步骤：</h3><ul>
-<li>安装</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum install vsftp</span><br><span class="line">chkconfig vsftpd on</span><br><span class="line">chkconfig --<span class="keyword">list</span> vsftpd </span><br><span class="line">service vsftpd start</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>匿名用户登录</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在浏览器中通过ftp://121.40.215.165这样的方式，无需输入用户名密码即可访问</span></span><br><span class="line">vim /etc/vsftpd/vsftpd.conf</span><br><span class="line">anonymous_enable=YES    <span class="comment">//匿名访问 开启</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>selinux </li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//SELinux 全称 Security Enhanced Linux (安全强化 Linux)，是 MAC (Mandatory Access Control，强制访问控制系统)</span></span><br><span class="line"><span class="comment">//的一个实现，目的在于明确的指明某个进程可以访问哪些资源(文件、网络端口等)。</span></span><br><span class="line">getenforce   <span class="comment">//查看状态</span></span><br><span class="line">setenforce <span class="number">0</span> <span class="comment">//临时关闭</span></span><br><span class="line">setenforce <span class="number">1</span> <span class="comment">//临时开启</span></span><br><span class="line"><span class="comment">//永久关闭</span></span><br><span class="line">修改/etc/selinux/config 文件</span><br><span class="line">将SELINUX=enforcing改为SELINUX=disabled</span><br><span class="line">重启机器即可</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>修改默认端口号</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//编辑 /etc/vsftpd/vsftpd.conf 文件，在该配置文件中添加此行：listen_port=801</span></span><br><span class="line"><span class="comment">//编辑 /etc/services 文件，将其中的 ftp 21/tcp 改为 ftp 801/tcp , ftp 21/udp 改为 ftp 801/udp</span></span><br><span class="line"><span class="comment">//执行 /etc/init.d/vsftpd restart 重新启动 vsftpd 服务.</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>ftp的配置文件</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//位于/etc/vsftpd/目录下，分别是：</span></span><br><span class="line"><span class="comment">//ftpusers    该文件用来指定那些用户不能访问ftp服务器。</span></span><br><span class="line"><span class="comment">//user_list   该文件用来指示的默认账户在默认情况下也不能访问ftp</span></span><br><span class="line"><span class="comment">//vsftpd.conf   该文件是vsftpd的主配置文件</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>建立用户以及指定目录</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">useradd -d /home/ftp ftpuser</span><br><span class="line">passwd ftpuser</span><br><span class="line"><span class="comment">//此时用户ftpuser可以通过ftp登录</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//系统内所有的FTP用户都限制在家目录中,修改配置文件/etc/vsftpd/vsftpd.conf</span></span><br><span class="line">chroot_local_user=YES</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://jasonhzy.github.io/2016/03/11/linux-ftp/">http://jasonhzy.github.io/2016/03/11/linux-ftp/</a></p>
 </blockquote>
 
       

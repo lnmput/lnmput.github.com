@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">384</span>
+          <span class="site-state-item-count">389</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,477 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/28/%E4%BD%BF%E7%94%A8docker%E6%90%AD%E5%BB%BAlnmp%E7%8E%AF%E5%A2%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/28/%E4%BD%BF%E7%94%A8docker%E6%90%AD%E5%BB%BAlnmp%E7%8E%AF%E5%A2%83/" class="post-title-link" itemprop="url">使用docker搭建lnmp环境</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-06-28 14:32:31" itemprop="dateCreated datePublished" datetime="2018-06-28T14:32:31+09:00">2018-06-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-06-29 17:01:15" itemprop="dateModified" datetime="2018-06-29T17:01:15+09:00">2018-06-29</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+若家境殷实，谁愿颠沛流离。
+</blockquote>
+
+<h3 id="docker-compose-yml"><a href="#docker-compose-yml" class="headerlink" title="docker-compose.yml"></a>docker-compose.yml</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">nginx:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">8000</span><span class="string">:80</span></span><br><span class="line">    <span class="attr">networks:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">lnmp</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./wwwroot:/usr/share/nginx/html</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./nginx/nginx.conf:/etc/nginx/nginx.conf</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./nginx/conf.d:/etc/nginx/conf.d/</span></span><br><span class="line">  <span class="attr">php:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">php</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">php:7.2.6-fpm</span></span><br><span class="line">    <span class="attr">networks:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">lnmp</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./wwwroot:/usr/share/nginx/html</span> </span><br><span class="line">  <span class="attr">mysql:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">mysql</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">mysql:5.7.22</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">3307</span><span class="string">:3306</span></span><br><span class="line">    <span class="attr">networks:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">lnmp</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./mysql/conf:/etc/mysql/conf.d</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./mysql/data:/var/lib/mysql</span></span><br><span class="line">    <span class="attr">command:</span> <span class="string">--character-set-server=utf8mb4</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="attr">MYSQL_ROOT_PASSWORD:</span> <span class="number">123456</span></span><br><span class="line">      <span class="attr">MYSQL_DATABASE:</span> <span class="string">wp</span></span><br><span class="line">      <span class="attr">MYSQL_USER:</span> <span class="string">yangzie</span></span><br><span class="line">      <span class="attr">MYSQL_PASSWORD:</span> <span class="number">123456</span></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">lnmp:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">bridge</span> </span><br></pre></td></tr></table></figure>
+
+<h3 id="nginx配置"><a href="#nginx配置" class="headerlink" title="nginx配置"></a>nginx配置</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       <span class="number">80</span>;</span><br><span class="line">    server_name  localhost;</span><br><span class="line">    root   /usr/share/nginx/html;</span><br><span class="line">    index  index.html index.htm index.php;</span><br><span class="line"></span><br><span class="line">    location ~ \.php$ &#123;</span><br><span class="line">        fastcgi_split_path_info ^(.+\.php)(/.+)$;</span><br><span class="line">        fastcgi_pass php:<span class="number">9000</span>;</span><br><span class="line">        fastcgi_index index.php;</span><br><span class="line">        <span class="keyword">include</span> fastcgi_params;</span><br><span class="line">        fastcgi_param SCRIPT_FILENAME <span class="variable">$document</span>_root<span class="variable">$fastcgi_script_name</span>;        </span><br><span class="line">        fastcgi_intercept_errors off;</span><br><span class="line">        fastcgi_buffer_size <span class="number">16</span>k;</span><br><span class="line">        fastcgi_buffers <span class="number">4</span> <span class="number">16</span>k;</span><br><span class="line">        fastcgi_connect_timeout <span class="number">300</span>;</span><br><span class="line">        fastcgi_send_timeout <span class="number">300</span>;</span><br><span class="line">        fastcgi_read_timeout <span class="number">300</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="mysql"><a href="#mysql" class="headerlink" title="mysql"></a>mysql</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h47.<span class="number">98.174</span>.<span class="number">48</span> -P <span class="number">3307</span> -uroot -p123456</span><br></pre></td></tr></table></figure>
+
+<h3 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">├── docker-compose.yml</span><br><span class="line">├── mysql</span><br><span class="line">│   ├── conf</span><br><span class="line">│   └── data</span><br><span class="line">├── nginx</span><br><span class="line">│   ├── conf.d</span><br><span class="line">│   └── nginx.conf</span><br><span class="line">├── php</span><br><span class="line">│   └── ini</span><br><span class="line">└── wwwroot</span><br><span class="line">    ├── index.php</span><br><span class="line">    └── tp5</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="截图"><a href="#截图" class="headerlink" title="截图"></a>截图</h3><img style="margin-left: 0;" src="/images/docker-lnmp.png">
+
+<h3 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h3><ul>
+<li>php容器也要配置目录映射， 不然找不到php文件</li>
+<li>nginx的server配置中监听9000端口：php:9000</li>
+<li>找不到的配置可以在Dockerfile文件中找</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/27/%E9%98%BF%E9%87%8C%E4%BA%91ecs%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%8C%82%E8%BD%BD%E7%A3%81%E7%9B%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/27/%E9%98%BF%E9%87%8C%E4%BA%91ecs%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%8C%82%E8%BD%BD%E7%A3%81%E7%9B%98/" class="post-title-link" itemprop="url">阿里云ECS服务器挂载磁盘</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-27 13:44:26 / 修改时间：16:07:56" itemprop="dateCreated datePublished" datetime="2018-06-27T13:44:26+09:00">2018-06-27</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+不要到处宣扬自己的内心，这世上不止你一个人有故事
+</blockquote>
+
+<p>使用阿里云ECS服务器， 购买的40G高效云盘已经不够用， 所以又购买了一块云盘， 但是仅仅通过控制台操作并不能将磁盘挂载到系统， 接下来记录我的挂载流程； 为了安全起见， 建议先去做一个磁盘快照</p>
+<ul>
+<li><p>检查磁盘现在的情况</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df -h</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Filesystem      Size  Used Avail <span class="keyword">Use</span>% <span class="title">Mounted</span> <span class="title">on</span></span><br><span class="line">/<span class="title">dev</span>/<span class="title">vda1</span>        40<span class="title">G</span>   35<span class="title">G</span>  3.2<span class="title">G</span>  92% /</span><br><span class="line"><span class="title">devtmpfs</span>        3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">dev</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">dev</span>/<span class="title">shm</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>  632<span class="title">K</span>  3.9<span class="title">G</span>   1% /<span class="title">run</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">sys</span>/<span class="title">fs</span>/<span class="title">cgroup</span></span><br><span class="line"><span class="title">tmpfs</span>           783<span class="title">M</span>     0  783<span class="title">M</span>   0% /<span class="title">run</span>/<span class="title">user</span>/0</span><br></pre></td></tr></table></figure></li>
+<li><p>查看硬盘个数及分区 </p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Disk /dev/vda: <span class="number">42.9</span> GB, <span class="number">42949672960</span> bytes, <span class="number">83886080</span> sectors</span><br><span class="line">Units = sectors of <span class="number">1</span> * <span class="number">512</span> = <span class="number">512</span> bytes</span><br><span class="line">Sector size (logical/physical): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">I/O size (minimum/optimal): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">Disk label type: dos</span><br><span class="line">Disk identifier: <span class="number">0x0008d73a</span></span><br><span class="line"></span><br><span class="line">   Device Boot      Start         End      Blocks   Id  System</span><br><span class="line">/dev/vda1   *        <span class="number">2048</span>    <span class="number">83884031</span>    <span class="number">41940992</span>   <span class="number">83</span>  Linux</span><br><span class="line"></span><br><span class="line">Disk /dev/vdb: <span class="number">21.5</span> GB, <span class="number">21474836480</span> bytes, <span class="number">41943040</span> sectors</span><br><span class="line">Units = sectors of <span class="number">1</span> * <span class="number">512</span> = <span class="number">512</span> bytes</span><br><span class="line">Sector size (logical/physical): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">I/O size (minimum/optimal): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br></pre></td></tr></table></figure>
+<p>我们可以看到那块20GB的磁盘：/dev/xdb</p>
+</li>
+<li><p>对这块硬盘进行分区</p>
+<img style="margin-left: 0;" src="/images/20160103150446502.png"></li>
+<li><p>查看</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Disk /dev/vda: <span class="number">42.9</span> GB, <span class="number">42949672960</span> bytes, <span class="number">83886080</span> sectors</span><br><span class="line">Units = sectors of <span class="number">1</span> * <span class="number">512</span> = <span class="number">512</span> bytes</span><br><span class="line">Sector size (logical/physical): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">I/O size (minimum/optimal): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">Disk label type: dos</span><br><span class="line">Disk identifier: <span class="number">0x0008d73a</span></span><br><span class="line"></span><br><span class="line">   Device Boot      Start         End      Blocks   Id  System</span><br><span class="line">/dev/vda1   *        <span class="number">2048</span>    <span class="number">83884031</span>    <span class="number">41940992</span>   <span class="number">83</span>  Linux</span><br><span class="line"></span><br><span class="line">Disk /dev/vdb: <span class="number">21.5</span> GB, <span class="number">21474836480</span> bytes, <span class="number">41943040</span> sectors</span><br><span class="line">Units = sectors of <span class="number">1</span> * <span class="number">512</span> = <span class="number">512</span> bytes</span><br><span class="line">Sector size (logical/physical): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">I/O size (minimum/optimal): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">Disk label type: dos</span><br><span class="line">Disk identifier: <span class="number">0x7a2b9a92</span></span><br><span class="line"></span><br><span class="line">   Device Boot      Start         End      Blocks   Id  System</span><br><span class="line">/dev/vdb1            <span class="number">2048</span>    <span class="number">41943039</span>    <span class="number">20970496</span>   <span class="number">83</span>  Linux</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>格式化新分区</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkfs.ext3 /dev/vdb1</span><br></pre></td></tr></table></figure></li>
+<li><p>创建挂载目录<br>建议挂载到mnt目录， 也可以自己创建新的目录</p>
+</li>
+<li><p>挂载分区到目录</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/vdb1 /mnt</span><br></pre></td></tr></table></figure></li>
+<li><p>查看</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df -h</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Filesystem      Size  Used Avail <span class="keyword">Use</span>% <span class="title">Mounted</span> <span class="title">on</span></span><br><span class="line">/<span class="title">dev</span>/<span class="title">vda1</span>        40<span class="title">G</span>   35<span class="title">G</span>  3.1<span class="title">G</span>  92% /</span><br><span class="line"><span class="title">devtmpfs</span>        3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">dev</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">dev</span>/<span class="title">shm</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>  636<span class="title">K</span>  3.9<span class="title">G</span>   1% /<span class="title">run</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">sys</span>/<span class="title">fs</span>/<span class="title">cgroup</span></span><br><span class="line"><span class="title">tmpfs</span>           783<span class="title">M</span>     0  783<span class="title">M</span>   0% /<span class="title">run</span>/<span class="title">user</span>/0</span><br><span class="line">/<span class="title">dev</span>/<span class="title">vdb1</span>        20<span class="title">G</span>   45<span class="title">M</span>   19<span class="title">G</span>   1% /<span class="title">mnt</span></span><br><span class="line">```  </span><br><span class="line">- 设置开机自动挂载 </span><br><span class="line">```<span class="title">php</span></span><br><span class="line"><span class="title">cat</span> /<span class="title">etc</span>/<span class="title">fstab</span></span><br><span class="line">#</span><br><span class="line"># /<span class="title">etc</span>/<span class="title">fstab</span></span><br><span class="line"># <span class="title">Created</span> <span class="title">by</span> <span class="title">anaconda</span> <span class="title">on</span> <span class="title">Sun</span> <span class="title">Oct</span> 15 15:19:00 2017</span><br><span class="line">#</span><br><span class="line"># <span class="title">Accessible</span> <span class="title">filesystems</span>, <span class="title">by</span> <span class="title">reference</span>, <span class="title">are</span> <span class="title">maintained</span> <span class="title">under</span> &#x27;/<span class="title">dev</span>/<span class="title">disk</span>&#x27;</span><br><span class="line"># <span class="title">See</span> <span class="title">man</span> <span class="title">pages</span> <span class="title">fstab</span>(5), <span class="title">findfs</span>(8), <span class="title">mount</span>(8) <span class="title">and</span>/<span class="title">or</span> <span class="title">blkid</span>(8) <span class="title">for</span> <span class="title">more</span> <span class="title">info</span></span><br><span class="line">#</span><br><span class="line"><span class="title">UUID</span>=<span class="title">eb448abb</span>-3012-4<span class="title">d8d</span>-<span class="title">bcde</span>-94434<span class="title">d586a31</span> /                       <span class="title">ext4</span>    <span class="title">defaults</span>        1 1</span><br></pre></td></tr></table></figure>
+<p>修改</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/fstab</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># /etc/fstab</span></span><br><span class="line"><span class="comment"># Created by anaconda on Sun Oct 15 15:19:00 2017</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Accessible filesystems, by reference, are maintained under &#x27;/dev/disk&#x27;</span></span><br><span class="line"><span class="comment"># See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">UUID=eb448abb-<span class="number">3012</span>-<span class="number">4</span>d8d-bcde-<span class="number">94434</span>d586a31 /                       ext4    defaults        <span class="number">1</span> <span class="number">1</span></span><br><span class="line">/dev/vdb1                                 /mnt                    ext3    defaults        <span class="number">0</span> <span class="number">0</span></span><br></pre></td></tr></table></figure></li>
+<li><p>重启</p>
+</li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/25426.html">https://help.aliyun.com/document_detail/25426.html</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/wyzhangchengjin123/article/details/50451065">https://blog.csdn.net/wyzhangchengjin123/article/details/50451065</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/27/linux%E7%A3%81%E7%9B%98%E7%A9%BA%E9%97%B4%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/27/linux%E7%A3%81%E7%9B%98%E7%A9%BA%E9%97%B4%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">linux磁盘空间分析</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-27 10:42:25 / 修改时间：14:45:11" itemprop="dateCreated datePublished" datetime="2018-06-27T10:42:25+09:00">2018-06-27</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+珍贵的东西往往数目稀少，所以你要变得更强，才有力量去抢。
+</blockquote>
+
+<p>今天遇到了一个问题， 线上的ES服务突然挂了，重启无用， 查看日志后发现是本地磁盘爆了，开启了我的磁盘清理之路</p>
+<p>du(disk usage)命令可以计算文件或目录所占的磁盘空间。没有指定任何选项时，它会测量当前工作目录与其所有子目录，分别显示各个目录所占的快数，最后才显示工作目录所占总快数。</p>
+<ul>
+<li><p>查看</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df -lh</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/dev/vda1        <span class="number">40</span>G   <span class="number">37</span>G  <span class="number">870</span>M  <span class="number">98</span>% /</span><br><span class="line">devtmpfs        <span class="number">3.9</span>G     <span class="number">0</span>  <span class="number">3.9</span>G   <span class="number">0</span>% /dev</span><br><span class="line">tmpfs           <span class="number">3.9</span>G     <span class="number">0</span>  <span class="number">3.9</span>G   <span class="number">0</span>% /dev/shm</span><br><span class="line">tmpfs           <span class="number">3.9</span>G  <span class="number">624</span>K  <span class="number">3.9</span>G   <span class="number">1</span>% /run</span><br><span class="line">tmpfs           <span class="number">3.9</span>G     <span class="number">0</span>  <span class="number">3.9</span>G   <span class="number">0</span>% /sys/fs/cgroup</span><br><span class="line">tmpfs           <span class="number">783</span>M     <span class="number">0</span>  <span class="number">783</span>M   <span class="number">0</span>% /run/user/<span class="number">0</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>查找大文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -sh * |grep G</span><br></pre></td></tr></table></figure>
+
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.1</span>G	root</span><br><span class="line"><span class="number">4.0</span>G	usr</span><br><span class="line"><span class="number">1.6</span>G	<span class="keyword">var</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<ul>
+<li><p>具体分析</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -sh *</span><br></pre></td></tr></table></figure>
+
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">240</span>M	bin</span><br><span class="line"><span class="number">4.0</span>K	etc</span><br><span class="line"><span class="number">4.0</span>K	games</span><br><span class="line"><span class="number">37</span>M	<span class="keyword">include</span></span><br><span class="line"><span class="number">489</span>M	lib</span><br><span class="line"><span class="number">169</span>M	lib64</span><br><span class="line"><span class="number">54</span>M	libexec</span><br><span class="line"><span class="number">2.6</span>G	local</span><br><span class="line"><span class="number">43</span>M	sbin</span><br><span class="line"><span class="number">362</span>M	share</span><br><span class="line"><span class="number">71</span>M	src</span><br><span class="line"><span class="number">0</span>	tmp</span><br></pre></td></tr></table></figure></li>
+<li><p>以M显示文件大小</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -l --block-size=M</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">total <span class="number">15326</span>M</span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root     <span class="number">1</span>M Mar <span class="number">13</span> <span class="number">19</span>:<span class="number">01</span> <span class="number">1</span>.sh</span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root    <span class="number">20</span>M Mar <span class="number">14</span> <span class="number">20</span>:<span class="number">47</span> <span class="number">2</span></span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root    <span class="number">20</span>M Mar <span class="number">15</span> <span class="number">17</span>:<span class="number">47</span> btoken-go</span><br><span class="line">-rw-rw---- <span class="number">1</span> root root   <span class="number">243</span>M Jun <span class="number">27</span> <span class="number">11</span>:<span class="number">11</span> btoken.log</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/22/alpine%E7%AE%80%E4%BB%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/22/alpine%E7%AE%80%E4%BB%8B/" class="post-title-link" itemprop="url">Alpine简介</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-22 14:00:27 / 修改时间：15:10:57" itemprop="dateCreated datePublished" datetime="2018-06-22T14:00:27+09:00">2018-06-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+让未来到来，让过去过去。
+</blockquote>
+
+<p>Alpine 操作系统是一个面向安全的轻型 Linux 发行版。它不同于通常 Linux 发行版，Alpine 采用了 musl libc 和 busybox 以减小系统的体积和运行时资源消耗，但功能上比 busybox 又完善的多，因此得到开源社区越来越多的青睐。在保持瘦身的同时，Alpine 还提供了自己的包管理工具 apk，可以通过 <a target="_blank" rel="noopener" href="https://pkgs.alpinelinux.org/packages">https://pkgs.alpinelinux.org/packages</a> 网站上查询包信息，也可以直接通过 apk 命令直接查询和安装各种软件。</p>
+<p>Alpine 由非商业组织维护的，支持广泛场景的 Linux发行版，它特别为资深/重度Linux用户而优化，关注安全，性能和资源效能。Alpine 镜像可以适用于更多常用场景，并且是一个优秀的可以适用于生产的基础系统/环境。</p>
+<p>Alpine Docker 镜像也继承了 Alpine Linux 发行版的这些优势。相比于其他 Docker 镜像，它的容量非常小，仅仅只有 5 MB 左右（对比 Ubuntu 系列镜像接近 200 MB），且拥有非常友好的包管理机制。官方镜像来自 docker-alpine 项目。</p>
+<p>目前 Docker 官方已开始推荐使用 Alpine 替代之前的 Ubuntu 做为基础镜像环境。这样会带来多个好处。包括镜像下载速度加快，镜像安全性提高，主机之间的切换更方便，占用更少磁盘空间等。</p>
+<h3 id="Docker下的运行"><a href="#Docker下的运行" class="headerlink" title="Docker下的运行"></a>Docker下的运行</h3><p>官方 Alpine 镜像的文档：<a target="_blank" rel="noopener" href="http://gliderlabs.viewdocs.io/docker-alpine/">http://gliderlabs.viewdocs.io/docker-alpine/</a></p>
+<p>可以使用Docker Toolbox，创建一台Docker虚拟主机，在该主机的Docker环境下运行alpine的 Docker容器。该容器就是一个Alpine Linux系统，</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker pull alpine</span><br><span class="line"></span><br><span class="line">docker run -it --name myalpine alpine</span><br></pre></td></tr></table></figure>
+
+<h3 id="作为Docker容器的基础镜像"><a href="#作为Docker容器的基础镜像" class="headerlink" title="作为Docker容器的基础镜像"></a>作为Docker容器的基础镜像</h3><p>以Alpine为基础镜像，创建一个MySQL容器，镜像大小只有36.5MB，<br>同样的方式使用Ubuntu系统作为基础镜像，镜像大小有184MB，<br>Dockerfile文件的内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> alpine:<span class="number">3.6</span></span><br><span class="line">RUN apk add --no-cache mysql-client</span><br><span class="line">ENTRYPOINT [<span class="string">&quot;mysql&quot;</span>]</span><br></pre></td></tr></table></figure>
+<p>创建一个test/mysqlclient:1.0镜像</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t test/mysqlclient:<span class="number">1.0</span> .</span><br></pre></td></tr></table></figure>
+
+<h3 id="Alpine的配置和使用"><a href="#Alpine的配置和使用" class="headerlink" title="Alpine的配置和使用"></a>Alpine的配置和使用</h3><h4 id="网络相关文件"><a href="#网络相关文件" class="headerlink" title="网络相关文件"></a>网络相关文件</h4><p>主机名文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/hostname    </span><br></pre></td></tr></table></figure>
+<p>主机IP和域名映射文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/hosts    </span><br></pre></td></tr></table></figure>
+<p>安装nginx</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apk add --update nginx   </span><br></pre></td></tr></table></figure>
+<p>安装openssh-server服务器</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apk add openssh-server</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h3 id="相关资源"><a href="#相关资源" class="headerlink" title="相关资源"></a>相关资源</h3><ul>
+<li>Alpine 官网：<a target="_blank" rel="noopener" href="http://alpinelinux.org/">http://alpinelinux.org/</a></li>
+<li>Alpine 官方仓库：<a target="_blank" rel="noopener" href="https://github.com/alpinelinux">https://github.com/alpinelinux</a></li>
+<li>Alpine 官方镜像：<a target="_blank" rel="noopener" href="https://hub.docker.com/_/alpine/">https://hub.docker.com/_/alpine/</a></li>
+<li>Alpine 官方镜像仓库：<a target="_blank" rel="noopener" href="https://github.com/gliderlabs/docker-alpine">https://github.com/gliderlabs/docker-alpine</a></li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/CSDN_duomaomao/article/details/76152416">https://blog.csdn.net/CSDN_duomaomao/article/details/76152416</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/21/nginx%E4%B8%8Ephp-fpm%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/21/nginx%E4%B8%8Ephp-fpm%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="post-title-link" itemprop="url">nginx与php-fpm的负载均衡</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-21 11:01:18 / 修改时间：12:46:02" itemprop="dateCreated datePublished" datetime="2018-06-21T11:01:18+09:00">2018-06-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你不必跑在任何人后边。
+</blockquote>
+
+<p>Nginx反向代理负载均衡架构图(三台服务器为例)</p>
+<p><img src="/images/jiagou.jpg"></p>
+<h3 id="Nginx负载均衡-图示-192-168-1-1-80服务器配置"><a href="#Nginx负载均衡-图示-192-168-1-1-80服务器配置" class="headerlink" title="Nginx负载均衡(图示:192.168.1.1:80服务器配置)"></a>Nginx负载均衡(图示:192.168.1.1:80服务器配置)</h3><p>upstream示例配置</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">upstream icontact_pool &#123;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.1</span>:<span class="number">9000</span>    weight=<span class="number">5</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.2</span>:<span class="number">9000</span>    weight=<span class="number">3</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.3</span>:<span class="number">9000</span>    weight=<span class="number">2</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h3 id="ngxin虚拟主机负载均衡配置"><a href="#ngxin虚拟主机负载均衡配置" class="headerlink" title="ngxin虚拟主机负载均衡配置"></a>ngxin虚拟主机负载均衡配置</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">server &#123;  </span><br><span class="line">    listen  <span class="number">192.168</span>.<span class="number">1.1</span>:<span class="number">80</span>;  </span><br><span class="line">    server_name <span class="number">192.168</span>.<span class="number">1.1</span>;  </span><br><span class="line">  </span><br><span class="line">    access_log  /<span class="keyword">var</span>/log/nginx/balance/loadbalance.access.log;    </span><br><span class="line">    error_log   /<span class="keyword">var</span>/log/nginx/balance/loadbalance.<span class="built_in">error</span>.log;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">#允许列目录  </span></span><br><span class="line">    location / &#123;  </span><br><span class="line">        root    /balance/;  </span><br><span class="line">        autoindex   on;  </span><br><span class="line">        autoindex_exact_size    off;  </span><br><span class="line">        autoindex_localtime on;  </span><br><span class="line">        allow allow;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">#proxy the php scripts to fpm_pool_upstream  </span></span><br><span class="line">    location ~ \.php$ &#123;  </span><br><span class="line">        root    /balance;  </span><br><span class="line">        <span class="keyword">include</span> /etc/nginx/fastcgi_params;  </span><br><span class="line">        <span class="comment">#将webserver接收的客户端请求通过fastcgi负载均衡到php5-fpm的池  </span></span><br><span class="line">        fastcgi_pass    icontact_pool;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h3 id="负载均衡服务器处理php请求"><a href="#负载均衡服务器处理php请求" class="headerlink" title="负载均衡服务器处理php请求"></a>负载均衡服务器处理php请求</h3><p>192.168.1.1:9000、192.168.1.2:9000、192.168.1.3:9000为后端的三台负载均衡服务器监听的fpm地址和端口号，负载均衡服务器通过fastcgi将http请求和上下文参数发送给这个fpm池，然后fpm负责解析php程序</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/wzy_1988/article/details/8230562">https://blog.csdn.net/wzy_1988/article/details/8230562</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -743,608 +1214,6 @@ You are my today and all of my tomorrows.
 </ul>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://www.zybuluo.com/phper/note/89391">https://www.zybuluo.com/phper/note/89391</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E7%9A%84hash%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E7%9A%84hash%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">laravel中使用redis的hash操作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-14 14:48:08 / 修改时间：15:56:33" itemprop="dateCreated datePublished" datetime="2018-06-14T14:48:08+09:00">2018-06-14</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-The first step is as good as half over.
-</blockquote>
-
-<p>While recording the product sales of a multi-tenant application, we need a way to store the metrics in a way that guarantees a solid separation between each tenant, one idea is to use key names like shop:{shopId}:product:{productId}:sales that way we’ll have a key per product for each shop, since product IDs might co-exist in multiple shops, we can increment the values of each key on every purchase and get that value when needed, if we need the sales for the whole business we can do something like:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::mget(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:product:1&quot;</span>, <span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:product:2&quot;</span>, ...);</span><br></pre></td></tr></table></figure>
-<p>This will bring the sales of every product inside a given business.</p>
-<p>That sounds cool, but seems like you’ll introduce a better approach?<br>I’ve been reading this post from the Instagram Engineering blog and I was amazed about the performance gain they described from using Redis Hashes over regular strings, let me share some of the numbers:</p>
-<ul>
-<li>Having 1 Million string keys needed about 70MB of memory</li>
-<li>Having 1000 Hashes each with 1000 Keys only needed 17MB!</li>
-</ul>
-<p>The reason behind that is that hashes can be encoded efficiently in a very small memory space, so Redis makers recommend that we use hashes whenever possible since “a few keys use a lot more memory than a single key containing a hash with a few fields”, a key represents a Redis Object holds a lot more information than just its value, on the other hand a hash field only hold the value assigned, thus why it’s much more efficient.</p>
-<h3 id="Let’s-build-our-hash"><a href="#Let’s-build-our-hash" class="headerlink" title="Let’s build our hash"></a>Let’s build our hash</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hmset(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>, <span class="number">100</span>, <span class="string">&quot;products:2&quot;</span>, <span class="number">400</span>);</span><br></pre></td></tr></table></figure>
-
-<p>This will build a Redis hash with two fields product:1 and products:2 holding the values 100 and 400.</p>
-<p>The command hmset gives us the ability to set multiple fields of a hash in one go, there’s a hset command that we can use to set a single field though.</p>
-<p>We can read the values of hash fields using the following:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Redis::hget(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&#x27;product:1&#x27;</span>);</span><br><span class="line"><span class="comment">// To return a single value</span></span><br><span class="line"></span><br><span class="line">Redis::hmget(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&#x27;product:1&#x27;</span>, <span class="string">&#x27;product:2&#x27;</span>);</span><br><span class="line"><span class="comment">// To return values from multiple keys</span></span><br><span class="line"></span><br><span class="line">Redis::hvals(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>);</span><br><span class="line"><span class="comment">// To return values of all fields</span></span><br><span class="line"></span><br><span class="line">Redis::hgetall(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>);</span><br><span class="line"><span class="comment">// Also returns values of all fields</span></span><br></pre></td></tr></table></figure>
-
-<p>In case of hmget and hvals the return value is an array of values [100, 400], however in case of hgetall the return value is an array of keys &amp; values:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">&quot;product:1&quot;</span>, <span class="number">100</span>, <span class="string">&quot;product:2&quot;</span>, <span class="number">400</span>]</span><br></pre></td></tr></table></figure>
-<p>Much organized than having multiple keys<br>Yes and you also stop polluting the key namespace with lots of complex-named keys.</p>
-<p>With all the above mentioned benefits there are also a number of useful operations you can do on a hash key:</p>
-<h4 id="Incrementing-amp-Decrementing"><a href="#Incrementing-amp-Decrementing" class="headerlink" title="Incrementing &amp; Decrementing"></a>Incrementing &amp; Decrementing</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Redis:hincrby(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>, <span class="number">18</span>);</span><br><span class="line"><span class="comment">// To increment the sales of product one by 18</span></span><br><span class="line"></span><br><span class="line">Redis:hincrbyfloat(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>, <span class="number">18.9</span>);</span><br><span class="line"><span class="comment">// To increment the sales of product one by 18.9</span></span><br></pre></td></tr></table></figure>
-
-<p>To decrement you just need to provide a negative value, there’s no decrby command for hash fields.</p>
-<h3 id="Field-Existence"><a href="#Field-Existence" class="headerlink" title="Field Existence"></a>Field Existence</h3><p>Like string fields you can check if a hash key exists:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hexists(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>);</span><br></pre></td></tr></table></figure>
-<p>You can also make sure you don’t override an existing field when that’s not the desired behaviour:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hsetnx(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>);</span><br></pre></td></tr></table></figure>
-<p>This will make sure the field doesn’t exist before overriding it.</p>
-<h3 id="Other-operations"><a href="#Other-operations" class="headerlink" title="Other operations"></a>Other operations</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hdel(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>, <span class="string">&quot;product:2&quot;</span>);</span><br></pre></td></tr></table></figure>
-<p>This command deletes the given fields from the hash.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hstrlen(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>);</span><br></pre></td></tr></table></figure>
-<p>This command returns the string length of the value stored at the given field.</p>
-<h3 id="Performance-comes-with-a-cost"><a href="#Performance-comes-with-a-cost" class="headerlink" title="Performance comes with a cost"></a>Performance comes with a cost</h3><p>As we mentioned before, a hash with a few fields is much more efficient than storing a few keys, a key stores a complete Redis object that contains information about the value stored as well as expiration time, idle time, information about the object reference count, and the type of encoding used internally.</p>
-<p>Technically if we create 1 key (Redis Object) that contains multiple string fields it’ll require much less memory since every field holds nothing but a reference to the value it holds, and in hashes with small number of fields it’s even encoded into a length-prefixed string in a format like:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hashValue = [<span class="number">6</span>]field1[<span class="number">4</span>]val1[<span class="number">6</span>]field2[<span class="number">4</span>]val2</span><br></pre></td></tr></table></figure>
-
-<p>Since a hash field holds only a string value we can’t associate an expiration time for it, the makers of Redis suggest that we store an individual field to hold the expiration time for each field if need be and get both fields together to compare if the field is still alive:</p>
-<p>Redis::hmset(‘hashKey’, ‘field1’, ‘field1_value’, ‘field1_expiration’, ‘1495786559’);<br>So whenever we want to use that key we need to bring the expiration value as well and do the extra work ourselves:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hmget(<span class="string">&#x27;hashKey&#x27;</span>, <span class="string">&#x27;field1&#x27;</span>, <span class="string">&#x27;field1_expiration&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<p>Some information about encoding hashes<br>From the Redis docs:</p>
-<blockquote>
-<p>Hashes, when smaller than a given number of fields, and up to a maximum field size, are encoded in a very memory efficient way that uses up to 10 times less memory (with 5 time less memory used being the average saving). Since this is a CPU / memory trade off it is possible to tune the maximum number of fields and maximum field size.</p>
-</blockquote>
-<p>By default hashes are encoded when they contain less than 512 fields or when the largest values stored in a field is less than 64 in length, but you can adjust these values using the config command:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Redis::config(<span class="string">&#x27;set&#x27;</span>, <span class="string">&#x27;hash-max-zipmap-entries&#x27;</span>, <span class="number">1000</span>);</span><br><span class="line"><span class="comment">// Sets the maximum number of fields before the hash stops being encoded</span></span><br><span class="line"></span><br><span class="line">Redis::config(<span class="string">&#x27;set&#x27;</span>, <span class="string">&#x27;hash-max-zipmap-value&#x27;</span>, <span class="number">128</span>);</span><br><span class="line"><span class="comment">// Sets the maximum size of a hash field before the hash stops being encoded</span></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://divinglaravel.com/redis/redis-hashes">https://divinglaravel.com/redis/redis-hashes</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">laravel中使用redis基本命令</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-14 14:37:25 / 修改时间：15:56:46" itemprop="dateCreated datePublished" datetime="2018-06-14T14:37:25+09:00">2018-06-14</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-The wealth of the mind is the only wealth.
-</blockquote>
-
-<p>Let’s store our product sales in a key:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">1000</span>)</span><br><span class="line">Redis::set(<span class="string">&#x27;product:1:count&#x27;</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
-<p>Now to read it we use:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::get(<span class="string">&#x27;product:1:sales&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<h3 id="Incrementing-and-Decrementing-counters"><a href="#Incrementing-and-Decrementing-counters" class="headerlink" title="Incrementing and Decrementing counters"></a>Incrementing and Decrementing counters</h3><p>A new purchase was made, let’s increment the sales:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis::incrby(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">100</span>)</span><br><span class="line"></span><br><span class="line">Redis::incr(<span class="string">&#x27;product:1:count&#x27;</span>)</span><br></pre></td></tr></table></figure>
-<p>Here we increment the sales key by 100, and increment the count key by 1.</p>
-<p>We can also decrement in the same way:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis::decrby(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">100</span>)</span><br><span class="line"></span><br><span class="line">Redis::decr(<span class="string">&#x27;product:1:count&#x27;</span>)</span><br></pre></td></tr></table></figure>
-<p>But when it comes to dealing with floating point numbers we need to use a special command:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis::incrbyfloat(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">15.5</span>)</span><br><span class="line"></span><br><span class="line">Redis::incrbyfloat(<span class="string">&#x27;product:1:sales&#x27;</span>, - <span class="number">30.2</span>)</span><br></pre></td></tr></table></figure>
-<p>There’s no decrbyfloat command, but we can pass a negative value to the incrbyfloat command to have the same effect.</p>
-<blockquote>
-<p>The incrby, incr, decrby, decr, and incrbyfloat return the value after the operation as a response</p>
-</blockquote>
-<h3 id="Retrieve-and-update"><a href="#Retrieve-and-update" class="headerlink" title="Retrieve and update"></a>Retrieve and update</h3><p>Now we want to read the latest sales number and reset the counters to zero, maybe we do that at the end of each day:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$value</span> = Redis::getset(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-<p>Here $value will hold the 1000 value, if we read the value of that key after this operation it’ll be 0.</p>
-<h3 id="Keys-Expiration"><a href="#Keys-Expiration" class="headerlink" title="Keys Expiration"></a>Keys Expiration</h3><p>Let’s say we want to send a notification to the owner when inventory is low, but we only want to send that notification once every 1 hour instead of sending it every time a new purchase is made, so maybe we set a flag once and only send the notification when that flag doesn’t exist:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;EX&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
-<p>Now this key will expire after 3600 seconds (1 hour), we can check if the key exists before attempting to set it and send the notification:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(Redis::get(<span class="string">&#x27;user:1:notified&#x27;</span>))&#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Redis::set(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;EX&#x27;</span>, <span class="number">3600</span>);</span><br><span class="line"></span><br><span class="line">Notifications::send();</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>Notice: There’s no guarantee that the value of user:1:notified won’t change between the get and set operations, we’ll discuss atomic command groups later, but this example is enough for you to understand how every individual command works.</p>
-</blockquote>
-<p>We can set the expiration of a key in milliseconds as well using:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;PX&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
-<p>And you may also use the expire command and provide the timeout in seconds:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::expire(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
-<p>Or in milliseconds:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::pexpire(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
-<p>And if you want the keys to expire at a specific time you can use expireat and provide a Unix timestamp:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::expireat(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="string">&#x27;1495469730&#x27;</span>)</span><br></pre></td></tr></table></figure>
-<p>Is there a way I can check when a key should expire?<br>You can use the ttl command (Time To Live), which will return the number of seconds remaining until the key expires.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::ttl(<span class="string">&#x27;user:1:notified&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>That command may return -2 if the key doesn’t exist, or -1 if the key has no expiration set.</p>
-<p>You can also use the pttl command to get the TTL in milliseconds.</p>
-<p>What if I want to cancel expiration?</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::persist(<span class="string">&#x27;user:1:notified&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>This will remove the expiration from your key, it’ll return 1 if OK or 0 if key doesn’t exist or originally had no expiration set.</p>
-<h3 id="Keys-Existence"><a href="#Keys-Existence" class="headerlink" title="Keys Existence"></a>Keys Existence</h3><p>Let’s say there’s only 1 laracon ticket available and we need to close purchasing once that ticket is sold, we can do:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;ticket:sold&#x27;</span>, <span class="variable">$user</span>-&gt;id, <span class="string">&#x27;NX&#x27;</span>)</span><br></pre></td></tr></table></figure>
-<p>This will only set the key if it doesn’t exist, the next script that tries to set the key wll receive null as a response from Redis which means that the key wasn’t set.</p>
-<p>You can also instruct Redis to set the key only if it exists:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;ticket:sold&#x27;</span>, <span class="variable">$user</span>-&gt;id, <span class="string">&#x27;XX&#x27;</span>)</span><br></pre></td></tr></table></figure>
-<p>If you want to simply check if a key exists, you can use the exists command:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::exists(<span class="string">&#x27;ticket:sold&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<h3 id="Reading-multiple-keys-in-one-go"><a href="#Reading-multiple-keys-in-one-go" class="headerlink" title="Reading multiple keys in one go"></a>Reading multiple keys in one go</h3><p>Sometimes you might need to read multiple keys in one go, you can do this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::mget(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="string">&#x27;product:2:sales&#x27;</span>, <span class="string">&#x27;non_existing_key&#x27;</span>)</span><br></pre></td></tr></table></figure>
-<p>The response of this command is an array with the same size of the given keys, if a key doesn’t exist its value is going to be null.</p>
-<p>As we discussed before, Redis executes individual command atomically, that means nothing can change the value of any in the keys once the operation started, so it’s guaranteed that the values returned are not altered in between reading the value of the first key and the last key.</p>
-<blockquote>
-<p>Using mget is better that firing multiple get commands to reduce the RTT (round trip time), which is the time each individual command takes to travel from client to the server and then carry the response back to the client. More on that later.</p>
-</blockquote>
-<h3 id="Deleting-Keys"><a href="#Deleting-Keys" class="headerlink" title="Deleting Keys"></a>Deleting Keys</h3><p>You can also delete multiple keys at once using the del command:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::del(<span class="string">&#x27;previous:sales&#x27;</span>, <span class="string">&#x27;previous:return&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="Renaming-Keys"><a href="#Renaming-Keys" class="headerlink" title="Renaming Keys"></a>Renaming Keys</h3><p>You can rename a key using the rename command:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::rename(<span class="string">&#x27;current:sales&#x27;</span>, <span class="string">&#x27;previous:sales&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>An error is returned if the original key doesn’t exist, and it overrides the second key if it already exists.</p>
-<p>Renaming keys is usually a fast operation unless a key with the desired name exists, in that case Redis will try to delete that existing key first before renaming this one, deleting a key that holds a very big value might be a bit slow.</p>
-<p>So I have to check first if the second key exists to prevent overriding?<br>Yeah you can use exists to check if the second key exists… OR:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::renamenx(<span class="string">&#x27;current:sales&#x27;</span>, <span class="string">&#x27;previous:sales&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>This will check first if the second key exists, if yes it just returns 0 without doing anything, so it only renames the key if the second key does not exist.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://divinglaravel.com/redis/redis-commands">https://divinglaravel.com/redis/redis-commands</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/%E5%9C%A8laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/14/%E5%9C%A8laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis/" class="post-title-link" itemprop="url">在laravel中使用redis</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-14 14:31:18 / 修改时间：15:57:18" itemprop="dateCreated datePublished" datetime="2018-06-14T14:31:18+09:00">2018-06-14</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-Honesty is the best policy.
-</blockquote>
-
-<p>Redis is a storage server that persists your data in memory which makes read &amp; write operations very fast, you can also configure it to store the data on disk occasionally, replicate to secondary nodes, and automatically split the data across multiple nodes.</p>
-<p>That said, you might want to use Redis when fast access to your data is necessary (caching, live analytics, queue system, etc…), however you’ll need another data storage for when the data is too large to fit in memory or you don’t really need to have fast access, so a combination of Redis &amp; another relational or non-relational database gives you the power to build large scale applications where you can efficiently store large data but also provide a way to read portions of the data very fast.</p>
-<h3 id="Use-Case"><a href="#Use-Case" class="headerlink" title="Use Case"></a>Use Case</h3><p>Think of a cloud-based Point Of Sale application for restaurants, as owner it’s extremely important to be able to monitor different statistics related to sales, inventory, performance of different branches, and many other metrics. Let’s focus on one particular metric which is Product Sales, as a developer you want to build a dashboard where the restaurant owner can see live updates on what products have more sales throughout the day.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">select SUM(order_products.price), products.name</span><br><span class="line"><span class="keyword">from</span> order_products</span><br><span class="line">join products on order_products.product_id = products.id</span><br><span class="line">where DATE(order_products.created_at) = CURDATE()</span><br><span class="line">where order_products.status = <span class="string">&quot;done&quot;</span></span><br></pre></td></tr></table></figure>
-<p>The sql query above will bring you a list with the sales each product made throughout the day, but it’s a relatively heavy query to run when the restaurant serves thousands of orders every day, simply put you can’t run this query in a live-updates dashboard that pulls for updates every 60 seconds or something, it’d be cool if you can cache the product sales every time an order is served and be able to read from the cache, something like:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Event::listen(<span class="string">&#x27;newOrder&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$order</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$order</span>-&gt;products-&gt;each(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$product</span></span>)</span>&#123;</span><br><span class="line">        SomeStorage::increment(<span class="string">&quot;product:<span class="subst">&#123;$product-&gt;id&#125;</span>:sales:2017-05-22&quot;</span>, <span class="variable">$product</span>-&gt;sales);</span><br><span class="line">    );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>So now on every new order we’ll increment the sales for each product, and we can simply read these numbers later like:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sales</span> = Product::all()-&gt;map(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$product</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> SomeStorage::get(<span class="string">&quot;product:<span class="subst">&#123;$product-&gt;id&#125;</span>:sales:2017-05-22&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<p>Replace SomeStorage with Redis and now you have today’s product sales living in your server’s memory, and it’s super fast to read from memory, so you don’t have to run that large query every time you need to update the analytics numbers in the live dashboard.</p>
-<h3 id="Another-Use-Case"><a href="#Another-Use-Case" class="headerlink" title="Another Use Case"></a>Another Use Case</h3><p>Now you want to know the number of unique visitors opening your website every day, we might store it in SQL having a table with user_id &amp; date fields, and later on we can just run a query like:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select COUNT(Distinct user_id) <span class="keyword">as</span> count <span class="keyword">from</span> unique_visits where date = <span class="string">&quot;2017-05-22&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>So we just have to add a record in that database table every time a user visits the site. But still on a high traffic website adding this extra DB interaction might not be the best idea, wouldn’t it be cool if we can just do:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SomeStorage::addUnique(<span class="string">&#x27;unique_visits:2017-05-22&#x27;</span>, <span class="variable">$user</span>-&gt;id);</span><br></pre></td></tr></table></figure>
-<p>And later on we can do:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SomeStorage::count(<span class="string">&#x27;unique_visits:2017-05-22&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>Storing this in memory is fast and reading the stored numbers from memory is super fast, that’s exactly what we need, so I hope by now you got a feel on when using Redis might be a good idea. And by the way the method names used in the above examples don’t exist in redis, I’m just trying to give you a feel about what you can achieve.</p>
-<h3 id="The-Atomic-nature-of-redis-operations"><a href="#The-Atomic-nature-of-redis-operations" class="headerlink" title="The Atomic nature of redis operations"></a>The Atomic nature of redis operations</h3><p>Individual commands in Redis are guaranteed to be atomic, that means nothing will change while executing a command, for example:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$monthSales</span> = Redis::getSet(<span class="string">&#x27;monthSales&#x27;</span>, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
-
-<p>This command gets the value of the monthSales key and then sets it to zero, it’s guaranteed that no other client can change the value or maybe rename the key between the get and set operations, that’s due to the single threaded nature of Redis in which a single system process serves all clients at the same time but can only perform 1 operation at a time, it’s similar to how you can listen to multiple client alterations on the project at the same time but can only work on 1 alteration at a given moment.</p>
-<p>There’s also a way to guarantee the atomicity of a group of commands using transactions, more on that later, but briefly let’s say you have 2 clients:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Client <span class="number">1</span> wants to increment the value</span><br><span class="line">Client <span class="number">1</span> wants to read that value</span><br><span class="line">Client <span class="number">2</span> wants to increment the value</span><br></pre></td></tr></table></figure>
-
-<p>These commands might run in the following order:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Client <span class="number">1</span>: Increment value</span><br><span class="line">Client <span class="number">2</span>: Increment value</span><br><span class="line">Client <span class="number">1</span>: read value</span><br></pre></td></tr></table></figure>
-
-<p>Which will result the read operation from Client 1 to give unexpected results since the value was altered in the middle, that’s when a transaction makes sense.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://divinglaravel.com/redis/before-the-dive">https://divinglaravel.com/redis/before-the-dive</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/07/laravel%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9E%84%E5%BB%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/07/laravel%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9E%84%E5%BB%BA/" class="post-title-link" itemprop="url">Laravel异常处理构建</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-07 19:46:59 / 修改时间：21:01:01" itemprop="dateCreated datePublished" datetime="2018-06-07T19:46:59+09:00">2018-06-07</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-现在努力的你，未来的事情谁说得清楚呢？
-但你不努力，未来是怎样大概都知道了。
-</blockquote>
-
-<p>Exceptions are a very important method for controlling the execution flow of an application. When an application request diverges from the happy path, it’s often important that you halt execution immediately and take another course of action.</p>
-<p>Dealing with problems in an API is especially important. The response from the API is the user interface and so you need to ensure you give a detailed and descriptive explanation of what went wrong.</p>
-<p>This includes the HTTP Status code, and error code that is linked to your documentation, as well as a human readable description of what went wrong.</p>
-<p>In today’s tutorial I’m going to show you how I structure my Laravel API applications to use Exceptions. This structure will make it very easy to return detailed and descriptive error responses from your API, as well as make testing your code a lot easier.</p>
-<p>After a brief hiatus I’m returning to writing about Laravel. After writing about PHP week after week for a long time I was really burned out and needed to take a break.</p>
-<p>However, over the last couple of months I’ve been doing some of my best work focusing on Laravel API applications. This has given me a renewed focus with lots of new ideas and techniques I want to share with you.</p>
-<p>Instead of starting a new project I’m just going to reboot the existing Cribbb series. All of the code from the previous tutorials can still be found within the Git history.</p>
-<h3 id="Understanding-HTTP-Status-Codes"><a href="#Understanding-HTTP-Status-Codes" class="headerlink" title="Understanding HTTP Status Codes"></a>Understanding HTTP Status Codes</h3><p>The first important thing to understand when building an API is that the Internet is built upon standards and protocols. Your API is an “interface” into your application and so it is very important that you adhere to these standards.</p>
-<p>When a web service returns a response from a request, it should include a Status Code. The Status Code describes the response, whether the request was successful or if an error has occurred.</p>
-<p>For example, when a request is successful, your API should return a Status Code of 200, when the client makes a bad request, you should return a Status Code of 400, and if there is an internal server error, you should return a Status Code of 500.</p>
-<p>By sticking to these Status Codes and using them under the correct conditions, we can make our API easier to consume for third-party developers and applications.</p>
-<p>If you are unfamiliar with the standard HTTP Status Codes I would recommend bookmarking the Wikipedia page and referring to it often. You will find you only ever really use a small handful of the status codes, but it is a good idea to be familiar with them.</p>
-<h3 id="How-this-Exception-foundation-will-work"><a href="#How-this-Exception-foundation-will-work" class="headerlink" title="How this Exception foundation will work"></a>How this Exception foundation will work</h3><p>Whenever we return a response from the API it must use one of the standard HTTP status codes. We must also use the correct status code to describe what happened.</p>
-<p>Using the incorrect status code is a really bad thing to do because you are giving the consumer of the API bad information. For example, if you return a 200 Status Code instead of a 400 Status Code, the consumer won’t know they are making an invalid request.</p>
-<p>Therefore, we should be able to categorise anything that could possible go wrong in the application as one of the standard HTTP Status Codes.</p>
-<p>For example, if the client requests a resource that doesn’t exist we should return a 404 Not Found response.</p>
-<p>To trigger this response from our code, we can throw a matching NotFoundException Exception.</p>
-<p>To do this we can create base Exception classes for each HTTP status code.</p>
-<p>Next, in our application code we can create specific Exceptions that extend the base HTTP Exceptions to provide a more granular understanding of what went wrong. For example, we might have a UserNotFound Exception that extends the NotFoundException base Exception class.</p>
-<p>This means under an exceptional circumstance we can throw a specific Exception for that problem and let it bubble up to the surface.</p>
-<p>The application will automatically return the correct HTTP response from the base Exception class.</p>
-<p>Finally we also need a way of providing a descriptive explanation of what went wrong. We can achieve this by defining error messages that will be injected when the exception class is thrown.</p>
-<p>Hopefully that makes sense. But even if it doesn’t, continue reading as I think it will all fall into place as we look at some code.</p>
-<h3 id="Creating-the-Errors-configuration-file"><a href="#Creating-the-Errors-configuration-file" class="headerlink" title="Creating the Errors configuration file"></a>Creating the Errors configuration file</h3><p>It’s very important that you provide your API responses with a descriptive explanation of what went wrong.</p>
-<p>If you don’t provide details of exactly what went wrong the consumers of your API are going to struggle to fix the issue.</p>
-<p>To keep all of the possible error responses in one place I’m going to create an errors.php configuration file under the config directory.</p>
-<p>This will mean we have all of the possible errors in one place which will make creating documentation a lot easier.</p>
-<p>It should also make it easy to provide language translations for the errors too, rather than trying to dig through the code to find every single error!</p>
-<p>To begin with I’ve created some errors for a couple of the standard HTTP error responses:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> [</span><br><span class="line"></span><br><span class="line"><span class="comment">/*  </span></span><br><span class="line"><span class="comment">|—————————————————————————————————————  </span></span><br><span class="line"><span class="comment">| Default Errors  </span></span><br><span class="line"><span class="comment">|—————————————————————————————————————  </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;bad_request&#x27;</span> =&gt; [  </span><br><span class="line"><span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;The server cannot or will not process the request due to something that is perceived to be a client error.&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;detail&#x27;</span> =&gt; <span class="string">&#x27;Your request had an error. Please try again.&#x27;</span>  </span><br><span class="line">],</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;forbidden&#x27;</span> =&gt; [  </span><br><span class="line"><span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;The request was a valid request, but the server is refusing to respond to it.&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;detail&#x27;</span> =&gt; <span class="string">&#x27;Your request was valid, but you are not authorised to perform that action.&#x27;</span>  </span><br><span class="line">],</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;not_found&#x27;</span> =&gt; [  </span><br><span class="line"><span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;The requested resource could not be found but may be available again in the future. Subsequent requests by the client are permissible.&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;detail&#x27;</span> =&gt; <span class="string">&#x27;The resource you were looking for was not found.&#x27;</span>  </span><br><span class="line">],</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;precondition_failed&#x27;</span> =&gt; [  </span><br><span class="line"><span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;The server does not meet one of the preconditions that the requester put on the request.&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;detail&#x27;</span> =&gt; <span class="string">&#x27;Your request did not satisfy the required preconditions.&#x27;</span>  </span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">];  </span><br></pre></td></tr></table></figure>
-<p>As the application is developed I can add to this list. It’s also often a good idea to provide a link to the relevant documentation page. At some point in the future I can simply add this into each error.</p>
-<h3 id="Creating-the-abstract-Exception"><a href="#Creating-the-abstract-Exception" class="headerlink" title="Creating the abstract Exception"></a>Creating the abstract Exception</h3><p>Next I want to create an abstract Exception class that all of my application specific exceptions will extend from.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">namespace</span> <span class="title">Cribbb</span>\<span class="title">Exceptions</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Exception</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">CribbbException</span> <span class="keyword">extends</span> <span class="title">Exception</span>  </span></span><br><span class="line"><span class="class"></span>&#123;  </span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$id</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$status</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$title</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$detail</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> <span class="doctag">@string</span> $message  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> void  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$message</span></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">	<span class="built_in">parent</span>::__construct(<span class="variable">$message</span>);  </span><br><span class="line">&#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>This will make it easy to catch all of the application specific exceptions and provides a clean separation from the other potential exceptions that may be thrown during the application’s execution.</p>
-<p>For each exception I will provide an id, status, title and detail.</p>
-<p>This is to stay close to the JSON API specification.</p>
-<p>I will also provide a getStatus method</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Get the status  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> int  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getStatus</span>(<span class="params"></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">	<span class="keyword">return</span> (<span class="keyword">int</span>) <span class="keyword">$this</span>-&gt;status;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>The JSON API specification states that the status code should be a string. I’m casting it as an int in this method so I can provide the correct response code to Laravel.</p>
-<p>I will also provide a toArray() method to return the Exception as an array. This is just for convenience:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Return the Exception as an array  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> array  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">toArray</span>(<span class="params"></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line"><span class="keyword">return</span> [  </span><br><span class="line">	<span class="string">&#x27;id&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;id,  </span><br><span class="line">	<span class="string">&#x27;status&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;status,  </span><br><span class="line">	<span class="string">&#x27;title&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;title,  </span><br><span class="line">	<span class="string">&#x27;detail&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;detail  </span><br><span class="line">	];  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>Finally I need to get the title and detail for each specific error from the errors.php file.</p>
-<p>To do this I will accept the exception id when a new Exception is instantiated.</p>
-<p>I will then use this id to get the title and detail from the errors.php file.</p>
-<p>So throwing an Exception will look like this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">throw</span> <span class="keyword">new</span> UserNotFound(<span class="string">&#x27;user_not_found&#x27;</span>);  </span><br></pre></td></tr></table></figure>
-
-<p>However, I will also want to provide specific details of the Exception under certain circumstances.</p>
-<p>For example I might want to provide the user’s id in the exception detail.</p>
-<p>To do this I will allow the exception to accept an arbitrary number of arguments:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">throw</span> <span class="keyword">new</span> UserNotFound(<span class="string">&#x27;user_not_found&#x27;</span>, <span class="variable">$id</span>);  </span><br></pre></td></tr></table></figure>
-
-<p>To set up the Exception with the correct message I will use the following method:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Build the Exception  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> array $args  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">build</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$args</span></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">	<span class="keyword">$this</span>-&gt;id = array_shift(<span class="variable">$args</span>);</span><br><span class="line"></span><br><span class="line">	<span class="variable">$error</span> = config(sprintf(<span class="string">&#x27;errors.%s&#x27;</span>, <span class="keyword">$this</span>-&gt;id));</span><br><span class="line"></span><br><span class="line">	<span class="keyword">$this</span>-&gt;title = <span class="variable">$error</span>[<span class="string">&#x27;title&#x27;</span>];  </span><br><span class="line">	<span class="keyword">$this</span>-&gt;detail = vsprintf(<span class="variable">$error</span>[<span class="string">&#x27;detail&#x27;</span>], <span class="variable">$args</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">$this</span>-&gt;detail;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>In this method I first pop off the first argument as this will be the id.</p>
-<p>Next I get the title and detail from the errors.php configuration file using the id.</p>
-<p>Next I vsprintf the remaining arguments into the detail string if they have been passed into the exception.</p>
-<p>Finally I can return the detail to be used as the default Exception message.</p>
-<h3 id="Creating-the-base-Exceptions"><a href="#Creating-the-base-Exceptions" class="headerlink" title="Creating the base Exceptions"></a>Creating the base Exceptions</h3><p>With the abstract Exception in place I can now create the base Exceptions.</p>
-<p>For example, here is the NotFoundException</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">namespace</span> <span class="title">Cribbb</span>\<span class="title">Exceptions</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NotFoundException</span> <span class="keyword">extends</span> <span class="title">CribbbException</span>  </span></span><br><span class="line"><span class="class"></span>&#123;  </span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$status</span> = <span class="string">&#x27;404’;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">/**  </span></span><br><span class="line"><span class="string">* @return void  </span></span><br><span class="line"><span class="string">*/  </span></span><br><span class="line"><span class="string">public function __construct()  </span></span><br><span class="line"><span class="string">&#123;  </span></span><br><span class="line"><span class="string">$message = $this-&gt;build(func_get_args());</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">parent::__construct($message);  </span></span><br><span class="line"><span class="string">&#125;  </span></span><br><span class="line"><span class="string">&#125;  </span></span><br></pre></td></tr></table></figure>
-<p>Each base foundation Exception simply needs to provide the status code and a call to the __construct() method that will call the build() method and pass the message to the parent.</p>
-<p>You can now create these simple Exception classes to represent each HTTP status code your application will be using.</p>
-<p>If you need to add a new HTTP status code response, it’s very easy to just create a new child class.</p>
-<h3 id="Creating-the-application-Exceptions"><a href="#Creating-the-application-Exceptions" class="headerlink" title="Creating the application Exceptions"></a>Creating the application Exceptions</h3><p>Finally we can use these base HTTP Exceptions within our application code to provide more specific Exceptions.</p>
-<p>For example you might have a UserNotFound Exception:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">namespace</span> <span class="title">Cribbb</span>\<span class="title">Users</span>\<span class="title">Exceptions</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Cribbb</span>\<span class="title">Exceptions</span>\<span class="title">NotFoundException</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserNotFound</span> <span class="keyword">extends</span> <span class="title">NotFoundException</span>  </span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>Now whenever you attempt to find a user, but the user is not found you can throw this Exception.</p>
-<p>The Exception will bubble up to the surface and the correct HTTP Response will be automatically returned with an appropriate error message.</p>
-<p>This means if an Exception is throw, you can just let it go, you don’t have to catch it because the consumer needs to be informed that the user was not found.</p>
-<p>And in your tests you can assert a UserNotFound exception was thrown, rather than just a generic NotFound exception. This means you can write tests where you are confident the test is failing for the correct reason. This makes reading your tests very easy to understand.</p>
-<h3 id="Dealing-with-Exceptions-and-returning-the-correct-response"><a href="#Dealing-with-Exceptions-and-returning-the-correct-response" class="headerlink" title="Dealing with Exceptions and returning the correct response"></a>Dealing with Exceptions and returning the correct response</h3><p>Laravel allows you to handle Exceptions and return a response in the Handler.php file under the Exceptions namespace.</p>
-<p>The first thing I’m going to do is to add the base CribbbException class to the $dontReport array.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* A list of the exception types that should not be reported  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> array  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$dontReport</span> = [  </span><br><span class="line">	HttpException::class,  </span><br><span class="line">	CribbbException::class  </span><br><span class="line">];  </span><br></pre></td></tr></table></figure>
-
-<p>I don’t need to be told that an application specific Exception has been thrown because this is to be expected. By extending from the base CribbbException class we’ve made it very easy to capture all of the application specific exceptions.</p>
-<p>Next I’m going to update the render() method to only render the Exception if we’ve got the app.debug config setting to true, otherwise we can deal with the Exception in the handle() method:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Render an exception into an HTTP response  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> Request $request  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> Exception $e  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> Response  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Exception</span> <span class="variable">$e</span></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (config(<span class="string">&#x27;app.debug&#x27;</span>)) &#123;  </span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">parent</span>::render(<span class="variable">$request</span>, <span class="variable">$e</span>);  </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;handle(<span class="variable">$request</span>, <span class="variable">$e</span>);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>And finally we can convert the Exception into a JsonResponse in the handle() method:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Convert the Exception into a JSON HTTP Response  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> Request $request  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> Exception $e  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> JSONResponse  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Exception</span> <span class="variable">$e</span></span>) </span>&#123;  </span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$e</span> <span class="keyword">instanceOf</span> CribbbException) &#123;  </span><br><span class="line"><span class="variable">$data</span> = <span class="variable">$e</span>-&gt;toArray();  </span><br><span class="line"><span class="variable">$status</span> = <span class="variable">$e</span>-&gt;getStatus();  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$e</span> <span class="keyword">instanceOf</span> NotFoundHttpException) &#123;  </span><br><span class="line"><span class="variable">$data</span> = array_merge([  </span><br><span class="line"><span class="string">&#x27;id&#x27;</span> =&gt; <span class="string">&#x27;not_found&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;status&#x27;</span> =&gt; <span class="string">&#x27;404&#x27;</span>  </span><br><span class="line">], config(<span class="string">&#x27;errors.not_found&#x27;</span>));</span><br><span class="line"></span><br><span class="line"><span class="variable">$status</span> = <span class="number">404</span>;  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$e</span> <span class="keyword">instanceOf</span> MethodNotAllowedHttpException) &#123;  </span><br><span class="line"><span class="variable">$data</span> = array_merge([  </span><br><span class="line"><span class="string">&#x27;id&#x27;</span> =&gt; <span class="string">&#x27;method_not_allowed&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;status&#x27;</span> =&gt; <span class="string">&#x27;405&#x27;</span>  </span><br><span class="line">], config(<span class="string">&#x27;errors.method_not_allowed&#x27;</span>));</span><br><span class="line"></span><br><span class="line"><span class="variable">$status</span> = <span class="number">405</span>;  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> response()-&gt;json(<span class="variable">$data</span>, <span class="variable">$status</span>);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>For the CribbbException classes we can simply call the toArray() method to return the Exception into an array as well as the getStatus() method to return the HTTP Status Code.</p>
-<p>We can also deal with any other Exception classes in this method. As you can see I’m catching the NotFoundHttpException and MethodNotAllowedHttpException Exceptions in this example so I can return the correct response.</p>
-<p>Finally we can return a JsonResponse by using the json() method on the response() helper function method with the $data and $status included.</p>
-<h3 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h3><p>Exceptions are a very important aspect of application development and they are an excellent tool in controlling the execution flow of the application.</p>
-<p>Under exceptional circumstances you need to halt the application and return an error rather than continuing on with execution. Exceptions make this very easy to achieve.</p>
-<p>It’s important that an API always returns the correct HTTP status code. The API is the interface to your application and so it is very important that you follow the recognised standards and protocols.</p>
-<p>You also need to return a human readable error message as well as provide up-to-date documentation of the problem and how it can be resolved.</p>
-<p>In today’s tutorial we’ve created a foundation for using Exceptions in the application by creating base classes for each HTTP status code.</p>
-<p>Whenever a problem arrises in the application we have no reason not to return the specific HTTP status code for that problem.</p>
-<p>We’ve also put in place an easy way to list detailed error messages for every possible thing that could go wrong.</p>
-<p>This will be easy to keep up-to-date because it’s all in one place.</p>
-<p>And finally we’ve created an easy way to use Exceptions in the application. By extending these base Exceptions with application specific exceptions we can create a very granular layer of Exceptions within our application code.</p>
-<p>This make it very easy to write tests where you can assert that the correct Exception is being thrown under the specific circumstances.</p>
-<p>And it also make it really easy to deal with exceptions because 9 times out of 10 you can just let the exception bubble up to the surface.</p>
-<p>When the exception reaches the surface, the correct HTTP status code and error message will automatically be returned to the client.</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/04/nginx%E4%BD%BF%E7%94%A8lua-redis%E9%99%90%E5%88%B6ip%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/04/nginx%E4%BD%BF%E7%94%A8lua-redis%E9%99%90%E5%88%B6ip%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87/" class="post-title-link" itemprop="url">Nginx使用Lua+Redis限制IP的访问频率</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-04 09:23:22 / 修改时间：10:29:37" itemprop="dateCreated datePublished" datetime="2018-06-04T09:23:22+09:00">2018-06-04</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-不登高山，不知天之高也；不临深溪，不知地之厚也。
-</blockquote>
-
-<h3 id="添加访问控制的Lua脚本"><a href="#添加访问控制的Lua脚本" class="headerlink" title="添加访问控制的Lua脚本"></a>添加访问控制的Lua脚本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@hbase31 ~]<span class="comment"># vim /usr/local/openresty/nginx/conf/lua/access.lua</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> ip_block_time=<span class="number">300</span> <span class="comment">--封禁IP时间（秒）</span></span><br><span class="line"><span class="keyword">local</span> ip_time_out=<span class="number">30</span>    <span class="comment">--指定ip访问频率时间段（秒）</span></span><br><span class="line"><span class="keyword">local</span> ip_max_count=<span class="number">20</span> <span class="comment">--指定ip访问频率计数最大值（秒）</span></span><br><span class="line"><span class="keyword">local</span> BUSINESS = ngx.var.business <span class="comment">--nginx的location中定义的业务标识符</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--连接redis</span></span><br><span class="line"><span class="keyword">local</span> redis = <span class="built_in">require</span> <span class="string">&quot;resty.redis&quot;</span>  </span><br><span class="line"><span class="keyword">local</span> conn = redis:new()  </span><br><span class="line">ok, err = conn:connect(<span class="string">&quot;192.168.1.30&quot;</span>, <span class="number">6379</span>)  </span><br><span class="line">conn:set_timeout(<span class="number">2000</span>) <span class="comment">--超时时间2秒</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--如果连接失败，跳转到脚本结尾</span></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">goto</span> FLAG</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--查询ip是否被禁止访问，如果存在则返回403错误代码</span></span><br><span class="line">is_block, err = conn:get(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr)  </span><br><span class="line"><span class="keyword">if</span> is_block == <span class="string">&#x27;1&#x27;</span> <span class="keyword">then</span></span><br><span class="line">    ngx.<span class="built_in">exit</span>(<span class="number">403</span>)</span><br><span class="line">    <span class="keyword">goto</span> FLAG</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--查询redis中保存的ip的计数器</span></span><br><span class="line">ip_count, err = conn:get(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr)</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> ip_count == ngx.null <span class="keyword">then</span> <span class="comment">--如果不存在，则将该IP存入redis，并将计数器设置为1、该KEY的超时时间为ip_time_out</span></span><br><span class="line">    res, err = conn:set(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, <span class="number">1</span>)</span><br><span class="line">    res, err = conn:expire(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, ip_time_out)</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    ip_count = ip_count + <span class="number">1</span> <span class="comment">--存在则将单位时间内的访问次数加1</span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">if</span> ip_count &gt;= ip_max_count <span class="keyword">then</span> <span class="comment">--如果超过单位时间限制的访问次数，则添加限制访问标识，限制时间为ip_block_time</span></span><br><span class="line">        res, err = conn:set(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr, <span class="number">1</span>)</span><br><span class="line">        res, err = conn:expire(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr, ip_block_time)</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        res, err = conn:set(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr,ip_count)</span><br><span class="line">        res, err = conn:expire(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, ip_time_out)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 结束标记</span></span><br><span class="line">::FLAG::</span><br><span class="line"><span class="keyword">local</span> ok, err = conn:<span class="built_in">close</span>()</span><br></pre></td></tr></table></figure>
-<p>这个脚本的目的很简单：一个IP如果在30秒内其访问次数达到20次则表明该IP访问频率太快了，因此将该IP封禁5分钟。同时由于计数的KEY在Redis中的超时时间设置成了30秒，所以如果两次访问间隔时间大于30秒将会重新开始计数</p>
-<h3 id="在Nginx需要限速的location中引用上述脚本"><a href="#在Nginx需要限速的location中引用上述脚本" class="headerlink" title="在Nginx需要限速的location中引用上述脚本"></a>在Nginx需要限速的location中引用上述脚本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">location /user/ &#123;</span><br><span class="line">    set <span class="variable">$business</span> <span class="string">&quot;USER&quot;</span>;</span><br><span class="line">    access_by_lua_file /usr/local/openresty/nginx/conf/lua/access.lua;</span><br><span class="line">        proxy_redirect off;</span><br><span class="line">        proxy_set_header        Host <span class="variable">$host</span>;</span><br><span class="line">        proxy_set_header        X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        proxy_set_header        X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        proxy_pass http:<span class="comment">//user_224/user/;</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>注：对于有大量静态资源文件（如：js、css、图片等）的前端页面可以设置只有指定格式的请求才进行访问限速，示例代码如下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">location /h5 &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$request_uri</span> ~ .*\.(html|htm|jsp|json)) &#123;</span><br><span class="line">            set <span class="variable">$business</span> <span class="string">&quot;H5&quot;</span>;</span><br><span class="line">            access_by_lua_file /usr/local/openresty/nginx/conf/lua/access.lua;</span><br><span class="line">        &#125;</span><br><span class="line">        proxy_redirect off;</span><br><span class="line">        proxy_set_header        Host <span class="variable">$host</span>;</span><br><span class="line">        proxy_set_header        X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        proxy_set_header        X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        proxy_pass http:<span class="comment">//h5_224/h5;</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://juejin.im/entry/5a45a9b8f265da431f4b62d5">https://juejin.im/entry/5a45a9b8f265da431f4b62d5</a></p>
 </blockquote>
 
       

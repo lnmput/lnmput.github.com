@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">384</span>
+          <span class="site-state-item-count">389</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,443 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/07/websocket%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/08/07/websocket%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">websocket常见问题</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-08-07 22:31:49" itemprop="dateCreated datePublished" datetime="2018-08-07T22:31:49+09:00">2018-08-07</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 14:04:18" itemprop="dateModified" datetime="2021-09-10T14:04:18+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我不辛苦，我命苦！
+</blockquote>
+针对websocket中常见的几个问题做一个详细的总结说明，具体要说的重点大概有下面3个:
+- 心跳检测的必要性
+- 校验客户端连接的有效性
+- 客户端的重连机制
+
+<h3 id="心跳检测"><a href="#心跳检测" class="headerlink" title="心跳检测"></a>心跳检测</h3><p>swoole内置了心跳检测机制,我们只需要做如下简单的配置即可</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$serv</span>-&gt;set([</span><br><span class="line">    <span class="string">&#x27;heartbeat_check_interval&#x27;</span> =&gt; N,</span><br><span class="line">    <span class="string">&#x27;heartbeat_idle_time&#x27;</span> =&gt; M,</span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+<p>如上，分别配置heartbeat_check_interval和heartbeat_idle_time参数，二者配合使用，其含义就是N秒检查一次，看看哪些连接M内没有活动的，就认为这个连接是无效的，server就会主动关闭这个无效的连接。<br>是不是说N秒server会主动向客户端发一个心跳包，没有收到客户端响应的才认为这个连接是死连接呢？那还要heartbeat_idle_time做什么，对吧？<br>swoole的实现原理是这样的：server每次收到客户端的数据包都会记录一个时间戳，N秒内循环检测下所有的连接，如果M秒内该连接还没有活动，才断开这个连接。</p>
+<h3 id="校验客户端连接的有效性"><a href="#校验客户端连接的有效性" class="headerlink" title="校验客户端连接的有效性"></a>校验客户端连接的有效性</h3><p>实际项目上线后，如果你的websocket server是对外开放的，就需要把ip修改为服务器外网的ip地址或者修改为0.0.0.0。<br>如此，也便带来了新的问题：任意客户端都可以连接到我们的server了，这个“任意”可不止我们自己认为有效的客户端，还包括你的我的所有的非有效或者恶意的连接，这可不是我们想要的。</p>
+<p>如何避免这一问题呢？方法有很多种，比如我们可以在连接的时候认为只有get传递的参数valid=1才允许连接；或者我们只允许登录用户才可以连接server；再或者我们可以校验客户端每次send所携带的token，server对该值校验通过后才认为当前是有效连接等等。与此同时，server开启心跳检测，对于恶意无效的连接，直接干掉！</p>
+<p>server的代码实现如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WebSocketServerValid</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_serv</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$key</span> = <span class="string">&#x27;^manks.top&amp;swoole$&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv = <span class="keyword">new</span> swoole_websocket_server(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">            <span class="string">&#x27;heartbeat_check_interval&#x27;</span> =&gt; <span class="number">30</span>,</span><br><span class="line">            <span class="string">&#x27;heartbeat_idle_time&#x27;</span> =&gt; <span class="number">62</span>,</span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;open&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onOpen&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;message&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onMessage&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;close&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onClose&#x27;</span>]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> $serv</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> $request</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onOpen</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;checkAccess(<span class="variable">$serv</span>, <span class="variable">$request</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> $serv</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> $frame</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onMessage</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$frame</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;push(<span class="variable">$frame</span>-&gt;fd, <span class="string">&#x27;Server: &#x27;</span> . <span class="variable">$frame</span>-&gt;data);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onClose</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;client <span class="subst">&#123;$fd&#125;</span> closed.\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 校验客户端连接的合法性,无效的连接不允许连接</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> $serv</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> $request</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> mixed</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">checkAccess</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// get不存在或者uid和token有一项不存在，关闭当前连接</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">isset</span>(<span class="variable">$request</span>-&gt;get) || !<span class="keyword">isset</span>(<span class="variable">$request</span>-&gt;get[<span class="string">&#x27;uid&#x27;</span>]) || !<span class="keyword">isset</span>(<span class="variable">$request</span>-&gt;get[<span class="string">&#x27;token&#x27;</span>])) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;_serv-&gt;close(<span class="variable">$request</span>-&gt;fd);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$uid</span> = <span class="variable">$request</span>-&gt;get[<span class="string">&#x27;uid&#x27;</span>];</span><br><span class="line">        <span class="variable">$token</span> = <span class="variable">$request</span>-&gt;get[<span class="string">&#x27;token&#x27;</span>];</span><br><span class="line">        <span class="comment">// 校验token是否正确,无效关闭连接</span></span><br><span class="line">        <span class="keyword">if</span> (md5(md5(<span class="variable">$uid</span>) . <span class="keyword">$this</span>-&gt;key) != <span class="variable">$token</span>) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;_serv-&gt;close(<span class="variable">$request</span>-&gt;fd);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$server</span> = <span class="keyword">new</span> WebSocketServerValid;</span><br><span class="line"><span class="variable">$server</span>-&gt;start();</span><br></pre></td></tr></table></figure>
+<p>可以看到，checkAccess是授权方法，我们在onOpen回调内对uid以及token进行了校验，无效则关闭连接。</p>
+<h3 id="客户端重连机制"><a href="#客户端重连机制" class="headerlink" title="客户端重连机制"></a>客户端重连机制</h3><p>客户端重连机制又可以理解为一种保活机制，你也可以跟服务端的心跳检测在一起理解为双向心跳。即我们有一种需求是，如何能保证客户端和服务端的连接一直是有效的，不断开的。</p>
+<p>其实很简单，对客户端而言，只要触发error或者close再或者连接失败，就主动重连server，这便是我们的目的。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> ws;<span class="comment">//websocket实例</span></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> lockReconnect = <span class="literal">false</span>;<span class="comment">//避免重复连接</span></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> wsUrl = <span class="string">&#x27;ws://127.0.0.1:9501&#x27;</span>;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="function"><span class="keyword">function</span> <span class="title">createWebSocket</span>(<span class="params">url</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">try</span> &#123;</span></span><br><span class="line"><span class="javascript">        ws = <span class="keyword">new</span> WebSocket(url);</span></span><br><span class="line"><span class="javascript">        initEventHandle();</span></span><br><span class="line"><span class="javascript">    &#125; <span class="keyword">catch</span> (e) &#123;</span></span><br><span class="line"><span class="javascript">        reconnect(url);</span></span><br><span class="line"><span class="javascript">    &#125;</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="function"><span class="keyword">function</span> <span class="title">initEventHandle</span>(<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">    ws.onclose = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        reconnect(wsUrl);</span></span><br><span class="line"><span class="javascript">    &#125;;</span></span><br><span class="line"><span class="javascript">    ws.onerror = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        reconnect(wsUrl);</span></span><br><span class="line"><span class="javascript">    &#125;;</span></span><br><span class="line"><span class="javascript">    ws.onopen = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="comment">//心跳检测重置</span></span></span><br><span class="line"><span class="javascript">        heartCheck.reset().start();</span></span><br><span class="line"><span class="javascript">    &#125;;</span></span><br><span class="line"><span class="javascript">    ws.onmessage = <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="comment">//如果获取到消息，心跳检测重置</span></span></span><br><span class="line"><span class="javascript">        <span class="comment">//拿到任何消息都说明当前连接是正常的</span></span></span><br><span class="line"><span class="javascript">        heartCheck.reset().start();</span></span><br><span class="line"><span class="javascript">    &#125;</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="function"><span class="keyword">function</span> <span class="title">reconnect</span>(<span class="params">url</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">if</span>(lockReconnect) <span class="keyword">return</span>;</span></span><br><span class="line"><span class="javascript">    lockReconnect = <span class="literal">true</span>;</span></span><br><span class="line"><span class="javascript">    <span class="comment">//没连接上会一直重连，设置延迟避免请求过多</span></span></span><br><span class="line"><span class="javascript">    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        createWebSocket(url);</span></span><br><span class="line"><span class="javascript">        lockReconnect = <span class="literal">false</span>;</span></span><br><span class="line"><span class="javascript">    &#125;, <span class="number">2000</span>);</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="comment">//心跳检测</span></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> heartCheck = &#123;</span></span><br><span class="line"><span class="javascript">    <span class="attr">timeout</span>: <span class="number">60000</span>,<span class="comment">//60秒</span></span></span><br><span class="line"><span class="javascript">    <span class="attr">timeoutObj</span>: <span class="literal">null</span>,</span></span><br><span class="line"><span class="javascript">    <span class="attr">serverTimeoutObj</span>: <span class="literal">null</span>,</span></span><br><span class="line"><span class="javascript">    <span class="attr">reset</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">clearTimeout</span>(<span class="built_in">this</span>.timeoutObj);</span></span><br><span class="line"><span class="javascript">        <span class="built_in">clearTimeout</span>(<span class="built_in">this</span>.serverTimeoutObj);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">return</span> <span class="built_in">this</span>;</span></span><br><span class="line"><span class="javascript">    &#125;,</span></span><br><span class="line"><span class="javascript">    <span class="attr">start</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> self = <span class="built_in">this</span>;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">this</span>.timeoutObj = <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">            <span class="comment">//这里发送一个心跳，后端收到后，返回一个心跳消息，</span></span></span><br><span class="line"><span class="javascript">            <span class="comment">//onmessage拿到返回的心跳就说明连接正常</span></span></span><br><span class="line"><span class="javascript">            ws.send(<span class="string">&quot;&quot;</span>);</span></span><br><span class="line"><span class="javascript">            self.serverTimeoutObj = <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;<span class="comment">//如果超过一定时间还没重置，说明后端主动断开了</span></span></span><br><span class="line"><span class="javascript">                ws.close();<span class="comment">//如果onclose会执行reconnect，我们执行ws.close()就行了.如果直接执行reconnect 会触发onclose导致重连两次</span></span></span><br><span class="line"><span class="javascript">            &#125;, self.timeout);</span></span><br><span class="line"><span class="javascript">        &#125;, <span class="built_in">this</span>.timeout);</span></span><br><span class="line"><span class="javascript">    &#125;</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript">createWebSocket(wsUrl);</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/07/api%E7%9A%84%E9%98%B2%E9%87%8D%E6%94%BE%E6%9C%BA%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/08/07/api%E7%9A%84%E9%98%B2%E9%87%8D%E6%94%BE%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">API的防重放机制</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-08-07 20:47:39 / 修改时间：21:57:58" itemprop="dateCreated datePublished" datetime="2018-08-07T20:47:39+09:00">2018-08-07</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+从不说硬话； 从不做软事
+</blockquote>
+
+<p>我们在设计接口的时候，最怕一个接口被用户截取用于重放攻击。重放攻击是什么呢？就是把你的请求原封不动地再发送一次，两次…n次，一般正常的请求都会通过验证进入到正常逻辑中，如果这个正常逻辑是插入数据库操作，那么一旦插入数据库的语句写的不好，就有可能出现多条重复的数据。一旦是比较慢的查询操作，就可能导致数据库堵住等情况。</p>
+<h3 id="timestamp-nonce"><a href="#timestamp-nonce" class="headerlink" title="timestamp+nonce"></a>timestamp+nonce</h3><p>我们常用的防止重放的机制是使用<code>timestamp</code>和<code>nonce</code>来做的重放机制。</p>
+<p>timestamp用来表示请求的当前时间戳，这个时间戳当然要和服务器时间戳进行校正过的。我们预期正常请求带的<code>timestamp</code>参数会是不同的（预期是正常的人每秒至多只会做一个操作）。每个请求带的时间戳不能和当前时间超过一定规定的时间。比如60s。这样，这个请求即使被截取了，你也只能在60s内进行重放攻击。过期失效。</p>
+<p>但是这样也是不够的，还有给攻击者60s的时间。所以我们就需要使用一个<code>nonce</code>，随机数。</p>
+<p>nonce是由客户端根据足够随机的情况生成的，比如 md5(timestamp+rand(0, 1000)); 它就有一个要求，正常情况下，在短时间内（比如60s）连续生成两个相同nonce的情况几乎为0。</p>
+<h3 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h3><p>服务端第一次在接收到这个<code>nonce</code>的时候做下面行为：</p>
+<ul>
+<li>去redis中查找是否有<code>key</code>为<code>nonce:&#123;nonce&#125;</code>的string</li>
+<li>如果没有，则创建这个<code>key</code>，把这个<code>key</code>失效的时间和验证<code>timestamp</code>失效的时间一致，比如是60s。</li>
+<li>如果有，说明这个key在60s内已经被使用了，那么这个请求就可以判断为重放请求。</li>
+</ul>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>那么比如，下面这个请求：<br><code>http://a.com?uid=123&amp;timestamp=1480556543&amp;nonce=43f34f33&amp;sign=80b886d71449cb33355d017893720666</code><br>这个请求中国的uid是我们真正需要传递的有意义的参数<br><code>timestamp</code>，<code>nonce</code>，<code>sign</code>都是为了签名和防重放使用。<br><code>timestamp</code>是发送接口的时间，<code>nonce</code>是随机串，<code>sign</code>是对uid，timestamp,nonce(对于一些rest风格的api，我建议也把url放入sign签名)。签名的方法可以是md5({秘要}key1=val1&amp;key2=val2&amp;key3=val3…)<br>服务端接到这个请求：</p>
+<ul>
+<li>先验证sign签名是否合理，证明请求参数没有被中途篡改</li>
+<li>再验证timestamp是否过期，证明请求是在最近60s被发出的</li>
+<li>最后验证nonce是否已经有了，证明这个请求不是60s内的重放请求</li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yjf512/p/6590890.html">https://www.cnblogs.com/yjf512/p/6590890.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/03/laravel%E4%B8%ADenv%E5%87%BD%E6%95%B0%E7%9A%84%E5%9D%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/08/03/laravel%E4%B8%ADenv%E5%87%BD%E6%95%B0%E7%9A%84%E5%9D%91/" class="post-title-link" itemprop="url">Laravel中env函数的坑</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-08-03 13:50:22 / 修改时间：15:06:03" itemprop="dateCreated datePublished" datetime="2018-08-03T13:50:22+09:00">2018-08-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+不自量力的还手 直至死方休
+</blockquote>
+
+<p>最近项目中遇到了一个问题， 问题出在env函数上，在Middleware中读取环境变量时取到的竟然是null</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dump(env(<span class="string">&#x27;APP_ENV&#x27;</span>) === <span class="literal">null</span>); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>查看env 的代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">env</span>(<span class="params"><span class="variable">$key</span>, <span class="variable">$default</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$value</span> = getenv(<span class="variable">$key</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$value</span> === <span class="literal">false</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> value(<span class="variable">$default</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 此处省略部分代码</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>可以发现，实际上调用的就是php自带的<code>getenv</code>函数，如果取不到值，那必定是某段执行putenv或者操作<code>$_ENV</code>全局变量的代码没有执行，而且这些环境变量设置操作一定是在初始化的时候进行的<br>如果对Laravel的Kernel执行顺序比较了解的话，应该知道，在Kernel启动阶段会首先执行一组bootstrappers</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Illuminate/Foundation/Http/Kernel.php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Kernel</span> <span class="keyword">implements</span> <span class="title">KernelContract</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The bootstrap classes for the application.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$bootstrappers</span> = [</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\DetectEnvironment&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\LoadConfiguration&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\ConfigureLogging&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\HandleExceptions&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\RegisterFacades&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\RegisterProviders&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\BootProviders&#x27;</span>,</span><br><span class="line">    ];</span><br></pre></td></tr></table></figure>
+<p>其中一个bootstrapper名为DetectEnvironment，而它的嫌疑是最大的，检查这个类</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Illuminate/Foundation/Bootstrap/DetectEnvironment.php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DetectEnvironment</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Bootstrap the given application.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  \Illuminate\Contracts\Foundation\Application  $app</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">bootstrap</span>(<span class="params">Application <span class="variable">$app</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (! <span class="variable">$app</span>-&gt;configurationIsCached()) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;checkForSpecificEnvironmentFile(<span class="variable">$app</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                (<span class="keyword">new</span> Dotenv(<span class="variable">$app</span>-&gt;environmentPath(), <span class="variable">$app</span>-&gt;environmentFile()))-&gt;load();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InvalidPathException <span class="variable">$e</span>) &#123;</span><br><span class="line">                <span class="comment">//</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在代码中，我们并没有发现任何执行putenv或者操作<code>$_ENV</code>全局变量的地方，实际上在整个Laravel的框架代码里也没有发现蛛丝马迹，那么这些环境变量是如何保存进来的呢？<br>如果Laravel框架里没有执行这些代码，我们应该可以推测是框架使用的第三方组件做了这些事情<br>而事实也确实如此，可以看到在DetectEnvironment类的bootstrap方法里实例化了一个Dotenv类的对象，而Dotenv\Loader正是执行了读取.env文件，执行putenv的操作。<br>那么env获取不到值只能说明Dotenv的实例化并没有执行</p>
+<p>再仔细看一下DetectEnvironment类，在实例化Dotenv前，先进行了一个 if 判断</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (! <span class="variable">$app</span>-&gt;configurationIsCached())</span><br></pre></td></tr></table></figure>
+
+<p>而这个方法的作用就是判断 <code>bootstrap/cache/config.php</code> 缓存文件是否存在，如果文件存在则不会执行Dotenv的实例化操作，也就不会往<code>$_ENV</code>里存数据，自然env函数是取不到值的</p>
+<p><code>bootstrap/cache/config.php</code>是执行下面的命令生成的</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan config:cache</span><br></pre></td></tr></table></figure>
+<p>清除使用命令</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan config:clear</span><br></pre></td></tr></table></figure>
+<p>那么，真相大白了，之前在开发时并没有出现问题，是因为没有执行 config:cache 命令，而项目上线后为了优化访问速度，生成了缓存文件，导致env取值失败</p>
+<p>如果使用了config:cache，env函数只能在config目录下的配置文件的php里使用，不可以在其他地方使用。</p>
+<p>一个非常简单的办法就是将</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env(<span class="string">&#x27;APP_ENV&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>改为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config(<span class="string">&#x27;app.env&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>config函数会优先读取 bootstrap/cache/config.php 中缓存的配置，如果没有缓存文件，则会直接读取 config 目录下的所有配置文件</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/83f9cd407751">https://www.jianshu.com/p/83f9cd407751</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/03/linux%E6%9F%A5%E6%89%BE%E5%90%AB%E6%9C%89%E6%9F%90%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E6%89%80%E6%9C%89%E6%96%87%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/08/03/linux%E6%9F%A5%E6%89%BE%E5%90%AB%E6%9C%89%E6%9F%90%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E6%89%80%E6%9C%89%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">Linux查找含有某字符串的所有文件</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-08-03 13:23:42 / 修改时间：14:31:30" itemprop="dateCreated datePublished" datetime="2018-08-03T13:23:42+09:00">2018-08-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+All is well
+</blockquote>
+
+<p>如果你想在当前目录下 查找”hello,world!”字符串,可以这样:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -rn <span class="string">&quot;hello,world!&quot;</span> *</span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">* : 表示当前目录所有文件，也可以是某个文件名</span><br><span class="line">-r 是递归查找</span><br><span class="line">-n 是显示行号</span><br><span class="line">-R 查找所有文件包含子目录</span><br><span class="line">-i 忽略大小写</span><br></pre></td></tr></table></figure>
+<p>下面是一些有意思的命令行参数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">grep -i pattern files ：不区分大小写地搜索。默认情况区分大小写， </span><br><span class="line">grep -l pattern files ：只列出匹配的文件名， </span><br><span class="line">grep -L pattern files ：列出不匹配的文件名， </span><br><span class="line">grep -w pattern files ：只匹配整个单词，而不是字符串的一部分（如匹配‘magic’，而不是‘magical’）， </span><br><span class="line">grep -C number pattern files ：匹配的上下文分别显示[number]行， </span><br><span class="line">grep pattern1 | pattern2 files ：显示匹配 pattern1 或 pattern2 的行， </span><br><span class="line">grep pattern1 files | grep pattern2 ：显示既匹配 pattern1 又匹配 pattern2 的行。 </span><br></pre></td></tr></table></figure>
+<p>这里还有些用于搜索的特殊符号：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">\&lt; 和 \&gt; 分别标注单词的开始与结尾。</span><br><span class="line">例如： </span><br><span class="line">grep man * 会匹配 ‘Batman’、‘manic’、‘man’等， </span><br><span class="line">grep <span class="string">&#x27;\&lt;man&#x27;</span> * 匹配‘manic’和‘man’，但不是‘Batman’， </span><br><span class="line">grep <span class="string">&#x27;\&lt;man\&gt;&#x27;</span> 只匹配‘man’，而不是‘Batman’或‘manic’等其他的字符串。 </span><br><span class="line"><span class="string">&#x27;^&#x27;</span>：指匹配的字符串在行首， </span><br><span class="line"><span class="string">&#x27;$&#x27;</span>：指匹配的字符串在行尾</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://blog.51cto.com/151wqooo/1162118">http://blog.51cto.com/151wqooo/1162118</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/03/laravel%E4%B8%AD%E7%9A%84%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/08/03/laravel%E4%B8%AD%E7%9A%84%E9%94%81/" class="post-title-link" itemprop="url">Laravel中的锁</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-08-03 10:56:40 / 修改时间：14:12:16" itemprop="dateCreated datePublished" datetime="2018-08-03T10:56:40+09:00">2018-08-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+昔日寒山问拾得曰：世间有人谤我、欺我、辱我、笑我、轻我、贱我、恶我、骗我、如何处治乎？拾得曰：只要忍他、让他、由他、避他、耐他、敬他、不要理他，再待几年你且看他。
+</blockquote>
+
+<p>查询构造器也包含一些可以帮助你在 select 语法上实现 「悲观锁定」的函数。</p>
+<h3 id="sharedLock"><a href="#sharedLock" class="headerlink" title="sharedLock"></a>sharedLock</h3><p>共享锁可防止选中的数据列被篡改，直到事务被提交为止</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DB::table(<span class="string">&#x27;users&#x27;</span>)-&gt;where(<span class="string">&#x27;votes&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, <span class="number">100</span>)-&gt;sharedLock()-&gt;get();</span><br></pre></td></tr></table></figure>
+
+<h3 id="lockForUpdate"><a href="#lockForUpdate" class="headerlink" title="lockForUpdate"></a>lockForUpdate</h3><p>使用「更新」锁可避免行被其它共享锁修改或选取</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DB::table(<span class="string">&#x27;users&#x27;</span>)-&gt;where(<span class="string">&#x27;votes&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, <span class="number">100</span>)-&gt;lockForUpdate()-&gt;get();</span><br></pre></td></tr></table></figure>
+
+<h3 id="相同和不同"><a href="#相同和不同" class="headerlink" title="相同和不同"></a>相同和不同</h3><ul>
+<li>相同的地方是都能避免同一行数据被其他 transaction 进行 update。</li>
+<li>不同的地方是：<br>sharedLock 不会阻止其他 transaction 读取同一行<br>lockForUpdate 会阻止其他 transaction 读取同一行（需要特别注意的是，普通的非锁定读取读取依然可以读取到该行，只有 sharedLock 和 lockForUpdate 的读取会被阻止。）</li>
+</ul>
+<h3 id="试验"><a href="#试验" class="headerlink" title="试验"></a>试验</h3><p>事务本身并不会锁表或者锁行</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// </span></span><br><span class="line">Route::get(<span class="string">&#x27;/haha&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    \DB::beginTransaction();</span><br><span class="line">    \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;first();</span><br><span class="line">    sleep(<span class="number">5</span>);</span><br><span class="line">    \DB::commit();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// hehe的查询操作并不会受到影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 更新也没有任何影响</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>使用共享锁</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sharedLock</span></span><br><span class="line">Route::get(<span class="string">&#x27;/haha&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    \DB::beginTransaction();</span><br><span class="line">    \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;sharedLock()-&gt;first();</span><br><span class="line">    sleep(<span class="number">5</span>);</span><br><span class="line">    \DB::commit();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 普通的查询没有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 同样使用共享锁的查询没有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;sharedLock()-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 使用lockForUpdate的查询会有影响</span></span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;lockForUpdate()-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>使用排他锁</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;/haha&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    \DB::beginTransaction();</span><br><span class="line">    \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;lockForUpdate()-&gt;first();</span><br><span class="line">    sleep(<span class="number">5</span>);</span><br><span class="line">    \DB::commit();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//普通的查询并没有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用了共享锁或者排他锁的查询才会有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;sharedLock()-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 对更新有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;update([<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;yangzie&#x27;</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -630,447 +1067,6 @@
 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://laravel-news.com/laravel-query-builder">https://laravel-news.com/laravel-query-builder</a><br><a target="_blank" rel="noopener" href="https://packagist.org/packages/spatie/laravel-query-builder">https://packagist.org/packages/spatie/laravel-query-builder</a><br><a target="_blank" rel="noopener" href="https://github.com/spatie/laravel-query-builder">https://github.com/spatie/laravel-query-builder</a><br><a target="_blank" rel="noopener" href="https://spatie.be/en/opensource/laravel">https://spatie.be/en/opensource/laravel</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/23/nginx%E4%BB%A3%E7%90%86ssl%E8%BD%AC%E5%8F%91https%E5%92%8Cwss%E8%AF%B7%E6%B1%82/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/07/23/nginx%E4%BB%A3%E7%90%86ssl%E8%BD%AC%E5%8F%91https%E5%92%8Cwss%E8%AF%B7%E6%B1%82/" class="post-title-link" itemprop="url">Nginx代理ssl转发https和wss请求</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-07-23 14:48:33" itemprop="dateCreated datePublished" datetime="2018-07-23T14:48:33+09:00">2018-07-23</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 14:04:41" itemprop="dateModified" datetime="2021-09-10T14:04:41+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-黄梅时节家家雨，青草池塘处处蛙
-</blockquote>
-
-<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>什么情况下需要这种操作？<br>比如，后台多台服务器做反向代理；<br>比如，微信小程序，建立微信小程序的websocket连接，必须要使用wss，但是目前不支持自定义端口，在调用的时候会使用默认端口，这个时候就需要做个代理。</p>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>Nginx配置</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 443; #https和wss协议默认端口</span><br><span class="line"></span><br><span class="line">    # ssl的相关配置</span><br><span class="line">    ssl on;</span><br><span class="line">    ssl_certificate /usr/local/nginx/conf/ssl/***.pem; // ssl pem文件</span><br><span class="line">    ssl_certificate_key /usr/local/nginx/conf/ssl/***.key; // ssl key文件</span><br><span class="line">    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;</span><br><span class="line">    ssl_ciphers EECDH+CHACHA20:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5;</span><br><span class="line">    ssl_prefer_server_ciphers on;</span><br><span class="line">    ssl_buffer_size 1400;</span><br><span class="line">    add_header Strict-Transport-Security max-age=15768000;</span><br><span class="line">    add_header Cache-Control no-store;</span><br><span class="line">    ssl_stapling on;</span><br><span class="line">    ssl_stapling_verify on;</span><br><span class="line"></span><br><span class="line">    server_name www.goozp.com;</span><br><span class="line"></span><br><span class="line">    # 转发wss协议</span><br><span class="line">    location /wss &#123;</span><br><span class="line">        proxy_pass http://127.0.0.1:9502;</span><br><span class="line">        proxy_http_version 1.1;</span><br><span class="line">        proxy_set_header Upgrade $http_upgrade;</span><br><span class="line">        proxy_set_header Connection &quot;Upgrade&quot;;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 转发https协议</span><br><span class="line">    location /&#123;</span><br><span class="line">        proxy_pass http://127.0.0.1:2345;</span><br><span class="line">        proxy_set_header   X-Real-IP        $remote_addr;</span><br><span class="line">        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;</span><br><span class="line">        # add_header Access-Control-Allow-Origin *;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这样，当我们访问 <a href="https://swoole.app/">https://swoole.app</a> 的时候实际上就转发到了内部的2345端口的http服务，而不需要 <a href="https://swoole.app:9502/">https://swoole.app:9502</a> 。建立websocket连接时直接与 wss://swoole.app/wss 建立连接，会转发到内部2346端口的服务。</p>
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>在配置的过程中我们发现每过一段时间服务端会自动断开连接， 我们需要增加如下配置， 具体时间情况因业务具体而定</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment"># 转发wss协议</span></span><br><span class="line">location /wss &#123;</span><br><span class="line">    proxy_pass http:<span class="comment">//127.0.0.1:9502;</span></span><br><span class="line">    proxy_http_version <span class="number">1.1</span>;</span><br><span class="line">    proxy_set_header Upgrade <span class="variable">$http_upgrade</span>;</span><br><span class="line">    proxy_set_header Connection <span class="string">&quot;Upgrade&quot;</span>;</span><br><span class="line">    proxy_set_header X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line"></span><br><span class="line">    proxy_connect_timeout <span class="number">1</span>d;</span><br><span class="line">    proxy_send_timeout <span class="number">1</span>d;</span><br><span class="line">    proxy_read_timeout <span class="number">1</span>d;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.goozp.com/article/69.html">https://www.goozp.com/article/69.html</a><br><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2017/05/websocket.html">http://www.ruanyifeng.com/blog/2017/05/websocket.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/18/%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%94%AF%E6%8C%81%E6%9C%AC%E5%9C%B0%E5%8C%96%E7%9A%84api/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/07/18/%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%94%AF%E6%8C%81%E6%9C%AC%E5%9C%B0%E5%8C%96%E7%9A%84api/" class="post-title-link" itemprop="url">创建一个支持本地化的API</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-07-18 15:37:46 / 修改时间：16:45:10" itemprop="dateCreated datePublished" datetime="2018-07-18T15:37:46+09:00">2018-07-18</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-青青子衿，悠悠我心。但为君故，沉吟至今。
-</blockquote>
-
-<ul>
-<li><p>create a middleware</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Application</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Class Localization</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span>  Mahmoud Zalt  &lt;mahmoud<span class="doctag">@zalt</span>.me&gt;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Localization</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Localization constructor.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> \Illuminate\Foundation\Application $app</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params">Application <span class="variable">$app</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;app = <span class="variable">$app</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Handle an incoming request.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  \Illuminate\Http\Request $request</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  \Closure                 $next</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> mixed</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// read the language from the request header</span></span><br><span class="line">        <span class="variable">$locale</span> = <span class="variable">$request</span>-&gt;header(<span class="string">&#x27;Content-Language&#x27;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// if the header is missed</span></span><br><span class="line">        <span class="keyword">if</span>(!<span class="variable">$locale</span>)&#123;</span><br><span class="line">            <span class="comment">// take the default local language</span></span><br><span class="line">            <span class="variable">$locale</span> = <span class="keyword">$this</span>-&gt;app-&gt;config-&gt;get(<span class="string">&#x27;app.locale&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// check the languages defined is supported</span></span><br><span class="line">        <span class="keyword">if</span> (!array_key_exists(<span class="variable">$locale</span>, <span class="keyword">$this</span>-&gt;app-&gt;config-&gt;get(<span class="string">&#x27;app.supported_languages&#x27;</span>))) &#123;</span><br><span class="line">            <span class="comment">// respond with error</span></span><br><span class="line">            <span class="keyword">return</span> abort(<span class="number">403</span>, <span class="string">&#x27;Language not supported.&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// set the local language</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;app-&gt;setLocale(<span class="variable">$locale</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// get the response after the request is done</span></span><br><span class="line">        <span class="variable">$response</span> = <span class="variable">$next</span>(<span class="variable">$request</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// set Content Languages header in the response</span></span><br><span class="line">        <span class="variable">$response</span>-&gt;headers-&gt;set(<span class="string">&#x27;Content-Language&#x27;</span>, <span class="variable">$locale</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// return the response</span></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$response</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-<li><p>Register the middleware in the Middlewares</p>
-</li>
-<li><p>add this to the app.php config file</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;supported_languages&#x27;</span> =&gt; [<span class="string">&#x27;en&#x27;</span> =&gt; <span class="string">&#x27;English&#x27;</span>, <span class="string">&#x27;ru&#x27;</span> =&gt; <span class="string">&#x27;Russian&#x27;</span>],</span><br></pre></td></tr></table></figure></li>
-<li><p>create language folder in the lang folder “resources/lang” for your language  (in this case it is [ru] next to [en]) and of course set your files there.</p>
-</li>
-<li><p>create sample route to test this: {you need to use the <code>trans</code> function}</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;welcome&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> trans(<span class="string">&#x27;messages.welcome&#x27;</span>);</span><br><span class="line"></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></li>
-<li><p>call the endpoint “<a target="_blank" rel="noopener" href="http://api.xxxxx.dev/welcome/%E2%80%9C">http://api.xxxxx.dev/welcome/“</a> and set the header “Content-Language” in your request to ([en] or [ru]).</p>
-</li>
-</ul>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-tricks.com/tricks/create-api-that-supports-localization">https://laravel-tricks.com/tricks/create-api-that-supports-localization</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/10/%E5%9C%A8unix-shell%E4%B8%AD%E7%94%9F%E6%88%90%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E6%96%87%E4%BB%B6%E5%90%8D/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/07/10/%E5%9C%A8unix-shell%E4%B8%AD%E7%94%9F%E6%88%90%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E6%96%87%E4%BB%B6%E5%90%8D/" class="post-title-link" itemprop="url">在unix-shell中生成一个随机文件名</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-07-10 14:02:57 / 修改时间：15:21:14" itemprop="dateCreated datePublished" datetime="2018-07-10T14:02:57+09:00">2018-07-10</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你们一直抱怨这个地方，但是你们却没有勇气走出这里
-</blockquote>
-
-<h3 id="使用系统的-RANDOM-变量"><a href="#使用系统的-RANDOM-变量" class="headerlink" title="使用系统的 $RANDOM 变量"></a>使用系统的 $RANDOM 变量</h3><p><code>$RANDOM</code> 的范围是 [0, 32767]</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="variable">$RANDOM</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="自建函数"><a href="#自建函数" class="headerlink" title="自建函数"></a>自建函数</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">rand</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    min=$<span class="number">1</span></span><br><span class="line">    max=$(($<span class="number">2</span>-<span class="variable">$min</span>+<span class="number">1</span>))</span><br><span class="line">    num=$((<span class="variable">$RANDOM</span>+<span class="number">1000000000</span>)) <span class="comment">#增加一个10位的数再求余</span></span><br><span class="line">    <span class="keyword">echo</span> $((<span class="variable">$num</span>%<span class="variable">$max</span>+<span class="variable">$min</span>))</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">rnd=$(rand <span class="number">400000</span> <span class="number">500000</span>)</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$rnd</span></span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<h3 id="使用date-s-N"><a href="#使用date-s-N" class="headerlink" title="使用date +%s%N"></a>使用date +%s%N</h3><p>生成1-50的随机数</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">rand</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    min=$<span class="number">1</span></span><br><span class="line">    max=$(($<span class="number">2</span>-<span class="variable">$min</span>+<span class="number">1</span>))</span><br><span class="line">    num=$(date +%s%N)</span><br><span class="line">    <span class="keyword">echo</span> $((<span class="variable">$num</span>%<span class="variable">$max</span>+<span class="variable">$min</span>))</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">rnd=$(rand <span class="number">1</span> <span class="number">50</span>)</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$rnd</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="使用-dev-random-和-dev-urandom"><a href="#使用-dev-random-和-dev-urandom" class="headerlink" title="使用/dev/random 和 /dev/urandom"></a>使用/dev/random 和 /dev/urandom</h3><p>假设你在一个linux，以下应该工作：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /dev/urandom | tr -cd <span class="string">&#x27;a-f0-9&#x27;</span> | head -c <span class="number">32</span></span><br></pre></td></tr></table></figure>
-<p>这只是伪随机的，如果你的系统运行低熵，但(在linux)保证终止。如果你需要真正随机的数据，cat / dev / random代替/ dev / urandom。这个更改将使你的代码块，直到足够的熵可用来产生真正的随机输出，所以它可能会减慢你的代码。对于大多数用途，/ dev / urandom的输出是充分随机的。</p>
-<p>如果在OS X或其他BSD上，您需要将其修改为以下内容：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /dev/urandom | env LC_CTYPE=C tr -cd <span class="string">&#x27;a-f0-9&#x27;</span> | head -c <span class="number">32</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="使用linux-uuid"><a href="#使用linux-uuid" class="headerlink" title="使用linux uuid"></a>使用linux uuid</h3><p>uuid 全称是通用唯一识别码，格式包含32个16进制数字，以’-‘连接号分为5段。形式为8-4-4-4-12 的32个字符。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/sys/kernel/random/uuid</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://codeday.me/bug/20170816/53801.html">https://codeday.me/bug/20170816/53801.html</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/fdipzone/article/details/24329523">https://blog.csdn.net/fdipzone/article/details/24329523</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/10/shell%E8%BE%93%E5%87%BA%E9%A2%9C%E8%89%B2%E5%92%8C%E9%97%AA%E7%83%81%E6%8E%A7%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/07/10/shell%E8%BE%93%E5%87%BA%E9%A2%9C%E8%89%B2%E5%92%8C%E9%97%AA%E7%83%81%E6%8E%A7%E5%88%B6/" class="post-title-link" itemprop="url">shell输出颜色和闪烁控制</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-07-10 09:20:17 / 修改时间：10:26:49" itemprop="dateCreated datePublished" datetime="2018-07-10T09:20:17+09:00">2018-07-10</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-平平淡淡是懒惰，是害怕，是贪图安逸，是一条不敢见世面的土狗
-</blockquote>
-
-<p>在Shell下有时候需要定制输出，比如给输出加上颜色，或者显示高亮，或者添加闪烁等。然后这些颜色代码或者控制码等相对不好记住。这个时候我们可以考虑把最终想要的结果制定成对应的函数，在使用的时候直接调用函数会方便很多</p>
-<h3 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> -e <span class="string">&quot;\033[字背景颜色;字体颜色m字符串\033[控制码&quot;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="定制颜色函数"><a href="#定制颜色函数" class="headerlink" title="定制颜色函数"></a>定制颜色函数</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># blue to echo</span></span> </span><br><span class="line">function blue()&#123;</span><br><span class="line">    echo -e &quot;\033[34m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># green to echo</span></span> </span><br><span class="line">function green()&#123;</span><br><span class="line">    echo -e &quot;\033[32m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error to warning with blink</span></span></span><br><span class="line">function bred()&#123;</span><br><span class="line">    echo -e &quot;\033[31m\033[01m\033[05m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error to warning with blink</span></span></span><br><span class="line">function byellow()&#123;</span><br><span class="line">    echo -e &quot;\033[33m\033[01m\033[05m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error</span></span></span><br><span class="line">function bred()&#123;</span><br><span class="line">    echo -e &quot;\033[31m\033[01m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># warning</span></span></span><br><span class="line">function byellow()&#123;</span><br><span class="line">    echo -e &quot;\033[33m\033[01m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>可以把这些函数写入到一个公共的SHELL脚本中，每次在编写其他脚本的时候用如下方式调用，即可</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source /root/bin/common</span><br></pre></td></tr></table></figure>
-<p>或者可以把上述代码直接粘贴到当前编写的脚本中去。<br>当然可以推荐第一种方式。不用每次都复制粘贴。 直接 source 调用 即可</p>
-<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/env bash</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># blue to echo</span></span> </span><br><span class="line">function blue()&#123;</span><br><span class="line">    echo -e &quot;\033[35m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># green to echo</span></span> </span><br><span class="line">function green()&#123;</span><br><span class="line">    echo -e &quot;\033[32m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error to warning with blink</span></span></span><br><span class="line">function bred()&#123;</span><br><span class="line">    echo -e &quot;\033[31m\033[01m\033[05m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error to warning with blink</span></span></span><br><span class="line">function byellow()&#123;</span><br><span class="line">    echo -e &quot;\033[33m\033[01m\033[05m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error</span></span></span><br><span class="line">function red()&#123;</span><br><span class="line">    echo -e &quot;\033[31m\033[01m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># warning</span></span></span><br><span class="line">function yellow()&#123;</span><br><span class="line">    echo -e &quot;\033[33m\033[01m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line">Dev-web-solr [/opt/hexo2] 2016-11-28 17:52:03</span><br><span class="line">root@pts/4 $ cat /root/bin/test.sh </span><br><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/env bash</span></span><br><span class="line"></span><br><span class="line">source /root/bin/common</span><br><span class="line"></span><br><span class="line">green &quot;hello world with green color&quot;</span><br><span class="line">blue &quot;hello world with blue color&quot;</span><br><span class="line"></span><br><span class="line">bred &quot;error info with blink&quot;</span><br><span class="line">byellow &quot;warning info with blink&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="字体背景颜色"><a href="#字体背景颜色" class="headerlink" title="字体背景颜色"></a>字体背景颜色</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">40:黑 </span><br><span class="line">41:深红 </span><br><span class="line">42:绿 </span><br><span class="line">43:黄色 </span><br><span class="line">44:蓝色 </span><br><span class="line">45:紫色 </span><br><span class="line">46:深绿 </span><br><span class="line">47:白色 </span><br></pre></td></tr></table></figure>
-
-<h3 id="字体颜色"><a href="#字体颜色" class="headerlink" title="字体颜色"></a>字体颜色</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">30:黑 </span><br><span class="line">31:红 </span><br><span class="line">32:绿 </span><br><span class="line">33:黄 </span><br><span class="line">34:蓝色 </span><br><span class="line">35:紫色 </span><br><span class="line">36:深绿 </span><br><span class="line">37:白色 </span><br></pre></td></tr></table></figure>
-<h3 id="控制码"><a href="#控制码" class="headerlink" title="控制码"></a>控制码</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">\33[0m 关闭所有属性 </span><br><span class="line">\33[01m 设置高亮度 </span><br><span class="line">\33[04m 下划线 </span><br><span class="line">\33[05m 闪烁 </span><br><span class="line">\33[07m 反显 </span><br><span class="line">\33[08m 消隐 </span><br><span class="line">\33[30m -- \33[37m 设置前景色 </span><br><span class="line">\33[40m -- \33[47m 设置背景色 </span><br><span class="line">\33[nA 光标上移n行 </span><br><span class="line">\33[nB 光标下移n行 </span><br><span class="line">\33[nC 光标右移n行 </span><br><span class="line">\33[nD 光标左移n行 </span><br><span class="line">\33[y;xH设置光标位置 </span><br><span class="line">\33[2J 清屏 </span><br><span class="line">\33[K 清除从光标到行尾的内容 </span><br><span class="line">\33[s 保存光标位置 </span><br><span class="line">\33[u 恢复光标位置 </span><br><span class="line">\33[?25l 隐藏光标 </span><br><span class="line">\33[?25h 显示光标</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/ba1b8aded634">https://www.jianshu.com/p/ba1b8aded634</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/09/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%98%AF%E4%BB%80%E4%B9%88/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/07/09/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%98%AF%E4%BB%80%E4%B9%88/" class="post-title-link" itemprop="url">持续集成是什么</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-07-09 11:16:41 / 修改时间：12:31:12" itemprop="dateCreated datePublished" datetime="2018-07-09T11:16:41+09:00">2018-07-09</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-生活本来就不容易， 如果有一天你觉得容易了， 那一定是有人分担了你的不容易
-</blockquote>
-
-<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>持续集成指的是，频繁地（一天多次）将代码集成到主干。</p>
-<p>它的好处主要有两个:</p>
-<ul>
-<li>快速发现错误。每完成一点更新，就集成到主干，可以快速发现错误，定位错误也比较容易。</li>
-<li>防止分支大幅偏离主干。如果不是经常集成，主干又在不断更新，会导致以后集成的难度变大，甚至难以集成。</li>
-</ul>
-<p>持续集成的目的，就是让产品可以快速迭代，同时还能保持高质量。它的核心措施是，代码集成到主干之前，必须通过自动化测试。只要有一个测试用例失败，就不能集成。<br>Martin Fowler说过，”持续集成并不能消除Bug，而是让它们非常容易发现和改正。”<br>与持续集成相关的，还有两个概念，分别是持续交付和持续部署。</p>
-<h3 id="持续交付"><a href="#持续交付" class="headerlink" title="持续交付"></a>持续交付</h3><p>持续交付（Continuous delivery）指的是，频繁地将软件的新版本，交付给质量团队或者用户，以供评审。如果评审通过，代码就进入生产阶段。<br>持续交付可以看作持续集成的下一步。它强调的是，不管怎么更新，软件是随时随地可以交付的。</p>
-<h3 id="持续部署"><a href="#持续部署" class="headerlink" title="持续部署"></a>持续部署</h3><p>持续部署（continuous deployment）是持续交付的下一步，指的是代码通过评审以后，自动部署到生产环境。<br>持续部署的目标是，代码在任何时刻都是可部署的，可以进入生产阶段。<br>持续部署的前提是能自动化完成测试、构建、部署等步骤。</p>
-<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p>根据持续集成的设计，代码从提交到生产，整个过程有以下几步</p>
-<h4 id="提交"><a href="#提交" class="headerlink" title="提交"></a>提交</h4><p>流程的第一步，是开发者向代码仓库提交代码。所有后面的步骤都始于本地代码的一次提交（commit）。</p>
-<h4 id="测试（第一轮）"><a href="#测试（第一轮）" class="headerlink" title="测试（第一轮）"></a>测试（第一轮）</h4><p>代码仓库对commit操作配置了钩子（hook），只要提交代码或者合并进主干，就会跑自动化测试。<br>测试有好几种</p>
-<ul>
-<li>单元测试：针对函数或模块的测试</li>
-<li>集成测试：针对整体产品的某个功能的测试，又称功能测试</li>
-<li>端对端测试：从用户界面直达数据库的全链路测试</li>
-</ul>
-<p>第一轮至少要跑单元测试。</p>
-<h4 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h4><p>通过第一轮测试，代码就可以合并进主干，就算可以交付了。<br>交付后，就先进行构建（build），再进入第二轮测试。所谓构建，指的是将源码转换为可以运行的实际代码，比如安装依赖，配置各种资源（样式表、JS脚本、图片）等等。<br>常用的构建工具如下</p>
-<ul>
-<li>Jenkins</li>
-<li>Travis</li>
-<li>Codeship</li>
-<li>Strider</li>
-</ul>
-<h4 id="测试（第二轮）"><a href="#测试（第二轮）" class="headerlink" title="测试（第二轮）"></a>测试（第二轮）</h4><p>建完成，就要进行第二轮测试。如果第一轮已经涵盖了所有测试内容，第二轮可以省略，当然，这时构建步骤也要移到第一轮测试前面。<br>第二轮是全面测试，单元测试和集成测试都会跑，有条件的话，也要做端对端测试。所有测试以自动化为主，少数无法自动化的测试用例，就要人工跑。<br>需要强调的是，新版本的每一个更新点都必须测试到。如果测试的覆盖率不高，进入后面的部署阶段后，很可能会出现严重的问题。</p>
-<h4 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h4><p>通过了第二轮测试，当前代码就是一个可以直接部署的版本（artifact）。将这个版本的所有文件打包（ tar filename.tar * ）存档，发到生产服务器。<br>生产服务器将打包文件，解包成本地的一个目录，再将运行路径的符号链接（symlink）指向这个目录，然后重新启动应用。这方面的部署工具有Ansible，Chef，Puppet等。</p>
-<h4 id="回滚"><a href="#回滚" class="headerlink" title="回滚"></a>回滚</h4><p>一旦当前版本发生问题，就要回滚到上一个版本的构建结果。最简单的做法就是修改一下符号链接，指向上一个版本的目录。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html">http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html</a></p>
 </blockquote>
 
       

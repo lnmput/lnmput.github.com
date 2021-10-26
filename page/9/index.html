@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">384</span>
+          <span class="site-state-item-count">389</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,447 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/23/nginx%E4%BB%A3%E7%90%86ssl%E8%BD%AC%E5%8F%91https%E5%92%8Cwss%E8%AF%B7%E6%B1%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/07/23/nginx%E4%BB%A3%E7%90%86ssl%E8%BD%AC%E5%8F%91https%E5%92%8Cwss%E8%AF%B7%E6%B1%82/" class="post-title-link" itemprop="url">Nginx代理ssl转发https和wss请求</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-07-23 14:48:33" itemprop="dateCreated datePublished" datetime="2018-07-23T14:48:33+09:00">2018-07-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 14:04:41" itemprop="dateModified" datetime="2021-09-10T14:04:41+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+黄梅时节家家雨，青草池塘处处蛙
+</blockquote>
+
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>什么情况下需要这种操作？<br>比如，后台多台服务器做反向代理；<br>比如，微信小程序，建立微信小程序的websocket连接，必须要使用wss，但是目前不支持自定义端口，在调用的时候会使用默认端口，这个时候就需要做个代理。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>Nginx配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 443; #https和wss协议默认端口</span><br><span class="line"></span><br><span class="line">    # ssl的相关配置</span><br><span class="line">    ssl on;</span><br><span class="line">    ssl_certificate /usr/local/nginx/conf/ssl/***.pem; // ssl pem文件</span><br><span class="line">    ssl_certificate_key /usr/local/nginx/conf/ssl/***.key; // ssl key文件</span><br><span class="line">    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;</span><br><span class="line">    ssl_ciphers EECDH+CHACHA20:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5;</span><br><span class="line">    ssl_prefer_server_ciphers on;</span><br><span class="line">    ssl_buffer_size 1400;</span><br><span class="line">    add_header Strict-Transport-Security max-age=15768000;</span><br><span class="line">    add_header Cache-Control no-store;</span><br><span class="line">    ssl_stapling on;</span><br><span class="line">    ssl_stapling_verify on;</span><br><span class="line"></span><br><span class="line">    server_name www.goozp.com;</span><br><span class="line"></span><br><span class="line">    # 转发wss协议</span><br><span class="line">    location /wss &#123;</span><br><span class="line">        proxy_pass http://127.0.0.1:9502;</span><br><span class="line">        proxy_http_version 1.1;</span><br><span class="line">        proxy_set_header Upgrade $http_upgrade;</span><br><span class="line">        proxy_set_header Connection &quot;Upgrade&quot;;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 转发https协议</span><br><span class="line">    location /&#123;</span><br><span class="line">        proxy_pass http://127.0.0.1:2345;</span><br><span class="line">        proxy_set_header   X-Real-IP        $remote_addr;</span><br><span class="line">        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;</span><br><span class="line">        # add_header Access-Control-Allow-Origin *;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样，当我们访问 <a href="https://swoole.app/">https://swoole.app</a> 的时候实际上就转发到了内部的2345端口的http服务，而不需要 <a href="https://swoole.app:9502/">https://swoole.app:9502</a> 。建立websocket连接时直接与 wss://swoole.app/wss 建立连接，会转发到内部2346端口的服务。</p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>在配置的过程中我们发现每过一段时间服务端会自动断开连接， 我们需要增加如下配置， 具体时间情况因业务具体而定</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment"># 转发wss协议</span></span><br><span class="line">location /wss &#123;</span><br><span class="line">    proxy_pass http:<span class="comment">//127.0.0.1:9502;</span></span><br><span class="line">    proxy_http_version <span class="number">1.1</span>;</span><br><span class="line">    proxy_set_header Upgrade <span class="variable">$http_upgrade</span>;</span><br><span class="line">    proxy_set_header Connection <span class="string">&quot;Upgrade&quot;</span>;</span><br><span class="line">    proxy_set_header X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line"></span><br><span class="line">    proxy_connect_timeout <span class="number">1</span>d;</span><br><span class="line">    proxy_send_timeout <span class="number">1</span>d;</span><br><span class="line">    proxy_read_timeout <span class="number">1</span>d;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.goozp.com/article/69.html">https://www.goozp.com/article/69.html</a><br><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2017/05/websocket.html">http://www.ruanyifeng.com/blog/2017/05/websocket.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/18/%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%94%AF%E6%8C%81%E6%9C%AC%E5%9C%B0%E5%8C%96%E7%9A%84api/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/07/18/%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%94%AF%E6%8C%81%E6%9C%AC%E5%9C%B0%E5%8C%96%E7%9A%84api/" class="post-title-link" itemprop="url">创建一个支持本地化的API</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-07-18 15:37:46 / 修改时间：16:45:10" itemprop="dateCreated datePublished" datetime="2018-07-18T15:37:46+09:00">2018-07-18</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+青青子衿，悠悠我心。但为君故，沉吟至今。
+</blockquote>
+
+<ul>
+<li><p>create a middleware</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Application</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Class Localization</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span>  Mahmoud Zalt  &lt;mahmoud<span class="doctag">@zalt</span>.me&gt;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Localization</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Localization constructor.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> \Illuminate\Foundation\Application $app</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params">Application <span class="variable">$app</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;app = <span class="variable">$app</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Handle an incoming request.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  \Illuminate\Http\Request $request</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  \Closure                 $next</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> mixed</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// read the language from the request header</span></span><br><span class="line">        <span class="variable">$locale</span> = <span class="variable">$request</span>-&gt;header(<span class="string">&#x27;Content-Language&#x27;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// if the header is missed</span></span><br><span class="line">        <span class="keyword">if</span>(!<span class="variable">$locale</span>)&#123;</span><br><span class="line">            <span class="comment">// take the default local language</span></span><br><span class="line">            <span class="variable">$locale</span> = <span class="keyword">$this</span>-&gt;app-&gt;config-&gt;get(<span class="string">&#x27;app.locale&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// check the languages defined is supported</span></span><br><span class="line">        <span class="keyword">if</span> (!array_key_exists(<span class="variable">$locale</span>, <span class="keyword">$this</span>-&gt;app-&gt;config-&gt;get(<span class="string">&#x27;app.supported_languages&#x27;</span>))) &#123;</span><br><span class="line">            <span class="comment">// respond with error</span></span><br><span class="line">            <span class="keyword">return</span> abort(<span class="number">403</span>, <span class="string">&#x27;Language not supported.&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// set the local language</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;app-&gt;setLocale(<span class="variable">$locale</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// get the response after the request is done</span></span><br><span class="line">        <span class="variable">$response</span> = <span class="variable">$next</span>(<span class="variable">$request</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// set Content Languages header in the response</span></span><br><span class="line">        <span class="variable">$response</span>-&gt;headers-&gt;set(<span class="string">&#x27;Content-Language&#x27;</span>, <span class="variable">$locale</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// return the response</span></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$response</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>Register the middleware in the Middlewares</p>
+</li>
+<li><p>add this to the app.php config file</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;supported_languages&#x27;</span> =&gt; [<span class="string">&#x27;en&#x27;</span> =&gt; <span class="string">&#x27;English&#x27;</span>, <span class="string">&#x27;ru&#x27;</span> =&gt; <span class="string">&#x27;Russian&#x27;</span>],</span><br></pre></td></tr></table></figure></li>
+<li><p>create language folder in the lang folder “resources/lang” for your language  (in this case it is [ru] next to [en]) and of course set your files there.</p>
+</li>
+<li><p>create sample route to test this: {you need to use the <code>trans</code> function}</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;welcome&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> trans(<span class="string">&#x27;messages.welcome&#x27;</span>);</span><br><span class="line"></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></li>
+<li><p>call the endpoint “<a target="_blank" rel="noopener" href="http://api.xxxxx.dev/welcome/%E2%80%9C">http://api.xxxxx.dev/welcome/“</a> and set the header “Content-Language” in your request to ([en] or [ru]).</p>
+</li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-tricks.com/tricks/create-api-that-supports-localization">https://laravel-tricks.com/tricks/create-api-that-supports-localization</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/10/%E5%9C%A8unix-shell%E4%B8%AD%E7%94%9F%E6%88%90%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E6%96%87%E4%BB%B6%E5%90%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/07/10/%E5%9C%A8unix-shell%E4%B8%AD%E7%94%9F%E6%88%90%E4%B8%80%E4%B8%AA%E9%9A%8F%E6%9C%BA%E6%96%87%E4%BB%B6%E5%90%8D/" class="post-title-link" itemprop="url">在unix-shell中生成一个随机文件名</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-07-10 14:02:57 / 修改时间：15:21:14" itemprop="dateCreated datePublished" datetime="2018-07-10T14:02:57+09:00">2018-07-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你们一直抱怨这个地方，但是你们却没有勇气走出这里
+</blockquote>
+
+<h3 id="使用系统的-RANDOM-变量"><a href="#使用系统的-RANDOM-变量" class="headerlink" title="使用系统的 $RANDOM 变量"></a>使用系统的 $RANDOM 变量</h3><p><code>$RANDOM</code> 的范围是 [0, 32767]</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="variable">$RANDOM</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="自建函数"><a href="#自建函数" class="headerlink" title="自建函数"></a>自建函数</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">rand</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    min=$<span class="number">1</span></span><br><span class="line">    max=$(($<span class="number">2</span>-<span class="variable">$min</span>+<span class="number">1</span>))</span><br><span class="line">    num=$((<span class="variable">$RANDOM</span>+<span class="number">1000000000</span>)) <span class="comment">#增加一个10位的数再求余</span></span><br><span class="line">    <span class="keyword">echo</span> $((<span class="variable">$num</span>%<span class="variable">$max</span>+<span class="variable">$min</span>))</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">rnd=$(rand <span class="number">400000</span> <span class="number">500000</span>)</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$rnd</span></span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<h3 id="使用date-s-N"><a href="#使用date-s-N" class="headerlink" title="使用date +%s%N"></a>使用date +%s%N</h3><p>生成1-50的随机数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">rand</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    min=$<span class="number">1</span></span><br><span class="line">    max=$(($<span class="number">2</span>-<span class="variable">$min</span>+<span class="number">1</span>))</span><br><span class="line">    num=$(date +%s%N)</span><br><span class="line">    <span class="keyword">echo</span> $((<span class="variable">$num</span>%<span class="variable">$max</span>+<span class="variable">$min</span>))</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">rnd=$(rand <span class="number">1</span> <span class="number">50</span>)</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$rnd</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="使用-dev-random-和-dev-urandom"><a href="#使用-dev-random-和-dev-urandom" class="headerlink" title="使用/dev/random 和 /dev/urandom"></a>使用/dev/random 和 /dev/urandom</h3><p>假设你在一个linux，以下应该工作：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /dev/urandom | tr -cd <span class="string">&#x27;a-f0-9&#x27;</span> | head -c <span class="number">32</span></span><br></pre></td></tr></table></figure>
+<p>这只是伪随机的，如果你的系统运行低熵，但(在linux)保证终止。如果你需要真正随机的数据，cat / dev / random代替/ dev / urandom。这个更改将使你的代码块，直到足够的熵可用来产生真正的随机输出，所以它可能会减慢你的代码。对于大多数用途，/ dev / urandom的输出是充分随机的。</p>
+<p>如果在OS X或其他BSD上，您需要将其修改为以下内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /dev/urandom | env LC_CTYPE=C tr -cd <span class="string">&#x27;a-f0-9&#x27;</span> | head -c <span class="number">32</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="使用linux-uuid"><a href="#使用linux-uuid" class="headerlink" title="使用linux uuid"></a>使用linux uuid</h3><p>uuid 全称是通用唯一识别码，格式包含32个16进制数字，以’-‘连接号分为5段。形式为8-4-4-4-12 的32个字符。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/sys/kernel/random/uuid</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://codeday.me/bug/20170816/53801.html">https://codeday.me/bug/20170816/53801.html</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/fdipzone/article/details/24329523">https://blog.csdn.net/fdipzone/article/details/24329523</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/10/shell%E8%BE%93%E5%87%BA%E9%A2%9C%E8%89%B2%E5%92%8C%E9%97%AA%E7%83%81%E6%8E%A7%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/07/10/shell%E8%BE%93%E5%87%BA%E9%A2%9C%E8%89%B2%E5%92%8C%E9%97%AA%E7%83%81%E6%8E%A7%E5%88%B6/" class="post-title-link" itemprop="url">shell输出颜色和闪烁控制</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-07-10 09:20:17 / 修改时间：10:26:49" itemprop="dateCreated datePublished" datetime="2018-07-10T09:20:17+09:00">2018-07-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+平平淡淡是懒惰，是害怕，是贪图安逸，是一条不敢见世面的土狗
+</blockquote>
+
+<p>在Shell下有时候需要定制输出，比如给输出加上颜色，或者显示高亮，或者添加闪烁等。然后这些颜色代码或者控制码等相对不好记住。这个时候我们可以考虑把最终想要的结果制定成对应的函数，在使用的时候直接调用函数会方便很多</p>
+<h3 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> -e <span class="string">&quot;\033[字背景颜色;字体颜色m字符串\033[控制码&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="定制颜色函数"><a href="#定制颜色函数" class="headerlink" title="定制颜色函数"></a>定制颜色函数</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># blue to echo</span></span> </span><br><span class="line">function blue()&#123;</span><br><span class="line">    echo -e &quot;\033[34m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># green to echo</span></span> </span><br><span class="line">function green()&#123;</span><br><span class="line">    echo -e &quot;\033[32m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error to warning with blink</span></span></span><br><span class="line">function bred()&#123;</span><br><span class="line">    echo -e &quot;\033[31m\033[01m\033[05m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error to warning with blink</span></span></span><br><span class="line">function byellow()&#123;</span><br><span class="line">    echo -e &quot;\033[33m\033[01m\033[05m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error</span></span></span><br><span class="line">function bred()&#123;</span><br><span class="line">    echo -e &quot;\033[31m\033[01m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># warning</span></span></span><br><span class="line">function byellow()&#123;</span><br><span class="line">    echo -e &quot;\033[33m\033[01m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以把这些函数写入到一个公共的SHELL脚本中，每次在编写其他脚本的时候用如下方式调用，即可</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source /root/bin/common</span><br></pre></td></tr></table></figure>
+<p>或者可以把上述代码直接粘贴到当前编写的脚本中去。<br>当然可以推荐第一种方式。不用每次都复制粘贴。 直接 source 调用 即可</p>
+<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/env bash</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># blue to echo</span></span> </span><br><span class="line">function blue()&#123;</span><br><span class="line">    echo -e &quot;\033[35m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># green to echo</span></span> </span><br><span class="line">function green()&#123;</span><br><span class="line">    echo -e &quot;\033[32m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error to warning with blink</span></span></span><br><span class="line">function bred()&#123;</span><br><span class="line">    echo -e &quot;\033[31m\033[01m\033[05m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error to warning with blink</span></span></span><br><span class="line">function byellow()&#123;</span><br><span class="line">    echo -e &quot;\033[33m\033[01m\033[05m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># Error</span></span></span><br><span class="line">function red()&#123;</span><br><span class="line">    echo -e &quot;\033[31m\033[01m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># warning</span></span></span><br><span class="line">function yellow()&#123;</span><br><span class="line">    echo -e &quot;\033[33m\033[01m[ $1 ]\033[0m&quot;</span><br><span class="line">&#125;</span><br><span class="line">Dev-web-solr [/opt/hexo2] 2016-11-28 17:52:03</span><br><span class="line">root@pts/4 $ cat /root/bin/test.sh </span><br><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/env bash</span></span><br><span class="line"></span><br><span class="line">source /root/bin/common</span><br><span class="line"></span><br><span class="line">green &quot;hello world with green color&quot;</span><br><span class="line">blue &quot;hello world with blue color&quot;</span><br><span class="line"></span><br><span class="line">bred &quot;error info with blink&quot;</span><br><span class="line">byellow &quot;warning info with blink&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="字体背景颜色"><a href="#字体背景颜色" class="headerlink" title="字体背景颜色"></a>字体背景颜色</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">40:黑 </span><br><span class="line">41:深红 </span><br><span class="line">42:绿 </span><br><span class="line">43:黄色 </span><br><span class="line">44:蓝色 </span><br><span class="line">45:紫色 </span><br><span class="line">46:深绿 </span><br><span class="line">47:白色 </span><br></pre></td></tr></table></figure>
+
+<h3 id="字体颜色"><a href="#字体颜色" class="headerlink" title="字体颜色"></a>字体颜色</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">30:黑 </span><br><span class="line">31:红 </span><br><span class="line">32:绿 </span><br><span class="line">33:黄 </span><br><span class="line">34:蓝色 </span><br><span class="line">35:紫色 </span><br><span class="line">36:深绿 </span><br><span class="line">37:白色 </span><br></pre></td></tr></table></figure>
+<h3 id="控制码"><a href="#控制码" class="headerlink" title="控制码"></a>控制码</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">\33[0m 关闭所有属性 </span><br><span class="line">\33[01m 设置高亮度 </span><br><span class="line">\33[04m 下划线 </span><br><span class="line">\33[05m 闪烁 </span><br><span class="line">\33[07m 反显 </span><br><span class="line">\33[08m 消隐 </span><br><span class="line">\33[30m -- \33[37m 设置前景色 </span><br><span class="line">\33[40m -- \33[47m 设置背景色 </span><br><span class="line">\33[nA 光标上移n行 </span><br><span class="line">\33[nB 光标下移n行 </span><br><span class="line">\33[nC 光标右移n行 </span><br><span class="line">\33[nD 光标左移n行 </span><br><span class="line">\33[y;xH设置光标位置 </span><br><span class="line">\33[2J 清屏 </span><br><span class="line">\33[K 清除从光标到行尾的内容 </span><br><span class="line">\33[s 保存光标位置 </span><br><span class="line">\33[u 恢复光标位置 </span><br><span class="line">\33[?25l 隐藏光标 </span><br><span class="line">\33[?25h 显示光标</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/ba1b8aded634">https://www.jianshu.com/p/ba1b8aded634</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/09/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%98%AF%E4%BB%80%E4%B9%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/07/09/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%98%AF%E4%BB%80%E4%B9%88/" class="post-title-link" itemprop="url">持续集成是什么</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-07-09 11:16:41 / 修改时间：12:31:12" itemprop="dateCreated datePublished" datetime="2018-07-09T11:16:41+09:00">2018-07-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+生活本来就不容易， 如果有一天你觉得容易了， 那一定是有人分担了你的不容易
+</blockquote>
+
+<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>持续集成指的是，频繁地（一天多次）将代码集成到主干。</p>
+<p>它的好处主要有两个:</p>
+<ul>
+<li>快速发现错误。每完成一点更新，就集成到主干，可以快速发现错误，定位错误也比较容易。</li>
+<li>防止分支大幅偏离主干。如果不是经常集成，主干又在不断更新，会导致以后集成的难度变大，甚至难以集成。</li>
+</ul>
+<p>持续集成的目的，就是让产品可以快速迭代，同时还能保持高质量。它的核心措施是，代码集成到主干之前，必须通过自动化测试。只要有一个测试用例失败，就不能集成。<br>Martin Fowler说过，”持续集成并不能消除Bug，而是让它们非常容易发现和改正。”<br>与持续集成相关的，还有两个概念，分别是持续交付和持续部署。</p>
+<h3 id="持续交付"><a href="#持续交付" class="headerlink" title="持续交付"></a>持续交付</h3><p>持续交付（Continuous delivery）指的是，频繁地将软件的新版本，交付给质量团队或者用户，以供评审。如果评审通过，代码就进入生产阶段。<br>持续交付可以看作持续集成的下一步。它强调的是，不管怎么更新，软件是随时随地可以交付的。</p>
+<h3 id="持续部署"><a href="#持续部署" class="headerlink" title="持续部署"></a>持续部署</h3><p>持续部署（continuous deployment）是持续交付的下一步，指的是代码通过评审以后，自动部署到生产环境。<br>持续部署的目标是，代码在任何时刻都是可部署的，可以进入生产阶段。<br>持续部署的前提是能自动化完成测试、构建、部署等步骤。</p>
+<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p>根据持续集成的设计，代码从提交到生产，整个过程有以下几步</p>
+<h4 id="提交"><a href="#提交" class="headerlink" title="提交"></a>提交</h4><p>流程的第一步，是开发者向代码仓库提交代码。所有后面的步骤都始于本地代码的一次提交（commit）。</p>
+<h4 id="测试（第一轮）"><a href="#测试（第一轮）" class="headerlink" title="测试（第一轮）"></a>测试（第一轮）</h4><p>代码仓库对commit操作配置了钩子（hook），只要提交代码或者合并进主干，就会跑自动化测试。<br>测试有好几种</p>
+<ul>
+<li>单元测试：针对函数或模块的测试</li>
+<li>集成测试：针对整体产品的某个功能的测试，又称功能测试</li>
+<li>端对端测试：从用户界面直达数据库的全链路测试</li>
+</ul>
+<p>第一轮至少要跑单元测试。</p>
+<h4 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h4><p>通过第一轮测试，代码就可以合并进主干，就算可以交付了。<br>交付后，就先进行构建（build），再进入第二轮测试。所谓构建，指的是将源码转换为可以运行的实际代码，比如安装依赖，配置各种资源（样式表、JS脚本、图片）等等。<br>常用的构建工具如下</p>
+<ul>
+<li>Jenkins</li>
+<li>Travis</li>
+<li>Codeship</li>
+<li>Strider</li>
+</ul>
+<h4 id="测试（第二轮）"><a href="#测试（第二轮）" class="headerlink" title="测试（第二轮）"></a>测试（第二轮）</h4><p>建完成，就要进行第二轮测试。如果第一轮已经涵盖了所有测试内容，第二轮可以省略，当然，这时构建步骤也要移到第一轮测试前面。<br>第二轮是全面测试，单元测试和集成测试都会跑，有条件的话，也要做端对端测试。所有测试以自动化为主，少数无法自动化的测试用例，就要人工跑。<br>需要强调的是，新版本的每一个更新点都必须测试到。如果测试的覆盖率不高，进入后面的部署阶段后，很可能会出现严重的问题。</p>
+<h4 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h4><p>通过了第二轮测试，当前代码就是一个可以直接部署的版本（artifact）。将这个版本的所有文件打包（ tar filename.tar * ）存档，发到生产服务器。<br>生产服务器将打包文件，解包成本地的一个目录，再将运行路径的符号链接（symlink）指向这个目录，然后重新启动应用。这方面的部署工具有Ansible，Chef，Puppet等。</p>
+<h4 id="回滚"><a href="#回滚" class="headerlink" title="回滚"></a>回滚</h4><p>一旦当前版本发生问题，就要回滚到上一个版本的构建结果。最简单的做法就是修改一下符号链接，指向上一个版本的目录。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html">http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -611,477 +1052,6 @@
 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://nginx.org/en/docs/http/ngx_http_empty_gif_module.html">http://nginx.org/en/docs/http/ngx_http_empty_gif_module.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/28/%E4%BD%BF%E7%94%A8docker%E6%90%AD%E5%BB%BAlnmp%E7%8E%AF%E5%A2%83/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/28/%E4%BD%BF%E7%94%A8docker%E6%90%AD%E5%BB%BAlnmp%E7%8E%AF%E5%A2%83/" class="post-title-link" itemprop="url">使用docker搭建lnmp环境</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-06-28 14:32:31" itemprop="dateCreated datePublished" datetime="2018-06-28T14:32:31+09:00">2018-06-28</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-06-29 17:01:15" itemprop="dateModified" datetime="2018-06-29T17:01:15+09:00">2018-06-29</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-若家境殷实，谁愿颠沛流离。
-</blockquote>
-
-<h3 id="docker-compose-yml"><a href="#docker-compose-yml" class="headerlink" title="docker-compose.yml"></a>docker-compose.yml</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">nginx:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">8000</span><span class="string">:80</span></span><br><span class="line">    <span class="attr">networks:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">lnmp</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./wwwroot:/usr/share/nginx/html</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./nginx/nginx.conf:/etc/nginx/nginx.conf</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./nginx/conf.d:/etc/nginx/conf.d/</span></span><br><span class="line">  <span class="attr">php:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">php</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">php:7.2.6-fpm</span></span><br><span class="line">    <span class="attr">networks:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">lnmp</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./wwwroot:/usr/share/nginx/html</span> </span><br><span class="line">  <span class="attr">mysql:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">mysql</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">mysql:5.7.22</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">3307</span><span class="string">:3306</span></span><br><span class="line">    <span class="attr">networks:</span> </span><br><span class="line">      <span class="bullet">-</span> <span class="string">lnmp</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./mysql/conf:/etc/mysql/conf.d</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./mysql/data:/var/lib/mysql</span></span><br><span class="line">    <span class="attr">command:</span> <span class="string">--character-set-server=utf8mb4</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="attr">MYSQL_ROOT_PASSWORD:</span> <span class="number">123456</span></span><br><span class="line">      <span class="attr">MYSQL_DATABASE:</span> <span class="string">wp</span></span><br><span class="line">      <span class="attr">MYSQL_USER:</span> <span class="string">yangzie</span></span><br><span class="line">      <span class="attr">MYSQL_PASSWORD:</span> <span class="number">123456</span></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">lnmp:</span></span><br><span class="line">    <span class="attr">driver:</span> <span class="string">bridge</span> </span><br></pre></td></tr></table></figure>
-
-<h3 id="nginx配置"><a href="#nginx配置" class="headerlink" title="nginx配置"></a>nginx配置</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       <span class="number">80</span>;</span><br><span class="line">    server_name  localhost;</span><br><span class="line">    root   /usr/share/nginx/html;</span><br><span class="line">    index  index.html index.htm index.php;</span><br><span class="line"></span><br><span class="line">    location ~ \.php$ &#123;</span><br><span class="line">        fastcgi_split_path_info ^(.+\.php)(/.+)$;</span><br><span class="line">        fastcgi_pass php:<span class="number">9000</span>;</span><br><span class="line">        fastcgi_index index.php;</span><br><span class="line">        <span class="keyword">include</span> fastcgi_params;</span><br><span class="line">        fastcgi_param SCRIPT_FILENAME <span class="variable">$document</span>_root<span class="variable">$fastcgi_script_name</span>;        </span><br><span class="line">        fastcgi_intercept_errors off;</span><br><span class="line">        fastcgi_buffer_size <span class="number">16</span>k;</span><br><span class="line">        fastcgi_buffers <span class="number">4</span> <span class="number">16</span>k;</span><br><span class="line">        fastcgi_connect_timeout <span class="number">300</span>;</span><br><span class="line">        fastcgi_send_timeout <span class="number">300</span>;</span><br><span class="line">        fastcgi_read_timeout <span class="number">300</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="mysql"><a href="#mysql" class="headerlink" title="mysql"></a>mysql</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h47.<span class="number">98.174</span>.<span class="number">48</span> -P <span class="number">3307</span> -uroot -p123456</span><br></pre></td></tr></table></figure>
-
-<h3 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">├── docker-compose.yml</span><br><span class="line">├── mysql</span><br><span class="line">│   ├── conf</span><br><span class="line">│   └── data</span><br><span class="line">├── nginx</span><br><span class="line">│   ├── conf.d</span><br><span class="line">│   └── nginx.conf</span><br><span class="line">├── php</span><br><span class="line">│   └── ini</span><br><span class="line">└── wwwroot</span><br><span class="line">    ├── index.php</span><br><span class="line">    └── tp5</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="截图"><a href="#截图" class="headerlink" title="截图"></a>截图</h3><img style="margin-left: 0;" src="/images/docker-lnmp.png">
-
-<h3 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h3><ul>
-<li>php容器也要配置目录映射， 不然找不到php文件</li>
-<li>nginx的server配置中监听9000端口：php:9000</li>
-<li>找不到的配置可以在Dockerfile文件中找</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/27/%E9%98%BF%E9%87%8C%E4%BA%91ecs%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%8C%82%E8%BD%BD%E7%A3%81%E7%9B%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/27/%E9%98%BF%E9%87%8C%E4%BA%91ecs%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%8C%82%E8%BD%BD%E7%A3%81%E7%9B%98/" class="post-title-link" itemprop="url">阿里云ECS服务器挂载磁盘</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-27 13:44:26 / 修改时间：16:07:56" itemprop="dateCreated datePublished" datetime="2018-06-27T13:44:26+09:00">2018-06-27</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-不要到处宣扬自己的内心，这世上不止你一个人有故事
-</blockquote>
-
-<p>使用阿里云ECS服务器， 购买的40G高效云盘已经不够用， 所以又购买了一块云盘， 但是仅仅通过控制台操作并不能将磁盘挂载到系统， 接下来记录我的挂载流程； 为了安全起见， 建议先去做一个磁盘快照</p>
-<ul>
-<li><p>检查磁盘现在的情况</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df -h</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Filesystem      Size  Used Avail <span class="keyword">Use</span>% <span class="title">Mounted</span> <span class="title">on</span></span><br><span class="line">/<span class="title">dev</span>/<span class="title">vda1</span>        40<span class="title">G</span>   35<span class="title">G</span>  3.2<span class="title">G</span>  92% /</span><br><span class="line"><span class="title">devtmpfs</span>        3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">dev</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">dev</span>/<span class="title">shm</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>  632<span class="title">K</span>  3.9<span class="title">G</span>   1% /<span class="title">run</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">sys</span>/<span class="title">fs</span>/<span class="title">cgroup</span></span><br><span class="line"><span class="title">tmpfs</span>           783<span class="title">M</span>     0  783<span class="title">M</span>   0% /<span class="title">run</span>/<span class="title">user</span>/0</span><br></pre></td></tr></table></figure></li>
-<li><p>查看硬盘个数及分区 </p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Disk /dev/vda: <span class="number">42.9</span> GB, <span class="number">42949672960</span> bytes, <span class="number">83886080</span> sectors</span><br><span class="line">Units = sectors of <span class="number">1</span> * <span class="number">512</span> = <span class="number">512</span> bytes</span><br><span class="line">Sector size (logical/physical): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">I/O size (minimum/optimal): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">Disk label type: dos</span><br><span class="line">Disk identifier: <span class="number">0x0008d73a</span></span><br><span class="line"></span><br><span class="line">   Device Boot      Start         End      Blocks   Id  System</span><br><span class="line">/dev/vda1   *        <span class="number">2048</span>    <span class="number">83884031</span>    <span class="number">41940992</span>   <span class="number">83</span>  Linux</span><br><span class="line"></span><br><span class="line">Disk /dev/vdb: <span class="number">21.5</span> GB, <span class="number">21474836480</span> bytes, <span class="number">41943040</span> sectors</span><br><span class="line">Units = sectors of <span class="number">1</span> * <span class="number">512</span> = <span class="number">512</span> bytes</span><br><span class="line">Sector size (logical/physical): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">I/O size (minimum/optimal): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br></pre></td></tr></table></figure>
-<p>我们可以看到那块20GB的磁盘：/dev/xdb</p>
-</li>
-<li><p>对这块硬盘进行分区</p>
-<img style="margin-left: 0;" src="/images/20160103150446502.png"></li>
-<li><p>查看</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Disk /dev/vda: <span class="number">42.9</span> GB, <span class="number">42949672960</span> bytes, <span class="number">83886080</span> sectors</span><br><span class="line">Units = sectors of <span class="number">1</span> * <span class="number">512</span> = <span class="number">512</span> bytes</span><br><span class="line">Sector size (logical/physical): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">I/O size (minimum/optimal): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">Disk label type: dos</span><br><span class="line">Disk identifier: <span class="number">0x0008d73a</span></span><br><span class="line"></span><br><span class="line">   Device Boot      Start         End      Blocks   Id  System</span><br><span class="line">/dev/vda1   *        <span class="number">2048</span>    <span class="number">83884031</span>    <span class="number">41940992</span>   <span class="number">83</span>  Linux</span><br><span class="line"></span><br><span class="line">Disk /dev/vdb: <span class="number">21.5</span> GB, <span class="number">21474836480</span> bytes, <span class="number">41943040</span> sectors</span><br><span class="line">Units = sectors of <span class="number">1</span> * <span class="number">512</span> = <span class="number">512</span> bytes</span><br><span class="line">Sector size (logical/physical): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">I/O size (minimum/optimal): <span class="number">512</span> bytes / <span class="number">512</span> bytes</span><br><span class="line">Disk label type: dos</span><br><span class="line">Disk identifier: <span class="number">0x7a2b9a92</span></span><br><span class="line"></span><br><span class="line">   Device Boot      Start         End      Blocks   Id  System</span><br><span class="line">/dev/vdb1            <span class="number">2048</span>    <span class="number">41943039</span>    <span class="number">20970496</span>   <span class="number">83</span>  Linux</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-<li><p>格式化新分区</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkfs.ext3 /dev/vdb1</span><br></pre></td></tr></table></figure></li>
-<li><p>创建挂载目录<br>建议挂载到mnt目录， 也可以自己创建新的目录</p>
-</li>
-<li><p>挂载分区到目录</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/vdb1 /mnt</span><br></pre></td></tr></table></figure></li>
-<li><p>查看</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df -h</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Filesystem      Size  Used Avail <span class="keyword">Use</span>% <span class="title">Mounted</span> <span class="title">on</span></span><br><span class="line">/<span class="title">dev</span>/<span class="title">vda1</span>        40<span class="title">G</span>   35<span class="title">G</span>  3.1<span class="title">G</span>  92% /</span><br><span class="line"><span class="title">devtmpfs</span>        3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">dev</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">dev</span>/<span class="title">shm</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>  636<span class="title">K</span>  3.9<span class="title">G</span>   1% /<span class="title">run</span></span><br><span class="line"><span class="title">tmpfs</span>           3.9<span class="title">G</span>     0  3.9<span class="title">G</span>   0% /<span class="title">sys</span>/<span class="title">fs</span>/<span class="title">cgroup</span></span><br><span class="line"><span class="title">tmpfs</span>           783<span class="title">M</span>     0  783<span class="title">M</span>   0% /<span class="title">run</span>/<span class="title">user</span>/0</span><br><span class="line">/<span class="title">dev</span>/<span class="title">vdb1</span>        20<span class="title">G</span>   45<span class="title">M</span>   19<span class="title">G</span>   1% /<span class="title">mnt</span></span><br><span class="line">```  </span><br><span class="line">- 设置开机自动挂载 </span><br><span class="line">```<span class="title">php</span></span><br><span class="line"><span class="title">cat</span> /<span class="title">etc</span>/<span class="title">fstab</span></span><br><span class="line">#</span><br><span class="line"># /<span class="title">etc</span>/<span class="title">fstab</span></span><br><span class="line"># <span class="title">Created</span> <span class="title">by</span> <span class="title">anaconda</span> <span class="title">on</span> <span class="title">Sun</span> <span class="title">Oct</span> 15 15:19:00 2017</span><br><span class="line">#</span><br><span class="line"># <span class="title">Accessible</span> <span class="title">filesystems</span>, <span class="title">by</span> <span class="title">reference</span>, <span class="title">are</span> <span class="title">maintained</span> <span class="title">under</span> &#x27;/<span class="title">dev</span>/<span class="title">disk</span>&#x27;</span><br><span class="line"># <span class="title">See</span> <span class="title">man</span> <span class="title">pages</span> <span class="title">fstab</span>(5), <span class="title">findfs</span>(8), <span class="title">mount</span>(8) <span class="title">and</span>/<span class="title">or</span> <span class="title">blkid</span>(8) <span class="title">for</span> <span class="title">more</span> <span class="title">info</span></span><br><span class="line">#</span><br><span class="line"><span class="title">UUID</span>=<span class="title">eb448abb</span>-3012-4<span class="title">d8d</span>-<span class="title">bcde</span>-94434<span class="title">d586a31</span> /                       <span class="title">ext4</span>    <span class="title">defaults</span>        1 1</span><br></pre></td></tr></table></figure>
-<p>修改</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/fstab</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># /etc/fstab</span></span><br><span class="line"><span class="comment"># Created by anaconda on Sun Oct 15 15:19:00 2017</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Accessible filesystems, by reference, are maintained under &#x27;/dev/disk&#x27;</span></span><br><span class="line"><span class="comment"># See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">UUID=eb448abb-<span class="number">3012</span>-<span class="number">4</span>d8d-bcde-<span class="number">94434</span>d586a31 /                       ext4    defaults        <span class="number">1</span> <span class="number">1</span></span><br><span class="line">/dev/vdb1                                 /mnt                    ext3    defaults        <span class="number">0</span> <span class="number">0</span></span><br></pre></td></tr></table></figure></li>
-<li><p>重启</p>
-</li>
-</ul>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/25426.html">https://help.aliyun.com/document_detail/25426.html</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/wyzhangchengjin123/article/details/50451065">https://blog.csdn.net/wyzhangchengjin123/article/details/50451065</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/27/linux%E7%A3%81%E7%9B%98%E7%A9%BA%E9%97%B4%E5%88%86%E6%9E%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/27/linux%E7%A3%81%E7%9B%98%E7%A9%BA%E9%97%B4%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">linux磁盘空间分析</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-27 10:42:25 / 修改时间：14:45:11" itemprop="dateCreated datePublished" datetime="2018-06-27T10:42:25+09:00">2018-06-27</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-珍贵的东西往往数目稀少，所以你要变得更强，才有力量去抢。
-</blockquote>
-
-<p>今天遇到了一个问题， 线上的ES服务突然挂了，重启无用， 查看日志后发现是本地磁盘爆了，开启了我的磁盘清理之路</p>
-<p>du(disk usage)命令可以计算文件或目录所占的磁盘空间。没有指定任何选项时，它会测量当前工作目录与其所有子目录，分别显示各个目录所占的快数，最后才显示工作目录所占总快数。</p>
-<ul>
-<li><p>查看</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df -lh</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/dev/vda1        <span class="number">40</span>G   <span class="number">37</span>G  <span class="number">870</span>M  <span class="number">98</span>% /</span><br><span class="line">devtmpfs        <span class="number">3.9</span>G     <span class="number">0</span>  <span class="number">3.9</span>G   <span class="number">0</span>% /dev</span><br><span class="line">tmpfs           <span class="number">3.9</span>G     <span class="number">0</span>  <span class="number">3.9</span>G   <span class="number">0</span>% /dev/shm</span><br><span class="line">tmpfs           <span class="number">3.9</span>G  <span class="number">624</span>K  <span class="number">3.9</span>G   <span class="number">1</span>% /run</span><br><span class="line">tmpfs           <span class="number">3.9</span>G     <span class="number">0</span>  <span class="number">3.9</span>G   <span class="number">0</span>% /sys/fs/cgroup</span><br><span class="line">tmpfs           <span class="number">783</span>M     <span class="number">0</span>  <span class="number">783</span>M   <span class="number">0</span>% /run/user/<span class="number">0</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-<li><p>查找大文件</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -sh * |grep G</span><br></pre></td></tr></table></figure>
-
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.1</span>G	root</span><br><span class="line"><span class="number">4.0</span>G	usr</span><br><span class="line"><span class="number">1.6</span>G	<span class="keyword">var</span></span><br></pre></td></tr></table></figure></li>
-</ul>
-<ul>
-<li><p>具体分析</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -sh *</span><br></pre></td></tr></table></figure>
-
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">240</span>M	bin</span><br><span class="line"><span class="number">4.0</span>K	etc</span><br><span class="line"><span class="number">4.0</span>K	games</span><br><span class="line"><span class="number">37</span>M	<span class="keyword">include</span></span><br><span class="line"><span class="number">489</span>M	lib</span><br><span class="line"><span class="number">169</span>M	lib64</span><br><span class="line"><span class="number">54</span>M	libexec</span><br><span class="line"><span class="number">2.6</span>G	local</span><br><span class="line"><span class="number">43</span>M	sbin</span><br><span class="line"><span class="number">362</span>M	share</span><br><span class="line"><span class="number">71</span>M	src</span><br><span class="line"><span class="number">0</span>	tmp</span><br></pre></td></tr></table></figure></li>
-<li><p>以M显示文件大小</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -l --block-size=M</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">total <span class="number">15326</span>M</span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root     <span class="number">1</span>M Mar <span class="number">13</span> <span class="number">19</span>:<span class="number">01</span> <span class="number">1</span>.sh</span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root    <span class="number">20</span>M Mar <span class="number">14</span> <span class="number">20</span>:<span class="number">47</span> <span class="number">2</span></span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root    <span class="number">20</span>M Mar <span class="number">15</span> <span class="number">17</span>:<span class="number">47</span> btoken-go</span><br><span class="line">-rw-rw---- <span class="number">1</span> root root   <span class="number">243</span>M Jun <span class="number">27</span> <span class="number">11</span>:<span class="number">11</span> btoken.log</span><br></pre></td></tr></table></figure></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/22/alpine%E7%AE%80%E4%BB%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/22/alpine%E7%AE%80%E4%BB%8B/" class="post-title-link" itemprop="url">Alpine简介</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-22 14:00:27 / 修改时间：15:10:57" itemprop="dateCreated datePublished" datetime="2018-06-22T14:00:27+09:00">2018-06-22</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-让未来到来，让过去过去。
-</blockquote>
-
-<p>Alpine 操作系统是一个面向安全的轻型 Linux 发行版。它不同于通常 Linux 发行版，Alpine 采用了 musl libc 和 busybox 以减小系统的体积和运行时资源消耗，但功能上比 busybox 又完善的多，因此得到开源社区越来越多的青睐。在保持瘦身的同时，Alpine 还提供了自己的包管理工具 apk，可以通过 <a target="_blank" rel="noopener" href="https://pkgs.alpinelinux.org/packages">https://pkgs.alpinelinux.org/packages</a> 网站上查询包信息，也可以直接通过 apk 命令直接查询和安装各种软件。</p>
-<p>Alpine 由非商业组织维护的，支持广泛场景的 Linux发行版，它特别为资深/重度Linux用户而优化，关注安全，性能和资源效能。Alpine 镜像可以适用于更多常用场景，并且是一个优秀的可以适用于生产的基础系统/环境。</p>
-<p>Alpine Docker 镜像也继承了 Alpine Linux 发行版的这些优势。相比于其他 Docker 镜像，它的容量非常小，仅仅只有 5 MB 左右（对比 Ubuntu 系列镜像接近 200 MB），且拥有非常友好的包管理机制。官方镜像来自 docker-alpine 项目。</p>
-<p>目前 Docker 官方已开始推荐使用 Alpine 替代之前的 Ubuntu 做为基础镜像环境。这样会带来多个好处。包括镜像下载速度加快，镜像安全性提高，主机之间的切换更方便，占用更少磁盘空间等。</p>
-<h3 id="Docker下的运行"><a href="#Docker下的运行" class="headerlink" title="Docker下的运行"></a>Docker下的运行</h3><p>官方 Alpine 镜像的文档：<a target="_blank" rel="noopener" href="http://gliderlabs.viewdocs.io/docker-alpine/">http://gliderlabs.viewdocs.io/docker-alpine/</a></p>
-<p>可以使用Docker Toolbox，创建一台Docker虚拟主机，在该主机的Docker环境下运行alpine的 Docker容器。该容器就是一个Alpine Linux系统，</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker pull alpine</span><br><span class="line"></span><br><span class="line">docker run -it --name myalpine alpine</span><br></pre></td></tr></table></figure>
-
-<h3 id="作为Docker容器的基础镜像"><a href="#作为Docker容器的基础镜像" class="headerlink" title="作为Docker容器的基础镜像"></a>作为Docker容器的基础镜像</h3><p>以Alpine为基础镜像，创建一个MySQL容器，镜像大小只有36.5MB，<br>同样的方式使用Ubuntu系统作为基础镜像，镜像大小有184MB，<br>Dockerfile文件的内容：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> alpine:<span class="number">3.6</span></span><br><span class="line">RUN apk add --no-cache mysql-client</span><br><span class="line">ENTRYPOINT [<span class="string">&quot;mysql&quot;</span>]</span><br></pre></td></tr></table></figure>
-<p>创建一个test/mysqlclient:1.0镜像</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t test/mysqlclient:<span class="number">1.0</span> .</span><br></pre></td></tr></table></figure>
-
-<h3 id="Alpine的配置和使用"><a href="#Alpine的配置和使用" class="headerlink" title="Alpine的配置和使用"></a>Alpine的配置和使用</h3><h4 id="网络相关文件"><a href="#网络相关文件" class="headerlink" title="网络相关文件"></a>网络相关文件</h4><p>主机名文件</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/hostname    </span><br></pre></td></tr></table></figure>
-<p>主机IP和域名映射文件</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/hosts    </span><br></pre></td></tr></table></figure>
-<p>安装nginx</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apk add --update nginx   </span><br></pre></td></tr></table></figure>
-<p>安装openssh-server服务器</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apk add openssh-server</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-<h3 id="相关资源"><a href="#相关资源" class="headerlink" title="相关资源"></a>相关资源</h3><ul>
-<li>Alpine 官网：<a target="_blank" rel="noopener" href="http://alpinelinux.org/">http://alpinelinux.org/</a></li>
-<li>Alpine 官方仓库：<a target="_blank" rel="noopener" href="https://github.com/alpinelinux">https://github.com/alpinelinux</a></li>
-<li>Alpine 官方镜像：<a target="_blank" rel="noopener" href="https://hub.docker.com/_/alpine/">https://hub.docker.com/_/alpine/</a></li>
-<li>Alpine 官方镜像仓库：<a target="_blank" rel="noopener" href="https://github.com/gliderlabs/docker-alpine">https://github.com/gliderlabs/docker-alpine</a></li>
-</ul>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/CSDN_duomaomao/article/details/76152416">https://blog.csdn.net/CSDN_duomaomao/article/details/76152416</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/21/nginx%E4%B8%8Ephp-fpm%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/21/nginx%E4%B8%8Ephp-fpm%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="post-title-link" itemprop="url">nginx与php-fpm的负载均衡</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-21 11:01:18 / 修改时间：12:46:02" itemprop="dateCreated datePublished" datetime="2018-06-21T11:01:18+09:00">2018-06-21</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你不必跑在任何人后边。
-</blockquote>
-
-<p>Nginx反向代理负载均衡架构图(三台服务器为例)</p>
-<p><img src="/images/jiagou.jpg"></p>
-<h3 id="Nginx负载均衡-图示-192-168-1-1-80服务器配置"><a href="#Nginx负载均衡-图示-192-168-1-1-80服务器配置" class="headerlink" title="Nginx负载均衡(图示:192.168.1.1:80服务器配置)"></a>Nginx负载均衡(图示:192.168.1.1:80服务器配置)</h3><p>upstream示例配置</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">upstream icontact_pool &#123;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.1</span>:<span class="number">9000</span>    weight=<span class="number">5</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.2</span>:<span class="number">9000</span>    weight=<span class="number">3</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.3</span>:<span class="number">9000</span>    weight=<span class="number">2</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<h3 id="ngxin虚拟主机负载均衡配置"><a href="#ngxin虚拟主机负载均衡配置" class="headerlink" title="ngxin虚拟主机负载均衡配置"></a>ngxin虚拟主机负载均衡配置</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">server &#123;  </span><br><span class="line">    listen  <span class="number">192.168</span>.<span class="number">1.1</span>:<span class="number">80</span>;  </span><br><span class="line">    server_name <span class="number">192.168</span>.<span class="number">1.1</span>;  </span><br><span class="line">  </span><br><span class="line">    access_log  /<span class="keyword">var</span>/log/nginx/balance/loadbalance.access.log;    </span><br><span class="line">    error_log   /<span class="keyword">var</span>/log/nginx/balance/loadbalance.<span class="built_in">error</span>.log;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">#允许列目录  </span></span><br><span class="line">    location / &#123;  </span><br><span class="line">        root    /balance/;  </span><br><span class="line">        autoindex   on;  </span><br><span class="line">        autoindex_exact_size    off;  </span><br><span class="line">        autoindex_localtime on;  </span><br><span class="line">        allow allow;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">#proxy the php scripts to fpm_pool_upstream  </span></span><br><span class="line">    location ~ \.php$ &#123;  </span><br><span class="line">        root    /balance;  </span><br><span class="line">        <span class="keyword">include</span> /etc/nginx/fastcgi_params;  </span><br><span class="line">        <span class="comment">#将webserver接收的客户端请求通过fastcgi负载均衡到php5-fpm的池  </span></span><br><span class="line">        fastcgi_pass    icontact_pool;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<h3 id="负载均衡服务器处理php请求"><a href="#负载均衡服务器处理php请求" class="headerlink" title="负载均衡服务器处理php请求"></a>负载均衡服务器处理php请求</h3><p>192.168.1.1:9000、192.168.1.2:9000、192.168.1.3:9000为后端的三台负载均衡服务器监听的fpm地址和端口号，负载均衡服务器通过fastcgi将http请求和上下文参数发送给这个fpm池，然后fpm负责解析php程序</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/wzy_1988/article/details/8230562">https://blog.csdn.net/wzy_1988/article/details/8230562</a></p>
 </blockquote>
 
       

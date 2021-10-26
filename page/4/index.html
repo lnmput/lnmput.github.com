@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">384</span>
+          <span class="site-state-item-count">389</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,475 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/04/17/golang%E4%B9%8Bhttp-eof%E5%92%8Cconnection-reset-by-peer%E9%94%99%E8%AF%AF%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/04/17/golang%E4%B9%8Bhttp-eof%E5%92%8Cconnection-reset-by-peer%E9%94%99%E8%AF%AF%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">golang之http-eof和connection-reset-by-peer错误详解</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-04-17 21:28:52" itemprop="dateCreated datePublished" datetime="2020-04-17T21:28:52+09:00">2020-04-17</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:56:56" itemprop="dateModified" datetime="2021-09-10T13:56:56+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+多花一點心思去說溫柔的話，那些話可能改變他人一生
+</blockquote>
+
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>使用net/http同时发起多个简单请求时，偶尔会出现EOF或connect: connection reset by peer的情况。明明就是一个很简单的例子，为何会出现这种情况呢？</p>
+<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">eq, err := http.NewRequest(method, url, body)</span><br><span class="line"><span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">resp, err := http.DefaultClient.Do(req)</span><br><span class="line"><span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">defer</span> resp.Body.Close()</span><br><span class="line"></span><br><span class="line">b, err := ioutil.ReadAll(resp.Body)</span><br><span class="line"><span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> b,<span class="literal">nil</span></span><br></pre></td></tr></table></figure>
+<p>如此简单的几行代码，在我们套上大并发以后，各种异常情况接踵而至，最常见的就是下面的几个：</p>
+<ul>
+<li>EOF</li>
+<li>connection reset by peer</li>
+</ul>
+<h3 id="探讨"><a href="#探讨" class="headerlink" title="探讨"></a>探讨</h3><p>HTTP也是针对TCP的一个封装，go得益于goroutine和channel，与其他语言的实现方式不太一样，它是直接起了两个协程，一个用于读（readLoop），一个用于写（writeLoop）。</p>
+<h4 id="conn-Read"><a href="#conn-Read" class="headerlink" title="conn.Read"></a>conn.Read</h4><ul>
+<li>socket无数据：read阻塞，直到有数据。</li>
+<li>socket有部分数据：如果socket中有部分数据，且长度小于一次Read操作所期望读出的数据长度，那么Read将会成功读出这部分数据并返回，而不是等待所有期望数据全部读取后再返回。</li>
+<li>socket有足够数据：如果socket中有数据，且长度大于等于一次Read操作所期望读出的数据长度，那么Read将会成功读出这部分数据并返回。这个情景是最符合我们对Read的期待的了：Read将用Socket中的数据将我们传入的slice填满后返回：n = 10, err = nil</li>
+<li>有数据，socket关闭：第一次Read成功读出了所有的数据，当第二次Read时，由于client端 socket关闭，Read返回EOF error；</li>
+<li>无数据，socket关闭：Read直接返回EOF error</li>
+</ul>
+<h4 id="conn-Write"><a href="#conn-Write" class="headerlink" title="conn.Write"></a>conn.Write</h4><ul>
+<li>成功写：Write调用返回的n与预期要写入的数据长度相等，且error = nil；</li>
+<li>写阻塞：当发送方将对方的接收缓冲区以及自身的发送缓冲区写满后，Write就会阻塞；</li>
+<li>写入部分数据：Write操作存在写入部分数据的情况，没有按照预期的写入所有数据，则需要循环写入。</li>
+</ul>
+<h3 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h3><p>通过上面的描述，我们大致已经明白了为何会出现EOF了，其实就是readLoop在进行读的时候，检测到socket被关闭了。在HTTP1.1，我们默认都是采用了Keep-Alive的，也就是会启动长连接，当server端断掉了该socket后，我们的EOF就出来了。所以尽量避免该情况发生的话，直接这样<code>req.Close = true</code>。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://dpjeep.com/golangzhi-http-eofxiang-jie/">https://dpjeep.com/golangzhi-http-eofxiang-jie/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/04/10/php%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E6%B7%BB%E5%8A%A0%E6%88%96%E8%80%85%E6%9B%BF%E6%8D%A2%E5%86%85%E5%AE%B9%E7%9A%84img%E6%A0%87%E7%AD%BE%E7%9A%84alt%E5%B1%9E%E6%80%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/04/10/php%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E6%B7%BB%E5%8A%A0%E6%88%96%E8%80%85%E6%9B%BF%E6%8D%A2%E5%86%85%E5%AE%B9%E7%9A%84img%E6%A0%87%E7%AD%BE%E7%9A%84alt%E5%B1%9E%E6%80%A7/" class="post-title-link" itemprop="url">php实现自动添加或者替换内容的IMG标签的alt属性</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2020-04-10 19:04:20 / 修改时间：20:11:36" itemprop="dateCreated datePublished" datetime="2020-04-10T19:04:20+09:00">2020-04-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+すぐ目（め）の前（まえ）にあっても、手（て）に入れる事（こと）が出来（でき）ないものがある
+</blockquote>
+
+<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p>在cms 开发中，SEO优化 一般需要把文章标题 设置为 img 的alt title 属性，那么内容多个 img 时，手动过于繁琐。</p>
+<h3 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h3><p>根据以上需求，那么使用正则找内容的 img 标签 ，进行添加或者替换即可</p>
+<h3 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$str</span> =<span class="string">&#x27;&lt;div class=&quot;wkBody&quot;&gt;</span></span><br><span class="line"><span class="string">                        &lt;div id=&quot;panelSummary&quot; class=&quot;abstract&quot;&gt;</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">                            &lt;span class=&quot;font28&quot;&gt;摘要：&lt;/span&gt;</span></span><br><span class="line"><span class="string">                            作为阿根廷种植面积第二大的红葡萄品种，伯纳达的发展潜力越来越大，逐渐成为阿根廷的希望之星。</span></span><br><span class="line"><span class="string">                            &lt;div id=&quot;pnlSummaryEN&quot; class=&quot;abs-en&quot;&gt;</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">                                &lt;span class=&quot;font28&quot;&gt;ABSTRACT：&lt;/span&gt;</span></span><br><span class="line"><span class="string">                                Bonarda is Argentina’s second most widely planted red grape, which may make a big splash in the coming years.</span></span><br><span class="line"><span class="string">                            </span></span><br><span class="line"><span class="string">    &lt;/div&gt;</span></span><br><span class="line"><span class="string">                        </span></span><br><span class="line"><span class="string">&lt;/div&gt;</span></span><br><span class="line"><span class="string">                        &lt;p&gt;</span></span><br><span class="line"><span class="string">    说到阿根廷葡萄酒，大家最先想到的可能是著名的&lt;a href=&quot;http://www.wine-world.com/s/grape?q=马尔贝克&amp;amp;token=ba782698-e5be-44f8-8e54-09eac16f02a9&amp;amp;from=user&quot; target=&quot;_blank&quot;&gt;马尔贝克&lt;/a&gt;（Malbec），毫无疑问，这个品种在阿根廷占据着绝对的主导地位。但是，除了马尔贝克以外，阿根廷还有一个发展潜力巨大的葡萄品种，它是阿根廷的希望之星——阿根廷种植面积第二大的葡萄品种伯纳达（Bonarda）。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　&lt;strong&gt;　1. 特征&lt;/strong&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p style=&quot;text-align: center;&quot;&gt;</span></span><br><span class="line"><span class="string">    &lt;strong&gt;&lt;a target=&quot;_blank&quot; href=&quot;/culture/pic/22571cf7-ee6b-4176-8efb-e02e4e9dd947/0&quot;&gt;&lt;img alt=&quot;除了马尔贝克，阿根廷还有伯纳达&quot; title=&quot;除了马尔贝克，阿根廷还有伯纳达&quot; src=&quot;/UserFiles/images/01-bonarda-161114.jpg&quot; style=&quot;width: 375px; height: 500px;&quot;&gt;&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p style=&quot;text-align: center;&quot;&gt;</span></span><br><span class="line"><span class="string">    &lt;span style=&quot;font-size:12px;&quot;&gt;图片来源：Wine Folly&lt;/span&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p&gt;</span></span><br><span class="line"><span class="string">    伯纳达葡萄酒初闻时果香扑鼻，带有糖渍黑樱桃、新鲜蓝莓和李子的香气。紧接着，香气变得更加复杂，散发出紫罗兰、五香、多香果和牡丹的气息。最后，经过橡木桶的酒还会有轻微的雪茄盒、甜无花果和巧克力等烟熏气息。入口时，伯纳达葡萄酒最先表现的也是果味，酒体中等，鲜酸多汁，单宁较低，余味顺滑，十分易饮。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　　伯纳达与马尔贝克一样拥有饱满的颜色，但伯纳达的单宁含量更低，酸度更高、更多汁。如果你不喜欢使用橡木桶的葡萄酒，那你可能会青睐伯纳达葡萄酒，因为大多数伯纳达葡萄酒少用甚至不用橡木桶。另外，伯纳达葡萄酒的酒精度很少超过13.5%。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　&lt;strong&gt;　2. 配餐&lt;/strong&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p style=&quot;text-align: center;&quot;&gt;</span></span><br><span class="line"><span class="string">    &lt;strong&gt;&lt;a target=&quot;_blank&quot; href=&quot;/culture/pic/22571cf7-ee6b-4176-8efb-e02e4e9dd947/1&quot;&gt;&lt;img alt=&quot;除了马尔贝克，阿根廷还有伯纳达&quot; title=&quot;除了马尔贝克，阿根廷还有伯纳达&quot; src=&quot;/UserFiles/images/02-cedar-plank-salmon-161115.jpg&quot; style=&quot;width: 550px; height: 333px;&quot;&gt;&lt;/a&gt;&lt;div style=&quot;width: 550px;&quot; class=&quot;addivstyle&quot;&gt;&lt;div id=&quot;testdiv&quot; style=&quot;width: 550px;&quot; class=&quot;adseconddiv&quot;&gt;&lt;a href=&quot;http://mall.wine-world.com/activity/activitypromotion10&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;http://images.wine-world.com/images/wineworldlogo.jpg&quot; style=&quot;left:2px;top:2px;width:102px;position: absolute;border: none;background: none;&quot;&gt;&lt;span style=&quot;position: absolute;left:120px;right:85px;top:10px;color: #FFF;text-align:left;&quot;&gt;开抢50元代金券，醉惠中级庄盛宴&lt;br&gt;30款中级庄美酒任君挑选，领券后下单直减50元！&lt;/span&gt;&lt;span class=&quot;qukankanstyle&quot; style=&quot;top: 20px;&quot;&gt;去看看&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/strong&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p style=&quot;text-align: center;&quot;&gt;</span></span><br><span class="line"><span class="string">    &lt;span style=&quot;font-size:12px;&quot;&gt;图片来源：Wine Folly&lt;/span&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">&lt;p&gt;</span></span><br><span class="line"><span class="string">    伯纳达葡萄酒低单宁、高酸的特点使其可以与多种食物搭配，如鸡肉、牛肉、猪肉和鱼排等；而酒中轻微的棕色香料的风味也可以与菠萝、芒果、照烧汁等完美结合。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;strong&gt;　　3. 此伯纳达非彼伯纳达&lt;/strong&gt;&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　　阿根廷的伯纳达与其它地方的伯纳达很可能并不是同一个葡萄品种，也许阿根廷的伯纳达本不该被称为“伯纳达”。DNA检测表明阿根廷的伯纳达与法国萨瓦（Savoie）产区一种叫“Deuce Noir”的稀有葡萄是同一品种，跟纳帕谷（Napa Valley）古老葡萄园中的沙帮乐（Charbono）也是相同的品种。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　　实际上，真正的伯纳达葡萄指的是一组意大利葡萄，至少分为6种，其中最出名的是皮埃蒙特伯纳达（Bonarda Piemontese）。更容易引起混淆的是，意大利伦巴第（Lombardy）的奥尔特莱伯·帕韦斯（Oltrepo Pavese）产区所产的标有“伯纳达”的葡萄酒实际上是用科罗帝纳（Croatina）酿制而成的；&lt;a href=&quot;http://www.wine-world.com/s/area?q=皮埃蒙特&amp;amp;token=36d3dd49-745b-43f8-8bce-1b90ce3118b0&amp;amp;from=user&quot; target=&quot;_blank&quot;&gt;皮埃蒙特&lt;/a&gt;（Piedmont）有些酿酒师酿制的标有“伯纳达”的葡萄酒其实是用一种叫茹拉（Uva Rara）的葡萄酿制的。&lt;br&gt;</span></span><br><span class="line"><span class="string">    &lt;br&gt;</span></span><br><span class="line"><span class="string">    　　所以，如果下次有人纠正你对阿根廷伯纳达的叫法时，不妨问问他们以上这两种标有“伯纳达”的葡萄酒为什么是用别的葡萄酿制的，他们最好能说出它们之间的联系。&lt;span style=&quot;font-size:12px;&quot;&gt;（文/Christina）&lt;/span&gt;&lt;/p&gt;</span></span><br><span class="line"><span class="string">                        </span></span><br><span class="line"><span class="string">                        &lt;div id=&quot;pnlWineVersion2&quot;&gt;</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">                              &lt;p&gt;声明：本文版权属于“红酒世界网”，转载请保留版权信息。关注微信号“wine-world”，随时随地了解最新红酒资讯。&lt;/p&gt;</span></span><br><span class="line"><span class="string">                        </span></span><br><span class="line"><span class="string">&lt;/div&gt;</span></span><br><span class="line"><span class="string">                    &lt;/div&gt;&#x27;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="variable">$preg</span> = <span class="string">&quot;/&lt;img.*?src=[\&quot;|\&#x27;](.*?)[\&quot;|\&#x27;].*?&gt;/&quot;</span>;</span><br><span class="line"><span class="variable">$alt</span> = <span class="string">&quot;1234&quot;</span>;</span><br><span class="line"><span class="variable">$title</span> = <span class="string">&quot;123456&quot;</span>;</span><br><span class="line"><span class="variable">$img</span> = <span class="string">&#x27;&lt;img src=&quot;$1&quot; alt=&quot;&#x27;</span>.<span class="variable">$alt</span>.<span class="string">&#x27;&quot;title=&quot;&#x27;</span>.<span class="variable">$title</span>.<span class="string">&#x27;&quot;&gt;&#x27;</span>;</span><br><span class="line"><span class="variable">$data</span> = preg_replace(<span class="variable">$preg</span>,<span class="variable">$img</span>,<span class="variable">$str</span>);</span><br><span class="line">var_dump(<span class="variable">$data</span>);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000007505546">https://segmentfault.com/a/1190000007505546</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/23/golang%E5%AE%9A%E4%B9%89%E5%8D%95%E5%90%91%E9%93%BE%E8%A1%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/03/23/golang%E5%AE%9A%E4%B9%89%E5%8D%95%E5%90%91%E9%93%BE%E8%A1%A8/" class="post-title-link" itemprop="url">golang定义单向链表</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-03-23 21:22:09" itemprop="dateCreated datePublished" datetime="2020-03-23T21:22:09+09:00">2020-03-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:56:25" itemprop="dateModified" datetime="2021-09-10T13:56:25+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+醉后不知天在水，满船清梦压星河
+</blockquote>
+
+<h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p>单向链表属于链表的一种，也叫单链表，单向即是说它的链接方向是单向的，它由若干个节点组成，每个节点都包含下一个节点的指针。</p>
+<p>其实关于链表，大家完全可以把他和数组进行类比学习，只不过数组由于申请的空间必须是连续地，所以有的时候内存地址可能分配不出足够的内存空间。链表的的内存空间可以不连续的特性就可以解决数组的痛点了。</p>
+<p>对于链表与数组的使用场景就是，如果你的数据需要经常的查询，那么数组更快。如果你的数据需要频繁的插入删除，链表比数组更快。</p>
+<ul>
+<li>创建单链表时无需指定链表的长度，这个比起数组结构更加有优势，而数组纵使实现成动态数组也是需要指定一个更大的数组长度，而且要把原来的数组元素一个个复制到新数组中。</li>
+<li>单链表中的节点删除操作很方便，它可以直接改变指针指向来实现删除操作，而某些场景下数组的删除会导致移动剩下的元素。</li>
+<li>单链表中的元素访问需要通过顺序访问，即要通过遍历的方式来寻找元素，而数组则可以使用随机访问，这点算是单链表的缺点。</li>
+</ul>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="comment">// 节点的数据结构</span></span><br><span class="line"><span class="keyword">type</span> Node <span class="keyword">struct</span> &#123;</span><br><span class="line">    E <span class="keyword">int</span></span><br><span class="line">    Next *Node</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 链表的数据结构</span></span><br><span class="line"><span class="keyword">type</span> List <span class="keyword">struct</span> &#123;</span><br><span class="line">    dummyHead *Node</span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l List)</span> <span class="title">Head</span><span class="params">()</span> *<span class="title">Node</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> l.dummyHead</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l List)</span> <span class="title">Size</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> l.size</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 初始化一个节点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">initNode</span> <span class="params">(e <span class="keyword">int</span>)</span> *<span class="title">Node</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Node&#123;</span><br><span class="line">        E:e,</span><br><span class="line">        Next:<span class="literal">nil</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 初始化一个空链表</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">InitList</span> <span class="params">()</span> *<span class="title">List</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;List&#123;</span><br><span class="line">        dummyHead:initNode(<span class="number">0</span>),</span><br><span class="line">        size:<span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然代码注释里写的是初始化一个空链表，却在里面实实在在地初始化了一个节点出来。这种技术叫做虚拟头结点，他的具体好处如下：</p>
+<blockquote>
+<p>防止单链表是空的而设的，当链表为空的时候,带头结点的头指针就指向头结点。如果当链表为空的时候,单链表没有带头结点,那么它的头指针就为 NULL。</p>
+</blockquote>
+<blockquote>
+<p>是为了方便单链表的特殊操作，插入在表头或者删除第一个结点。这样就保持了单链表操作的统一性。</p>
+</blockquote>
+<blockquote>
+<p>单链表加上头结点之后，无论单链表是否为空，头指针始终指向头结点，因此空表和非空表的处理也统一了，方便了单链表的操作，也减少了程序的复杂性和出现 bug 的机会。</p>
+</blockquote>
+<blockquote>
+<p>对单链表的多数操作应明确对哪个结点以及该结点的前驱。不带头结点的链表对首元结点、中间结点分别处理等；而带头结点的链表因为有头结点，首元结点、中间结点的操作相同，从而减少分支，使算法变得简单，流程清晰。</p>
+</blockquote>
+<h3 id="基本操作"><a href="#基本操作" class="headerlink" title="基本操作"></a>基本操作</h3><ul>
+<li>插入操作，其中又分为往一个索引对应的位置插入，往头结点后插入，在链表尾部插入三种插入方法。</li>
+<li>删除节点，其中又分为删除一个索引位置的节点，删除一个值对应的节点，删除第一个节点，删除尾节点。</li>
+<li>查询节点，同样分为查询某个索引值的节点，查询头部，查询尾部。</li>
+<li>修改节点，修改某个索引值对应的节点。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 判断链表是否为空</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> this.size == <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 插入部分</span></span><br><span class="line"><span class="comment">// 在链表的第index索引个元素后插入元素,索引从0开始</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddIndex</span> <span class="params">(index,e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能插入了&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    prev := this.dummyHead</span><br><span class="line">    node := initNode(e)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        prev = prev.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 这里的步骤一定不能反过来，思考一下为什么</span></span><br><span class="line">    node.Next = prev.Next</span><br><span class="line">    prev.Next = node</span><br><span class="line">    this.size++</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表头添加元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddFirst</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    this.AddIndex(<span class="number">0</span>,e)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表尾部添加节点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddLast</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    this.AddIndex(this.size,e)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 查询部分</span></span><br><span class="line"><span class="comment">// 在链表中查询是否包括元素e</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Contains</span> <span class="params">(e <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> cur!=<span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> cur.E == e&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表中查询第index个元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Get</span> <span class="params">(index <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能查询&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cur.E</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">GetFirst</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Get(<span class="number">0</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">GetLast</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Get(this.size<span class="number">-1</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Node <span class="keyword">struct</span> &#123;</span><br><span class="line">    E <span class="keyword">int</span></span><br><span class="line">    Next *Node</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> List <span class="keyword">struct</span> &#123;</span><br><span class="line">    dummyHead *Node</span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l List)</span> <span class="title">Head</span><span class="params">()</span> *<span class="title">Node</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> l.dummyHead</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l List)</span> <span class="title">Size</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> l.size</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">initNode</span> <span class="params">(e <span class="keyword">int</span>)</span> *<span class="title">Node</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Node&#123;</span><br><span class="line">        E:e,</span><br><span class="line">        Next:<span class="literal">nil</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">InitList</span> <span class="params">()</span> *<span class="title">List</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;List&#123;</span><br><span class="line">        dummyHead:initNode(<span class="number">0</span>),</span><br><span class="line">        size:<span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> this.size == <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表的第index索引个元素后插入元素,索引从0开始</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddIndex</span> <span class="params">(index,e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能插入了&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    prev := this.dummyHead</span><br><span class="line">    node := initNode(e)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        prev = prev.Next</span><br><span class="line">    &#125;</span><br><span class="line">    node.Next = prev.Next</span><br><span class="line">    prev.Next = node</span><br><span class="line">    this.size++</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表头添加元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddFirst</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    this.AddIndex(<span class="number">0</span>,e)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表尾部添加节点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">AddLast</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    this.AddIndex(this.size,e)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表中查询第index个元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Get</span> <span class="params">(index <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能查询&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cur.E</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">GetFirst</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Get(<span class="number">0</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">GetLast</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Get(this.size<span class="number">-1</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表index个位置中放入元素e</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Set</span> <span class="params">(index,e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能置入&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    cur.E = e</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表中查询是否包括元素e</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Contains</span> <span class="params">(e <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> cur!=<span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> cur.E == e&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表中删除元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">Remove</span> <span class="params">(index <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt; this.size || index &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;索引越界，不能删除&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    prev := this.dummyHead</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;index;i++ &#123;</span><br><span class="line">        prev = prev.Next</span><br><span class="line">    &#125;</span><br><span class="line">    retNode := prev.Next</span><br><span class="line">    prev.Next = retNode.Next</span><br><span class="line">    this.size--</span><br><span class="line">    <span class="keyword">return</span> retNode.E</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">RemoveFirst</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Remove(<span class="number">0</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">RemoveLast</span> <span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> this.Remove(this.size<span class="number">-1</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 删除元素E</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">RemoveElement</span> <span class="params">(e <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    prev := this.dummyHead</span><br><span class="line">    <span class="keyword">for</span> prev.Next != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> prev.E == e &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        prev = prev.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> prev.Next != <span class="literal">nil</span> &#123;</span><br><span class="line">        DelNode := prev.Next</span><br><span class="line">        prev.Next = DelNode.Next</span><br><span class="line">        DelNode = <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在Golang中，如果我们想对自建数据结构自定义在Println的时候打印出什么结果</span></span><br><span class="line"><span class="comment">// 就可以使用这种方式去自己构建打印的字符串格式</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span> <span class="title">String</span> <span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> builder strings.Builder</span><br><span class="line">    cur := this.dummyHead.Next</span><br><span class="line">    <span class="keyword">for</span> cur != <span class="literal">nil</span> &#123;</span><br><span class="line">        fmt.Fprintf(&amp;builder,<span class="string">&quot;%d -&gt; &quot;</span>,cur.E)</span><br><span class="line">        cur = cur.Next</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Fprintf(&amp;builder,<span class="string">&quot;NULL&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> builder.String()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    list := InitList()</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">5</span> ; i++  &#123;</span><br><span class="line">        list.AddLast(i)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(list)</span><br><span class="line">    fmt.Println(list.Contains(<span class="number">0</span>))</span><br><span class="line">    fmt.Println(list.Get(<span class="number">3</span>))</span><br><span class="line">    fmt.Println(list.RemoveLast())</span><br><span class="line">    fmt.Println(list.GetFirst())</span><br><span class="line">    <span class="comment">// 其他功能可以自行测试。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="链表的应用"><a href="#链表的应用" class="headerlink" title="链表的应用"></a>链表的应用</h3><h4 id="逆序一个链表"><a href="#逆序一个链表" class="headerlink" title="逆序一个链表"></a>逆序一个链表</h4><p>给定一个带头结点的单链表,请将其逆序。即如果单链表原来为 head -&gt; 1 -&gt; 2 -&gt; 3 -&gt; 4 -&gt; 5 -&gt; 6 -&gt; 7 。则逆序后变为 head -&gt; 7 -&gt; 6 -&gt; 5 -&gt; 4- &gt; 3 -&gt; 2 -&gt; 1。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在这个函数前需要将list.go的代码拷贝到这里</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *List)</span><span class="title">Reverse</span><span class="params">()</span></span>  &#123;</span><br><span class="line">    <span class="keyword">var</span> pre *Node</span><br><span class="line">    <span class="keyword">var</span> cur *Node</span><br><span class="line">    next := this.Head().Next</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> next != <span class="literal">nil</span> &#123;</span><br><span class="line">        cur = next.Next</span><br><span class="line">        next.Next = pre</span><br><span class="line">        pre = next</span><br><span class="line">        next = cur</span><br><span class="line">    &#125;</span><br><span class="line">    this.Head().Next = pre</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    list := InitList()</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">5</span> ; i++  &#123;</span><br><span class="line">        list.AddFirst(i)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(list)</span><br><span class="line">    list.Reverse()</span><br><span class="line">    fmt.Println(list)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="计算两个单链表所代表的的代数之和"><a href="#计算两个单链表所代表的的代数之和" class="headerlink" title="计算两个单链表所代表的的代数之和"></a>计算两个单链表所代表的的代数之和</h4><p>给定两个单链表,链表的每个结点代表一位数, 计算两个数的和。例如 : 输入链表 (3-&gt;1-&gt;5) 和链表 (5-&gt;9-&gt;2) ，输出: 8-&gt;0-&gt;8 ，即 513 + 295 = 808 ，注意个位数在链表头。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在这个函数前需要将list.go的代码拷贝到这里</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 把两个用链表表示的整数相加</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddTwoList</span><span class="params">(head1,head2 *Node)</span> *<span class="title">List</span></span> &#123;</span><br><span class="line">    <span class="comment">// 初始化一个新链表</span></span><br><span class="line">    newHead := InitList()</span><br><span class="line">    <span class="comment">// 因为有dummyHead，所以head的下一个节点才是真真正的头结点</span></span><br><span class="line">    p1 := head1.Next</span><br><span class="line">    p2 := head2.Next</span><br><span class="line">    carry := <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> p1 != <span class="literal">nil</span> || p2 != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="comment">// 如果p1到头就只需要添加p2，反之同理</span></span><br><span class="line">        <span class="keyword">if</span> p1 == <span class="literal">nil</span> &#123;</span><br><span class="line">            newHead.AddLast(p2.E+ + carry)</span><br><span class="line">            p2 = p2.Next</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> p2 == <span class="literal">nil</span> &#123;</span><br><span class="line">            newHead.AddLast(p1.E + carry)</span><br><span class="line">            p1 = p1.Next</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 计算本位的值</span></span><br><span class="line">        temp := (p1.E + p2.E + carry )%<span class="number">10</span></span><br><span class="line">        newHead.AddLast(temp)</span><br><span class="line">        <span class="comment">// 记录进位</span></span><br><span class="line">        carry = (p1.E + p2.E + carry )/<span class="number">10</span></span><br><span class="line">        p1 = p1.Next</span><br><span class="line">        p2 = p2.Next</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newHead</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试代码和测试结果</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    list := InitList()</span><br><span class="line">    list2 := InitList()</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">6</span> ; i++  &#123;</span><br><span class="line">        list.AddFirst(i)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">6</span> ; i++  &#123;</span><br><span class="line">        list2.AddFirst(i+<span class="number">1</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(list)</span><br><span class="line">    fmt.Println(list2)</span><br><span class="line">    newlist := AddTwoList(list.Head(),list2.Head())</span><br><span class="line">    fmt.Println(newlist)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/23/golang%E5%AE%9A%E4%B9%89%E9%98%9F%E5%88%97%E5%92%8C%E5%BE%AA%E7%8E%AF%E9%98%9F%E5%88%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/03/23/golang%E5%AE%9A%E4%B9%89%E9%98%9F%E5%88%97%E5%92%8C%E5%BE%AA%E7%8E%AF%E9%98%9F%E5%88%97/" class="post-title-link" itemprop="url">golang定义队列和循环队列</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-03-23 21:12:36" itemprop="dateCreated datePublished" datetime="2020-03-23T21:12:36+09:00">2020-03-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:56:16" itemprop="dateModified" datetime="2021-09-10T13:56:16+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+忽忆故人今总老。贪梦好。茫然忘了邯郸道。
+</blockquote>
+
+<h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p>队列是一种特殊的线性表，特殊之处在于它只允许在表的前端（front）进行删除操作，而在表的后端（rear）进行插入操作，和栈一样，队列是一种操作受限制的线性表。进行插入操作的端称为队尾，进行删除操作的端称为队头。</p>
+<p>队列的先进先出，其实就对应了我们生活中的先到先得。比如你在食堂打饭，肯定是队头的人先打饭。还有在银行的叫号系统，那其实也是一个队列。</p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>队列肯定要装不只一个对象，所以我们需要一个切片作为容器。并且，我们还需要两个标记位，一个指向队列的头 front ，一个指向队列的尾 rear 。并且我们也需要一个队列的容量 size 。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Queue <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 队首标记位</span></span><br><span class="line">    front <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 队尾标记位</span></span><br><span class="line">    rear <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewQueue</span><span class="params">(size <span class="keyword">int</span>)</span> *<span class="title">Queue</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Queue&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">int</span>,size),</span><br><span class="line">        <span class="comment">// 在队列中已经装了多少元素我们可以用size表示</span></span><br><span class="line">        <span class="comment">// 想一想为什么不能用rear-front表示队列当前长度呢？</span></span><br><span class="line">        front:       <span class="number">0</span>,</span><br><span class="line">        rear:        <span class="number">0</span>,</span><br><span class="line">        size:        <span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="队列的基本操作"><a href="#队列的基本操作" class="headerlink" title="队列的基本操作"></a>队列的基本操作</h3><p>队列的基本操作包括如下几种</p>
+<ul>
+<li>初始化队列：InitQueue（size） 操作结果：初始化一个空队列。</li>
+<li>判断队列是否为空：IsEmpty（） 操作结果：若队列为空则返回 true，否则返回 false。</li>
+<li>判断队列是否已满：IsFull（）。 操作结果：若队列为满则返回 true，否则返回 false。</li>
+<li>入队操作：EnQueue（data） 操作结果：在队列的队尾插入 data。</li>
+<li>出队操作：DeQueue（） 操作结果：将队列的队头元素出队，并返回出队元素的值。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Queue <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 队首标记位</span></span><br><span class="line">    front <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 队尾标记位</span></span><br><span class="line">    rear <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewQueue</span><span class="params">(size <span class="keyword">int</span>)</span> *<span class="title">Queue</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Queue&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">int</span>,size),</span><br><span class="line">        <span class="comment">// 在队列中已经装了多少元素我们可以用size表示</span></span><br><span class="line">        <span class="comment">// 想一想为什么不用 rear - front 表示呢</span></span><br><span class="line">        front:       <span class="number">0</span>,</span><br><span class="line">        rear:         <span class="number">0</span>,</span><br><span class="line">        size:           <span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 队列是否为空</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *Queue)</span> <span class="title">IsEmpty</span> <span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> q.size == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *Queue)</span> <span class="title">IsFull</span> <span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> q.size == <span class="built_in">len</span>(q.container) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 新元素入队</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *Queue)</span> <span class="title">EnQueue</span> <span class="params">(a <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> q.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    q.container[q.rear] = a</span><br><span class="line">    q.rear++</span><br><span class="line">    q.size++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 队首元素出队</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *Queue)</span> <span class="title">Dequeue</span> <span class="params">()</span> <span class="params">(<span class="keyword">bool</span>,<span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> q.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>,<span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">    ret := q.container[q.front]</span><br><span class="line">    q.front++</span><br><span class="line">    q.size--</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>,ret</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    queue := NewQueue(<span class="number">10</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">5</span> ; i++ &#123;</span><br><span class="line">        queue.EnQueue(i)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">6</span>; i++ &#123;</span><br><span class="line">        fmt.Println(queue.Dequeue())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="循环队列"><a href="#循环队列" class="headerlink" title="循环队列"></a>循环队列</h3><p>我们在每次让元素出队的时候，队列的头指针是不断的在往后移的。总有一天，队头指向的索引值比我们的容器长度还要大，那种情况出现的时候要怎么办呢？<br>既然在使用过程中，front 和 rear 都只能往后移导致有用的空间被浪费了。那么能不能去做一个可以再利用，不浪费一点空间的队列呢？</p>
+<p>答案就是我们可以做一个循环队列。循环队列，顾名思义，它长得像一个环。原本数组是有头有尾的，是一条直线。现在我们把首尾相连，扳成了一个环。</p>
+<h4 id="判断队列的状态"><a href="#判断队列的状态" class="headerlink" title="判断队列的状态"></a>判断队列的状态</h4><p>用 size 表示队列的实际长度，而不用 rear - front 呢？其实就是为了循环队列。各位想一想，在循环时，rear 和 front 是说不清谁大谁小的，有可能减出一个负数。而我们使用 size 就不会出现这种问题，因为只有入队操作才会让 size + 1， 也只有出队操作能让 size - 1。所以这里我们的判断队列状态的函数可以直接不变就拿来使用。解决了循环队列中的最难点。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** 检查循环队列是否为空. */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.size == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 检查循环队列是否为满 */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">IsFull</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.size == <span class="built_in">len</span>(this.arr) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="计算索引"><a href="#计算索引" class="headerlink" title="计算索引"></a>计算索引</h3><p>解决了判断状态问题，我们可以继续解决索引值的计算问题了。首先是入队操作，在入队时。我们只要对 rear 先对队列的容量取余，计算出的索引值就是我们要插入的位置。</p>
+<p>对于出队操作，我们要出队的元素是 front 对队列容量取余所指向的元素，取出之后下一个 front 的值需要先对队列的容量取余再加 1。 到这里我们就可以写出新的队列的完整代码了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Queue <span class="keyword">struct</span> &#123;</span><br><span class="line">    container   []<span class="keyword">int</span></span><br><span class="line">    front <span class="keyword">int</span></span><br><span class="line">    rear  <span class="keyword">int</span></span><br><span class="line">    size  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewQueue</span> <span class="params">(k <span class="keyword">int</span>)</span> *<span class="title">Queue</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Queue&#123;</span><br><span class="line">        <span class="built_in">make</span>([]<span class="keyword">int</span>, k),</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">EnQueue</span><span class="params">(value <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.container == <span class="literal">nil</span> || this.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    this.container[this.rear%<span class="built_in">len</span>(this.container)] = value</span><br><span class="line">    this.rear = this.rear%<span class="built_in">len</span>(this.container) + <span class="number">1</span></span><br><span class="line">    this.size++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">DeQueue</span><span class="params">()</span> <span class="params">(<span class="keyword">bool</span>,<span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.container == <span class="literal">nil</span> || this.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>,<span class="number">0</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ret := this.container[this.front%<span class="built_in">len</span>(this.container)]</span><br><span class="line">        this.front = this.front%<span class="built_in">len</span>(this.container) + <span class="number">1</span></span><br><span class="line">        this.size--</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>,ret</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.size == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">IsFull</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.size == <span class="built_in">len</span>(this.container) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    queue := NewQueue(<span class="number">5</span>)</span><br><span class="line">    <span class="comment">// 循环3次，每次添加5个元素，再出队三个元素</span></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">3</span>; i++&#123;</span><br><span class="line">        <span class="keyword">for</span> j:=<span class="number">0</span>;j&lt;<span class="number">5</span>;j++ &#123;</span><br><span class="line">            queue.EnQueue(j)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> k:=<span class="number">0</span>;k&lt;<span class="number">3</span>;k++ &#123;</span><br><span class="line">            fmt.Println(queue.DeQueue())</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/23/golang%E5%AE%9A%E4%B9%89%E6%A0%88%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/03/23/golang%E5%AE%9A%E4%B9%89%E6%A0%88%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">golang定义栈的数据结构</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-03-23 21:03:44" itemprop="dateCreated datePublished" datetime="2020-03-23T21:03:44+09:00">2020-03-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:58:30" itemprop="dateModified" datetime="2021-09-10T13:58:30+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+东风夜放花千树，更吹落，星如雨。
+</blockquote>
+
+<h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p>栈是一种操作受限制的线性表，将允许进行插入、删除的一端称为栈顶，另一端称为栈底。看到这里你可能会觉得有点绕，其实数据结构很多的定义都很抽象，这是很正常的，下面我将类比一个生活中的常见实例帮助大家理解。</p>
+<p>我们在日常生活中洗盘子的时候，摞起来的盘子就是一个典型的栈结构。不管取还是放，总是要放在盘子堆的最上面操作。如果你想从一堆盘子的中间强行取一个盘子，那就有可能酿成大祸。</p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>我们在日常生活中，一摞盘子肯定有很多个而且是连续的，所以我们首先需要一个切片，并且我们日常生活中的盘子是不能无限的摞的，这点在计算机里也是同样的，计算机里也会有 Stack Overflow 的问题。 所以我们还需要一个容量的限制元素。 并且我们还需要频繁的对栈顶元素进行操作，所以我们还需要一个标记位 top 来标记栈顶元素的索引。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Stack <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 栈顶标记位</span></span><br><span class="line">    top <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStack</span><span class="params">(size <span class="keyword">int</span>)</span> *<span class="title">Stack</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Stack&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">int</span>,size),</span><br><span class="line">        <span class="comment">// 栈顶指针初始可以指向-1，也可以指向0，想一想为什么。</span></span><br><span class="line">        top:       <span class="number">0</span>,</span><br><span class="line">        size:      size,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初始化时要注意，我们这里返回的是一个 Stack 的指针，引用传递在系统中的开销比较小</p>
+<h3 id="栈的基本操作"><a href="#栈的基本操作" class="headerlink" title="栈的基本操作"></a>栈的基本操作</h3><p>对于一个栈来说，其基本操作分为以下四种。</p>
+<ul>
+<li>Push(e E) , 将一个数据类型为 E 的元素 e 放到栈顶。</li>
+<li>Pop() , 将栈顶元素取出。</li>
+<li>IsFul() , 栈是否满了。</li>
+<li>IsEmpty() , 栈是否空了。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Stack <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 栈顶标记位</span></span><br><span class="line">    top <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStack</span><span class="params">(size <span class="keyword">int</span>)</span> <span class="title">Stack</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Stack&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">int</span>, size),</span><br><span class="line">        top:       <span class="number">0</span>,</span><br><span class="line">        size:      size,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Push</span><span class="params">(e <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 把盘子摞上去</span></span><br><span class="line">    s.container[s.top] = e</span><br><span class="line">    <span class="comment">// 下一个能摞盘子的位置</span></span><br><span class="line">    s.top++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Pop</span><span class="params">()</span> <span class="params">(flag <span class="keyword">bool</span>, ret <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="comment">// 如果栈空了，你就无法拿到新盘子，所以flag此时为false</span></span><br><span class="line">    <span class="keyword">if</span> s.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>, ret</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 取出盘子</span></span><br><span class="line">    ret = s.container[s.top<span class="number">-1</span>]</span><br><span class="line">    <span class="comment">// 下一个能取盘子的位置</span></span><br><span class="line">    s.top--</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>, ret</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsFull</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == s.size &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    stack := NewStack(<span class="number">3</span>)</span><br><span class="line">    <span class="comment">// 先测试栈为空的时候能否Pop</span></span><br><span class="line">    fmt.Println(stack.Pop())</span><br><span class="line">    <span class="comment">// 测试Push是否正常</span></span><br><span class="line">    stack.Push(<span class="number">1</span>)</span><br><span class="line">    stack.Push(<span class="number">2</span>)</span><br><span class="line">    stack.Push(<span class="number">3</span>)</span><br><span class="line">    <span class="comment">// 如果栈为正常的，这里Pop打印顺序应该是3,2,1</span></span><br><span class="line">    fmt.Println(stack.Pop())</span><br><span class="line">    fmt.Println(stack.Pop())</span><br><span class="line">    fmt.Println(stack.Pop())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="栈的常见应用"><a href="#栈的常见应用" class="headerlink" title="栈的常见应用"></a>栈的常见应用</h3><h4 id="浏览器中的前进后退"><a href="#浏览器中的前进后退" class="headerlink" title="浏览器中的前进后退"></a>浏览器中的前进后退</h4><p>假设你现在是 N 年前的 Chrome 浏览器工程师， 你现在很苦恼，有的网页在打开下一个页面后就回不去上一级了，你现在急迫的想要一个后退的功能，请问要怎么样实现呢？</p>
+<p>仔细分析之后不难发现，所谓的后退，撤销等操作，其实就是一个栈的 Pop 操作，我们每次点击的网址, 或者进行的操作，都是被程序 Push 到了一个栈中，所以一旦我们点击撤销或后退时，总是可以返回我们最近一次的操作。这就是栈的最广泛的应用。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Stack <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">string</span></span><br><span class="line">    <span class="comment">// 栈顶标记位</span></span><br><span class="line">    top <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStack</span><span class="params">(size <span class="keyword">int</span>)</span> <span class="title">Stack</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Stack&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">string</span>, size),</span><br><span class="line">        top:       <span class="number">0</span>,</span><br><span class="line">        size:      size,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Push</span><span class="params">(e <span class="keyword">string</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    s.container[s.top] = e</span><br><span class="line">    s.top++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Pop</span><span class="params">()</span> <span class="params">(flag <span class="keyword">bool</span>, ret <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    <span class="comment">// 如果栈是空的，那么就不能继续 Pop 了</span></span><br><span class="line">    <span class="keyword">if</span> s.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>, ret</span><br><span class="line">    &#125;</span><br><span class="line">    ret = s.container[s.top<span class="number">-1</span>]</span><br><span class="line">    s.top--</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>, ret</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsFull</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == s.size &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    back := NewStack(<span class="number">3</span>)</span><br><span class="line">    <span class="comment">// 模拟每次点击网页时，浏览器会自push你的网址到栈中</span></span><br><span class="line">    back.Push(<span class="string">&quot;www.baidu.com&quot;</span>)</span><br><span class="line">    back.Push(<span class="string">&quot;www.bing.com&quot;</span>)</span><br><span class="line">    back.Push(<span class="string">&quot;www.goole.com&quot;</span>)</span><br><span class="line">    <span class="comment">// 每次点击后退时，就相当于是从栈中Pop了一个网址</span></span><br><span class="line">    fmt.Println(back.Pop())</span><br><span class="line">    fmt.Println(back.Pop())</span><br><span class="line">    fmt.Println(back.Pop())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="括号匹配"><a href="#括号匹配" class="headerlink" title="括号匹配"></a>括号匹配</h4><p>在现代的 IDE 中，我们的编辑器环境是十分智能的,我少打了一个括号，IDE 就自动给我画了一条红线。是不是非常的神奇。其实这个功能也是用栈实现的。下面来说一下思路：<br>若遇到左括号入栈，遇到右括号时将栈顶左括号出栈，则遍历完所有括号后 stack 仍然为空；如果遍历之后 stack 不为空，那么说明有多余的左括号。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Stack <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">byte</span></span><br><span class="line">    <span class="comment">// 栈顶标记位</span></span><br><span class="line">    top <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStack</span><span class="params">(size <span class="keyword">int</span>)</span> <span class="title">Stack</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Stack&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">byte</span>,size),</span><br><span class="line">        top:       <span class="number">0</span>,</span><br><span class="line">        size:      size,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Push</span> <span class="params">(e <span class="keyword">byte</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    s.container[s.top] = e</span><br><span class="line">    s.top++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">Pop</span> <span class="params">()</span> <span class="params">(flag <span class="keyword">bool</span>,ret <span class="keyword">byte</span>)</span></span> &#123;</span><br><span class="line">    <span class="comment">// 如果栈是空的，那么就不能继续 Pop 了</span></span><br><span class="line">    <span class="keyword">if</span> s.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>,ret</span><br><span class="line">    &#125;</span><br><span class="line">    ret = s.container[s.top<span class="number">-1</span>]</span><br><span class="line">    s.top--</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>,ret</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsEmpty</span> <span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Stack)</span> <span class="title">IsFull</span> <span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> s.top == s.size &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IsValid</span><span class="params">(s <span class="keyword">string</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    stack := NewStack(<span class="number">100</span>)</span><br><span class="line">    <span class="comment">// 遍历括号字符串</span></span><br><span class="line">    <span class="keyword">for</span> _,v := <span class="keyword">range</span> s &#123;</span><br><span class="line">        <span class="keyword">if</span> v == <span class="string">&#x27;(&#x27;</span> &#123;</span><br><span class="line">            <span class="comment">// 由于golang中的字符串默认是unicode编码，所以我们要做一个强制类型转换</span></span><br><span class="line">            stack.Push(<span class="keyword">byte</span>(v))</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> v == <span class="string">&#x27;)&#x27;</span> &#123;</span><br><span class="line">            <span class="comment">// 如果flag不为true，说明栈已经到底了，可以直返回false</span></span><br><span class="line">            <span class="keyword">if</span> flag,top := stack.Pop(); flag == <span class="literal">true</span> &amp;&amp;top == <span class="string">&#x27;(&#x27;</span> &#123;</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 字符串遍历完后如果栈也空了，说明括号匹配</span></span><br><span class="line">    <span class="keyword">if</span> stack.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果栈不空，说明栈里还有多余的左括号</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    test1 := <span class="string">&quot;()()())&quot;</span></span><br><span class="line">    test2 := <span class="string">&quot;((()&quot;</span></span><br><span class="line">    test3 := <span class="string">&quot;()()()()&quot;</span></span><br><span class="line">    fmt.Println(IsValid(test1))</span><br><span class="line">    fmt.Println(IsValid(test2))</span><br><span class="line">    fmt.Println(IsValid(test3))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -699,516 +1168,6 @@
 
 <p>The final result worked as expected.</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> build -o main main.<span class="keyword">go</span></span><br><span class="line">./main</span><br><span class="line">Sending email to Dirk with content Welcome Email user!</span><br><span class="line">Sending SMS to Justin with content Welcome SMS user!</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/01/go%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/03/01/go%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91/" class="post-title-link" itemprop="url">go如何进行交叉编译</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-03-01 11:04:33" itemprop="dateCreated datePublished" datetime="2020-03-01T11:04:33+09:00">2020-03-01</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:55:17" itemprop="dateModified" datetime="2021-09-10T13:55:17+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你爱上小溪 是因为没有见过大海 我已见过银河 但我只爱一颗星
-</blockquote>
-
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>golang如何在一个平台编译另外一个平台可以执行的文件。比如在mac上编译Windows和linux可以执行的文件。那么我们的问题就设定成：如何在mac上编译64位linux的可执行文件。</p>
-<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>golang的交叉编译要保证golang版本在1.5以上，本解决方案实例代码1.9版本执行的。</p>
-<p>hello.go</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;hello, world\n&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在mac上编译64位linux的命令编译命令</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GOOS=linux GOARCH=amd64 <span class="keyword">go</span> build hello.<span class="keyword">go</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="参数解析"><a href="#参数解析" class="headerlink" title="参数解析"></a>参数解析</h3><p>这里用到了两个变量：</p>
-<ul>
-<li>GOOS：目标操作系统</li>
-<li>GOARCH：目标操作系统的架构</li>
-</ul>
-<h3 id="扩展阅读"><a href="#扩展阅读" class="headerlink" title="扩展阅读"></a>扩展阅读</h3><p>在网络上的诸多教程中可能会看到下面的编译命令</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CGO_ENABLED=<span class="number">0</span> GOOS=linux GOARCH=amd64 <span class="keyword">go</span> build hello.<span class="keyword">go</span></span><br></pre></td></tr></table></figure>
-<p>其中CGO_ENABLED=0的意思是使用C语言版本的GO编译器，参数配置为0的时候就关闭C语言版本的编译器了。自从golang1.5以后go就使用go语言编译器进行编译了。在golang1.9当中没有使用CGO_ENABLED参数发现依然可以正常编译。当然使用了也可以正常编译。比如把CGO_ENABLED参数设置成1，即在编译的过程当中使用CGO编译器，我发现依然是可以正常编译的。</p>
-<p>实际上如果在go当中使用了C的库，比如import “C”默认使用go build的时候就会启动CGO编译器，当然我们可以使用CGO_ENABLED=0来控制go build是否使用CGO编译器。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/02/21/how-to-add-a-panel-to-chrome-dev-tools/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/02/21/how-to-add-a-panel-to-chrome-dev-tools/" class="post-title-link" itemprop="url">How-to-add-a-panel-to-Chrome-Dev-Tools</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-02-21 11:26:16" itemprop="dateCreated datePublished" datetime="2020-02-21T11:26:16+09:00">2020-02-21</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:29:43" itemprop="dateModified" datetime="2021-09-10T13:29:43+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-她曾那么可爱。然后一切都变了。
-</blockquote>
-
-<p>I’m a big fan of the Chrome Extension API. It is a simple (and cool) way to extend my favorite browser using HTML and JavaScript. One of the features I’ve been excited about for a while now is the DevTools API. This has been in “experimental” status for a while but is now (mostly) available in the main release.</p>
-<p>The DevTools API allows you to integrate extensions directly into your DevTools. There are multiple samples of this API. But there aren’t any samples that detail how to create panels. There is documentation for creating panels, but it wasn’t clear how to use that API in a real extension. I dug at it for a while and finally figured it out. What follows is what I had to do to make panel creation work. It may not be the right way, but it worked. First, you must set a devtools_page value in your manifest.json. Here is my sample manifest.</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;ColdFire&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;version&quot;</span>: <span class="string">&quot;1.0.2&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;manifest_version&quot;</span>: <span class="number">2</span>,</span><br><span class="line">  <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Adds ColdFire support.&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;devtools_page&quot;</span>: <span class="string">&quot;devtools.html&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;permissions&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;tabs&quot;</span>,</span><br><span class="line">    <span class="string">&quot;http://*/*&quot;</span>,</span><br><span class="line">    <span class="string">&quot;https://*/*&quot;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>the critical part here is devtools_page. You specify a HTML file that will be executed every time the devtools UI is opened. Here is my HTML file:</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;devtools.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>Not much, right? As far as I can tell, the actual HTML for this file is never going to be rendered - anywhere. Instead, the entire point of this file is to load a JavaScript script. If so, it would be nice if Google would let us simply point devtools_page to a JavaScript script instead. Now let’s look at the script.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">&quot;hello from devtools&quot;</span>);</span><br><span class="line">chrome.devtools.panels.create(<span class="string">&quot;ColdFire&quot;</span>,</span><br><span class="line">                              <span class="string">&quot;coldfusion10.png&quot;</span>,</span><br><span class="line">                              <span class="string">&quot;panel.html&quot;</span>,</span><br><span class="line">                              <span class="function"><span class="keyword">function</span>(<span class="params">panel</span>) </span>&#123; <span class="built_in">console</span>.log(<span class="string">&quot;hello from callback&quot;</span>); &#125;);</span><br></pre></td></tr></table></figure>
-
-<p>The main part of this script - for now - is just one line. It runs the panels.create API to define a new panel. The first argument is the title. The second is the icon. The third is the HTML file for the panel. Finally, the last argument is a callback to execute when the panel is created. There is no documentation on what size the icon should be. It seems to be 32x32.</p>
-<p>Now let’s look at panel.html. I’ve only just begun development so for right now it is pretty simple.</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;panel.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h2</span>&gt;</span>ColdFire<span class="tag">&lt;/<span class="name">h2</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>And last but not least, the JavaScript file loaded by the panel:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">&quot;panel.js&quot;</span>);</span><br></pre></td></tr></table></figure>
-<p>So - what about all those console messages? As I tried to get things working, I used console messages all over the place so I could - hopefully - see what was going on. I had very little luck with this. I’ve blogged before about how to use console with Chrome Extensions, but that tip only works when you have a background script. My test extension did not. What finally worked was this:</p>
-<p>Click the button that detaches Chrome Dev Tools<br>With the Chrome Dev Tools in its own window and currently focused, use the keyboard combo to open Chrome Dev Tools<br>This opens a second Chrome Dev Tools and I could see all my log messages there.</p>
-<p>I hope this helps. As I said, I just got this working so I probably have a lot more to learn.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.raymondcamden.com/2012/07/15/How-to-add-a-panel-to-Chrome-Dev-Tools">https://www.raymondcamden.com/2012/07/15/How-to-add-a-panel-to-Chrome-Dev-Tools</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/17/golang%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84restfulapi/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/01/17/golang%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84restfulapi/" class="post-title-link" itemprop="url">golang创建一个简单的restfulapi</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-01-17 19:03:25" itemprop="dateCreated datePublished" datetime="2020-01-17T19:03:25+09:00">2020-01-17</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:59:42" itemprop="dateModified" datetime="2021-09-10T13:59:42+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你如今的气质里，藏着你走过的路，读过的书，和爱过的人。
-</blockquote>
-
-<p>Webからエンタープライズアプリケーションまで、RESTfulというアーキテクチャーが使われています。ステートレス設計として、別々のソフトウェアコンポーネント間の通信を提供する強力な方法であります。 Web開発者として、RESTful APIを作るために、主にPythonを使いますが、最近Goプログラミング言語に出会い、興味を持ってきました。Goプログラミング言語（golangでも呼ばれる）は、Googleのプロジェクトで、マイクロサービスアーキテクチャに適当な多くの機能も提供するので、人気が増えています。</p>
-<p>本記事、golangを使ってシンプルなRESTful APIをどう作るか説明したいと思います。</p>
-<h3 id="仕様"><a href="#仕様" class="headerlink" title="仕様"></a>仕様</h3><p>RESTful APIは、通常CRUDができます。CRUDとは、データベースの四つの主要な機能、「作成（Create）」「読み出し（Read）」「更新（Update）」「削除（Delete）」ですが、今回は、簡単にするために、読み出しの機能しか作りません。そして、データがJSONの形式で書きます。</p>
-<p>そして、このエンドポイントがあります：</p>
-<ul>
-<li>/ -&gt; ホームページですが、とりあえずテキストしかを見せない</li>
-<li>/items/ -&gt; Itemのリスト、Itemデータを全部見せる</li>
-<li>/items/{id} -&gt; 特定のItemの情報<br>それぞれのItemは、「title」と「description」のデータがあって、簡単にするために、データベースを使用するのではなく、データを事前に定義します。</li>
-</ul>
-<h3 id="開発プロセス"><a href="#開発プロセス" class="headerlink" title="開発プロセス"></a>開発プロセス</h3><p>最初は、必要なパッケージをインストールします。ルーティングのために、Muxというパッケージを使っていきます。CMD / Terminalを開けて、このコマンドを実行してください：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go get -u github.com/gorilla/mux</span><br></pre></td></tr></table></figure>
-<p>その後、main.goというファイルを作成して、このコードを入れてください：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;net/http&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;github.com/gorilla/mux&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<p>すべてのgolangを使って作られたプログラムがパッケージで構成されています。この部分では、何のパッケージが必要かが書いてあります。この場合には、四つのパッケージが必要です。</p>
-<h3 id="ルーティング"><a href="#ルーティング" class="headerlink" title="ルーティング"></a>ルーティング</h3><p>同じファイルで、さっきの書いたコードの下に、このコードを入れてください：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Controller for the / route (home)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">homePage</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    fmt.Fprintf(w, <span class="string">&quot;This is the home page. Welcome!&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Controller for the /items route</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnAllItems</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    <span class="comment">// Code for returning all items here</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Controller for the /items/&#123;id&#125; route</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnSingleItem</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    <span class="comment">// Code for returning a single item here</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">handleRequests</span><span class="params">()</span></span> &#123;</span><br><span class="line">    myRouter := mux.NewRouter().StrictSlash(<span class="literal">true</span>)</span><br><span class="line">    myRouter.HandleFunc(<span class="string">&quot;/&quot;</span>, homePage)</span><br><span class="line">    myRouter.HandleFunc(<span class="string">&quot;/items&quot;</span>, returnAllItems)</span><br><span class="line">    myRouter.HandleFunc(<span class="string">&quot;/items/&#123;id&#125;&quot;</span>, returnSingleItem)</span><br><span class="line">    log.Fatal(http.ListenAndServe(<span class="string">&quot;:8000&quot;</span>, myRouter))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    handleRequests()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><code>main()</code>という関数は、このプログラムをスタートすると、自動的に実行されます。その中に、<code>handleRequests()</code>という関数が実行されます。<code>handleRequests()</code>の関数で、それぞれのエンドポイントがアクセスされると、何が起こるかが書いてあります。例えば、/のエンドポイントがアクセスされると、<code>homePage</code>という関数が実行されるとか、<code>/items</code>のエンドポイントがアクセスされると、<code>returnAllItems</code>という関数が実行されます。</p>
-<p>そして、このコード：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">log.Fatal(http.ListenAndServe(<span class="string">&quot;:8000&quot;</span>, myRouter))</span><br></pre></td></tr></table></figure>
-<p>の意味は、このプログラムが8000のポートで、アクセスできます。これで、もう使えるなので、スタートしてみましょう！</p>
-<p>CMD / Terminal で、このコマンドを実行してください：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> run main.<span class="keyword">go</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="サポート関数"><a href="#サポート関数" class="headerlink" title="サポート関数"></a>サポート関数</h3><p>これから、二つのパッケージが必要なので、インポートしましょう。最初のimport部分をこれに変更してください：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/json&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;net/http&quot;</span></span><br><span class="line">    <span class="string">&quot;strconv&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;github.com/gorilla/mux&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p>encoding/jsonとstrconvというパッケージを追加しました。もうすぐこの二つを使います。</p>
-<p>それから、二つのサポート関数を書きましょう：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">respondWithError</span><span class="params">(w http.ResponseWriter, code <span class="keyword">int</span>, msg <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    respondWithJson(w, code, <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span>&#123;<span class="string">&quot;error&quot;</span>: msg&#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">respondWithJson</span><span class="params">(w http.ResponseWriter, code <span class="keyword">int</span>, payload <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">    response, _ := json.Marshal(payload)</span><br><span class="line">    w.Header().Set(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json&quot;</span>)</span><br><span class="line">    w.WriteHeader(code)</span><br><span class="line">    w.Write(response)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>両方の関数は、JSONの形式でHTTP requestに答える役割があります。</p>
-<h3 id="Itemデータ構造"><a href="#Itemデータ構造" class="headerlink" title="Itemデータ構造"></a>Itemデータ構造</h3><p>Itemのデータ構造を書きましょう。importの部分の下に、このコードを入れてください：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Item representation</span></span><br><span class="line"><span class="keyword">type</span> Item <span class="keyword">struct</span> &#123;</span><br><span class="line">    Title   <span class="keyword">string</span> <span class="string">`json:&quot;title&quot;`</span></span><br><span class="line">    Description    <span class="keyword">string</span> <span class="string">`json:&quot;description&quot;`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>仕様に基づいて、それぞれのItemは、「title」と「description」のデータがあります。そして、その下に、これを入れて下さい：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Global, static list of items</span></span><br><span class="line"><span class="keyword">var</span> itemList = []Item&#123;</span><br><span class="line">    Item&#123;Title: <span class="string">&quot;Item A&quot;</span>, Description: <span class="string">&quot;The first item&quot;</span>&#125;,</span><br><span class="line">    Item&#123;Title: <span class="string">&quot;Item B&quot;</span>, Description: <span class="string">&quot;The second item&quot;</span>&#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>今回は、データベースを使わないので、これでデータを事前に定義します。二つのItemだけ書きましたが、自由にいくつでもいいですよ。</p>
-<h3 id="コア関数"><a href="#コア関数" class="headerlink" title="コア関数"></a>コア関数</h3><p>最後に、コア関数（returnAllItemsとreturnSingleItem）を書きます。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Controller for the /items route</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnAllItems</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    respondWithJson(w, http.StatusOK, itemList)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>基本的に、/itemsのエンドポイントをアクセスすると、returnAllItems()という関数がすべてのItemをJSONの形式で答えます。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Controller for the /items/&#123;id&#125; route</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnSingleItem</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    <span class="comment">// Get query parameters using Mux</span></span><br><span class="line">    vars := mux.Vars(r)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Convert &#123;id&#125; parameter from string to int</span></span><br><span class="line">    key, err := strconv.Atoi(vars[<span class="string">&quot;id&quot;</span>])</span><br><span class="line"></span><br><span class="line">    <span class="comment">// If &#123;id&#125; parameter is not valid int</span></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        respondWithError(w, http.StatusBadRequest, <span class="string">&quot;Invalid request payload&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// If Item with ID of &#123;id&#125; does not exist</span></span><br><span class="line">    <span class="keyword">if</span> key &gt;= <span class="built_in">len</span>(itemList) &#123;</span><br><span class="line">        respondWithError(w, http.StatusNotFound, <span class="string">&quot;Item does not exist&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    respondWithJson(w, http.StatusOK, itemList[key])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>そして、<code>returnSingleItem()</code>という関数が、idのURLパラメーターに基づいて特定のItemの情報をJSONの形式で答えます。</p>
-<p>例えば、localhost:8000/items/1をアクセスしたら、1がidになります。それから、そのidは、indexとしてitemListという配列からデータを取ってJSONの形式で答えます。idは1の場合は、二つ目のデータが取られます。そして、idは0の場合は、一つ目のデータが取られます。</p>
-<p>idは、数だけであるべきであり、Itemの数以上になってはいけないので、二つのチェックを書きました。これで、終わりです。作ってみましょう！</p>
-<h3 id="テスト"><a href="#テスト" class="headerlink" title="テスト"></a>テスト</h3><p>CMD / Terminal で、さっきのrunを閉じて、もう一回実行してください：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> run main.<span class="keyword">go</span></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://qiita.com/sbenemerito/items/d94b811f14ce0a546a3f">https://qiita.com/sbenemerito/items/d94b811f14ce0a546a3f</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/" class="post-title-link" itemprop="url">Nginx使用HTTPS反向代理laravel的HTTP应用</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2020-01-14 12:39:12 / 修改时间：13:49:08" itemprop="dateCreated datePublished" datetime="2020-01-14T12:39:12+09:00">2020-01-14</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-幸有我来山未孤
-</blockquote>
-
-<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>反向代理的概念不多做解释，此处应用反向代理主要原因如下：</p>
-<ul>
-<li>应用服务器不必暴露在公网，躲在防火墙后，通过内网连接代理服务器（proxy server）</li>
-<li>DNS设置简单，因为有两个不同应用服务器，对应不同的子域名（a.example.com, b.example.com），只需设置DNS *.example.com 到代理服务器IP即可</li>
-<li>SSL证书管理方便，只需申请一个通配符的证书 *.example.com 配置在代理服务器</li>
-</ul>
-<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><p>系统环境都是Ubuntu 18.04.2，服务器都是使用Nginx，代理服务器配置SSL，使用HTTPS对外访问（HTTP强制跳转到HTTPS），应用服务器使用Laravel，HTTP对内网访问。</p>
-<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><h4 id="应用服务器配置"><a href="#应用服务器配置" class="headerlink" title="应用服务器配置"></a>应用服务器配置</h4><p>应用服务器的nginx照常配置即可，可以设置server_name为对应的域名。</p>
-<h3 id="代理服务器配置"><a href="#代理服务器配置" class="headerlink" title="代理服务器配置"></a>代理服务器配置</h3><p>代理服务器从网上抄来一份，主要是设置proxy_pass，下面只是location block：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_set_header Host <span class="variable">$host</span>;</span><br><span class="line">    proxy_set_header X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-Proto <span class="variable">$scheme</span>;</span><br><span class="line">    proxy_pass    http:<span class="comment">//ip;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意要加 proxy_set_header X-Forwarded-Proto $scheme 这一条，让后面被代理的应用服务器知道对应的协议是什么，这样应用服务器生成url（如css，js文件）使用相应的协议。如果代理服务器确定使用https，那$scheme替换成https也可以。</p>
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>本以为这样就搞定了，但是在用域名测试的时候发现网站不能正常加载，浏览器有如下错误：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Mixed</span> Content: The page at <span class="string">&#x27;&lt;URL&gt;&#x27;</span> was loaded over HTTPS, but requested an insecure stylesheet <span class="string">&#x27;&lt;URL&gt;&#x27;</span>. This request has been blocked; the content must be served over HTTPS.</span><br></pre></td></tr></table></figure>
-<p>在页面中混用了HTTPS和HTTP，浏览器会block掉不安全的HTTP链接。而HTTP链接主要是用laravel的asset生成的css, js文件，css文件没有加载上，所以就不能正常加载了。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/helpers#method-asset">https://laravel.com/docs/5.5/helpers#method-asset</a><br>多方查询，有推荐使用proxy_redirect来替换HTTP为HTTPS，但是试用不成功。</p>
-</blockquote>
-<p>也有说这些资源文件用uri路径来表示，\css\example.css 这样，不带协议。</p>
-<p>或者页面增加一个meta，让HTTP升级为安全的HTTPS：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;Content-Security-Policy&quot;</span> <span class="attr">content</span>=<span class="string">&quot;upgrade-insecure-requests&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
-<p>这样在生产环境没问题，但是需要改动很多代码，而且开发、测试环境也需要ssl证书，很不方便。</p>
-<p>在查询到几篇文章中，有提到后端是tomcat，需要修改tomcat的配置来接受X-Forwarded-Proto 这个Header来处理。我思考是不是laravel也需要类似设置，google一下发现了这个：</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/requests#configuring-trusted-proxies">https://laravel.com/docs/5.5/requests#configuring-trusted-proxies</a><br>When running your applications behind a load balancer that terminates TLS / SSL certificates, you may notice your application sometimes does not generate HTTPS links. Typically this is because your application is being forwarded traffic from your load balancer on port 80 and does not know it should generate secure links.</p>
-</blockquote>
-<p>Laravel从5.5开始，内置了一个 TrustProxies模块来解决这个问题，专门应对使用了Load Balancer等情况。</p>
-<p>所以按照文档，修改 protected $proxies = ‘<strong>‘，因为应用服务器在内网，所以改成</strong>也无所谓。<br>Laravel 5.5之前的版本，可以自行用composer来安装这个插件。</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/fideloper/TrustedProxy">https://github.com/fideloper/TrustedProxy</a></p>
-<p>测试之后，问题解决。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/">http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/11/golang%E8%BF%94%E5%9B%9Ejson%E7%AD%89%E6%A0%BC%E5%BC%8F%E6%95%B0%E6%8D%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/01/11/golang%E8%BF%94%E5%9B%9Ejson%E7%AD%89%E6%A0%BC%E5%BC%8F%E6%95%B0%E6%8D%AE/" class="post-title-link" itemprop="url">golang返回json等格式数据</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-01-11 10:45:35" itemprop="dateCreated datePublished" datetime="2020-01-11T10:45:35+09:00">2020-01-11</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:55:28" itemprop="dateModified" datetime="2021-09-10T13:55:28+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-知我者谓我心忧，不知我者谓我何求，悠悠苍天，此何人哉
-</blockquote>
-
-<h3 id="Sending-Headers-Only"><a href="#Sending-Headers-Only" class="headerlink" title="Sending Headers Only"></a>Sending Headers Only</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;net/http&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  http.HandleFunc(<span class="string">&quot;/&quot;</span>, foo)</span><br><span class="line">  http.ListenAndServe(<span class="string">&quot;:3000&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  w.Header().Set(<span class="string">&quot;Server&quot;</span>, <span class="string">&quot;A Go Web Server&quot;</span>)</span><br><span class="line">  w.WriteHeader(<span class="number">200</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Rendering-Plain-Text"><a href="#Rendering-Plain-Text" class="headerlink" title="Rendering Plain Text"></a>Rendering Plain Text</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;net/http&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  http.HandleFunc(<span class="string">&quot;/&quot;</span>, foo)</span><br><span class="line">  http.ListenAndServe(<span class="string">&quot;:3000&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  w.Write([]<span class="keyword">byte</span>(<span class="string">&quot;OK&quot;</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Rendering-JSON"><a href="#Rendering-JSON" class="headerlink" title="Rendering JSON"></a>Rendering JSON</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;encoding/json&quot;</span></span><br><span class="line">  <span class="string">&quot;net/http&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Profile <span class="keyword">struct</span> &#123;</span><br><span class="line">  Name    <span class="keyword">string</span></span><br><span class="line">  Hobbies []<span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  http.HandleFunc(<span class="string">&quot;/&quot;</span>, foo)</span><br><span class="line">  http.ListenAndServe(<span class="string">&quot;:3000&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  profile := Profile&#123;<span class="string">&quot;Alex&quot;</span>, []<span class="keyword">string</span>&#123;<span class="string">&quot;snowboarding&quot;</span>, <span class="string">&quot;programming&quot;</span>&#125;&#125;</span><br><span class="line"></span><br><span class="line">  js, err := json.Marshal(profile)</span><br><span class="line">  <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    http.Error(w, err.Error(), http.StatusInternalServerError)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  w.Header().Set(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json&quot;</span>)</span><br><span class="line">  w.Write(js)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="Rendering-XML"><a href="#Rendering-XML" class="headerlink" title="Rendering XML"></a>Rendering XML</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;encoding/xml&quot;</span></span><br><span class="line">  <span class="string">&quot;net/http&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Profile <span class="keyword">struct</span> &#123;</span><br><span class="line">  Name    <span class="keyword">string</span></span><br><span class="line">  Hobbies []<span class="keyword">string</span> <span class="string">`xml:&quot;Hobbies&gt;Hobby&quot;`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  http.HandleFunc(<span class="string">&quot;/&quot;</span>, foo)</span><br><span class="line">  http.ListenAndServe(<span class="string">&quot;:3000&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  profile := Profile&#123;<span class="string">&quot;Alex&quot;</span>, []<span class="keyword">string</span>&#123;<span class="string">&quot;snowboarding&quot;</span>, <span class="string">&quot;programming&quot;</span>&#125;&#125;</span><br><span class="line"></span><br><span class="line">  x, err := xml.MarshalIndent(profile, <span class="string">&quot;&quot;</span>, <span class="string">&quot;  &quot;</span>)</span><br><span class="line">  <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    http.Error(w, err.Error(), http.StatusInternalServerError)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  w.Header().Set(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/xml&quot;</span>)</span><br><span class="line">  w.Write(x)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Serving-a-File"><a href="#Serving-a-File" class="headerlink" title="Serving a File"></a>Serving a File</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;net/http&quot;</span></span><br><span class="line">  <span class="string">&quot;path&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  http.HandleFunc(<span class="string">&quot;/&quot;</span>, foo)</span><br><span class="line">  http.ListenAndServe(<span class="string">&quot;:3000&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  <span class="comment">// Assuming you want to serve a photo at &#x27;images/foo.png&#x27;</span></span><br><span class="line">  fp := path.Join(<span class="string">&quot;images&quot;</span>, <span class="string">&quot;foo.png&quot;</span>)</span><br><span class="line">  http.ServeFile(w, r, fp)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>Important: http.ServeFile() does not automatically sanitize the file path. So if you’re constructing a file path from untrusted user input, you must sanitize the input with filepath.Clean() before using it to avoid directory traversal attacks.</p>
-</blockquote>
-<h3 id="Rendering-a-HTML-Template"><a href="#Rendering-a-HTML-Template" class="headerlink" title="Rendering a HTML Template"></a>Rendering a HTML Template</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">File: templates/index.html</span><br><span class="line"></span><br><span class="line">&lt;h1&gt;Hello &#123;&#123; .Name &#125;&#125;&lt;/h1&gt;</span><br><span class="line">&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit.&lt;/p&gt;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;html/template&quot;</span></span><br><span class="line">  <span class="string">&quot;net/http&quot;</span></span><br><span class="line">  <span class="string">&quot;path&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Profile <span class="keyword">struct</span> &#123;</span><br><span class="line">  Name    <span class="keyword">string</span></span><br><span class="line">  Hobbies []<span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  http.HandleFunc(<span class="string">&quot;/&quot;</span>, foo)</span><br><span class="line">  http.ListenAndServe(<span class="string">&quot;:3000&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  profile := Profile&#123;<span class="string">&quot;Alex&quot;</span>, []<span class="keyword">string</span>&#123;<span class="string">&quot;snowboarding&quot;</span>, <span class="string">&quot;programming&quot;</span>&#125;&#125;</span><br><span class="line"></span><br><span class="line">  fp := path.Join(<span class="string">&quot;templates&quot;</span>, <span class="string">&quot;index.html&quot;</span>)</span><br><span class="line">  tmpl, err := template.ParseFiles(fp)</span><br><span class="line">  <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    http.Error(w, err.Error(), http.StatusInternalServerError)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> err := tmpl.Execute(w, profile); err != <span class="literal">nil</span> &#123;</span><br><span class="line">    http.Error(w, err.Error(), http.StatusInternalServerError)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Rendering-a-HTML-Template-to-a-String"><a href="#Rendering-a-HTML-Template-to-a-String" class="headerlink" title="Rendering a HTML Template to a String"></a>Rendering a HTML Template to a String</h3><p>Instead of passing in the http.ResponseWriter when executing your template (like in the above snippet) use a buffer instead:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">buf := <span class="built_in">new</span>(bytes.Buffer)</span><br><span class="line"><span class="keyword">if</span> err := tmpl.Execute(buf, profile); err != <span class="literal">nil</span> &#123;</span><br><span class="line">  http.Error(w, err.Error(), http.StatusInternalServerError)</span><br><span class="line">&#125;</span><br><span class="line">templateString := buf.String()</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-
-<h3 id="Using-Layouts-and-Nested-Templates"><a href="#Using-Layouts-and-Nested-Templates" class="headerlink" title="Using Layouts and Nested Templates"></a>Using Layouts and Nested Templates</h3><p>File: templates/layout.html</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>&#123;&#123; template &quot;title&quot; . &#125;&#125;<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    &#123;&#123; template &quot;content&quot; . &#125;&#125;</span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>File: templates/index.html</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123; define &quot;title&quot; &#125;&#125;An example layout&#123;&#123; end &#125;&#125;</span><br><span class="line"></span><br><span class="line">&#123;&#123; define &quot;content&quot; &#125;&#125;</span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello &#123;&#123; .Name &#125;&#125;<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span>Lorem ipsum dolor sit amet, consectetur adipisicing elit.<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">&#123;&#123; end &#125;&#125;</span><br></pre></td></tr></table></figure>
-
-<p>File: main.go</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;html/template&quot;</span></span><br><span class="line">  <span class="string">&quot;net/http&quot;</span></span><br><span class="line">  <span class="string">&quot;path&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Profile <span class="keyword">struct</span> &#123;</span><br><span class="line">  Name    <span class="keyword">string</span></span><br><span class="line">  Hobbies []<span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  http.HandleFunc(<span class="string">&quot;/&quot;</span>, foo)</span><br><span class="line">  http.ListenAndServe(<span class="string">&quot;:3000&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  profile := Profile&#123;<span class="string">&quot;Alex&quot;</span>, []<span class="keyword">string</span>&#123;<span class="string">&quot;snowboarding&quot;</span>, <span class="string">&quot;programming&quot;</span>&#125;&#125;</span><br><span class="line"></span><br><span class="line">  lp := path.Join(<span class="string">&quot;templates&quot;</span>, <span class="string">&quot;layout.html&quot;</span>)</span><br><span class="line">  fp := path.Join(<span class="string">&quot;templates&quot;</span>, <span class="string">&quot;index.html&quot;</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Note that the layout file must be the first parameter in ParseFiles</span></span><br><span class="line">  tmpl, err := template.ParseFiles(lp, fp)</span><br><span class="line">  <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    http.Error(w, err.Error(), http.StatusInternalServerError)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> err := tmpl.Execute(w, profile); err != <span class="literal">nil</span> &#123;</span><br><span class="line">    http.Error(w, err.Error(), http.StatusInternalServerError)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.alexedwards.net/blog/golang-response-snippets">https://www.alexedwards.net/blog/golang-response-snippets</a></p>
-</blockquote>
-
       
     </div>
 

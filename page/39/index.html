@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">384</span>
+          <span class="site-state-item-count">389</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,446 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/28/%E5%85%B3%E4%BA%8E%E5%87%BA%E7%8E%B0php-m%E5%92%8Cphpinfo%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/07/28/%E5%85%B3%E4%BA%8E%E5%87%BA%E7%8E%B0php-m%E5%92%8Cphpinfo%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">关于出现php-m和phpinfo不一致的问题</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-28 09:44:23" itemprop="dateCreated datePublished" datetime="2016-07-28T09:44:23+09:00">2016-07-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:58:14" itemprop="dateModified" datetime="2018-03-27T21:58:14+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我前半生最强烈三次心跳，分别发生在上课被老师点名 ，下楼梯一脚踩空， 和你对我微笑的时候！
+</blockquote>
+### 本文系转载
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">命令查看：</span><br><span class="line">php -m</span><br><span class="line">which php</span><br></pre></td></tr></table></figure>
+昨天有个学员私聊我，说他的`php -m`和在`apache` 中运行`phpinfo`不一致(这力默认`apache`是把`php`编译成模块的)，譬如模块加载不一致。
+
+<p>理论上这是不可能的。除非你的PHP做了特别的设置（此处不表，-c参数即可搞定), 默认情况下,两者都是一致的。</p>
+<p>经过我一番询问，发现并没有特别之处。于是我也纳闷了、抑郁了、纠结了。这也引起了我的“执着心”，我很讨厌在这种问题上还能卡住。于是我告诉那位学员，今天不找出原因咱两一起“切腹”。学员弱弱的答应了。。。。</p>
+<p>然而，经过我一步步询问确认（注意：我不帮学员远程调试，这是游戏规则）。终于发现了问题。接下来放出原因，大家可能也会碰到</p>
+<p>1、学员执行的是<code>php -m</code> .并不是类似 <code>/usr/local/php/bin/php -m</code>  这说明他的PHP存在于某个环境变量路径里。</p>
+<p>2、也就是恰恰上面这个原因给忽略了。我们一直始终认为 他的环境变量是正确的。</p>
+<p>3、最后，我让他执行了 重新编译PHP。问题依旧。（此时学员已经有切腹的愿望）</p>
+<p>4、最后，我让它（就是它）执行了 <code>which php</code> .这时发现它的PHP在 <code>/usr/bin</code> 里面。</p>
+<p>5、也就是说不管他怎么编译PHP，最终执行的php -m 的那个PHP可执行程序 永远是定位在 /usr/bin里面的那个老PHP</p>
+<p>6、学员已经忘了怎么操作使之 <code>/usr/bin</code>里也有个PHP</p>
+<p>7、解决方法如下：删掉 <code>/usr/bin</code>里面的那个老PHP 。把环境变量 设置到<code>/usr/local/php/bin</code>里。</p>
+<p>8、再次执行 php -m 一切正常了。</p>
+<p>本次解决问题的结论是：</p>
+<p>  不要相信一些“你认为不可能出错的步骤”。往往有的步骤你觉得“绝对不可能出错”，而问题恰恰就在你最信任的步骤里。 交朋友也是，往往你最最信任的人也是最有可能在关键部分干你一菊花的人。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://www.hishenyi.com/archives/1095">http://www.hishenyi.com/archives/1095</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/27/Mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/07/27/Mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">Mysql性能优化</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-27 22:17:13" itemprop="dateCreated datePublished" datetime="2016-07-27T22:17:13+09:00">2016-07-27</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:40:12" itemprop="dateModified" datetime="2018-03-27T22:40:12+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+想戴上最美的面具，又想卸下所有的伪装。
+</blockquote>
+### 常用命令
+- 连接数
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">如果是root帐号，你能看到所有用户的当前连接</span><br><span class="line">如果是其它普通帐号，只能看到自己占用的连接</span><br><span class="line">show processlist; 列出前<span class="number">100</span>条</span><br><span class="line">show full processlist; 全部列出</span><br><span class="line">show <span class="keyword">global</span> variables like <span class="string">&#x27;%connections%&#x27;</span>; 查看整个MySQL实例的最大连接数限制</span><br><span class="line">max_connections 就是整个MySQL实例的最大连接数限制</span><br><span class="line">max_user_connections 是单个用户的最大连接数，这里未指明是哪个用户，是任意一个用户</span><br><span class="line"></span><br><span class="line">查看某个用户的最大连接数，<span class="number">0</span>表示不限制：</span><br><span class="line">select user,max_user_connections <span class="keyword">from</span> mysql.user where user=<span class="string">&#x27;root&#x27;</span>;</span><br><span class="line">通过设置这个值，防止某个指定用户使用过多的连接资源。默认是<span class="number">0</span>，不限制。</span><br><span class="line"> </span><br><span class="line">上面<span class="number">3</span>个参数的关系是：</span><br><span class="line">max_user_connections &lt; 实例 max_user_connections &lt; max_connections</span><br><span class="line"> </span><br><span class="line">整个MySQL实例，曾经同时最大连接数，包括很多用户连接数之和：</span><br><span class="line">show <span class="keyword">global</span> status like <span class="string">&#x27;%max_used_connections%&#x27;</span>;</span><br><span class="line"></span><br><span class="line">修改mysql最大连接数：</span><br><span class="line">打开my.ini，修改max_connections=<span class="number">100</span>(默认为<span class="number">100</span>)。</span><br><span class="line"></span><br><span class="line">使用连接池减少mysql的连接数</span><br></pre></td></tr></table></figure>
+- 查看状态
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show status;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/27/PHP7-Swoole%E5%BC%80%E5%8F%91%E8%B6%85%E9%AB%98%E6%80%A7%E8%83%BD%E5%90%8E%E5%8F%B0%E7%A8%8B%E5%BA%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/07/27/PHP7-Swoole%E5%BC%80%E5%8F%91%E8%B6%85%E9%AB%98%E6%80%A7%E8%83%BD%E5%90%8E%E5%8F%B0%E7%A8%8B%E5%BA%8F/" class="post-title-link" itemprop="url">PHP7+Swoole开发超高性能后台程序</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-27 21:32:54" itemprop="dateCreated datePublished" datetime="2016-07-27T21:32:54+09:00">2016-07-27</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:29:02" itemprop="dateModified" datetime="2018-03-27T22:29:02+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+父母在时，人生尚有来处。
+父母去时，人生只剩归途。
+</blockquote>
+
+<h3 id="Yaf-Phalcon"><a href="#Yaf-Phalcon" class="headerlink" title="Yaf/Phalcon"></a>Yaf/Phalcon</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Yaf是一个C语言编写的PHP框架</span><br><span class="line">Phalcon 是开源、全功能栈、使用 C 扩展编写、针对高性能优化的 PHP <span class="number">5</span> 框架。 </span><br><span class="line">开发者不需要学习和使用 C 语言的功能，可以直接使用。</span><br></pre></td></tr></table></figure>
+<h3 id="QPS"><a href="#QPS" class="headerlink" title="QPS"></a>QPS</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">每秒查询率QPS是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准，在因特网上，</span><br><span class="line">作为域名系统服务器的机器的性能经常用每秒查询率来衡量。对应fetches/sec，</span><br><span class="line">即每秒的响应请求数，也即是最大吞吐能力。 </span><br></pre></td></tr></table></figure>
+<h3 id="如何实现1W-的QPS"><a href="#如何实现1W-的QPS" class="headerlink" title="如何实现1W+的QPS"></a>如何实现1W+的QPS</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>.IO操作要足够快，或者异步</span><br><span class="line">常见的IO操作有，Mysql,Redis,CURL,磁盘读写</span><br><span class="line"><span class="number">2</span>.CPU消耗足够少</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="为什么不用C"><a href="#为什么不用C" class="headerlink" title="为什么不用C++"></a>为什么不用C++</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">学习成本高</span><br><span class="line">开发周期长</span><br><span class="line">调试难度大</span><br><span class="line">机器的时间可以用钱购买，人的时间无法用钱购买</span><br></pre></td></tr></table></figure>
+<h3 id="提升PHP性能"><a href="#提升PHP性能" class="headerlink" title="提升PHP性能"></a>提升PHP性能</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">使用PHP7，性能至少提高一倍</span><br><span class="line">使用yaf/phalcon</span><br><span class="line">使用swoole应用服务器</span><br></pre></td></tr></table></figure>
+<h3 id="什么是Swoole"><a href="#什么是Swoole" class="headerlink" title="什么是Swoole"></a>什么是Swoole</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PHP的异步、并行、高性能网络通信引擎，使用纯C语言编写，</span><br><span class="line">提供了PHP语言的异步多线程服务器，异步TCP/UDP网络客户端，</span><br><span class="line">异步MySQL，异步Redis，数据库连接池，AsyncTask，消息队列，</span><br><span class="line">毫秒定时器，异步文件读写，异步DNS查询。 Swoole内置了Http/WebSocket服务器</span><br><span class="line">端/客户端、Http2.<span class="number">0</span>服务器端。Swoole可以广泛应用于互联网、移动通信、企业软件、</span><br><span class="line">云计算、网络游戏、物联网（IOT）、车联网、智能家居等领域。使用PHP+Swoole作</span><br><span class="line">为网络通信框架，可以使企业IT研发团队的效率大大提升，更加专注于开发创新产品。</span><br></pre></td></tr></table></figure>
+<h3 id="大量并发连接"><a href="#大量并发连接" class="headerlink" title="大量并发连接"></a>大量并发连接</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">基于epool实现异步IO处理</span><br><span class="line">选择Nginx和swoole</span><br></pre></td></tr></table></figure>
+<h3 id="超高性能架构"><a href="#超高性能架构" class="headerlink" title="超高性能架构"></a>超高性能架构</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PHP7 + swoole + yaf/phalcon + Redis</span><br></pre></td></tr></table></figure>
+<h3 id="超高性能统计运算程序"><a href="#超高性能统计运算程序" class="headerlink" title="超高性能统计运算程序"></a>超高性能统计运算程序</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">使用PHP <span class="keyword">Array</span> 全内存存储，计算数据，超大规模读写Redis会成为瓶颈</span><br><span class="line">使用Worker/Task进程实现数据的Map-Reduce</span><br><span class="line">使用PHP的SPL数据结构</span><br><span class="line">中间数据可以使用mysql内存表，汇总计算后删除数据</span><br><span class="line">PHP的GC非常靠谱，及时<span class="keyword">unset</span>掉不用的数据，连续运行无内存泄露</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/ThinkDevelopers/PHPConChina/tree/master/PHPCON2016">https://github.com/ThinkDevelopers/PHPConChina/tree/master/PHPCON2016</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/26/mysql%E7%94%A8%E6%88%B7%E7%9B%B8%E5%85%B3%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/07/26/mysql%E7%94%A8%E6%88%B7%E7%9B%B8%E5%85%B3%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">mysql用户相关操作</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-26 22:45:49" itemprop="dateCreated datePublished" datetime="2016-07-26T22:45:49+09:00">2016-07-26</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:56:57" itemprop="dateModified" datetime="2018-03-27T21:56:57+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+那些最容易脸红的人，往往是最善良的。
+</blockquote>
+### 相关命令
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">查看所有用户</span><br><span class="line">select host,user <span class="keyword">from</span> user ;</span><br><span class="line">添加一个用户</span><br><span class="line">grant all on *.* to yangzie@<span class="string">&quot;%&quot;</span> identified by <span class="string">&quot;123&quot;</span> ; </span><br><span class="line">说明：</span><br><span class="line">all表示所有权限(包括增 删 改 查等权限)</span><br><span class="line">*.* 表示所有数据库，前面一个* 指的是库，后面指的是表</span><br><span class="line">yangzie为添加的用户名</span><br><span class="line"><span class="number">123</span>为密码，高版本的mysq会对密码的安全性做验证，简单的密码会导致命令执行失败</span><br><span class="line">%为匹配的所有主机，% 即可以使用其他连接工具像navicat远程连接</span><br><span class="line">删除一个用户</span><br><span class="line">delete <span class="keyword">from</span> mysql.user where user =<span class="string">&#x27;yushan&#x27;</span> ;</span><br><span class="line"></span><br><span class="line">所有的这些操作完成以后，记得刷新权限</span><br><span class="line">flush privileges;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/25/centos%E4%B8%8Bftp%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/07/25/centos%E4%B8%8Bftp%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/" class="post-title-link" itemprop="url">centos下ftp相关设置</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-25 22:56:59" itemprop="dateCreated datePublished" datetime="2016-07-25T22:56:59+09:00">2016-07-25</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-16 23:25:11" itemprop="dateModified" datetime="2021-09-16T23:25:11+09:00">2021-09-16</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你如今的气质里，藏着你走过的路，读过的书，和爱过的人。
+</blockquote>
+
+<h3 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h3><p>centos6.5 64位</p>
+<h3 id="步骤："><a href="#步骤：" class="headerlink" title="步骤："></a>步骤：</h3><ul>
+<li>安装</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum install vsftp</span><br><span class="line">chkconfig vsftpd on</span><br><span class="line">chkconfig --<span class="keyword">list</span> vsftpd </span><br><span class="line">service vsftpd start</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>匿名用户登录</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在浏览器中通过ftp://121.40.215.165这样的方式，无需输入用户名密码即可访问</span></span><br><span class="line">vim /etc/vsftpd/vsftpd.conf</span><br><span class="line">anonymous_enable=YES    <span class="comment">//匿名访问 开启</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>selinux </li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//SELinux 全称 Security Enhanced Linux (安全强化 Linux)，是 MAC (Mandatory Access Control，强制访问控制系统)</span></span><br><span class="line"><span class="comment">//的一个实现，目的在于明确的指明某个进程可以访问哪些资源(文件、网络端口等)。</span></span><br><span class="line">getenforce   <span class="comment">//查看状态</span></span><br><span class="line">setenforce <span class="number">0</span> <span class="comment">//临时关闭</span></span><br><span class="line">setenforce <span class="number">1</span> <span class="comment">//临时开启</span></span><br><span class="line"><span class="comment">//永久关闭</span></span><br><span class="line">修改/etc/selinux/config 文件</span><br><span class="line">将SELINUX=enforcing改为SELINUX=disabled</span><br><span class="line">重启机器即可</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>修改默认端口号</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//编辑 /etc/vsftpd/vsftpd.conf 文件，在该配置文件中添加此行：listen_port=801</span></span><br><span class="line"><span class="comment">//编辑 /etc/services 文件，将其中的 ftp 21/tcp 改为 ftp 801/tcp , ftp 21/udp 改为 ftp 801/udp</span></span><br><span class="line"><span class="comment">//执行 /etc/init.d/vsftpd restart 重新启动 vsftpd 服务.</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>ftp的配置文件</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//位于/etc/vsftpd/目录下，分别是：</span></span><br><span class="line"><span class="comment">//ftpusers    该文件用来指定那些用户不能访问ftp服务器。</span></span><br><span class="line"><span class="comment">//user_list   该文件用来指示的默认账户在默认情况下也不能访问ftp</span></span><br><span class="line"><span class="comment">//vsftpd.conf   该文件是vsftpd的主配置文件</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>建立用户以及指定目录</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">useradd -d /home/ftp ftpuser</span><br><span class="line">passwd ftpuser</span><br><span class="line"><span class="comment">//此时用户ftpuser可以通过ftp登录</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//系统内所有的FTP用户都限制在家目录中,修改配置文件/etc/vsftpd/vsftpd.conf</span></span><br><span class="line">chroot_local_user=YES</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://jasonhzy.github.io/2016/03/11/linux-ftp/">http://jasonhzy.github.io/2016/03/11/linux-ftp/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
