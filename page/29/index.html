@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">390</span>
+          <span class="site-state-item-count">391</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,93 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/16/indexeddb%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/07/16/indexeddb%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">indexeddb的简单使用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-07-16 22:00:12" itemprop="dateCreated datePublished" datetime="2017-07-16T22:00:12+09:00">2017-07-16</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:21:19" itemprop="dateModified" datetime="2018-03-27T22:21:19+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+有一天你会知道，人生没有我并不会不同
+</blockquote>
+存储在IndexedDB里的数据是永久保存，不像cookies那样只是临时的。IndexedDB里提供了查询数据的功能，在online和offline模式下都能使用。你可以用IndexedDB存储大型数据。
+### IndexedDB 具有以下特点。
+（1）键值对储存。 IndexedDB 内部采用对象仓库（object store）存放数据。所有类型的数据都可以直接存入，包括 JavaScript 对象。在对象仓库中，数据以“键值对”的形式保存，每一个数据都有对应的键名，键名是独一无二的，不能有重复，否则会抛出一个错误。
+（2）异步。 IndexedDB 操作时不会锁死浏览器，用户依然可以进行其他操作，这与 LocalStorage 形成对比，后者的操作是同步的。异步设计是为了防止大量数据的读写，拖慢网页的表现。
+（3）支持事务。 IndexedDB 支持事务（transaction），这意味着一系列操作步骤之中，只要有一步失败，整个事务就都取消，数据库回到事务发生之前的状态，不存在只改写一部分数据的情况。
+（4）同域限制 IndexedDB 也受到同域限制，每一个数据库对应创建该数据库的域名。来自不同域名的网页，只能访问自身域名下的数据库，而不能访问其他域名下的数据库。
+（5）储存空间大 IndexedDB 的储存空间比 LocalStorage 大得多，一般来说不少于250MB。IE的储存上限是250MB，Chrome和Opera是剩余空间的某个百分比，Firefox 则没有上限。
+（6）支持二进制储存。 IndexedDB 不仅可以储存字符串，还可以储存二进制数据。
+
+<h3 id="API实例"><a href="#API实例" class="headerlink" title="API实例"></a>API实例</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line">    <span class="keyword">if</span>(<span class="string">&#x27;indexedDB&#x27;</span> <span class="keyword">in</span> <span class="built_in">window</span>) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> openRequest = indexedDB.open(<span class="string">&quot;yangzie&quot;</span>,<span class="number">5</span>);</span><br><span class="line">        <span class="keyword">let</span> db;</span><br><span class="line">        openRequest.onupgradeneeded = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">&quot;数据库更新...&quot;</span>);</span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            db = e.target.result;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!db.objectStoreNames.contains(<span class="string">&#x27;firstOS&#x27;</span>))&#123;</span><br><span class="line">                db.createObjectStore(<span class="string">&quot;firstOS&quot;</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&#x27;表已经存在&#x27;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        openRequest.onsuccess = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">&quot;数据路打开成功!&quot;</span>);</span><br><span class="line"></span><br><span class="line">            db = e.target.result;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 事务</span></span><br><span class="line">            <span class="keyword">let</span> transaction = db.transaction([<span class="string">&quot;firstOS&quot;</span>], <span class="string">&quot;readwrite&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">let</span> store = transaction.objectStore(<span class="string">&quot;firstOS&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">let</span> o = &#123;<span class="attr">p</span>: <span class="string">&quot;she is a girl&quot;</span>&#125;;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 添加数据</span></span><br><span class="line">            <span class="keyword">let</span> request = store.add(o,<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">            request.onerror = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&quot;数据添加失败！&quot;</span>);</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            request.onsuccess = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&quot;数据添加成功！&quot;</span>);</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 修改数据</span></span><br><span class="line">            <span class="keyword">let</span> tr = db.transaction([<span class="string">&quot;firstOS&quot;</span>], <span class="string">&quot;readwrite&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">let</span> storess = tr.objectStore(<span class="string">&quot;firstOS&quot;</span>);</span><br><span class="line">            <span class="keyword">let</span> p = &#123; <span class="attr">p</span>:<span class="number">456</span> &#125;;</span><br><span class="line">            <span class="keyword">let</span> urequest = storess.put(p, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">            urequest.onerror = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&quot;修改成功&quot;</span>);</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            urequest.onsucces = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&quot;修改失败&quot;</span>);</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 获取数据</span></span><br><span class="line">            <span class="keyword">let</span> t = db.transaction([<span class="string">&quot;firstOS&quot;</span>], <span class="string">&quot;readonly&quot;</span>);</span><br><span class="line">            <span class="keyword">let</span> stores = t.objectStore(<span class="string">&quot;firstOS&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">let</span> ob = stores.get(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">            ob.onsuccess = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&quot;获取数据成功&quot;</span>);</span><br><span class="line">                <span class="built_in">console</span>.log(ob);</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            transaction.oncomplete = <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&#x27;事务结束&#x27;</span>);</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 删除记录</span></span><br><span class="line">            <span class="keyword">let</span> tt = db.transaction([<span class="string">&quot;firstOS&quot;</span>], <span class="string">&quot;readwrite&quot;</span>);</span><br><span class="line">            <span class="keyword">let</span> mrequest = tt.objectStore(<span class="string">&quot;firstOS&quot;</span>).delete(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">            mrequest.onsuccess = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&#x27;删除成功&#x27;</span>);</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            mrequest.onerror = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&#x27;删除失败&#x27;</span>);</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        openRequest.onerror = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">&quot;数据库打开错误&quot;</span>);</span><br><span class="line">        &#125;;</span><br><span class="line">        </span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">&#x27;您的浏览器不支持&#x27;</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://javascript.ruanyifeng.com/bom/indexeddb.html">http://javascript.ruanyifeng.com/bom/indexeddb.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -480,7 +567,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/07/11/jquery%E7%9A%84%E8%BF%87%E6%BB%A4%E9%80%89%E6%8B%A9%E5%99%A8/" class="post-title-link" itemprop="url">jquery的过滤选择器</a>
+          <a href="/2017/07/11/jquery%E7%9A%84%E8%BF%87%E6%BB%A4%E9%80%89%E6%8B%A9%E5%99%A8/" class="post-title-link" itemprop="url">jQuery的过滤选择器</a>
         </h2>
 
         <div class="post-meta-container">
@@ -498,7 +585,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:20:10" itemprop="dateModified" datetime="2018-03-27T22:20:10+09:00">2018-03-27</time>
+        <time title="修改时间：2021-11-20 11:04:06" itemprop="dateModified" datetime="2021-11-20T11:04:06+09:00">2021-11-20</time>
       </span>
 
   
@@ -514,19 +601,11 @@
           <blockquote class="blockquote-center">
 永远年轻，永远热泪盈眶
 </blockquote>
-### 基本过滤选择器(重点掌握下列八个)
-:first 选取第一个元素 $("div:first").css("color","red");
-:last 选取最后一个元素 $("div:last").css("color","red");
-:not 除去指定的选择器外的元素 $("div:not").css("color","red");
-:even 选取索引号是偶数的元素 $("div:even").css("color","red");
-:odd 选取索引号是奇数的元素 $('div:odd').css("color","red");
-:eq(index) 选取第index个元素 $('div:eq(5)').css("color","red");
-:gt(index) 选取索引号大于index的元素 $('div:gt(8)').css("color","red");
-:lt(index) 选取索引号小于index的元素$('div:lt(3)').css("color","red");
 
+<h3 id="基本过滤选择器-重点掌握下列八个"><a href="#基本过滤选择器-重点掌握下列八个" class="headerlink" title="基本过滤选择器(重点掌握下列八个)"></a>基本过滤选择器(重点掌握下列八个)</h3><p>:first 选取第一个元素 $(“div:first”).css(“color”,”red”);<br>:last 选取最后一个元素 $(“div:last”).css(“color”,”red”);<br>:not 除去指定的选择器外的元素 $(“div:not”).css(“color”,”red”);<br>:even 选取索引号是偶数的元素 $(“div:even”).css(“color”,”red”);<br>:odd 选取索引号是奇数的元素 $(‘div:odd’).css(“color”,”red”);<br>:eq(index) 选取第index个元素 $(‘div:eq(5)’).css(“color”,”red”);<br>:gt(index) 选取索引号大于index的元素 $(‘div:gt(8)’).css(“color”,”red”);<br>:lt(index) 选取索引号小于index的元素$(‘div:lt(3)’).css(“color”,”red”);</p>
 <h3 id="属性过滤选择器（六个必须记住）"><a href="#属性过滤选择器（六个必须记住）" class="headerlink" title="属性过滤选择器（六个必须记住）"></a>属性过滤选择器（六个必须记住）</h3><p>:[attribute] 选取拥有此属性的元素 $(‘div:[attribute]’).css(‘background-color’,’red’);<br>:[attribute=value] 选取属性值为value的元素 $(‘div:[attribute=text]’)<br>:[attribute!=value] 选取属性值不为value的元素 $(‘div:[attribute!=text]’)<br>:[attribute^=value] 选取属性值以value开始的元素 $(‘div:[attribute^=text]’)<br>:[attribute$=value] 选取属性值以value结尾的元素 $(‘div:[attribute$=text]’)<br>:[attribute*=value] 选取属性值包含value的元素 $(‘div:[attribute*=text]’)</p>
 <h3 id="内容过滤选择器（四个必须记住）"><a href="#内容过滤选择器（四个必须记住）" class="headerlink" title="内容过滤选择器（四个必须记住）"></a>内容过滤选择器（四个必须记住）</h3><p>:contains 选取包含文本的text的元素 $(‘div:contains(.mini)’).css(“color”,”red”);<br>:has(id选择器名称、Class选择器名称) 选取含有选择器所匹配的元素 $(‘div:has(.mini)’).css(“color”,”red”);<br>:empty 选取不包含子元素的元素 $(‘div:empty’).css(“color”,”red”);<br>:parent 选取包含子元素的元素 $(‘div:parent’).css(“color”,”red”);</p>
-<h3 id="子元素过滤选择器（记住八个）"><a href="#子元素过滤选择器（记住八个）" class="headerlink" title="子元素过滤选择器（记住八个）"></a>子元素过滤选择器（记住八个）</h3><p>:nth-child(index) 选取每个父节点下第index个元素、偶数元素或奇数元素。<br><code>$(&#39;div.one :nth-child(8)&#39;).css(&#39;background-color&#39;,&#39;#900&#39;);</code><br>:first-child 选取每个父元素下的第一个子元素 $(‘div.one :first-child(8)’).css(‘color’,’red’);<br>:last-child 选取每个父元素下的最后一个子元素 $(‘div.one :last-child(8)’).css(‘color’,’red’);<br>:only-child 选取只有一个子元素的元素 $(‘div.one :only-child(8)’).css(‘color’,’red’);<br>:enabled 选取所有可用的元素 $(‘#form1 input:enabled’).val(“vaotoo.com”);<br>:disabled 选取所有不可用的元素 $(‘#form1 input:disabled’).val(“vaotoo.com”);<br>:checked 选取所有被选中的元素(一般为（HTML中）RadioButton、CheckBox标记);<br><code>$(&#39;input:checked&#39;).text(&quot;vaotoo.com&quot;);</code><br>:selected 选取被选中的选项元素 select下拉列表标记中的option=select</p>
+<h3 id="子元素过滤选择器（记住八个）"><a href="#子元素过滤选择器（记住八个）" class="headerlink" title="子元素过滤选择器（记住八个）"></a>子元素过滤选择器（记住八个）</h3><p>:nth-child(index) 选取每个父节点下第index个元素、偶数元素或奇数元素。<br>$(‘div.one :nth-child(8)’).css(‘background-color’,’#900’);<br>:first-child 选取每个父元素下的第一个子元素 $(‘div.one :first-child(8)’).css(‘color’,’red’);<br>:last-child 选取每个父元素下的最后一个子元素 $(‘div.one :last-child(8)’).css(‘color’,’red’);<br>:only-child 选取只有一个子元素的元素 $(‘div.one :only-child(8)’).css(‘color’,’red’);<br>:enabled 选取所有可用的元素 $(‘#form1 input:enabled’).val(“vaotoo.com”);<br>:disabled 选取所有不可用的元素 $(‘#form1 input:disabled’).val(“vaotoo.com”);<br>:checked 选取所有被选中的元素(一般为（HTML中）RadioButton、CheckBox标记);<br>$(‘input:checked’).text(“vaotoo.com”);<br>:selected 选取被选中的选项元素 select下拉列表标记中的option=select</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;select:selected&#x27;</span>).each(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  str += $(<span class="built_in">this</span>).text()+<span class="string">&quot;,&quot;</span>;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
 <h3 id="可见性过滤选择器-两个"><a href="#可见性过滤选择器-两个" class="headerlink" title="可见性过滤选择器(两个)"></a>可见性过滤选择器(两个)</h3><p>:hidden<br>:visibal</p>
 
@@ -965,78 +1044,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/06/11/PHP%E9%AD%94%E6%9C%AF%E5%87%BD%E6%95%B0%E4%B9%8B-sleep%E5%92%8C-wakeup/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/06/11/PHP%E9%AD%94%E6%9C%AF%E5%87%BD%E6%95%B0%E4%B9%8B-sleep%E5%92%8C-wakeup/" class="post-title-link" itemprop="url">PHP魔术函数之__sleep和__wakeup</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2017-06-11 10:25:53 / 修改时间：11:28:57" itemprop="dateCreated datePublished" datetime="2017-06-11T10:25:53+09:00">2017-06-11</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-最重要的东西,用眼睛是看不见的。
-</blockquote>
-在PHP5中有两个魔术方法__sleep()方法和__wakeup()方法，在对象串行化的时候，会调用一个__sleep()方法来完成一 些睡前的事情；而在重新醒来，即由二进制串重新组成一个对象的时候，则会自动调用PHP的另一个函数__wakeup()，做一些对象醒来就要做的动作。
-
-<p>__sleep()函数不接受任何参数， 但返回一个数组，其中包含需要串行化的属性。末被包含的属性将在串行化时被忽略，如果没有__sleep()方法，PHP将保存所有属性。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">//下面是人的成员属性</span></span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$name</span>;  <span class="comment">//人的名子</span></span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$sex</span>;   <span class="comment">//人的性别</span></span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$age</span>;   <span class="comment">//人的年龄</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//定义一个构造方法参数为属性姓名$name、性别$sex和年龄$age进行赋值</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$name</span> = <span class="string">&quot;&quot;</span>, <span class="variable">$sex</span> = <span class="string">&quot;&quot;</span>, <span class="variable">$age</span> = <span class="string">&quot;&quot;</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;name = <span class="variable">$name</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;sex = <span class="variable">$sex</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;age = <span class="variable">$age</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这个人可以说话的方法, 说出自己的属性</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">say</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;我的名子叫：&quot;</span> . <span class="keyword">$this</span>-&gt;name . <span class="string">&quot; 性别：&quot;</span> . <span class="keyword">$this</span>-&gt;sex . <span class="string">&quot; 我的年龄是：&quot;</span> . <span class="keyword">$this</span>-&gt;age . <span class="string">&quot;&lt;br&gt;&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__sleep</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> Implement __sleep() method.</span></span><br><span class="line">        <span class="variable">$arr</span> = <span class="keyword">array</span>(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;age&quot;</span>); <span class="comment">// 此时，属性$sex将被删除！！！</span></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$arr</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> Implement __wakeup() method.</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;age = <span class="number">40</span>;  <span class="comment">//重新生成对象时，并重新赋值$age为40</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$p1</span> = <span class="keyword">new</span> Person(<span class="string">&quot;张三&quot;</span>, <span class="string">&quot;男&quot;</span>, <span class="number">20</span>);</span><br><span class="line"><span class="variable">$p1_string</span> = serialize(<span class="variable">$p1</span>);    <span class="comment">//把一个对象串行化，返一个字符串</span></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$p1_string</span> . <span class="string">&quot;&lt;br&gt;&quot;</span>;     <span class="comment">//串行化的字符串我们通常不去解析</span></span><br><span class="line"><span class="variable">$p2</span> = unserialize(<span class="variable">$p1_string</span>);  <span class="comment">//把一个串行化的字符串反串行化形成对象$p2</span></span><br><span class="line"><span class="variable">$p2</span>-&gt;say();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/28/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><span class="page-number current">29</span><a class="page-number" href="/page/30/">30</a><span class="space">&hellip;</span><a class="page-number" href="/page/39/">39</a><a class="extend next" rel="next" href="/page/30/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/28/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><span class="page-number current">29</span><a class="page-number" href="/page/30/">30</a><span class="space">&hellip;</span><a class="page-number" href="/page/40/">40</a><a class="extend next" rel="next" href="/page/30/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>
@@ -1048,7 +1057,7 @@
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

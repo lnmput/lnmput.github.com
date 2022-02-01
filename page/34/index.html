@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">390</span>
+          <span class="site-state-item-count">391</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,91 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/01/10/Laravel%E4%BD%BF%E7%94%A8redis%E5%AD%98%E5%82%A8session/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/01/10/Laravel%E4%BD%BF%E7%94%A8redis%E5%AD%98%E5%82%A8session/" class="post-title-link" itemprop="url">Laravel使用redis存储session</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-01-10 12:09:36" itemprop="dateCreated datePublished" datetime="2017-01-10T12:09:36+09:00">2017-01-10</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:18:18" itemprop="dateModified" datetime="2018-03-27T22:18:18+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+水来我在漩涡中等你
+火来我在灰烬中等你
+</blockquote>
+默认情况下，Redis 服务会提供 16 个数据库，Laravel 使用数据库 0 作为缓存和 Session 的存储。
+在使用的过程中觉得这个默认的设置挺不合理，因为当你在执行命令`php artisan cache:clear` 的时候，会把 Session 也连带清除了，导致所有用户需要重新登录。
+
+<h3 id="配置-Session-Redis-数据库"><a href="#配置-Session-Redis-数据库" class="headerlink" title="配置 Session Redis 数据库"></a>配置 Session Redis 数据库</h3><p>修改 config/database.php，在 redis 选项内增加 session 选项，并把 database 修改为 1：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;redis&#x27;</span> =&gt; [</span><br><span class="line"></span><br><span class="line">   <span class="string">&#x27;cluster&#x27;</span> =&gt; <span class="literal">false</span>,</span><br><span class="line"></span><br><span class="line">   <span class="string">&#x27;default&#x27;</span> =&gt; [</span><br><span class="line">       <span class="string">&#x27;host&#x27;</span>     =&gt; env(<span class="string">&#x27;REDIS_HOST&#x27;</span>, <span class="string">&#x27;localhost&#x27;</span>),</span><br><span class="line">       <span class="string">&#x27;password&#x27;</span> =&gt; env(<span class="string">&#x27;REDIS_PASSWORD&#x27;</span>, <span class="literal">null</span>),</span><br><span class="line">       <span class="string">&#x27;port&#x27;</span>     =&gt; env(<span class="string">&#x27;REDIS_PORT&#x27;</span>, <span class="number">6379</span>),</span><br><span class="line">       <span class="string">&#x27;database&#x27;</span> =&gt; <span class="number">0</span>,</span><br><span class="line">   ],</span><br><span class="line"></span><br><span class="line">   <span class="string">&#x27;session&#x27;</span> =&gt; [</span><br><span class="line">         <span class="string">&#x27;host&#x27;</span>     =&gt; env(<span class="string">&#x27;REDIS_HOST&#x27;</span>, <span class="string">&#x27;localhost&#x27;</span>),</span><br><span class="line">         <span class="string">&#x27;password&#x27;</span> =&gt; env(<span class="string">&#x27;REDIS_PASSWORD&#x27;</span>, <span class="literal">null</span>),</span><br><span class="line">         <span class="string">&#x27;port&#x27;</span>     =&gt; env(<span class="string">&#x27;REDIS_PORT&#x27;</span>, <span class="number">6379</span>),</span><br><span class="line">         <span class="string">&#x27;database&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">   ],</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
+
+<h3 id="指定-Session-使用数据库"><a href="#指定-Session-使用数据库" class="headerlink" title="指定 Session 使用数据库"></a>指定 Session 使用数据库</h3><p>修改 config/session.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;connection&#x27;</span> =&gt; <span class="string">&#x27;session&#x27;</span>,</span><br></pre></td></tr></table></figure>
+
+<h3 id="开始使用"><a href="#开始使用" class="headerlink" title="开始使用"></a>开始使用</h3><p>修改 .env 文件的 SESSION_DRIVER 选项为 redis，开始应用上。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SESSION_DRIVER=redis</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -991,92 +1076,8 @@ Elastic{ON}15, the first ES conference is coming, and since nowadays we see a lo
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/12/08/%E5%85%B3%E4%BA%8Ehttp%E7%9A%84%E4%B8%80%E4%BA%9B%E7%9F%A5%E8%AF%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/12/08/%E5%85%B3%E4%BA%8Ehttp%E7%9A%84%E4%B8%80%E4%BA%9B%E7%9F%A5%E8%AF%86/" class="post-title-link" itemprop="url">关于http的一些知识</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-12-08 15:35:42" itemprop="dateCreated datePublished" datetime="2016-12-08T15:35:42+09:00">2016-12-08</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-25 10:47:44" itemprop="dateModified" datetime="2018-04-25T10:47:44+09:00">2018-04-25</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-兴趣是最好的老师，其次是耻辱
-</blockquote>
-
-<h3 id="简要说明"><a href="#简要说明" class="headerlink" title="简要说明"></a>简要说明</h3><p>简言之，HTTP Referer是header的一部分，当浏览器向web服务器发送请求的时候，一般会带上Referer，告诉服务器我是从哪个页面链接过来的，服务器籍此可以获得一些信息用于处理。比如从我主页上链接到一个朋友那里，他的服务器就能够从HTTP Referer中统计出每天有多少用户点击我主页上的链接访问他的网站。</p>
-<p>从一个https页面上的链接访问到一个非加密的http页面的时候，在http页面上是检查不到HTTP Referer的，比如当我点击自己的https页面下面的w3c xhtml验证图标（网址为<a target="_blank" rel="noopener" href="http://validator.w3.org/check?uri=referer%EF%BC%89%EF%BC%8C%E4%BB%8E%E6%9D%A5%E9%83%BD%E6%97%A0%E6%B3%95%E5%AE%8C%E6%88%90%E6%A0%A1%E9%AA%8C%EF%BC%8C%E6%8F%90%E7%A4%BA%EF%BC%9A">http://validator.w3.org/check?uri=referer），从来都无法完成校验，提示：</a></p>
-<p>No Referer header found!<br>原来，在http协议的rfc文档中有定义：</p>
-<p>15.1.3 Encoding Sensitive Information in URI’s</p>
-<p>…</p>
-<p>   Clients SHOULD NOT include a Referer header field in a (non-secure)<br>   HTTP request if the referring page was transferred with a secure<br>   protocol.<br>这样是出于安全的考虑，访问非加密页时，如果来源是加密页，客户端不发送Referer，IE一直都是这样实现的，Firefox浏览器也不例外。但这并不影响从加密页到加密页的访问。</p>
-<h3 id="详细论述"><a href="#详细论述" class="headerlink" title="详细论述"></a>详细论述</h3><p>从一个https页面上的链接访问到一个非加密的http页面的时候，在http页面上是检查不到HTTP Referer的，但是这是在https中未做设置的情况下，如facebook，</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="http://serverfault.com/questions/520244/referer-is-passed-from-https-to-http-in-some-cases-how">http://serverfault.com/questions/520244/referer-is-passed-from-https-to-http-in-some-cases-how</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/33/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/33/">33</a><span class="page-number current">34</span><a class="page-number" href="/page/35/">35</a><span class="space">&hellip;</span><a class="page-number" href="/page/39/">39</a><a class="extend next" rel="next" href="/page/35/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/33/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/33/">33</a><span class="page-number current">34</span><a class="page-number" href="/page/35/">35</a><span class="space">&hellip;</span><a class="page-number" href="/page/40/">40</a><a class="extend next" rel="next" href="/page/35/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>
@@ -1088,7 +1089,7 @@ Elastic{ON}15, the first ES conference is coming, and since nowadays we see a lo
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

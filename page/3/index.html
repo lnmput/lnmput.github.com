@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">390</span>
+          <span class="site-state-item-count">391</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,162 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/06/28/golang%E7%9A%84panic%E5%92%8Crecover/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/06/28/golang%E7%9A%84panic%E5%92%8Crecover/" class="post-title-link" itemprop="url">golang的panic和recover</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-06-28 12:49:24" itemprop="dateCreated datePublished" datetime="2021-06-28T12:49:24+09:00">2021-06-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:55:48" itemprop="dateModified" datetime="2021-09-10T13:55:48+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h3 id="What-is-Panic"><a href="#What-is-Panic" class="headerlink" title="What is Panic?"></a>What is Panic?</h3><p>The idiomatic way of handling abnormal conditions in a Go program is using errors. Errors are sufficient for most of the abnormal conditions arising in the program.</p>
+<p>But there are some situations where the program cannot continue execution after an abnormal condition. In this case, we use panic to prematurely terminate the program. When a function encounters a panic, its execution is stopped, any deferred functions are executed and then the control returns to its caller. This process continues until all the functions of the current goroutine have returned at which point the program prints the panic message, followed by the stack trace and then terminates. This concept will be more clear when we write an example program.</p>
+<p>It is possible to regain control of a panicking program using recover which we will discuss later in this tutorial.</p>
+<p>panic and recover can be considered similar to try-catch-finally idiom in other languages such as Java except that they are rarely used in Go.</p>
+<h3 id="When-Should-Panic-Be-Used"><a href="#When-Should-Panic-Be-Used" class="headerlink" title="When Should Panic Be Used?"></a>When Should Panic Be Used?</h3><p>One important factor is that you should avoid panic and recover and use errors where ever possible. Only in cases where the program just cannot continue execution should panic and recover mechanism be used.</p>
+<p>There are two valid use cases for panic.</p>
+<ul>
+<li><p>An unrecoverable error where the program cannot simply continue its execution.<br>One example is a web server that fails to bind to the required port. In this case, it’s reasonable to panic as there is nothing else to do if the port binding itself fails.</p>
+</li>
+<li><p>A programmer error.<br>Let’s say we have a method that accepts a pointer as a parameter and someone calls this method using a nil argument. In this case, we can panic as it’s a programmer error to call a method with nil argument which was expecting a valid pointer.</p>
+</li>
+</ul>
+<h3 id="Panic-Example"><a href="#Panic-Example" class="headerlink" title="Panic Example"></a>Panic Example</h3><p>The signature of the built-in panic function is provided below,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">panic</span><span class="params">(<span class="keyword">interface</span>&#123;&#125;)</span></span>  </span><br></pre></td></tr></table></figure>
+
+<p>The argument passed to the panic function will be printed when the program terminates. The use of this will be clear when we write a sample program. So let’s do that right away.</p>
+<p>We will start with a contrived example which shows how panic works.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fullName</span><span class="params">(firstName *<span class="keyword">string</span>, lastName *<span class="keyword">string</span>)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> firstName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: first name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> lastName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: last name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%s %s\n&quot;</span>, *firstName, *lastName)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from fullName&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    firstName := <span class="string">&quot;Elon&quot;</span></span><br><span class="line">    fullName(&amp;firstName, <span class="literal">nil</span>)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from main&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>The above is a simple program to print the full name of a person. The fullName function in line no. 7 prints the full name of a person. This function checks whether the firstName and lastName pointers are nil in line nos. 8 and 11 respectively. If it is nil the function calls panic with a corresponding message. This message will be printed when the program terminates.</p>
+<p>Running this program will print the following output,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">panic</span>: runtime error: last name cannot be <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.fullName(<span class="number">0xc00006af58</span>, <span class="number">0x0</span>)  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">12</span> +<span class="number">0x193</span></span><br><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">20</span> +<span class="number">0x4d</span></span><br></pre></td></tr></table></figure>
+
+<p>Let’s analyze this output to understand how panic works and how the stack trace is printed when the program panics.</p>
+<p>In line no. 19 we assign Elon to firstName. We call fullName function with lastName as nil in line no. 20. Hence the condition in line no. 11 will be satisfied and the program will panic. When panic is encountered, the program execution terminates, the argument passed to the panic function is printed followed by the stack trace. Since the program terminates following the panic function call in line no. 12, the code in line nos. 13, 14, and 15 will not be executed.</p>
+<p>This program first prints the message passed to the panic function,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">panic</span>: runtime error: last name cannot be <span class="literal">nil</span>  </span><br></pre></td></tr></table></figure>
+
+<p>and then prints the stack trace.</p>
+<p>The program panicked in line no. 12 of fullName function and hence,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.fullName(<span class="number">0xc00006af58</span>, <span class="number">0x0</span>)  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">12</span> +<span class="number">0x193</span></span><br></pre></td></tr></table></figure>
+
+<p>will be printed first. Then the next item in the stack will be printed. In our case, line no. 20 where the fullName is called is the next item in the stack trace. Hence it is printed next.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">20</span> +<span class="number">0x4d</span></span><br></pre></td></tr></table></figure>
+
+<p>Now we have reached the top level function which caused the panic and there are no more levels above, hence there is nothing more to print.</p>
+<h3 id="One-More-Example"><a href="#One-More-Example" class="headerlink" title="One More Example"></a>One More Example</h3><p>Panics can also be caused by errors that happen during the runtime such as trying to access an index that is not present in a slice.</p>
+<p>Let’s write a contrived example which creates a panic due to out of bounds slice access.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">slicePanic</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    n := []<span class="keyword">int</span>&#123;<span class="number">5</span>, <span class="number">7</span>, <span class="number">4</span>&#125;</span><br><span class="line">    fmt.Println(n[<span class="number">4</span>])</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from a&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    slicePanic()</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>In the program above, in line no. 9 we are trying to access n[4] which is an invalid index in the slice. This program will panic with the following output,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">panic</span>: runtime error: index out of <span class="keyword">range</span> [<span class="number">4</span>] with length <span class="number">3</span></span><br><span class="line"></span><br><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.slicePanic()  </span><br><span class="line">    /tmp/sandbox942516049/prog.<span class="keyword">go</span>:<span class="number">9</span> +<span class="number">0x1d</span></span><br><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox942516049/prog.<span class="keyword">go</span>:<span class="number">13</span> +<span class="number">0x22</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Defer-Calls-During-a-Panic"><a href="#Defer-Calls-During-a-Panic" class="headerlink" title="Defer Calls During a Panic"></a>Defer Calls During a Panic</h3><p>Let’s recollect what panic does. When a function encounters a panic, its execution is stopped, any deferred functions are executed and then the control returns to its caller. This process continues until all the functions of the current goroutine have returned at which point the program prints the panic message, followed by the stack trace and then terminates.</p>
+<p>In the example above, we did not defer any function calls. If a deferred function call is present, it is executed and then the control returns to its caller.</p>
+<p>Let’s modify the example above a little and use a defer statement.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fullName</span><span class="params">(firstName *<span class="keyword">string</span>, lastName *<span class="keyword">string</span>)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;deferred call in fullName&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> firstName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: first name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> lastName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: last name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%s %s\n&quot;</span>, *firstName, *lastName)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from fullName&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;deferred call in main&quot;</span>)</span><br><span class="line">    firstName := <span class="string">&quot;Elon&quot;</span></span><br><span class="line">    fullName(&amp;firstName, <span class="literal">nil</span>)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The only changes made are the addition of the deferred function calls in line nos. 8 and 20.</p>
+<p>This program prints,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">deferred call in fullName  </span><br><span class="line">deferred call in main  </span><br><span class="line"><span class="built_in">panic</span>: runtime error: last name cannot be <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.fullName(<span class="number">0xc00006af28</span>, <span class="number">0x0</span>)  </span><br><span class="line">    /tmp/sandbox451943841/prog.<span class="keyword">go</span>:<span class="number">13</span> +<span class="number">0x23f</span></span><br><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox451943841/prog.<span class="keyword">go</span>:<span class="number">22</span> +<span class="number">0xc6</span></span><br></pre></td></tr></table></figure>
+
+<p>When the program panics in line no. 13, any deferred function calls are first executed and then the control returns to the caller whose deferred calls are executed and so on until the top level caller is reached.</p>
+<p>In our case, defer statement in line no. 8 of fullName function is executed first. This prints the following message.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">deferred call in fullName  </span><br></pre></td></tr></table></figure>
+
+<p>And then the control returns to the main function whose deferred calls are executed and hence this prints,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">deferred call in main  </span><br></pre></td></tr></table></figure>
+<p>Now the control has reached the top level function and hence the program prints the panic message followed by the stack trace and then terminates.</p>
+<h3 id="Recovering-from-a-Panic"><a href="#Recovering-from-a-Panic" class="headerlink" title="Recovering from a Panic"></a>Recovering from a Panic</h3><p>recover is a builtin function that is used to regain control of a panicking program.</p>
+<p>The signature of recover function is provided below,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recover</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>Recover is useful only when called inside deferred functions. Executing a call to recover inside a deferred function stops the panicking sequence by restoring normal execution and retrieves the error message passed to the panic function call. If recover is called outside the deferred function, it will not stop a panicking sequence.</p>
+<p>Let’s modify our program and use recover to restore normal execution after a panic.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recoverFullName</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> r := <span class="built_in">recover</span>(); r!= <span class="literal">nil</span> &#123;</span><br><span class="line">        fmt.Println(<span class="string">&quot;recovered from &quot;</span>, r)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fullName</span><span class="params">(firstName *<span class="keyword">string</span>, lastName *<span class="keyword">string</span>)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> recoverFullName()</span><br><span class="line">    <span class="keyword">if</span> firstName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: first name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> lastName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: last name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%s %s\n&quot;</span>, *firstName, *lastName)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from fullName&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;deferred call in main&quot;</span>)</span><br><span class="line">    firstName := <span class="string">&quot;Elon&quot;</span></span><br><span class="line">    fullName(&amp;firstName, <span class="literal">nil</span>)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The recoverFullName() function in line no. 7 calls recover() which returns the value passed to panic function call. Here we are just printing the value returned by recover in line no. 9. recoverFullName() is being deferred in line no. 14 of the fullName function.</p>
+<p>When fullName panics, the deferred function recoverName() will be called which uses recover() to stop the panicking sequence.</p>
+<p>This program will print,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">recovered from  runtime error: last name cannot be <span class="literal">nil</span>  </span><br><span class="line">returned normally from main  </span><br><span class="line">deferred call in main  </span><br></pre></td></tr></table></figure>
+
+<p>When the program panics in line no. 19, the deferred recoverFullName function is called which in turn calls recover() to regain control of the panicking sequence. The call to recover() in line no. 8 returns the argument passed to panic() and hence it prints,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">recovered from  runtime error: last name cannot be <span class="literal">nil</span>  </span><br></pre></td></tr></table></figure>
+
+<p>After execution of recover(), the panicking stops and the control returns to the caller, in this case, the main function. The program continues to execute normally from line 29 in main since the panic has been recovered 😃. It prints returned normally from main followed by deferred call in main</p>
+<p>Let’s look at one more example where we recover from a panic caused by accessing an invalid index of a slice.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recoverInvalidAccess</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> r := <span class="built_in">recover</span>(); r != <span class="literal">nil</span> &#123;</span><br><span class="line">        fmt.Println(<span class="string">&quot;Recovered&quot;</span>, r)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">invalidSliceAccess</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> recoverInvalidAccess()</span><br><span class="line">    n := []<span class="keyword">int</span>&#123;<span class="number">5</span>, <span class="number">7</span>, <span class="number">4</span>&#125;</span><br><span class="line">    fmt.Println(n[<span class="number">4</span>])</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from a&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    invalidSliceAccess()</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Running the above program will output,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Recovered runtime error: index out of <span class="keyword">range</span> [<span class="number">4</span>] with length <span class="number">3</span>  </span><br><span class="line">normally returned from main  </span><br></pre></td></tr></table></figure>
+
+<p>From the output, you can understand that we have recovered from the panic.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://golangbot.com/panic-and-recover/">https://golangbot.com/panic-and-recover/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -954,142 +1110,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/05/04/dom%E5%8F%98%E5%8A%A8%E8%A7%82%E5%AF%9F%E5%99%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/05/04/dom%E5%8F%98%E5%8A%A8%E8%A7%82%E5%AF%9F%E5%99%A8/" class="post-title-link" itemprop="url">DOM变动观察器</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-05-04 22:04:43" itemprop="dateCreated datePublished" datetime="2020-05-04T22:04:43+09:00">2020-05-04</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2020-05-17 00:36:28" itemprop="dateModified" datetime="2020-05-17T00:36:28+09:00">2020-05-17</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-“你只见到这么多人说他不好时，
-却看到他有出来说別人一句吗？”
-</blockquote>
-
-<p>MutationObserver 是一个内建对象，它观察 DOM 元素，在其发生更改时触发回调。<br>我们将首先看一下语法，然后探究一个实际的用例，以了解它在什么地方有用。</p>
-<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><p>MutationObserver 使用简单。<br>首先，我们创建一个带有回调函数的观察器：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> observer = <span class="keyword">new</span> MutationObserver(callback);</span><br></pre></td></tr></table></figure>
-<p>然后将其附加到一个 DOM 节点：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">observer.observe(node, config);</span><br></pre></td></tr></table></figure>
-<p>config 是一个具有布尔选项的对象，该布尔选项表示“将对哪些更改做出反应”：</p>
-<ul>
-<li>childList —— node 的直接子节点的更改，</li>
-<li>subtree —— node 的所有后代的更改，</li>
-<li>attributes —— node 的特性（attribute），</li>
-<li>attributeFilter —— 特性名称数组，只观察选定的特性。</li>
-<li>characterData —— 是否观察 node.data（文本内容），</li>
-</ul>
-<p>其他几个选项：</p>
-<ul>
-<li>attributeOldValue —— 如果为 true，则将特性的旧值和新值都传递给回调（参见下文），否则只传新值（需要 attributes 选项），</li>
-<li>characterDataOldValue —— 如果为 true，则将 node.data 的旧值和新值都传递给回调（参见下文），否则只传新值（需要 characterData 选项）。<br>然后，在发生任何更改后，将执行“回调”：更改被作为一个 MutationRecord 对象列表传入第一个参数，而观察器自身作为第二个参数。</li>
-</ul>
-<p>MutationRecord 对象具有以下属性：</p>
-<blockquote>
-<p>type —— 变动类型，以下类型之一：<br>“attributes”：特性被修改了，<br>“characterData”：数据被修改了，用于文本节点，<br>“childList”：添加/删除了子元素。<br>target —— 更改发生在何处：”attributes” 所在的元素，或 “characterData” 所在的文本节点，或 “childList” 变动所在的元素，<br>addedNodes/removedNodes —— 添加/删除的节点，<br>previousSibling/nextSibling —— 添加/删除的节点的上一个/下一个兄弟节点，<br>attributeName/attributeNamespace —— 被更改的特性的名称/命名空间（用于 XML），<br>oldValue —— 之前的值，仅适用于特性或文本更改，如果设置了相应选项 attributeOldValue/characterDataOldValue。</p>
-</blockquote>
-<p>例如，这里有一个 <div>，它具有 <code>contentEditable</code> 特性。该特性使我们可以聚焦和编辑元素。</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">contentEditable</span> <span class="attr">id</span>=<span class="string">&quot;elem&quot;</span>&gt;</span>Click and <span class="tag">&lt;<span class="name">b</span>&gt;</span>edit<span class="tag">&lt;/<span class="name">b</span>&gt;</span>, please<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="keyword">let</span> observer = <span class="keyword">new</span> MutationObserver(<span class="function"><span class="params">mutationRecords</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">  <span class="built_in">console</span>.log(mutationRecords); <span class="comment">// console.log(the changes)</span></span></span><br><span class="line"><span class="javascript">&#125;);</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="comment">// 观察除了特性之外的所有变动</span></span></span><br><span class="line"><span class="javascript">observer.observe(elem, &#123;</span></span><br><span class="line"><span class="javascript">  <span class="attr">childList</span>: <span class="literal">true</span>, <span class="comment">// 观察直接子节点</span></span></span><br><span class="line"><span class="javascript">  <span class="attr">subtree</span>: <span class="literal">true</span>, <span class="comment">// 及其更低的后代节点</span></span></span><br><span class="line"><span class="javascript">  <span class="attr">characterDataOldValue</span>: <span class="literal">true</span> <span class="comment">// 将旧的数据传递给回调</span></span></span><br><span class="line"><span class="javascript">&#125;);</span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>如果我们在浏览器中运行上面这段代码，并聚焦到给定的 <code>&lt;div&gt;</code> 上，然后更改 <code>&lt;b&gt;edit&lt;/b&gt;</code> 中的文本，<code>console.log</code> 将显示一个变动：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mutationRecords = [&#123;</span><br><span class="line">  <span class="attr">type</span>: <span class="string">&quot;characterData&quot;</span>,</span><br><span class="line">  <span class="attr">oldValue</span>: <span class="string">&quot;edit&quot;</span>,</span><br><span class="line">  <span class="attr">target</span>: <span class="xml"><span class="tag">&lt;<span class="name">text</span> <span class="attr">node</span>&gt;</span>,</span></span><br><span class="line"><span class="xml">  // 其他属性为空</span></span><br><span class="line"><span class="xml">&#125;];</span></span><br></pre></td></tr></table></figure>
-<p>如果我们进行更复杂的编辑操作，例如删除 <b>edit</b>，那么变动事件可能会包含多个变动记录：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">mutationRecords = [&#123;</span><br><span class="line">  <span class="attr">type</span>: <span class="string">&quot;childList&quot;</span>,</span><br><span class="line">  <span class="attr">target</span>: &lt;div#elem&gt;,</span><br><span class="line">  removedNodes: [&lt;b&gt;],</span><br><span class="line">  nextSibling: &lt;text node&gt;,</span><br><span class="line">  previousSibling: &lt;text node&gt;</span><br><span class="line">  // 其他属性为空</span><br><span class="line">&#125;, &#123;</span><br><span class="line">  type: &quot;characterData&quot;</span><br><span class="line">  target: &lt;text node&gt;</span><br><span class="line">  // ...变动的详细信息取决于浏览器如何处理此类删除</span><br><span class="line">  // 它可能是将两个相邻的文本节点 &quot;edit &quot; 和 &quot;, please&quot; 合并成一个节点，</span><br><span class="line">  // 或者可能将它们留在单独的文本节点中</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
-<p>因此，<code>MutationObserver</code> 允许对 DOM 子树中的任何更改作出反应。</p>
-<h3 id="用于集成"><a href="#用于集成" class="headerlink" title="用于集成"></a>用于集成</h3><p>在什么时候可能有用？<br>想象一下，你需要添加一个第三方脚本，该脚本不仅包含有用的功能，还会执行一些我们不想要的操作，例如显示广告 <code>&lt;div class=&quot;ads&quot;&gt;Unwanted ads&lt;/div&gt;</code>。<br>当然，第三方脚本没有提供删除它的机制。<br>使用 MutationObserver，我们可以监测到我们不需要的元素何时出现在我们的 DOM 中，并将其删除。<br>还有一些其他情况，例如第三方脚本会将某些内容添加到我们的文档中，并且我们希望检测出这种情况何时发生，以调整页面，动态调整某些内容的大小等。<br>MutationObserver 使我们能够实现这种需求。</p>
-<h3 id="用于架构"><a href="#用于架构" class="headerlink" title="用于架构"></a>用于架构</h3><p>从架构的角度来看，在某些情况下，MutationObserver 有不错的作用。<br>假设我们正在建立一个有关编程的网站。自然地，文章和其他材料中可能包含源代码段。</p>
-<p>在HTML 标记（markup）中的此类片段如下所示：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="tag">&lt;<span class="name">pre</span> <span class="attr">class</span>=<span class="string">&quot;language-javascript&quot;</span>&gt;</span><span class="tag">&lt;<span class="name">code</span>&gt;</span></span><br><span class="line">  // 这里是代码</span><br><span class="line">  let hello = &quot;world&quot;;</span><br><span class="line"><span class="tag">&lt;/<span class="name">code</span>&gt;</span><span class="tag">&lt;/<span class="name">pre</span>&gt;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<p>另外，我们还将在网站上使用 JavaScript 高亮显示库，例如 Prism.js。调用 <code>Prism.highlightElem(pre)</code> 会检查此类 pre 元素的内容，并在其中添加特殊标签（tag）和样式，以进行彩色语法高亮显示，类似于你在本文的示例中看到的那样。</p>
-<p>那什么时候运行该高亮显示方法呢？我们可以在 DOMContentLoaded 事件中或者在页面尾部运行。到那时，我们的 DOM 已准备就绪，我们可以搜索元素 <code>pre[class*=&quot;language&quot;]</code> 并对其调用 <code>Prism.highlightElem：</code></p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 高亮显示页面上的所有代码段</span></span><br><span class="line"><span class="built_in">document</span>.querySelectorAll(<span class="string">&#x27;pre[class*=&quot;language&quot;]&#x27;</span>).forEach(Prism.highlightElem);</span><br></pre></td></tr></table></figure>
-<p>到目前为止，一切都很简单，对吧？HTML 中有 <code>&lt;pre&gt;</code> 代码段，我们高亮显示它们。</p>
-<p>现在让我们继续。假设我们要从服务器动态获取资料。我们将 在本教程的后续章节 中学习进行此操作的方法。目前，只需要关心我们从网络服务器获取 HTML 文章并按需显示</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> article = <span class="comment">/* 从服务器获取新内容 */</span></span><br><span class="line">articleElem.innerHTML = article;</span><br></pre></td></tr></table></figure>
-<p>新的 article HTML 可能包含代码段。我们需要对其调用 Prism.highlightElem，否则它们将不会被高亮显示。</p>
-<p>对于动态加载的文章，应该在何处何时调用 Prism.highlightElem？</p>
-<p>我们可以将该调用附加到加载文章的代码中，如下所示：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> article = <span class="comment">/* 从服务器获取新内容 */</span></span><br><span class="line">articleElem.innerHTML = article;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> snippets = articleElem.querySelectorAll(<span class="string">&#x27;pre[class*=&quot;language-&quot;]&#x27;</span>);</span><br><span class="line">snippets.forEach(Prism.highlightElem);</span><br></pre></td></tr></table></figure>
-<p>……但是，想象一下，代码中有很多地方可以加载内容：文章，测验，论坛帖子。我们是否需要在每个地方都附加一个高亮显示调用？那不太方便，也很容易忘记。</p>
-<p>并且，如果内容是由第三方模块加载的，该怎么办？例如，我们有一个由其他人编写的论坛，该论坛可以动态加载内容，并且我们想为其添加语法高亮显示。没有人喜欢修补第三方脚本。</p>
-<p>幸运的是，还有另一种选择。</p>
-<p>我们可以使用 MutationObserver 来自动检测何时在页面中插入了代码段，并高亮显示之它们。</p>
-<p>因此，我们在一个地方处理高亮显示功能，从而使我们无需集成它。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> observer = <span class="keyword">new</span> MutationObserver(<span class="function"><span class="params">mutations</span> =&gt;</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span>(<span class="keyword">let</span> mutation <span class="keyword">of</span> mutations) &#123;</span><br><span class="line">    <span class="comment">// 检查新节点，有什么需要高亮显示的吗？</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> node <span class="keyword">of</span> mutation.addedNodes) &#123;</span><br><span class="line">      <span class="comment">// 我们只跟踪元素，跳过其他节点（例如文本节点）</span></span><br><span class="line">      <span class="keyword">if</span> (!(node <span class="keyword">instanceof</span> HTMLElement)) <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 检查插入的元素是否为代码段</span></span><br><span class="line">      <span class="keyword">if</span> (node.matches(<span class="string">&#x27;pre[class*=&quot;language-&quot;]&#x27;</span>)) &#123;</span><br><span class="line">        Prism.highlightElement(node);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 或者可能在子树的某个地方有一个代码段？</span></span><br><span class="line">      <span class="keyword">for</span>(<span class="keyword">let</span> elem <span class="keyword">of</span> node.querySelectorAll(<span class="string">&#x27;pre[class*=&quot;language-&quot;]&#x27;</span>)) &#123;</span><br><span class="line">        Prism.highlightElement(elem);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> demoElem = <span class="built_in">document</span>.getElementById(<span class="string">&#x27;highlight-demo&#x27;</span>);</span><br><span class="line"></span><br><span class="line">observer.observe(demoElem, &#123;<span class="attr">childList</span>: <span class="literal">true</span>, <span class="attr">subtree</span>: <span class="literal">true</span>&#125;);</span><br></pre></td></tr></table></figure>
-
-<p>下面有一个 HTML 元素，以及使用 innerHTML 动态填充它的 JavaScript。</p>
-<p>请先运行前面那段代码（上面那段，观察元素），然后运行下面这段代码。你将看到 MutationObserver 是如何检测并高亮显示代码段的。</p>
-<p>一个具有 id=”highlight-demo” 的示例元素，运行上面那段代码来观察它。</p>
-<p>下面这段代码填充了其 innerHTML，这导致 MutationObserver 作出反应，并突出显示其内容：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> demoElem = <span class="built_in">document</span>.getElementById(<span class="string">&#x27;highlight-demo&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 动态插入带有代码段的内容</span></span><br><span class="line">demoElem.innerHTML = <span class="string">`下面是一个代码段：</span></span><br><span class="line"><span class="string">  &lt;pre class=&quot;language-javascript&quot;&gt;&lt;code&gt; let hello = &quot;world!&quot;; &lt;/code&gt;&lt;/pre&gt;</span></span><br><span class="line"><span class="string">  &lt;div&gt;另一个代码段：&lt;/div&gt;</span></span><br><span class="line"><span class="string">  &lt;div&gt;</span></span><br><span class="line"><span class="string">    &lt;pre class=&quot;language-css&quot;&gt;&lt;code&gt;.class &#123; margin: 5px; &#125; &lt;/code&gt;&lt;/pre&gt;</span></span><br><span class="line"><span class="string">  &lt;/div&gt;</span></span><br><span class="line"><span class="string">`</span>;</span><br></pre></td></tr></table></figure>
-<p>现在我们有了 MutationObserver，它可以跟踪观察到的元素中的，或者整个 document 中的所有高亮显示。我们可以在 HTML 中添加/删除代码段，而无需考虑高亮问题。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://zh.javascript.info/mutation-observer">https://zh.javascript.info/mutation-observer</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/39/">39</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/40/">40</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>
@@ -1101,7 +1123,7 @@
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

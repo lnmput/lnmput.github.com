@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">390</span>
+          <span class="site-state-item-count">391</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,114 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/13/%E7%90%86%E8%A7%A3laravel%E7%9A%84%E7%AE%A1%E9%81%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/03/13/%E7%90%86%E8%A7%A3laravel%E7%9A%84%E7%AE%A1%E9%81%93/" class="post-title-link" itemprop="url">理解laravel的管道</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2020-03-13 17:18:06 / 修改时间：18:43:02" itemprop="dateCreated datePublished" datetime="2020-03-13T17:18:06+09:00">2020-03-13</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+当我们搬开别人架下的绊脚石时，也许恰恰是在为自己铺路。
+</blockquote>
+
+<p>Basically, using laravel pipelines you can pass an object between several classes in a fluid way to perform any type of task and finally return the resulting value once all the “tasks” have been executed.</p>
+<p>The most clear example about how pipelines works resides in one of the most used components of the framework itself. I’m talking about middlewares.</p>
+<p>Middleware provide a convenient mechanism for filtering HTTP requests entering your application… This is how a basic middleware looks like:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">app(Pipeline::class)</span><br><span class="line">    -&gt;send(<span class="variable">$content</span>)</span><br><span class="line">    -&gt;through(<span class="variable">$pipes</span>)</span><br><span class="line">    -&gt;via(‘customMethodName’) <span class="comment">// &lt;---- This one :)</span></span><br><span class="line">    -&gt;then(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$content</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Post::create([<span class="string">&#x27;content&#x27;</span> =&gt; <span class="variable">$content</span>]);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>These “middlewares” are in fact just pipes by where the request is going to be sent thru, in order to perform any needed task. Here you can check if the request is an HTTP request, a JSON request, if there is any user authenticated, etc.</p>
+<p>If you take a quick look to the <code>Illuminate\Foundation\Http\Kernel</code> class, you’ll see how the middlewares are executed by using a new instance of the Pipeline class.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Send the given request through the middleware / router.</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span>  \Illuminate\Http\Request  $request</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@return</span> \Illuminate\Http\Response</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">sendRequestThroughRouter</span>(<span class="params"><span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;app-&gt;instance(<span class="string">&#x27;request&#x27;</span>, <span class="variable">$request</span>);</span><br><span class="line">    Facade::clearResolvedInstance(<span class="string">&#x27;request&#x27;</span>);</span><br><span class="line">    <span class="keyword">$this</span>-&gt;bootstrap();</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">new</span> Pipeline(<span class="keyword">$this</span>-&gt;app))</span><br><span class="line">                    -&gt;send(<span class="variable">$request</span>)</span><br><span class="line">                    -&gt;through(<span class="keyword">$this</span>-&gt;app-&gt;shouldSkipMiddleware() ? [] : <span class="keyword">$this</span>-&gt;middleware)</span><br><span class="line">    -&gt;then(<span class="keyword">$this</span>-&gt;dispatchToRouter());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>You can read in the code something like: a new pipeline that sends the request through a list of middlewares and then dispatch the router.</p>
+<p>Don’t worry if this seems a little overwhelmed to you. Let’s try to clarify the concept with the follow example.</p>
+<h3 id="Working-on-a-class-that-requires-to-run-multiple-tasks"><a href="#Working-on-a-class-that-requires-to-run-multiple-tasks" class="headerlink" title="Working on a class that requires to run multiple tasks"></a>Working on a class that requires to run multiple tasks</h3><p>Consider this situation. Let’s say you are building a forum where people can create threads and leave comments. But your client ask you to auto-remove tags or edit them on every piece of content when it’s created.</p>
+<p>So this is what you are asked to do:</p>
+<ul>
+<li>Replace link tags with plain text.</li>
+<li>Replace bad words with “*”</li>
+<li>Remove script tags entirely from the content</li>
+</ul>
+<p>Probably you end up creating classes to handle each of these “tasks”.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="variable">$pipes</span> = [</span><br><span class="line">    RemoveBadWords::class</span><br><span class="line">    ReplaceLinkTags::clas</span><br><span class="line">    RemoveScriptTags::class</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+
+<p>What we are going to do is to pass the given “content” to each task and then return the result to the next one. We can do this using a pipeline.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">create</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$pipes</span> = [</span><br><span class="line">        RemoveBadWords::class,</span><br><span class="line">        ReplaceLinkTags::clas,</span><br><span class="line">        RemoveScriptTags::class</span><br><span class="line">    ];</span><br><span class="line">    <span class="variable">$post</span> = app(Pipeline::class)</span><br><span class="line">        -&gt;send(<span class="variable">$request</span>-&gt;content)</span><br><span class="line">        -&gt;through(<span class="variable">$pipes</span>)</span><br><span class="line">        -&gt;then(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$content</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> Post::create([<span class="string">&#x27;content&#x27;</span> =&gt; <span class="string">&#x27;content&#x27;</span>]);</span><br><span class="line">        &#125;);</span><br><span class="line">    <span class="comment">// return any type of response</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Each “task” class should have a “handle” method to perform the action. Maybe it would be a good idea to have a contract to be implemented by each class:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Pipe</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$content</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RemoveBadWords</span> <span class="keyword">implements</span> <span class="title">Pipe</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$content</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// Here you perform the task and return the updated $content</span></span><br><span class="line">        <span class="comment">// to the next pipe</span></span><br><span class="line">        <span class="keyword">return</span>  <span class="variable">$next</span>(<span class="variable">$content</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The method used to perform the task should receive two parameters, the first one would be the passable object, and the second one would be a closure where the object is going to be redirected to after running the last pipe.</p>
+<p>You can use a custom method name instead of ‘handle’. Then you need to specify the method name to be used by the pipeline, like so</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">app(Pipeline::class)</span><br><span class="line">    -&gt;send(<span class="variable">$content</span>)</span><br><span class="line">    -&gt;through(<span class="variable">$pipes</span>)</span><br><span class="line">    -&gt;via(‘customMethodName’) <span class="comment">// &lt;---- This one :)</span></span><br><span class="line">    -&gt;then(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$content</span></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> Post::create([<span class="string">&#x27;content&#x27;</span> =&gt; <span class="variable">$content</span>]);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="What-happens-at-the-end"><a href="#What-happens-at-the-end" class="headerlink" title="What happens at the end ?"></a>What happens at the end ?</h3><p>What should happen here is that the post content is going to be modified by each one of the <code>$pipes</code> and at the end, this resulting content is going to be stored.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$post</span> = app(Pipeline::class)</span><br><span class="line">    -&gt;send(<span class="variable">$request</span>-&gt;all())</span><br><span class="line">    -&gt;through(<span class="variable">$pipes</span>)</span><br><span class="line">    -&gt;then(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$content</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Post::create([<span class="string">&#x27;content&#x27;</span> =&gt; <span class="variable">$content</span>]);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Final-words"><a href="#Final-words" class="headerlink" title="Final words"></a>Final words</h3><p>Remember, there are tons of ways you can approach this type of issues. What you decide to do it’s up to you. But it is good to know that you have this tool in your arsenal to be used if necessary. I hope this example gives you a better understanding of what these “laravel pipelines” are and how to use them. You can also take a look at api laravel documents if you want to know more about how this</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://jeffochoa.me/understanding-laravel-pipelines">https://jeffochoa.me/understanding-laravel-pipelines</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1036,88 +1144,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/11/26/laravel-chunk-missing-half-the-results/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/11/26/laravel-chunk-missing-half-the-results/" class="post-title-link" itemprop="url">laravel-chunk-missing-half-the-results</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2019-11-26 17:43:01 / 修改时间：18:50:06" itemprop="dateCreated datePublished" datetime="2019-11-26T17:43:01+09:00">2019-11-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-只要从现在开始努力，最坏不过是大器晚成
-</blockquote>
-
-<h3 id="Q"><a href="#Q" class="headerlink" title="Q"></a>Q</h3><p>I have a problem with Laravel’s ORM Eloquent chunk() method. It misses some results. Here is a test query :</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$destinataires</span> = Destinataire::where(<span class="string">&#x27;statut&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="number">3</span>)</span><br><span class="line">    -&gt;where(<span class="string">&#x27;tokenized_at&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="variable">$date_active</span>)</span><br><span class="line">    -&gt;chunk(<span class="keyword">$this</span>-&gt;chunk, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$destinataires</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">foreach</span>(<span class="variable">$destinataires</span> <span class="keyword">as</span> <span class="variable">$destinataire</span>) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;i++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">echo</span> <span class="keyword">$this</span>-&gt;i;</span><br></pre></td></tr></table></figure>
-<p>It gives 124838 results.<br>But :</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$num_dest</span> = Destinataire::where(<span class="string">&#x27;statut&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="number">3</span>)</span><br><span class="line">    -&gt;where(<span class="string">&#x27;tokenized_at&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="variable">$date_active</span>)</span><br><span class="line">    -&gt;count();</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$num_dest</span>;</span><br></pre></td></tr></table></figure>
-<p>gives 249676, so just TWICE as the first code example.</p>
-<h3 id="A"><a href="#A" class="headerlink" title="A"></a>A</h3><p>Use chunkById() instead of chunk().</p>
-<p>When updating or deleting records inside the chunk callback, any changes to the primary key or foreign keys could affect the chunk query. This could potentially result in records not being included in the chunked results.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DB::table(<span class="string">&#x27;users&#x27;</span>)-&gt;where(<span class="string">&#x27;active&#x27;</span>, <span class="literal">false</span>)</span><br><span class="line">    -&gt;chunkById(<span class="number">100</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$users</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">foreach</span> (<span class="variable">$users</span> <span class="keyword">as</span> <span class="variable">$user</span>) &#123;</span><br><span class="line">            DB::table(<span class="string">&#x27;users&#x27;</span>)</span><br><span class="line">                -&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="variable">$user</span>-&gt;id)</span><br><span class="line">                -&gt;update([<span class="string">&#x27;active&#x27;</span> =&gt; <span class="literal">true</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/32700537/eloquent-chunk-missing-half-the-results">https://stackoverflow.com/questions/32700537/eloquent-chunk-missing-half-the-results</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/39/">39</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/40/">40</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>
@@ -1129,7 +1157,7 @@
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
