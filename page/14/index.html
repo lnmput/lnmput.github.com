@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">391</span>
+          <span class="site-state-item-count">392</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-count">136</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,104 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/13/laravel%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0tap%E7%9A%84%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/13/laravel%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0tap%E7%9A%84%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">laravel辅助函数tap的使用方法</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-04-13 10:47:36 / 修改时间：14:54:09" itemprop="dateCreated datePublished" datetime="2018-04-13T10:47:36+09:00">2018-04-13</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+被门夹过的核桃还能补脑嘛
+</blockquote>
+Laravel 5.3 中增加了一个新的全局帮助函数 tap()，改进了框架的声明能力。这个微妙的语法是从 Ruby 和 Lodash 借鉴而来，允许你去 tap 成链。
+先看看 tap() 帮助函数的代码，只有短短的几行：
+Laravel5.3的tap
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">tap</span>(<span class="params"><span class="variable">$value</span>, <span class="variable">$callback</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="variable">$callback</span>(<span class="variable">$value</span>);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Laravel5.4的tap</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">tap</span>(<span class="params"><span class="variable">$value</span>, <span class="variable">$callback</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (is_null(<span class="variable">$callback</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> HigherOrderTapProxy(<span class="variable">$value</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$callback</span>(<span class="variable">$value</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>你需要传一个值和一个回调到方法中，值作为回调的参数，回调将执行，最后值被返回。</p>
+</blockquote>
+<h3 id="第一种情况"><a href="#第一种情况" class="headerlink" title="第一种情况"></a>第一种情况</h3><p>默认情况下会返回一bool值</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$user</span> = \App\Models\User::query()-&gt;find(<span class="number">1</span>);</span><br><span class="line"><span class="variable">$res</span> = <span class="variable">$user</span>-&gt;update([<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;yangzie&#x27;</span>]);</span><br><span class="line">dd(<span class="variable">$res</span>); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>返回user实例</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$user</span> = \App\Models\User::query()-&gt;find(<span class="number">1</span>);</span><br><span class="line"><span class="variable">$res</span> = tap(<span class="variable">$user</span>)-&gt;update([<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;yangzie&#x27;</span>]);</span><br><span class="line">dd(<span class="variable">$res</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="第二种情况"><a href="#第二种情况" class="headerlink" title="第二种情况"></a>第二种情况</h3><p>返回user实例</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$name</span> = <span class="string">&#x27;樊雨薇&#x27;</span>;</span><br><span class="line"><span class="keyword">return</span> tap(\App\Models\User::query()-&gt;find(<span class="number">1</span>), <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$instance</span></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$name</span></span>)</span>&#123;</span><br><span class="line">    <span class="variable">$instance</span>-&gt;name = <span class="variable">$name</span>;</span><br><span class="line">    <span class="variable">$instance</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="第三种情况"><a href="#第三种情况" class="headerlink" title="第三种情况"></a>第三种情况</h3><p>让我们看看 <code>Illuminate\Cache\Repository</code> 下的 <code>pull</code> 方法，此函数将从指定键的缓存中获取值，并将其删除。<code>pull</code> 方法的实现：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">pull</span>(<span class="params"><span class="variable">$key</span>, <span class="variable">$default</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="variable">$value</span> = <span class="keyword">$this</span>-&gt;get(<span class="variable">$key</span>, <span class="variable">$default</span>);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">$this</span>-&gt;forget(<span class="variable">$key</span>) <span class="comment">// returns a boolean;</span></span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的例子中，$this-&gt; forget() 返回一个布尔值，所以要使我们的函数返回原始值，需要将其储存到临时变量 $value 中。以下是 tap() 的实现，不再需要临时变量：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">pull</span>(<span class="params"><span class="variable">$key</span>, <span class="variable">$default</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">return</span> tap(<span class="keyword">$this</span>-&gt;get(<span class="variable">$key</span>, <span class="variable">$default</span>), <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$value</span></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$key</span></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">$this</span>-&gt;forget(<span class="variable">$key</span>);</span><br><span class="line">   &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第四种情况"><a href="#第四种情况" class="headerlink" title="第四种情况"></a>第四种情况</h3><p>vendor\laravel\framework\src\Illuminate\View\Factory.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">make</span>(<span class="params"><span class="variable">$view</span>, <span class="variable">$data</span> = [], <span class="variable">$mergeData</span> = []</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$path</span> = <span class="keyword">$this</span>-&gt;finder-&gt;find(</span><br><span class="line">        <span class="variable">$view</span> = <span class="keyword">$this</span>-&gt;normalizeName(<span class="variable">$view</span>)</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这里是视图文件的绝对路径</span></span><br><span class="line">    <span class="comment">// D:\phpStudy\WWW\ccerp-v2\resources\views/home.blade.php</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Next, we will create the view instance and call the view creator for the view</span></span><br><span class="line">    <span class="comment">// which can set any data, etc. Then we will return the view instance back to</span></span><br><span class="line">    <span class="comment">// the caller for rendering or performing other view manipulations on this.</span></span><br><span class="line">    <span class="variable">$data</span> = array_merge(<span class="variable">$mergeData</span>, <span class="keyword">$this</span>-&gt;parseData(<span class="variable">$data</span>));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 注意 tap 辅助函数的用法, 最后返回的是 view 实例</span></span><br><span class="line">    <span class="comment">// $this-&gt;viewInstance($view, $path, $data) 生成一个新的 view 实例, 闭包传递的$view就是这个view实例</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> tap(<span class="keyword">$this</span>-&gt;viewInstance(<span class="variable">$view</span>, <span class="variable">$path</span>, <span class="variable">$data</span>), <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$view</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;callCreator(<span class="variable">$view</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://derekmd.com/2017/02/laravel-tap/?utm_source=learninglaravel.net">http://derekmd.com/2017/02/laravel-tap/?utm_source=learninglaravel.net</a><br><a target="_blank" rel="noopener" href="https://pigjian.com/article/laravel-tap-the-usage">https://pigjian.com/article/laravel-tap-the-usage</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1022,100 +1120,6 @@
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://segmentfault.com/q/1010000007519197">https://segmentfault.com/q/1010000007519197</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/02/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E5%95%86%E5%9F%8E%E5%BA%94%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/02/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E5%95%86%E5%9F%8E%E5%BA%94%E7%94%A8/" class="post-title-link" itemprop="url">微信小程序商城应用</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-04-02 17:32:00" itemprop="dateCreated datePublished" datetime="2018-04-02T17:32:00+09:00">2018-04-02</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-10 10:21:38" itemprop="dateModified" datetime="2018-04-10T10:21:38+09:00">2018-04-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-心中事，眼中泪，意中人
-</blockquote>
-
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>一款微信小程序商城,后端API基于ThinkPHP 5 开发, 实现了商品展示, 用户登录, 加入购物车, 下单购买等基本流程;</p>
-<h3 id="首页"><a href="#首页" class="headerlink" title="首页"></a>首页</h3><img style="margin-left: 0;" src="/images/wechat01.png">
-
-<h3 id="商品详情"><a href="#商品详情" class="headerlink" title="商品详情"></a>商品详情</h3><img style="margin-left: 0;" src="/images/wechat04.png">
-
-<h3 id="购物车"><a href="#购物车" class="headerlink" title="购物车"></a>购物车</h3><img style="margin-left: 0;" src="/images/wechat02.png">
-
-<h3 id="专题列表"><a href="#专题列表" class="headerlink" title="专题列表"></a>专题列表</h3><img style="margin-left: 0;" src="/images/wechat03.png">
-
-<h3 id="微信用户地址获取"><a href="#微信用户地址获取" class="headerlink" title="微信用户地址获取"></a>微信用户地址获取</h3><img style="margin-left: 0;" src="/images/wechat05.png">
-
-<h3 id="授权登录"><a href="#授权登录" class="headerlink" title="授权登录"></a>授权登录</h3><img style="margin-left: 0;" src="/images/wechat07.png">
-
-
-<h3 id="项目源代码"><a href="#项目源代码" class="headerlink" title="项目源代码"></a>项目源代码</h3><ul>
-<li><p>微信小程序<br><a target="_blank" rel="noopener" href="https://github.com/lnmput/wechat-mini-program">详细链接</a></p>
-</li>
-<li><p>后端API代码<br><a target="_blank" rel="noopener" href="https://github.com/lnmput/wechat-mini-program-api">详细链接</a></p>
-</li>
-</ul>
 
       
     </div>

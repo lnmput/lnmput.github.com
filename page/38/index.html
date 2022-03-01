@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">391</span>
+          <span class="site-state-item-count">392</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-count">136</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,97 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/18/laravel-session%E7%9A%84%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/08/18/laravel-session%E7%9A%84%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">laravel-session的使用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-18 20:06:12" itemprop="dateCreated datePublished" datetime="2016-08-18T20:06:12+09:00">2016-08-18</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2020-03-23 00:23:26" itemprop="dateModified" datetime="2020-03-23T00:23:26+09:00">2020-03-23</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+幸福，不是长生不老，不是大鱼大肉，不是权倾朝野。幸福是每一个微小的生活愿望达成。当你想吃的时候有得吃，想被爱的时候有人来爱你。
+</blockquote>
+
+<p><code>Laravel</code> 默认使用 <code>file</code> 的方式来实现 <code>session</code>的。她并不用php原生的<code>$_SESSION</code>,php原生的<code>session</code>要看<code>php.ini</code>的位置，所以忽略<code>php</code>相关的<code>session</code>函数，例如<code>session_start()</code>, <code>$_SESSION</code>。Laravel在运行过程中会在<code>app/storage/session/</code>目录写入session的信息，所以这个目录需要有写权限，否者session就无法写入成功。</p>
+<p>Laravel除了使用默认的file作为session的实现，还支持cookie, Memcached, Redis 和数据库的后端驱动作为session的实现。必要的时候还需要自己实现一个session的实现方式，比如在微信公众账号和用户的交互，这中session就无法直接使用，因为每次都是微信服务器来请求，无法通过请求的来源来辨别用户。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//session的永久保存（在不过期范围内）</span></span><br><span class="line">Session::put(<span class="string">&#x27;key&#x27;</span>, <span class="string">&#x27;value&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">//等同于PHP的原生session</span></span><br><span class="line"><span class="variable">$_SESSION</span>[<span class="string">&#x27;key&#x27;</span>] = <span class="string">&#x27;value&#x27;</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//get操作</span></span><br><span class="line"><span class="variable">$value</span> = Session::get(<span class="string">&#x27;key&#x27;</span>, <span class="string">&#x27;default&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">//去除操作并删除，类似pop概念</span></span><br><span class="line"><span class="variable">$value</span> = Session::pull(<span class="string">&#x27;key&#x27;</span>, <span class="string">&#x27;default&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">//检测是否存在key</span></span><br><span class="line">Session::has(<span class="string">&#x27;users&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">//删除key</span></span><br><span class="line">Session::forget(<span class="string">&#x27;key&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="laravel的session中flash概念"><a href="#laravel的session中flash概念" class="headerlink" title="laravel的session中flash概念"></a>laravel的session中flash概念</h3><p>这个flash两次请求有效（本次和下次请求有效），与本次请求取操作多少次无关。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//保存key，value</span></span><br><span class="line">Session::flash(<span class="string">&#x27;key&#x27;</span>, <span class="string">&#x27;value&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">//取值方法还是一样的</span></span><br><span class="line">Session::get(<span class="string">&#x27;key&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">//刷新快闪数据时间，保持到下次请求</span></span><br><span class="line">Session::keep(<span class="keyword">array</span>(<span class="string">&#x27;username&#x27;</span>, <span class="string">&#x27;email&#x27;</span>))</span><br></pre></td></tr></table></figure>
+<p>这个flash的概念和上面的put的概念不太一样。</p>
+<p>put ：这个对应只要session不过期，基本上是永久保存，下次请求也是存在的。<br>flash ：保存的值，本次请求可以使用，下次http请求可以使用，再下一次就不存在了。<br>也就是说下一次的请求用完就被销毁了，不会让session的值变的越来越大，可以保存一些临时的数据。</p>
+<p>这中情况的使用场景比如有：</p>
+<p>用户请求了页面，出现错误信息，重定向到一个新的页面，需要展示之前的数据。（虽然可以通过url参数来传递，处理不好可能会有xss漏洞）。<br>用户访问了一个页面，过滤器发现没权限，保存当前页面url，重定向到登录页面，登录成功，取出值，重定向到原先的页面。（这里可能需要刷新保存的快闪数据）</p>
+<h3 id="session落地的时间"><a href="#session落地的时间" class="headerlink" title="session落地的时间"></a>session落地的时间</h3><p>我天真的以为使用了Session::put函数就能保存这个变量了。于是我的代码这样写：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LoginController</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">login</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        Session::put(<span class="string">&#x27;key&#x27;</span>,<span class="string">&#x27;value&#x27;</span>); </span><br><span class="line">        print_r( Session::all() ); <span class="comment">//取出来看看是否put成功</span></span><br><span class="line">        <span class="keyword">exit</span>;   <span class="comment">//习惯性的调试都exit，不执行后续代码</span></span><br><span class="line">        <span class="comment">//return Redirect::to(/); 框架在return后还会有后续的代码执行的</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果下次请求就是找不到本次的Session，而且看app/storage/session目录就是没有文件生成。总感觉不对劲啊。</p>
+<p>后来看到网络上有个方法Session::save()，于是我也用了下，居然发现成功的生成了session的文件。于是我感觉到，Laravel不用php原生的session，那么在controller之后应该做了一些事情，将session写入到文件中，而不是每次put操作都写操作，这样会IO操作太频繁的，影响性能的。<br>可以看见，在调用完controller之后，调用了session-&gt;save()的方法，来主动的保存session。这样session才能落地保存起来，如果在controller或者view里面写了exit;，那么session是不会被保存的，除非主动的写Session::save()才能手工的保存起来。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.chenyudong.com/archives/laravel-session-use.html">https://www.chenyudong.com/archives/laravel-session-use.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -962,102 +1053,6 @@ value3
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$a</span> = <span class="string">&#x27;tom&#x27;</span>;</span><br><span class="line">    <span class="keyword">protected</span>  <span class="variable">$b</span> = <span class="string">&#x27;lilei&#x27;</span>;</span><br><span class="line">    <span class="keyword">private</span>  <span class="variable">$c</span> = <span class="string">&#x27;hanmeimei&#x27;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">do_something</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">foreach</span>(<span class="keyword">$this</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$value</span>) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;<span class="subst">$key</span> =&gt; <span class="subst">$value</span>\n&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$user</span> = <span class="keyword">new</span> User();</span><br><span class="line"><span class="variable">$user</span>-&gt;do_something();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://www.laruence.com/2008/10/31/574.html">http://www.laruence.com/2008/10/31/574.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/04/%E5%9C%A8laravel%E4%B8%AD%E4%BD%BF%E7%94%A8twig%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/08/04/%E5%9C%A8laravel%E4%B8%AD%E4%BD%BF%E7%94%A8twig%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">在laravel中使用twig模板引擎</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-08-04 11:30:38" itemprop="dateCreated datePublished" datetime="2016-08-04T11:30:38+09:00">2016-08-04</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:02:05" itemprop="dateModified" datetime="2018-03-27T22:02:05+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你走了好，不然总担心你要走。
-</blockquote>
-### 实验环境
-- laravel 5.1
-
-<h3 id="实验步骤"><a href="#实验步骤" class="headerlink" title="实验步骤"></a>实验步骤</h3><ul>
-<li>1.安装扩展包</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> rcrowe/twigbridge</span><br></pre></td></tr></table></figure>
-<ul>
-<li>2.在config/app.php下配置</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;providers&#x27;</span> =&gt; [</span><br><span class="line">     ...</span><br><span class="line">                TwigBridge\ServiceProvider::class,</span><br><span class="line">],</span><br><span class="line"><span class="string">&#x27;aliases&#x27;</span> =&gt; [</span><br><span class="line">    ... </span><br><span class="line">                <span class="string">&#x27;Twig&#x27;</span> =&gt; TwigBridge\Facade\Twig::class,</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
-<ul>
-<li>3.发布配置文件,该操作会在config目录下新建一个专属twig的配置文件twigbrage.php</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan vendor:publish --provider=<span class="string">&quot;TwigBridge\ServiceProvider&quot;</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>4.开始使用</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//返回视图</span></span><br><span class="line">Route::get(<span class="string">&#x27;test&#x27;</span>,<span class="function"><span class="keyword">function</span> (<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="variable">$users</span> = \App\User::all();</span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">&#x27;hello&#x27;</span>,compact(<span class="string">&#x27;users&#x27;</span>));</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">//新建视图文件resources/views/hello.twig</span></span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &#123;%  <span class="keyword">for</span> user in users %&#125;</span><br><span class="line">        &#123;&#123; user.name &#125;&#125;</span><br><span class="line">    &#123;%  <span class="keyword">endfor</span> %&#125;</span><br><span class="line">&lt;/body&gt;</span><br></pre></td></tr></table></figure>
-<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
-<p><a target="_blank" rel="noopener" href="https://packagist.org/packages/rcrowe/twigbridge">https://packagist.org/packages/rcrowe/twigbridge</a></p>
 </blockquote>
 
       

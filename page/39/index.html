@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">391</span>
+          <span class="site-state-item-count">392</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-count">136</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,102 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/04/%E5%9C%A8laravel%E4%B8%AD%E4%BD%BF%E7%94%A8twig%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/08/04/%E5%9C%A8laravel%E4%B8%AD%E4%BD%BF%E7%94%A8twig%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">在laravel中使用twig模板引擎</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-04 11:30:38" itemprop="dateCreated datePublished" datetime="2016-08-04T11:30:38+09:00">2016-08-04</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:02:05" itemprop="dateModified" datetime="2018-03-27T22:02:05+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你走了好，不然总担心你要走。
+</blockquote>
+### 实验环境
+- laravel 5.1
+
+<h3 id="实验步骤"><a href="#实验步骤" class="headerlink" title="实验步骤"></a>实验步骤</h3><ul>
+<li>1.安装扩展包</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> rcrowe/twigbridge</span><br></pre></td></tr></table></figure>
+<ul>
+<li>2.在config/app.php下配置</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;providers&#x27;</span> =&gt; [</span><br><span class="line">     ...</span><br><span class="line">                TwigBridge\ServiceProvider::class,</span><br><span class="line">],</span><br><span class="line"><span class="string">&#x27;aliases&#x27;</span> =&gt; [</span><br><span class="line">    ... </span><br><span class="line">                <span class="string">&#x27;Twig&#x27;</span> =&gt; TwigBridge\Facade\Twig::class,</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
+<ul>
+<li>3.发布配置文件,该操作会在config目录下新建一个专属twig的配置文件twigbrage.php</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan vendor:publish --provider=<span class="string">&quot;TwigBridge\ServiceProvider&quot;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>4.开始使用</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//返回视图</span></span><br><span class="line">Route::get(<span class="string">&#x27;test&#x27;</span>,<span class="function"><span class="keyword">function</span> (<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="variable">$users</span> = \App\User::all();</span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">&#x27;hello&#x27;</span>,compact(<span class="string">&#x27;users&#x27;</span>));</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">//新建视图文件resources/views/hello.twig</span></span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &#123;%  <span class="keyword">for</span> user in users %&#125;</span><br><span class="line">        &#123;&#123; user.name &#125;&#125;</span><br><span class="line">    &#123;%  <span class="keyword">endfor</span> %&#125;</span><br><span class="line">&lt;/body&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://packagist.org/packages/rcrowe/twigbridge">https://packagist.org/packages/rcrowe/twigbridge</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -945,128 +1041,6 @@
 ### 新建tag页面
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ hexo <span class="keyword">new</span> page <span class="string">&quot;tags&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//以下是页面内容</span></span><br><span class="line">title: Tagcloud</span><br><span class="line">date: <span class="number">2014</span>-<span class="number">12</span>-<span class="number">22</span> <span class="number">12</span>:<span class="number">39</span>:<span class="number">04</span></span><br><span class="line">type: <span class="string">&quot;tags&quot;</span></span><br><span class="line">---</span><br></pre></td></tr></table></figure>
 完成；
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/23/centos%E4%B8%8B%E6%90%AD%E5%BB%BAlaravel%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/07/23/centos%E4%B8%8B%E6%90%AD%E5%BB%BAlaravel%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/" class="post-title-link" itemprop="url">centos下搭建laravel运行环境</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-07-23 16:13:44" itemprop="dateCreated datePublished" datetime="2016-07-23T16:13:44+09:00">2016-07-23</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:12:56" itemprop="dateModified" datetime="2018-03-27T22:12:56+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-只要从现在开始努力，最坏不过是大器晚成
-</blockquote>
-
-<h3 id="安装环境"><a href="#安装环境" class="headerlink" title="安装环境"></a>安装环境</h3><p>阿里云ECS centos6.5 64 位</p>
-<h3 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h3><ul>
-<li>更新并安装</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">yum -y update</span><br><span class="line"></span><br><span class="line">rpm -Uvh https:<span class="comment">//dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm</span></span><br><span class="line"></span><br><span class="line">rpm -Uvh https:<span class="comment">//mirror.webtatic.com/yum/el6/latest.rpm</span></span><br><span class="line"></span><br><span class="line">yum install php70w php70w-opcache</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>系统自带了apache服务，启动它</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">service httpd restart</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>进入/var/www/html目录，新建文件index.php</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">phpinfo();</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>保存退出，访问你的web地址；</p>
-</li>
-<li><p>安装mysql5.7</p>
-</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">wget http:<span class="comment">//dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm</span></span><br><span class="line"></span><br><span class="line">yum localinstall mysql57-community-release-el6-<span class="number">7</span>.noarch.rpm</span><br><span class="line"></span><br><span class="line">yum install mysql-community-server</span><br><span class="line"></span><br><span class="line">service mysqld start</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>说明：mysql5.7 安装好以后有一个默认的登录密码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo grep <span class="string">&#x27;temporary password&#x27;</span> /<span class="keyword">var</span>/log/mysqld.log</span><br></pre></td></tr></table></figure>
-<p>通过执行这个命令获得并登录修改，关于mysql的相关操作，以后再说。</p>
-<h3 id="安装laravel"><a href="#安装laravel" class="headerlink" title="安装laravel"></a>安装laravel</h3><ul>
-<li>首先安装 composer</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># curl -sS https://getcomposer.org/installer | php</span></span><br><span class="line"><span class="comment"># mv composer.phar /usr/local/bin/composer</span></span><br><span class="line"><span class="comment"># chmod +x /usr/local/bin/composer</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>安装laravel</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer create-project laravel/laravel blog <span class="number">5.2</span>.*</span><br></pre></td></tr></table></figure>
-
-<h3 id="安装过程中遇到的问题："><a href="#安装过程中遇到的问题：" class="headerlink" title="安装过程中遇到的问题："></a>安装过程中遇到的问题：</h3><ol>
-<li>缺少必要的php扩展：<br>yum search php7  搜索所有可用的扩展进行安装，不要使用yum install -y php7*  这样的方式去全部安装。</li>
-<li>缺少个dom的扩展，搜索后没有找到，后来发现安装一个和xml相关的扩展就OK啦。</li>
-<li>安装提示“Class log does not exist laravel”，其实是少了一个mysql的安装，搜索安装就可以了。</li>
-<li>首次运行composer install 时若目录下有composer.lock文件, 请删除</li>
-<li>yum install -y php70u-mbstring.x86_64</li>
-<li>chmod -R 777 storage/</li>
-<li>CREATE DATABASE IF NOT EXISTS laravel54 default charset utf8mb4 COLLATE utf8mb4_general_ci; </li>
-<li>yum install -y php70u-mysqlnd.x86_64</li>
-</ol>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://webtatic.com/packages/php70/">https://webtatic.com/packages/php70/</a><br><a target="_blank" rel="noopener" href="http://dev.mysql.com/doc/mysql-yum-repo-quick-guide/en/">http://dev.mysql.com/doc/mysql-yum-repo-quick-guide/en/</a></p>
-</blockquote>
-
       
     </div>
 

@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">391</span>
+          <span class="site-state-item-count">392</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-count">136</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,105 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/05/Homestead%E7%8E%AF%E5%A2%83%E4%B8%8B%E5%AE%89%E8%A3%85Elasticsearch%E5%B9%B6%E4%BD%BF%E7%94%A8scout%E8%BF%9B%E8%A1%8C%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/10/05/Homestead%E7%8E%AF%E5%A2%83%E4%B8%8B%E5%AE%89%E8%A3%85Elasticsearch%E5%B9%B6%E4%BD%BF%E7%94%A8scout%E8%BF%9B%E8%A1%8C%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2/" class="post-title-link" itemprop="url">Homestead环境下安装Elasticsearch并使用scout进行全文检索</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-10-05 17:03:51 / 修改时间：17:12:38" itemprop="dateCreated datePublished" datetime="2021-10-05T17:03:51+09:00">2021-10-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+长亭外，古道边，芳草碧连天。
+晚风扶柳笛声残，夕阳山外山。
+</blockquote>
+
+<h3 id="在-homestead-的-homestead-yml-配置文件中添加"><a href="#在-homestead-的-homestead-yml-配置文件中添加" class="headerlink" title="在 homestead 的 homestead.yml 配置文件中添加"></a>在 homestead 的 homestead.yml 配置文件中添加</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">features:</span><br><span class="line">    - mariadb: <span class="literal">false</span></span><br><span class="line">    - ohmyzsh: <span class="literal">false</span></span><br><span class="line">    - webdriver: <span class="literal">false</span></span><br><span class="line">    - elasticsearch:</span><br><span class="line">        version: <span class="number">7.6</span></span><br><span class="line"></span><br><span class="line">ports:</span><br><span class="line">    - send: <span class="number">63790</span></span><br><span class="line">      to: <span class="number">6379</span></span><br><span class="line">    - send: <span class="number">9100</span></span><br><span class="line">      to: <span class="number">9200</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>开启 homestead 中的 elasticsearch</p>
+<p>因为需要安装软件镜像在国外，所以需要设置国内的镜像</p>
+<p>打开 homestead/scripts/features/elasticssearch.sh 文件</p>
+<p>将 apt-get 安装的内容替换为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">sed -i <span class="string">&quot;s@http://.*archive.ubuntu.com@http://mirrors.huaweicloud.com@g&quot;</span> /etc/apt/sources.<span class="keyword">list</span></span><br><span class="line">sed -i <span class="string">&quot;s@http://.*security.ubuntu.com@http://mirrors.huaweicloud.com@g&quot;</span> /etc/apt/sources.<span class="keyword">list</span></span><br><span class="line"></span><br><span class="line">sudo apt-get update</span><br><span class="line"></span><br><span class="line">wget  https:<span class="comment">//mirrors.huaweicloud.com/elasticsearch/7.6.1/elasticsearch-7.6.1-amd64.deb</span></span><br><span class="line">sudo apt-get -y install openjdk-<span class="number">11</span>-jre</span><br><span class="line"><span class="comment"># sudo apt-get -y install elasticsearch&quot;$installVersion&quot;</span></span><br><span class="line"></span><br><span class="line">sudo dpkg -i elasticsearch-<span class="number">7.6</span>.<span class="number">1</span>-amd64.deb</span><br><span class="line"><span class="comment"># Start Elasticsearch on boot</span></span><br><span class="line"></span><br><span class="line">sudo update-rc.d elasticsearch defaults <span class="number">95</span> <span class="number">10</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="设置外网访问"><a href="#设置外网访问" class="headerlink" title="设置外网访问"></a>设置外网访问</h3><p>在 /etc/elasticsearch/elasticsearch.yml 中添加</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">network.host: <span class="number">0.0</span>.<span class="number">0.0</span></span><br><span class="line">discovery.seed_hosts: [<span class="string">&quot;127.0.0.1&quot;</span>, <span class="string">&quot;::1&quot;</span>]</span><br></pre></td></tr></table></figure>
+<p>重启 elasticsearch</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo service elasticsearch restart</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装-ik-中文分词插件"><a href="#安装-ik-中文分词插件" class="headerlink" title="安装 ik 中文分词插件"></a>安装 ik 中文分词插件</h3><p>打开 <code>/usr/share/elasticsearch/plugins</code></p>
+<p>创建 文件夹</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir ik</span><br></pre></td></tr></table></figure>
+<p>将下载的 <a target="_blank" rel="noopener" href="https://github.com/medcl/elasticsearch-ana">https://github.com/medcl/elasticsearch-ana</a>… 解压到 ik 文件夹中</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unzip  xxx.zip</span><br></pre></td></tr></table></figure>
+<p>重启服务</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo service elasticsearch restart</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装-kibana"><a href="#安装-kibana" class="headerlink" title="安装 kibana"></a>安装 kibana</h3><p>kibana 是一款界面管理工具 官方出品的</p>
+<h3 id="laravel-安装全文搜索"><a href="#laravel-安装全文搜索" class="headerlink" title="laravel 安装全文搜索"></a>laravel 安装全文搜索</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> tamayo/laravel-scout-elastic </span><br><span class="line">composer <span class="keyword">require</span> laravel/scout  <span class="comment">//版本可能不兼容 具体看composer中的兼容版本</span></span><br><span class="line">php artisan vendor:publish <span class="comment">//选择其中的配置文件发布</span></span><br></pre></td></tr></table></figure>
+<p>发布配置文件后需要对配置文件进行更改</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;driver&#x27;</span> =&gt; env(<span class="string">&#x27;SCOUT_DRIVER&#x27;</span>, <span class="string">&#x27;algolia&#x27;</span>), <span class="comment">//在env 中 添加   elasticsearch</span></span><br></pre></td></tr></table></figure>
+<p>在 scount.php 中添加</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;elasticsearch&#x27;</span> =&gt; [    </span><br><span class="line">    <span class="string">&#x27;index&#x27;</span> =&gt; env(<span class="string">&#x27;ELASTICSEARCH_INDEX&#x27;</span>, <span class="string">&#x27;products&#x27;</span>),   </span><br><span class="line">    <span class="string">&#x27;hosts&#x27;</span> =&gt; [        env(<span class="string">&#x27;ELASTICSEARCH_HOST&#x27;</span>, <span class="string">&#x27;http://localhost&#x27;</span>),   ]</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://learnku.com/articles/42730">https://learnku.com/articles/42730</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -954,97 +1053,6 @@ This trait provides a temporary($relationship) method on your model for you to a
 <h3 id="CSS"><a href="#CSS" class="headerlink" title="CSS"></a>CSS</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-pseudo">:root</span> &#123;</span><br><span class="line">  --primary-<span class="attribute">color</span>: <span class="number">#1B1E24</span>;</span><br><span class="line">  --secondary-<span class="attribute">color</span>: <span class="number">#1B1E24</span>;</span><br><span class="line">  --<span class="attribute">font</span>-<span class="attribute">color</span>: <span class="number">#1B1E24</span>;</span><br><span class="line">  --bg-<span class="attribute">color</span>: <span class="number">#fff</span>;</span><br><span class="line">  --heading-<span class="attribute">color</span>: <span class="number">#1B1E24</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-attr">[data-theme=dark]</span> &#123;</span><br><span class="line">  --primary-<span class="attribute">color</span>: <span class="number">#fff</span>;</span><br><span class="line">  --secondary-<span class="attribute">color</span>: <span class="number">#fff</span>;</span><br><span class="line">  --<span class="attribute">font</span>-<span class="attribute">color</span>: <span class="number">#fff</span>;</span><br><span class="line">  --bg-<span class="attribute">color</span>: <span class="number">#1B1E24</span>;</span><br><span class="line">  --heading-<span class="attribute">color</span>: <span class="number">#fff</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">body</span> &#123;</span><br><span class="line">  <span class="attribute">background-color</span>: <span class="built_in">var</span>(--bg-color);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.container</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">display</span>: flex;</span><br><span class="line">  <span class="attribute">justify-content</span>: center;</span><br><span class="line">  <span class="attribute">align-items</span>: center;</span><br><span class="line">  <span class="attribute">text-align</span>: center;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">97vh</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.container</span> <span class="selector-class">.content</span> <span class="selector-tag">h1</span> &#123;</span><br><span class="line">  <span class="attribute">color</span>: <span class="built_in">var</span>(--primary-color);</span><br><span class="line">  <span class="attribute">font-family</span>: <span class="string">&quot;Dosis&quot;</span>, sans-serif;</span><br><span class="line">  <span class="attribute">font-size</span>: <span class="number">5rem</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.container</span> <span class="selector-class">.content</span> <span class="selector-tag">p</span> &#123;</span><br><span class="line">  <span class="attribute">color</span>: <span class="built_in">var</span>(--primary-color);</span><br><span class="line">  <span class="attribute">font-family</span>: <span class="string">&quot;Dosis&quot;</span>, sans-serif;</span><br><span class="line">  <span class="attribute">font-size</span>: <span class="number">2rem</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.header</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">top</span>: <span class="number">10px</span>;</span><br><span class="line">  <span class="attribute">right</span>: <span class="number">20px</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.header</span> <span class="selector-class">.moon</span>, <span class="selector-class">.header</span> <span class="selector-class">.sun</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">34px</span>;</span><br><span class="line">  <span class="attribute">cursor</span>: pointer;</span><br><span class="line">  <span class="attribute">transition</span>: <span class="number">0.5s</span> all ease-in-out;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.header</span> <span class="selector-class">.sun</span><span class="selector-pseudo">:hover</span> &#123;</span><br><span class="line">  -webkit-<span class="attribute">animation</span>: sun_rotate <span class="number">1s</span> infinite;</span><br><span class="line">          <span class="attribute">animation</span>: sun_rotate <span class="number">1s</span> infinite;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.header</span> <span class="selector-class">.moon</span><span class="selector-pseudo">:hover</span> &#123;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">scale</span>(<span class="number">1.1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.header</span> <span class="selector-class">.hide</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: none;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@-webkit-keyframes</span> sun_rotate &#123;</span><br><span class="line">  <span class="number">0%</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">rotate</span>(<span class="number">0deg</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="number">100%</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">rotate</span>(<span class="number">360deg</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@keyframes</span> sun_rotate &#123;</span><br><span class="line">  <span class="number">0%</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">rotate</span>(<span class="number">0deg</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="number">100%</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">rotate</span>(<span class="number">360deg</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h3 id="JS"><a href="#JS" class="headerlink" title="JS"></a>JS</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> lightMode = <span class="built_in">document</span>.querySelector(<span class="string">&#x27;.sun&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> darkMode = <span class="built_in">document</span>.querySelector(<span class="string">&#x27;.moon&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> currentTheme = <span class="built_in">localStorage</span>.getItem(<span class="string">&#x27;theme&#x27;</span>) ? <span class="built_in">localStorage</span>.getItem(<span class="string">&#x27;theme&#x27;</span>) : <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">lightMode.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  <span class="built_in">document</span>.documentElement.setAttribute(<span class="string">&#x27;data-theme&#x27;</span>, <span class="string">&#x27;dark&#x27;</span>);</span><br><span class="line">  lightMode.style = <span class="string">&quot;display: none&quot;</span>;</span><br><span class="line">  darkMode.style = <span class="string">&quot;display: block&quot;</span>;</span><br><span class="line">  <span class="built_in">localStorage</span>.setItem(<span class="string">&#x27;theme&#x27;</span>, <span class="string">&#x27;dark&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">darkMode.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  <span class="built_in">document</span>.documentElement.setAttribute(<span class="string">&#x27;data-theme&#x27;</span>, <span class="string">&#x27;light&#x27;</span>);</span><br><span class="line">  lightMode.style = <span class="string">&quot;display: block&quot;</span>;</span><br><span class="line">  darkMode.style = <span class="string">&quot;display: none&quot;</span>;</span><br><span class="line">  <span class="built_in">localStorage</span>.setItem(<span class="string">&#x27;theme&#x27;</span>, <span class="string">&#x27;light&#x27;</span>);</span><br><span class="line">  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (currentTheme) &#123;</span><br><span class="line">    <span class="built_in">document</span>.documentElement.setAttribute(<span class="string">&#x27;data-theme&#x27;</span>, currentTheme);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (currentTheme === <span class="string">&#x27;dark&#x27;</span>) &#123;</span><br><span class="line">        lightMode.style = <span class="string">&quot;display: none&quot;</span>;</span><br><span class="line">      darkMode.style = <span class="string">&quot;display: block&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/07/30/%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%80%E5%8F%B0%E6%9C%BA%E5%99%A8%E4%B8%8A%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E5%8F%B7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/07/30/%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%80%E5%8F%B0%E6%9C%BA%E5%99%A8%E4%B8%8A%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E5%8F%B7/" class="post-title-link" itemprop="url">如何在一台机器上管理多个Github账号</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2021-07-30 11:19:01 / 修改时间：11:29:13" itemprop="dateCreated datePublished" datetime="2021-07-30T11:19:01+09:00">2021-07-30</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你说我会遇到更好的人，其实是你想拥有更好的人
-</blockquote>
-
-<p>我们有时候需要在一台电脑上管理两个或者两个以上的 GitHub 账号，例如要在电脑上同时使用个人和公司的 Github 账号，那么如何操作呢？</p>
-<h3 id="创建新的-SSH-Key"><a href="#创建新的-SSH-Key" class="headerlink" title="创建新的 SSH Key"></a>创建新的 SSH Key</h3><p>假设个人电脑上已经有了一个正使用的 GitHub 账号 user_a ，现在添加第二个 GitHub 账号 user_b 的配置。<br>打开终端生成一个新的 SSH Key:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C <span class="string">&quot;user_b@gmail.com&quot;</span></span><br></pre></td></tr></table></figure>
-<p>注意，新生成的密钥不要覆盖原来的，在 ssh-keygent 运行中让新生成的 key 命名为 user_b。<br>在我电脑里面，它被保存在  <code>~/.ssh/user_b_id_rsa</code><br>把新生成的 SSH key 添加到 ssh-agent:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="keyword">eval</span> <span class="string">&quot;$(ssh-agent -s)&quot;</span></span><br><span class="line">$ ssh-add ~/.ssh/user_b_id_rsa</span><br></pre></td></tr></table></figure>
-
-<h3 id="在第二个-GitHub-账户里面添加-新生成-user-b-id-rsa-pub"><a href="#在第二个-GitHub-账户里面添加-新生成-user-b-id-rsa-pub" class="headerlink" title="在第二个 GitHub 账户里面添加 新生成 user_b_id_rsa.pub"></a>在第二个 GitHub 账户里面添加 新生成 user_b_id_rsa.pub</h3><p>登录第二个 Github 账号，把 user_b_id_rsa.pub 添加到账号里面。</p>
-<h3 id="在～-ssh-目录下新建-config-文件"><a href="#在～-ssh-目录下新建-config-文件" class="headerlink" title="在～/.ssh 目录下新建 config 文件"></a>在～/.ssh 目录下新建 config 文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ touch ~/.ssh/config</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Host</span> <span class="string">user_a-github.com</span></span><br><span class="line">  <span class="string">HostName</span> <span class="string">github.com</span></span><br><span class="line">  <span class="string">User</span> <span class="string">git</span></span><br><span class="line">  <span class="string">IdentityFile</span> <span class="string">~/.ssh/user_a_id_rsa</span></span><br><span class="line"></span><br><span class="line"><span class="string">Host</span> <span class="string">user_b-github.com</span></span><br><span class="line">  <span class="string">HostName</span> <span class="string">github.com</span></span><br><span class="line">  <span class="string">User</span> <span class="string">git</span></span><br><span class="line">  <span class="string">IdentityFile</span> <span class="string">~/.ssh/user_b_id_rsa</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="测试连接"><a href="#测试连接" class="headerlink" title="测试连接"></a>测试连接</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ssh -T git@user_a-github.com</span><br><span class="line">$ ssh -T git@user_b-github.com</span><br></pre></td></tr></table></figure>
-<p>若成功，都会接收到类似这样的信息：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Hi user_a! You<span class="string">&#x27;ve successfully authenticated, but GitHub does not provide shell access.</span></span><br><span class="line"><span class="string">Hi user_b! You&#x27;</span>ve successfully authenticated, but GitHub does not provide shell access.</span><br></pre></td></tr></table></figure>
-
-<h3 id="测试用把仓库提交到第二个-Github-账号"><a href="#测试用把仓库提交到第二个-Github-账号" class="headerlink" title="测试用把仓库提交到第二个 Github 账号"></a>测试用把仓库提交到第二个 Github 账号</h3><p>新建一个文件夹，初始化为仓库，创建第一个 commit</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir Test</span><br><span class="line">$ cd Test</span><br><span class="line">$ git init</span><br><span class="line">$ git commit -am <span class="string">&quot;first commit&quot;</span></span><br><span class="line">$ git remote add origin git@user_b-github.com:user_b/testing.git</span><br><span class="line">$ git branch -M main</span><br><span class="line">$ git push -u origin main</span><br></pre></td></tr></table></figure>
-<p>注意：为本地仓库添加远程地址时，要替换为 config 文件里面的 Host 。<br>例如此处： user_b-github.com</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add origin git@user_b-github.com:user_b/testing.git</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://learnku.com/articles/59358">https://learnku.com/articles/59358</a></p>
-</blockquote>
-
       
     </div>
 

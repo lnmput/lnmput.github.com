@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">391</span>
+          <span class="site-state-item-count">392</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-count">136</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,97 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/07/30/%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%80%E5%8F%B0%E6%9C%BA%E5%99%A8%E4%B8%8A%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E5%8F%B7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/07/30/%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%80%E5%8F%B0%E6%9C%BA%E5%99%A8%E4%B8%8A%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E5%8F%B7/" class="post-title-link" itemprop="url">如何在一台机器上管理多个Github账号</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-07-30 11:19:01 / 修改时间：11:29:13" itemprop="dateCreated datePublished" datetime="2021-07-30T11:19:01+09:00">2021-07-30</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你说我会遇到更好的人，其实是你想拥有更好的人
+</blockquote>
+
+<p>我们有时候需要在一台电脑上管理两个或者两个以上的 GitHub 账号，例如要在电脑上同时使用个人和公司的 Github 账号，那么如何操作呢？</p>
+<h3 id="创建新的-SSH-Key"><a href="#创建新的-SSH-Key" class="headerlink" title="创建新的 SSH Key"></a>创建新的 SSH Key</h3><p>假设个人电脑上已经有了一个正使用的 GitHub 账号 user_a ，现在添加第二个 GitHub 账号 user_b 的配置。<br>打开终端生成一个新的 SSH Key:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C <span class="string">&quot;user_b@gmail.com&quot;</span></span><br></pre></td></tr></table></figure>
+<p>注意，新生成的密钥不要覆盖原来的，在 ssh-keygent 运行中让新生成的 key 命名为 user_b。<br>在我电脑里面，它被保存在  <code>~/.ssh/user_b_id_rsa</code><br>把新生成的 SSH key 添加到 ssh-agent:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="keyword">eval</span> <span class="string">&quot;$(ssh-agent -s)&quot;</span></span><br><span class="line">$ ssh-add ~/.ssh/user_b_id_rsa</span><br></pre></td></tr></table></figure>
+
+<h3 id="在第二个-GitHub-账户里面添加-新生成-user-b-id-rsa-pub"><a href="#在第二个-GitHub-账户里面添加-新生成-user-b-id-rsa-pub" class="headerlink" title="在第二个 GitHub 账户里面添加 新生成 user_b_id_rsa.pub"></a>在第二个 GitHub 账户里面添加 新生成 user_b_id_rsa.pub</h3><p>登录第二个 Github 账号，把 user_b_id_rsa.pub 添加到账号里面。</p>
+<h3 id="在～-ssh-目录下新建-config-文件"><a href="#在～-ssh-目录下新建-config-文件" class="headerlink" title="在～/.ssh 目录下新建 config 文件"></a>在～/.ssh 目录下新建 config 文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ touch ~/.ssh/config</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Host</span> <span class="string">user_a-github.com</span></span><br><span class="line">  <span class="string">HostName</span> <span class="string">github.com</span></span><br><span class="line">  <span class="string">User</span> <span class="string">git</span></span><br><span class="line">  <span class="string">IdentityFile</span> <span class="string">~/.ssh/user_a_id_rsa</span></span><br><span class="line"></span><br><span class="line"><span class="string">Host</span> <span class="string">user_b-github.com</span></span><br><span class="line">  <span class="string">HostName</span> <span class="string">github.com</span></span><br><span class="line">  <span class="string">User</span> <span class="string">git</span></span><br><span class="line">  <span class="string">IdentityFile</span> <span class="string">~/.ssh/user_b_id_rsa</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="测试连接"><a href="#测试连接" class="headerlink" title="测试连接"></a>测试连接</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ssh -T git@user_a-github.com</span><br><span class="line">$ ssh -T git@user_b-github.com</span><br></pre></td></tr></table></figure>
+<p>若成功，都会接收到类似这样的信息：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Hi user_a! You<span class="string">&#x27;ve successfully authenticated, but GitHub does not provide shell access.</span></span><br><span class="line"><span class="string">Hi user_b! You&#x27;</span>ve successfully authenticated, but GitHub does not provide shell access.</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试用把仓库提交到第二个-Github-账号"><a href="#测试用把仓库提交到第二个-Github-账号" class="headerlink" title="测试用把仓库提交到第二个 Github 账号"></a>测试用把仓库提交到第二个 Github 账号</h3><p>新建一个文件夹，初始化为仓库，创建第一个 commit</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir Test</span><br><span class="line">$ cd Test</span><br><span class="line">$ git init</span><br><span class="line">$ git commit -am <span class="string">&quot;first commit&quot;</span></span><br><span class="line">$ git remote add origin git@user_b-github.com:user_b/testing.git</span><br><span class="line">$ git branch -M main</span><br><span class="line">$ git push -u origin main</span><br></pre></td></tr></table></figure>
+<p>注意：为本地仓库添加远程地址时，要替换为 config 文件里面的 Host 。<br>例如此处： user_b-github.com</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add origin git@user_b-github.com:user_b/testing.git</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://learnku.com/articles/59358">https://learnku.com/articles/59358</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -998,101 +1089,6 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">include</span> /etc/nginx/cloudflare;</span><br></pre></td></tr></table></figure>
 
 <h3 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nginx -s reload</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/05/16/nginx%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E5%9C%96%E7%89%87%E8%A2%AB%E7%9B%9C%E9%80%A3hotlinkprotection/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/05/16/nginx%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E5%9C%96%E7%89%87%E8%A2%AB%E7%9B%9C%E9%80%A3hotlinkprotection/" class="post-title-link" itemprop="url">Nginx如何防止圖片被盜連HotlinkProtection</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-05-16 23:29:09" itemprop="dateCreated datePublished" datetime="2020-05-16T23:29:09+09:00">2020-05-16</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2020-05-17 00:35:20" itemprop="dateModified" datetime="2020-05-17T00:35:20+09:00">2020-05-17</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-做你害怕做的事情。
-</blockquote>
-
-<p>「Hotlink Protection」(直接連結保護)是經營網站經常需要去注意的一塊，但為什麼我們會需要「Hotlink Protection」呢？身為圖文並茂的網路文章作家，最擔心得就是自己的文章被別人整篇連文帶圖地複製貼上到其它地方了。此時如果圖片有套用「Hotlink Protection」的話，就可以讓被盜用的圖片在其它網站上「不被正常顯示」出來，如此一來，就能使其它誤入盜文頁面的訪客可以知道該篇文章是篇被盜用的文章。不同的網站架構有不同的「Hotlink Protection」的設定方式，如果您的網站是使用Nginx伺服器來架設的話，可以參考這篇文章，來實現「Hotlink Protection」的功能。</p>
-<h3 id="Nginx的ngx-http-referer-module模組"><a href="#Nginx的ngx-http-referer-module模組" class="headerlink" title="Nginx的ngx_http_referer_module模組"></a>Nginx的ngx_http_referer_module模組</h3><p>「ngx_http_referer_module」是Nginx預設啟用的模組，可以用來阻擋使用無效HTTP標頭的Referer欄位的請求。使用「ngx_http_referer_module」模組時，通常會在Nginx設定檔中的特定location區塊內撰寫「valid_referers」命令，來針對特定連結做檢查HTTP標頭中Referer欄位的動作。</p>
-<p>例如：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">location ~ \.(jpg|jpeg|png|gif)$ &#123;</span><br><span class="line">    valid_referers none server_names blocked *.magiclen.org *.facebook.com;</span><br><span class="line">    <span class="keyword">if</span> ($invalid_referer) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">403</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>先從<code>location ~ \.(jpg|jpeg|png|gif)$</code>開始介紹起。撰寫於<code>server</code>區塊內的location區塊，可以使Nginx伺服器能針對特定格式的網址來做不同的動作。至於這個「特定格式的網址」的網址規則，則是直接接在<code>locatio</code>n這個命令之後。此處的<code>~</code>，表示要使用正規表示式，且必須判斷大小寫(case-sensitive)。而<code>\.(jpg|jpeg|png|gif)$</code>這串正規表示式，則代表所有以.jpg、.jpeg、.png或.gif結尾的網址。您可以將需要加上<code>「Hotlink Protection」</code>的圖片副檔名都放進這個正規表示式內。</p>
-<p>再來看一下<code>valid_referers</code>命令，<code>valid_referers</code>命令可以用來設定<code>$invalid_referer</code>變數的值。若請求中的HTTP標頭的Referer欄位有符合valid_referers命令所指定的條件，此時$invalid_referer變數的值為空字串，所以之後的if判斷式就不會成立；若Referer欄位不符合valid_referers命令所指定的條件，則此時$invalid_referer變數的值為1，所以之後的if判斷式就會成立，而使得該連結會直接回傳HTTP的403狀態(Forbidden)。</p>
-<p>至於valid_referers命令所接受的參數，有以下幾個：</p>
-<ul>
-<li>none：這個參數可以允許那些HTTP標頭中沒有Referer欄位的請求。</li>
-<li>server_names：這個參數可以允許那些HTTP標頭中的Referer欄位值符合server_name命令所設定的名稱的請求。</li>
-<li>blocked：這個參數可以允許那些HTTP標頭中的Referer欄位值是空字串的請求。之所以遇到Referer欄位值是空字串的情況，通常是因為防火牆或是Proxy伺服器把原先HTTP標頭中的Referer欄位值給擋下來了。</li>
-<li>伺服器名稱：可以直接填入多個伺服器名稱(同樣以空格分隔)，來作為判斷Referer欄位值是否有效的依據，名稱支援星號<code>(*)</code>，表示任意數量的任意字元。</li>
-<li>正規表示式：可以以<code>~</code>字元為開頭再接上正規表示式，來判斷請求HTTP標頭中的Referer欄位值是否符合指定的正規表示式。</li>
-</ul>
-<p>如果想要將無效的請求轉到其它網址，需要修改return命令，可以參考以下連結：</p>
-<p><a target="_blank" rel="noopener" href="https://magiclen.org/nginx-rewrite">https://magiclen.org/nginx-rewrite</a></p>
-<p>如果網站有使用CDN的話，本篇文章的作法就不怎麼合適了。若是Cloudflare CDN的話，可以參考以下連結來設定：</p>
-<p><a target="_blank" rel="noopener" href="https://magiclen.org/cloudflare-hotlink-protection/">https://magiclen.org/cloudflare-hotlink-protection/</a></p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://magiclen.org/nginx-hotlink-protection/">https://magiclen.org/nginx-hotlink-protection/</a></p>
-</blockquote>
-
       
     </div>
 
