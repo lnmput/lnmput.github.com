@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="人不知道要守住多少秘密才能安度一生。   什么是粘包问题，为什么我们要讲这个看起来比较奇怪的问题呢？不着急解释，我们先看一个例子创建一个server，server端代码如下 1234567891011121314151617181920212223242526272829303132&lt;?phpclass TcpBufferServer&amp;#123;    private $_serv;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="swoole之粘包问题">
+<meta property="og:url" content="https://swoole.app/2018/08/09/swoole%E4%B9%8B%E7%B2%98%E5%8C%85%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="人不知道要守住多少秘密才能安度一生。   什么是粘包问题，为什么我们要讲这个看起来比较奇怪的问题呢？不着急解释，我们先看一个例子创建一个server，server端代码如下 1234567891011121314151617181920212223242526272829303132&lt;?phpclass TcpBufferServer&amp;#123;    private $_serv;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://swoole.app/images/sw11.png">
+<meta property="og:image" content="https://swoole.app/images/sw12.png">
+<meta property="og:image" content="https://swoole.app/images/sw13.png">
+<meta property="og:image" content="https://swoole.app/images/sw14.png">
+<meta property="og:image" content="https://swoole.app/images/sw15.png">
+<meta property="article:published_time" content="2018-08-09T13:51:16.000Z">
+<meta property="article:modified_time" content="2018-08-10T00:37:42.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Swoole">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://swoole.app/images/sw11.png">
+
+
+<link rel="canonical" href="https://swoole.app/2018/08/09/swoole%E4%B9%8B%E7%B2%98%E5%8C%85%E9%97%AE%E9%A2%98/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2018/08/09/swoole%E4%B9%8B%E7%B2%98%E5%8C%85%E9%97%AE%E9%A2%98/","path":"2018/08/09/swoole之粘包问题/","title":"swoole之粘包问题"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>swoole之粘包问题 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#EOF%E7%BB%93%E6%9D%9F%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.</span> <span class="nav-text">EOF结束协议</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%BA%E5%AE%9A%E5%8C%85%E5%A4%B4-%E5%8C%85%E4%BD%93%E5%8D%8F%E8%AE%AE"><span class="nav-number">2.</span> <span class="nav-text">固定包头+包体协议</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://www.laruence.com/" title="风雪之隅 → http:&#x2F;&#x2F;www.laruence.com&#x2F;" rel="noopener" target="_blank">风雪之隅</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://tech.youzan.com/" title="有赞技术团队 → http:&#x2F;&#x2F;tech.youzan.com&#x2F;" rel="noopener" target="_blank">有赞技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://tech.meituan.com/archives" title="美团点评技术团队 → https:&#x2F;&#x2F;tech.meituan.com&#x2F;archives" rel="noopener" target="_blank">美团点评技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://macshuo.com/" title="點燈坊 → http:&#x2F;&#x2F;macshuo.com&#x2F;" rel="noopener" target="_blank">點燈坊</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://blog.turn.tw/" title="轉個彎日誌 → http:&#x2F;&#x2F;blog.turn.tw&#x2F;" rel="noopener" target="_blank">轉個彎日誌</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/09/swoole%E4%B9%8B%E7%B2%98%E5%8C%85%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          swoole之粘包问题
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-08-09 22:51:16" itemprop="dateCreated datePublished" datetime="2018-08-09T22:51:16+09:00">2018-08-09</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-08-10 09:37:42" itemprop="dateModified" datetime="2018-08-10T09:37:42+09:00">2018-08-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+人不知道要守住多少秘密才能安度一生。
+</blockquote>
+
+<p>什么是粘包问题，为什么我们要讲这个看起来比较奇怪的问题呢？<br>不着急解释，我们先看一个例子<br>创建一个server，server端代码如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TcpBufferServer</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_serv</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * init</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv = <span class="keyword">new</span> Swoole\Server(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Server received data: <span class="subst">&#123;$data&#125;</span>&quot;</span> . PHP_EOL;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * start server</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$reload</span> = <span class="keyword">new</span> TcpBufferServer;</span><br><span class="line"><span class="variable">$reload</span>-&gt;start();</span><br></pre></td></tr></table></figure>
+<p>server的代码很简单，仅仅是在收到客户端代码后，标准输出一句话而已，client的代码需要注意了，我们写了一个for循环，连续向server send三条信息，代码如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$client</span> = <span class="keyword">new</span> swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_SYNC);</span><br><span class="line"><span class="variable">$client</span>-&gt;connect(<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">9501</span>) || <span class="keyword">exit</span>(<span class="string">&quot;connect failed. Error: <span class="subst">&#123;$client-&gt;errCode&#125;</span>\n&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 向服务端发送数据</span></span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="number">3</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">    <span class="variable">$client</span>-&gt;send(<span class="string">&quot;Just a test.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$client</span>-&gt;close();</span><br></pre></td></tr></table></figure>
+<p>在未运行测试的情况下，我们期望server所在终端输出的结果应该是这样的</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Server received data: Just a test.</span><br><span class="line">Server received data: Just a test.</span><br><span class="line">Server received data: Just a test.</span><br></pre></td></tr></table></figure>
+<p>注意哦，我们期望的结果是server被回调了3次，才有上述期望的结果值<br>实际运行的结果呢?<br><img src="/images/sw11.png"><br>上图左边是server输出的信息。<br>我们看到，左侧显示的结果是server一次性输出的结果，按理论来说，client发起了3次请求，server应该跟我们期望的结果一致，会执行3次呀，这怎么回事呢？<br>这个问题，便是我们今天要说的粘包问题。<br>为了说清楚这个问题，我们先来看下client/server之间数据传递的过程</p>
+<ul>
+<li>客户端-&gt;发送数据</li>
+<li>服务端-&gt;接收数据</li>
+</ul>
+<p>通常我们直觉性的认为，客户端直接向网络中传输数据，对端从网络中读取数据，但是这是不正确的。<br>socket有缓冲区buffer的概念，每个TCP socket在内核中都有一个发送缓冲区和一个接收缓冲区。客户端send操作仅仅是把数据拷贝到buffer中，也就是说send完成了，数据并不代表已经发送到服务端了，之后才由TCP协议从buffer中发送到服务端。此时服务端的接收缓冲区被TCP缓存网络上来的数据，而后server才从buffer中读取数据。<br>所以，在onReceive中我们拿到的数据并没有办法保证数据包的完整性，swoole_server可能会同时收到多个请求包，也可能只收到一个请求包的一部分数据。<br>这就是一个大问题呀，如此TCP协议不行呀，这货虽然能保证我们能正确的接收到数据但是数据不对呀，这麻烦不容小觑。<br>既然是个问题，那我们自然也就有解决问题的方法，不然我下面说啥呢，对吧。</p>
+<p>swoole给我们提供了两种解决方案:</p>
+<h4 id="EOF结束协议"><a href="#EOF结束协议" class="headerlink" title="EOF结束协议"></a>EOF结束协议</h4><p>EOF，end of file，意思是我们在每一个数据包的结尾加一个eof标记，表示这就是一个完整的数据包，但是如果你的数据本身含有EOF标记，那就会造成收到的数据包不完整，所以开启EOF支持后，应避免数据中含有EOF标记。</p>
+<p>在swoole_server中，我们可以配置open_eof_check为true，打开EOF检测，配置package_eof来指定EOF标记。</p>
+<p>swoole_server收到一个数据包时，会检测数据包的结尾是否是我们设置的EOF标记，如果不是就会一直拼接数据包，直到超出buffer或者超时才会终止，一旦认定是一个完整的数据包，就会投递给Worker进程，这时候我们才可以在回调内处理数据。</p>
+<p>这样server就能保证接收到一个完整的数据包了？不能保证，这样只能保证server能收到一个或者多个完整的数据包。</p>
+<p>为啥是多个呢？</p>
+<p>我们说了开启EOF检测，即open_eof_check设置为true，server只会检测数据包的末尾是否有EOF标记，如果向我们开篇的案例连发3个EOF的数据，server可能还是会一次性收到，这样我们只能在回调内对数据包进行拆分处理。</p>
+<p>我们拿开篇的案例为例</p>
+<p>server开启eof检测并指定eof标记是\r\n，代码如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;_serv-&gt;set([ </span><br><span class="line">    <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>, </span><br><span class="line">    <span class="string">&#x27;open_eof_check&#x27;</span> =&gt; <span class="literal">true</span>, <span class="comment">//打开EOF检测 </span></span><br><span class="line">    <span class="string">&#x27;package_eof&#x27;</span> =&gt; <span class="string">&quot;\r\n&quot;</span>, <span class="comment">//设置EOF </span></span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+<p>客户端设置发送的数据末尾是\r\n符号，代码如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="number">3</span>; <span class="variable">$i</span>++) &#123; </span><br><span class="line">    <span class="variable">$client</span>-&gt;send(<span class="string">&quot;Just a test.\r\n&quot;</span>); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>按照我们刚才的分析，server的效果可能会一次性收到多个完整的包，我们运行看看结果<br><img src="/images/sw12.png"></p>
+<p>因此我们还需要在onReceive回调内对收到的数据进行拆分处理</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// echo &quot;Server received data: &#123;$data&#125;&quot; . PHP_EOL;</span></span><br><span class="line"></span><br><span class="line">    <span class="variable">$datas</span> = explode(<span class="string">&quot;\r\n&quot;</span>, <span class="variable">$data</span>);</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$datas</span> <span class="keyword">as</span> <span class="variable">$data</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(!<span class="variable">$data</span>)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Server received data: <span class="subst">&#123;$data&#125;</span>&quot;</span> . PHP_EOL;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时我们再看下运行结果<br><img src="/images/sw13.png"></p>
+<p>自行分包的效果便实现了，考虑到自行分包稍微麻烦，swoole提供了open_eof_split配置参数，启用该参数后，server会从左到右对数据进行逐字节对比，查找数据中的EOF标记进行分包，效果跟我们刚刚自行拆包是一样的，性能较差。<br>在案例的基础上我们看看open_eof_split配置</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">    <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">    <span class="string">&#x27;open_eof_check&#x27;</span> =&gt; <span class="literal">true</span>, <span class="comment">//打开EOF检测</span></span><br><span class="line">    <span class="string">&#x27;package_eof&#x27;</span> =&gt; <span class="string">&quot;\r\n&quot;</span>, <span class="comment">//设置EOF</span></span><br><span class="line">    <span class="string">&#x27;open_eof_split&#x27;</span> =&gt; <span class="literal">true</span>,</span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+<p>onReceive的回调，我们不需要自行拆包</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">     <span class="keyword">echo</span> <span class="string">&quot;Server received data: <span class="subst">&#123;$data&#125;</span>&quot;</span> . PHP_EOL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>client的测试代码使用\r\n（同server端package_eof标记一致），我们看下运行效果<br><img src="/images/sw14.png"><br>EOF标记解决粘包就说这么多，下面我们再看看另一种解决方案</p>
+<h4 id="固定包头-包体协议"><a href="#固定包头-包体协议" class="headerlink" title="固定包头+包体协议"></a>固定包头+包体协议</h4><p>下面我们要说的，对于部分同学可能有点难度，对于不理解的，建议多看多操作多问多查，不躲避不畏惧，这样才能有所提高。<br>固定包头是一种非常通用的协议，它的含义就是在你要发送的数据包的前面，添加一段信息，这段信息了包含了你要发送的数据包的长度，长度一般是2个或者4个字节的整数。<br>在这种协议下，我们的数据包的组成就是包头+包体。其中包头就是包体长度的二进制形式。比如我们本来想向服务端发送一段数据 “Just a test.” 共12个字符，现在我们要发送的数据就应该是这样的</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pack(<span class="string">&#x27;N&#x27;</span>, strlen(<span class="string">&quot;Just a test.&quot;</span>)) . <span class="string">&quot;Just a test.&quot;</span></span><br></pre></td></tr></table></figure>
+<p>其中php的pack函数是把数据打包成二进制字符串。<br>为什么这样就能保证Worker进程收到的是一个完整的数据包呢？我来解释一下：<br>当server收到一个数据包（可能是多个完整的数据包）之后，会先解出包头指定的数据长度，然后按照这个长度取出后面的数据，如果一次性收到多个数据包，依次循环，如此就能保证Worker进程可以一次性收到一个完整的数据包。<br>估计好多人都看蒙了，这都是神马玩意？我们以案例来分析<br>server代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ServerPack</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_serv</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * init</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv = <span class="keyword">new</span> Swoole\Server(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">            <span class="string">&#x27;open_length_check&#x27;</span>     =&gt; <span class="literal">true</span>,      <span class="comment">// 开启协议解析</span></span><br><span class="line">            <span class="string">&#x27;package_length_type&#x27;</span>   =&gt; <span class="string">&#x27;N&#x27;</span>,     <span class="comment">// 长度字段的类型</span></span><br><span class="line">            <span class="string">&#x27;package_length_offset&#x27;</span> =&gt; <span class="number">0</span>,       <span class="comment">//第几个字节是包长度的值</span></span><br><span class="line">            <span class="string">&#x27;package_body_offset&#x27;</span>   =&gt; <span class="number">4</span>,       <span class="comment">//第几个字节开始计算长度</span></span><br><span class="line">            <span class="string">&#x27;package_max_length&#x27;</span>    =&gt; <span class="number">81920</span>,  <span class="comment">//协议最大长度</span></span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$info</span> = unpack(<span class="string">&#x27;N&#x27;</span>, <span class="variable">$data</span>);</span><br><span class="line">        <span class="variable">$len</span> = <span class="variable">$info</span>[<span class="number">1</span>];</span><br><span class="line">        <span class="variable">$body</span> = substr(<span class="variable">$data</span>, - <span class="variable">$len</span>);</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;server received data: <span class="subst">&#123;$body&#125;</span>\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * start server</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$reload</span> = <span class="keyword">new</span> ServerPack;</span><br><span class="line"><span class="variable">$reload</span>-&gt;start();</span><br></pre></td></tr></table></figure>
+<p>客户端的代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$client</span> = <span class="keyword">new</span> swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_SYNC);</span><br><span class="line"><span class="variable">$client</span>-&gt;connect(<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">9501</span>) || <span class="keyword">exit</span>(<span class="string">&quot;connect failed. Error: <span class="subst">&#123;$client-&gt;errCode&#125;</span>\n&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 向服务端发送数据</span></span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="number">3</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">    <span class="variable">$data</span> = <span class="string">&quot;Just a test.&quot;</span>;</span><br><span class="line">    <span class="variable">$data</span> = pack(<span class="string">&#x27;N&#x27;</span>, strlen(<span class="variable">$data</span>)) . <span class="variable">$data</span>;</span><br><span class="line">    <span class="variable">$client</span>-&gt;send(<span class="variable">$data</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$client</span>-&gt;close();</span><br></pre></td></tr></table></figure>
+<p>运行的结果<br><img src="/images/sw15.png"><br>结果没错，是我们期望的结果。</p>
+<p>我们来分析下这是为什么</p>
+<p>1、首先，在server端我们配置了open_length_check，该参数表明我们要开启固定包头协议解析</p>
+<p>2、package_length_type配置，表明包头长度的类型，这个类型跟客户端使用pack打包包头的类型一致，一般设置为N或者n，N表示4个字节，n表示2个字节</p>
+<p>3、我们看下客户端的代码 pack(‘N’, strlen($data)) . $data，这句话就是包头+包体的意思，包头是pack函数打包的二进制数据，内容便是真实数据的长度 strlen($data)。</p>
+<p>在内存中，整数一般占用4个字节，所以我们看到，在这段数据中0-4字节表示的是包头，剩余的就是真实的数据。但是server不知道呀，怎么告诉server这一事实呢？</p>
+<p>看配置package_length_offset和package_body_offset，前者就是告诉server，从第几个字节开始是长度，后者就是从第几个字节开始计算长度。</p>
+<p>4、既然如此，我们就可以在onReceive回调对数据解包，然后从包头中取出包体长度，再从接收到的数据中截取真正的包体。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$info</span> = unpack(<span class="string">&#x27;N&#x27;</span>, <span class="variable">$data</span>);</span><br><span class="line"><span class="variable">$len</span> = <span class="variable">$info</span>[<span class="number">1</span>];</span><br><span class="line"><span class="variable">$body</span> = substr(<span class="variable">$data</span>, - <span class="variable">$len</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;server received data: <span class="subst">&#123;$body&#125;</span>\n&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Swoole/" rel="tag"># Swoole</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/08/08/%E8%B0%88%E8%B0%88redis%E7%9A%84setnx/" rel="prev" title="谈谈Redis的SETNX">
+                  <i class="fa fa-chevron-left"></i> 谈谈Redis的SETNX
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/08/10/swoole%E5%BC%82%E6%AD%A5task%E9%82%AE%E4%BB%B6%E6%A1%88%E4%BE%8B/" rel="next" title="swoole异步task邮件案例">
+                  swoole异步task邮件案例 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

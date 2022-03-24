@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="What is Panic?The idiomatic way of handling abnormal conditions in a Go program is using errors. Errors are sufficient for most of the abnormal conditions arising in the program. But there are some si">
+<meta property="og:type" content="article">
+<meta property="og:title" content="golang的panic和recover">
+<meta property="og:url" content="https://swoole.app/2021/06/28/golang%E7%9A%84panic%E5%92%8Crecover/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="What is Panic?The idiomatic way of handling abnormal conditions in a Go program is using errors. Errors are sufficient for most of the abnormal conditions arising in the program. But there are some si">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-06-28T03:49:24.000Z">
+<meta property="article:modified_time" content="2021-09-10T04:55:48.178Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="翻译">
+<meta property="article:tag" content="translate">
+<meta property="article:tag" content="Golang">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2021/06/28/golang%E7%9A%84panic%E5%92%8Crecover/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2021/06/28/golang%E7%9A%84panic%E5%92%8Crecover/","path":"2021/06/28/golang的panic和recover/","title":"golang的panic和recover"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>golang的panic和recover | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#What-is-Panic"><span class="nav-number">1.</span> <span class="nav-text">What is Panic?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#When-Should-Panic-Be-Used"><span class="nav-number">2.</span> <span class="nav-text">When Should Panic Be Used?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Panic-Example"><span class="nav-number">3.</span> <span class="nav-text">Panic Example</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#One-More-Example"><span class="nav-number">4.</span> <span class="nav-text">One More Example</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Defer-Calls-During-a-Panic"><span class="nav-number">5.</span> <span class="nav-text">Defer Calls During a Panic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Recovering-from-a-Panic"><span class="nav-number">6.</span> <span class="nav-text">Recovering from a Panic</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://www.laruence.com/" title="风雪之隅 → http:&#x2F;&#x2F;www.laruence.com&#x2F;" rel="noopener" target="_blank">风雪之隅</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://tech.youzan.com/" title="有赞技术团队 → http:&#x2F;&#x2F;tech.youzan.com&#x2F;" rel="noopener" target="_blank">有赞技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://tech.meituan.com/archives" title="美团点评技术团队 → https:&#x2F;&#x2F;tech.meituan.com&#x2F;archives" rel="noopener" target="_blank">美团点评技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://macshuo.com/" title="點燈坊 → http:&#x2F;&#x2F;macshuo.com&#x2F;" rel="noopener" target="_blank">點燈坊</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://blog.turn.tw/" title="轉個彎日誌 → http:&#x2F;&#x2F;blog.turn.tw&#x2F;" rel="noopener" target="_blank">轉個彎日誌</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/06/28/golang%E7%9A%84panic%E5%92%8Crecover/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          golang的panic和recover
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-06-28 12:49:24" itemprop="dateCreated datePublished" datetime="2021-06-28T12:49:24+09:00">2021-06-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:55:48" itemprop="dateModified" datetime="2021-09-10T13:55:48+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h3 id="What-is-Panic"><a href="#What-is-Panic" class="headerlink" title="What is Panic?"></a>What is Panic?</h3><p>The idiomatic way of handling abnormal conditions in a Go program is using errors. Errors are sufficient for most of the abnormal conditions arising in the program.</p>
+<p>But there are some situations where the program cannot continue execution after an abnormal condition. In this case, we use panic to prematurely terminate the program. When a function encounters a panic, its execution is stopped, any deferred functions are executed and then the control returns to its caller. This process continues until all the functions of the current goroutine have returned at which point the program prints the panic message, followed by the stack trace and then terminates. This concept will be more clear when we write an example program.</p>
+<p>It is possible to regain control of a panicking program using recover which we will discuss later in this tutorial.</p>
+<p>panic and recover can be considered similar to try-catch-finally idiom in other languages such as Java except that they are rarely used in Go.</p>
+<h3 id="When-Should-Panic-Be-Used"><a href="#When-Should-Panic-Be-Used" class="headerlink" title="When Should Panic Be Used?"></a>When Should Panic Be Used?</h3><p>One important factor is that you should avoid panic and recover and use errors where ever possible. Only in cases where the program just cannot continue execution should panic and recover mechanism be used.</p>
+<p>There are two valid use cases for panic.</p>
+<ul>
+<li><p>An unrecoverable error where the program cannot simply continue its execution.<br>One example is a web server that fails to bind to the required port. In this case, it’s reasonable to panic as there is nothing else to do if the port binding itself fails.</p>
+</li>
+<li><p>A programmer error.<br>Let’s say we have a method that accepts a pointer as a parameter and someone calls this method using a nil argument. In this case, we can panic as it’s a programmer error to call a method with nil argument which was expecting a valid pointer.</p>
+</li>
+</ul>
+<h3 id="Panic-Example"><a href="#Panic-Example" class="headerlink" title="Panic Example"></a>Panic Example</h3><p>The signature of the built-in panic function is provided below,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">panic</span><span class="params">(<span class="keyword">interface</span>&#123;&#125;)</span></span>  </span><br></pre></td></tr></table></figure>
+
+<p>The argument passed to the panic function will be printed when the program terminates. The use of this will be clear when we write a sample program. So let’s do that right away.</p>
+<p>We will start with a contrived example which shows how panic works.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fullName</span><span class="params">(firstName *<span class="keyword">string</span>, lastName *<span class="keyword">string</span>)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> firstName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: first name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> lastName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: last name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%s %s\n&quot;</span>, *firstName, *lastName)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from fullName&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    firstName := <span class="string">&quot;Elon&quot;</span></span><br><span class="line">    fullName(&amp;firstName, <span class="literal">nil</span>)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from main&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>The above is a simple program to print the full name of a person. The fullName function in line no. 7 prints the full name of a person. This function checks whether the firstName and lastName pointers are nil in line nos. 8 and 11 respectively. If it is nil the function calls panic with a corresponding message. This message will be printed when the program terminates.</p>
+<p>Running this program will print the following output,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">panic</span>: runtime error: last name cannot be <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.fullName(<span class="number">0xc00006af58</span>, <span class="number">0x0</span>)  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">12</span> +<span class="number">0x193</span></span><br><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">20</span> +<span class="number">0x4d</span></span><br></pre></td></tr></table></figure>
+
+<p>Let’s analyze this output to understand how panic works and how the stack trace is printed when the program panics.</p>
+<p>In line no. 19 we assign Elon to firstName. We call fullName function with lastName as nil in line no. 20. Hence the condition in line no. 11 will be satisfied and the program will panic. When panic is encountered, the program execution terminates, the argument passed to the panic function is printed followed by the stack trace. Since the program terminates following the panic function call in line no. 12, the code in line nos. 13, 14, and 15 will not be executed.</p>
+<p>This program first prints the message passed to the panic function,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">panic</span>: runtime error: last name cannot be <span class="literal">nil</span>  </span><br></pre></td></tr></table></figure>
+
+<p>and then prints the stack trace.</p>
+<p>The program panicked in line no. 12 of fullName function and hence,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.fullName(<span class="number">0xc00006af58</span>, <span class="number">0x0</span>)  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">12</span> +<span class="number">0x193</span></span><br></pre></td></tr></table></figure>
+
+<p>will be printed first. Then the next item in the stack will be printed. In our case, line no. 20 where the fullName is called is the next item in the stack trace. Hence it is printed next.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">20</span> +<span class="number">0x4d</span></span><br></pre></td></tr></table></figure>
+
+<p>Now we have reached the top level function which caused the panic and there are no more levels above, hence there is nothing more to print.</p>
+<h3 id="One-More-Example"><a href="#One-More-Example" class="headerlink" title="One More Example"></a>One More Example</h3><p>Panics can also be caused by errors that happen during the runtime such as trying to access an index that is not present in a slice.</p>
+<p>Let’s write a contrived example which creates a panic due to out of bounds slice access.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">slicePanic</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    n := []<span class="keyword">int</span>&#123;<span class="number">5</span>, <span class="number">7</span>, <span class="number">4</span>&#125;</span><br><span class="line">    fmt.Println(n[<span class="number">4</span>])</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from a&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    slicePanic()</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>In the program above, in line no. 9 we are trying to access n[4] which is an invalid index in the slice. This program will panic with the following output,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">panic</span>: runtime error: index out of <span class="keyword">range</span> [<span class="number">4</span>] with length <span class="number">3</span></span><br><span class="line"></span><br><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.slicePanic()  </span><br><span class="line">    /tmp/sandbox942516049/prog.<span class="keyword">go</span>:<span class="number">9</span> +<span class="number">0x1d</span></span><br><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox942516049/prog.<span class="keyword">go</span>:<span class="number">13</span> +<span class="number">0x22</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Defer-Calls-During-a-Panic"><a href="#Defer-Calls-During-a-Panic" class="headerlink" title="Defer Calls During a Panic"></a>Defer Calls During a Panic</h3><p>Let’s recollect what panic does. When a function encounters a panic, its execution is stopped, any deferred functions are executed and then the control returns to its caller. This process continues until all the functions of the current goroutine have returned at which point the program prints the panic message, followed by the stack trace and then terminates.</p>
+<p>In the example above, we did not defer any function calls. If a deferred function call is present, it is executed and then the control returns to its caller.</p>
+<p>Let’s modify the example above a little and use a defer statement.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fullName</span><span class="params">(firstName *<span class="keyword">string</span>, lastName *<span class="keyword">string</span>)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;deferred call in fullName&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> firstName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: first name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> lastName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: last name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%s %s\n&quot;</span>, *firstName, *lastName)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from fullName&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;deferred call in main&quot;</span>)</span><br><span class="line">    firstName := <span class="string">&quot;Elon&quot;</span></span><br><span class="line">    fullName(&amp;firstName, <span class="literal">nil</span>)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The only changes made are the addition of the deferred function calls in line nos. 8 and 20.</p>
+<p>This program prints,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">deferred call in fullName  </span><br><span class="line">deferred call in main  </span><br><span class="line"><span class="built_in">panic</span>: runtime error: last name cannot be <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.fullName(<span class="number">0xc00006af28</span>, <span class="number">0x0</span>)  </span><br><span class="line">    /tmp/sandbox451943841/prog.<span class="keyword">go</span>:<span class="number">13</span> +<span class="number">0x23f</span></span><br><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox451943841/prog.<span class="keyword">go</span>:<span class="number">22</span> +<span class="number">0xc6</span></span><br></pre></td></tr></table></figure>
+
+<p>When the program panics in line no. 13, any deferred function calls are first executed and then the control returns to the caller whose deferred calls are executed and so on until the top level caller is reached.</p>
+<p>In our case, defer statement in line no. 8 of fullName function is executed first. This prints the following message.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">deferred call in fullName  </span><br></pre></td></tr></table></figure>
+
+<p>And then the control returns to the main function whose deferred calls are executed and hence this prints,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">deferred call in main  </span><br></pre></td></tr></table></figure>
+<p>Now the control has reached the top level function and hence the program prints the panic message followed by the stack trace and then terminates.</p>
+<h3 id="Recovering-from-a-Panic"><a href="#Recovering-from-a-Panic" class="headerlink" title="Recovering from a Panic"></a>Recovering from a Panic</h3><p>recover is a builtin function that is used to regain control of a panicking program.</p>
+<p>The signature of recover function is provided below,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recover</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>Recover is useful only when called inside deferred functions. Executing a call to recover inside a deferred function stops the panicking sequence by restoring normal execution and retrieves the error message passed to the panic function call. If recover is called outside the deferred function, it will not stop a panicking sequence.</p>
+<p>Let’s modify our program and use recover to restore normal execution after a panic.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recoverFullName</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> r := <span class="built_in">recover</span>(); r!= <span class="literal">nil</span> &#123;</span><br><span class="line">        fmt.Println(<span class="string">&quot;recovered from &quot;</span>, r)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fullName</span><span class="params">(firstName *<span class="keyword">string</span>, lastName *<span class="keyword">string</span>)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> recoverFullName()</span><br><span class="line">    <span class="keyword">if</span> firstName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: first name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> lastName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: last name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%s %s\n&quot;</span>, *firstName, *lastName)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from fullName&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;deferred call in main&quot;</span>)</span><br><span class="line">    firstName := <span class="string">&quot;Elon&quot;</span></span><br><span class="line">    fullName(&amp;firstName, <span class="literal">nil</span>)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The recoverFullName() function in line no. 7 calls recover() which returns the value passed to panic function call. Here we are just printing the value returned by recover in line no. 9. recoverFullName() is being deferred in line no. 14 of the fullName function.</p>
+<p>When fullName panics, the deferred function recoverName() will be called which uses recover() to stop the panicking sequence.</p>
+<p>This program will print,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">recovered from  runtime error: last name cannot be <span class="literal">nil</span>  </span><br><span class="line">returned normally from main  </span><br><span class="line">deferred call in main  </span><br></pre></td></tr></table></figure>
+
+<p>When the program panics in line no. 19, the deferred recoverFullName function is called which in turn calls recover() to regain control of the panicking sequence. The call to recover() in line no. 8 returns the argument passed to panic() and hence it prints,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">recovered from  runtime error: last name cannot be <span class="literal">nil</span>  </span><br></pre></td></tr></table></figure>
+
+<p>After execution of recover(), the panicking stops and the control returns to the caller, in this case, the main function. The program continues to execute normally from line 29 in main since the panic has been recovered 😃. It prints returned normally from main followed by deferred call in main</p>
+<p>Let’s look at one more example where we recover from a panic caused by accessing an invalid index of a slice.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recoverInvalidAccess</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> r := <span class="built_in">recover</span>(); r != <span class="literal">nil</span> &#123;</span><br><span class="line">        fmt.Println(<span class="string">&quot;Recovered&quot;</span>, r)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">invalidSliceAccess</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> recoverInvalidAccess()</span><br><span class="line">    n := []<span class="keyword">int</span>&#123;<span class="number">5</span>, <span class="number">7</span>, <span class="number">4</span>&#125;</span><br><span class="line">    fmt.Println(n[<span class="number">4</span>])</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from a&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    invalidSliceAccess()</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Running the above program will output,</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Recovered runtime error: index out of <span class="keyword">range</span> [<span class="number">4</span>] with length <span class="number">3</span>  </span><br><span class="line">normally returned from main  </span><br></pre></td></tr></table></figure>
+
+<p>From the output, you can understand that we have recovered from the panic.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://golangbot.com/panic-and-recover/">https://golangbot.com/panic-and-recover/</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag"># 翻译</a>
+              <a href="/tags/translate/" rel="tag"># translate</a>
+              <a href="/tags/Golang/" rel="tag"># Golang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/05/13/html%E8%BF%87%E6%BB%A4%E6%8C%87%E5%AE%9A%E6%A0%87%E7%AD%BE%E4%BB%A5%E5%8F%8A%E5%B1%9E%E6%80%A7css%E6%A0%B7%E5%BC%8F/" rel="prev" title="html过滤指定标签以及属性css样式">
+                  <i class="fa fa-chevron-left"></i> html过滤指定标签以及属性css样式
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/07/30/%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%80%E5%8F%B0%E6%9C%BA%E5%99%A8%E4%B8%8A%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E5%8F%B7/" rel="next" title="如何在一台机器上管理多个Github账号">
+                  如何在一台机器上管理多个Github账号 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

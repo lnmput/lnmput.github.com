@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="后来我终于知道 ， 它并不是我的花 ，我只是恰好途径了它的盛放。    说明封装是类的构建过程，php具有；php也具有继承的特性。唯独这个多态，php体现的十分模糊。原因是php是弱类型语言。java的多态体现的十分清晰，大体分两类：父类引用指向子类对象；接口引用指向实现接口的类对象。java声明变量时都要给变量设定类型，所以存在什么父类引用和接口引用。而php则没有这点体现，php声明变量">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在PHP下理解和应用多态">
+<meta property="og:url" content="https://swoole.app/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="后来我终于知道 ， 它并不是我的花 ，我只是恰好途径了它的盛放。    说明封装是类的构建过程，php具有；php也具有继承的特性。唯独这个多态，php体现的十分模糊。原因是php是弱类型语言。java的多态体现的十分清晰，大体分两类：父类引用指向子类对象；接口引用指向实现接口的类对象。java声明变量时都要给变量设定类型，所以存在什么父类引用和接口引用。而php则没有这点体现，php声明变量">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-03-01T02:18:28.000Z">
+<meta property="article:modified_time" content="2018-03-27T13:02:34.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="PHP">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/","path":"2018/03/01/在PHP下理解和应用多态/","title":"在PHP下理解和应用多态"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>在PHP下理解和应用多态 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Interfaces"><span class="nav-number">2.</span> <span class="nav-text">Interfaces</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Abstract"><span class="nav-number">3.</span> <span class="nav-text">Abstract</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E7%9A%84%E5%BC%95%E5%87%BA"><span class="nav-number">4.</span> <span class="nav-text">问题的引出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%9D%E8%AF%95%E8%A7%A3%E5%86%B3"><span class="nav-number">5.</span> <span class="nav-text">尝试解决</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://www.laruence.com/" title="风雪之隅 → http:&#x2F;&#x2F;www.laruence.com&#x2F;" rel="noopener" target="_blank">风雪之隅</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://tech.youzan.com/" title="有赞技术团队 → http:&#x2F;&#x2F;tech.youzan.com&#x2F;" rel="noopener" target="_blank">有赞技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://tech.meituan.com/archives" title="美团点评技术团队 → https:&#x2F;&#x2F;tech.meituan.com&#x2F;archives" rel="noopener" target="_blank">美团点评技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://macshuo.com/" title="點燈坊 → http:&#x2F;&#x2F;macshuo.com&#x2F;" rel="noopener" target="_blank">點燈坊</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://blog.turn.tw/" title="轉個彎日誌 → http:&#x2F;&#x2F;blog.turn.tw&#x2F;" rel="noopener" target="_blank">轉個彎日誌</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在PHP下理解和应用多态
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-01 11:18:28" itemprop="dateCreated datePublished" datetime="2018-03-01T11:18:28+09:00">2018-03-01</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:02:34" itemprop="dateModified" datetime="2018-03-27T22:02:34+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+ 后来我终于知道 ， 它并不是我的花 ，我只是恰好途径了它的盛放。 
+</blockquote>
+
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>封装是类的构建过程，php具有；php也具有继承的特性。唯独这个多态，php体现的十分模糊。原因是php是弱类型语言。<br>java的多态体现的十分清晰，大体分两类：父类引用指向子类对象；接口引用指向实现接口的类对象。java声明变量时都要给变量设定类型，所以存在什么父类引用和接口引用。而php则没有这点体现，php声明变量不需要给变量设定类型，一个变量可以指向不同的数据类型。所以，php不具有像java一样的多态。</p>
+<p>多态，作为面向对象编程中的一种设计模式，指的是通过遵循同一个interface，类可以有不同的功能实现（相当于说，有多种形态）。<br>在编程世界里，多态形式可以让我们的程序更加地模块化，易于扩展，而不是到处都是基于不同状态的条件判断，比如动不动就switch，动不动就层层嵌套if判断，这种情况下，十有八九是你的代码“有问题”了。</p>
+<h3 id="Interfaces"><a href="#Interfaces" class="headerlink" title="Interfaces"></a>Interfaces</h3><p>interface里可以定义方法名及相应参数，任何实现这个interface的类必须具体实现interface里定义的所有抽象方法，一个class可以实现多个interface</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 正确的做法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> <span class="keyword">implements</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// code that does this</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// code that does that</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;name = <span class="variable">$name</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 无效的做法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> <span class="keyword">implements</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 缺少 doThis()方法!</span></span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 这个方法必须也是public!</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 缺少 name 参数!</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h3><p>Abstract Class可以说是介于interface和普通class之间，它既可以通过abstract method的形式定义统一的接口，又可以定义具体的功能实现。一个扩展了该Abstract Class的普通class，必须得具体实现该Abstract Class的所有抽象方法。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">MyAbstract</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// do this</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">abstract</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">abstract</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="问题的引出"><a href="#问题的引出" class="headerlink" title="问题的引出"></a>问题的引出</h3><p>假设你有一个articleclass：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$author</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$date</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$category</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span>  <span class="title">__construct</span>(<span class="params"><span class="variable">$title</span>, <span class="variable">$author</span>, <span class="variable">$date</span>, <span class="variable">$category</span> = <span class="number">0</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;title = <span class="variable">$title</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;author = <span class="variable">$author</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;date = <span class="variable">$date</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;category = <span class="variable">$category</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在呢，你想添加一个方法，来以不同的形式输出article相关的信息，比如说XML格式，或者说JSON格式。<br>可能你一开始会想着这么来处理：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params"><span class="variable">$type</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$ret</span> = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="keyword">switch</span>(<span class="variable">$type</span>) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;XML&#x27;</span>:</span><br><span class="line">                <span class="variable">$ret</span> = <span class="string">&#x27;&lt;article&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;title&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;title . <span class="string">&#x27;&lt;/title&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;author&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;author . <span class="string">&#x27;&lt;/author&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;date&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;date . <span class="string">&#x27;&lt;/date&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;category&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;category . <span class="string">&#x27;&lt;/category&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;/article&gt;&#x27;</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;JSON&#x27;</span>:</span><br><span class="line">                <span class="variable">$array</span> = <span class="keyword">array</span>(<span class="string">&#x27;article&#x27;</span> =&gt; <span class="variable">$obj</span>);</span><br><span class="line">                <span class="variable">$ret</span> = json_encode(<span class="variable">$array</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$ret</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>虽然功能上能实现效果，但是看上去很糟糕，不是吗？假设，将来你又想加上其他的格式，那该怎么办？再加几个case判断，这代码得多臃肿呢？</p>
+<p>关于面向对象，有一个很重要的原则就是，一个class应该只做份内之事。每当你遇到大块的条件判断的时候，你就应该有所警醒，因为很可能这个时候你已经在同一个class或method下，硬要去做太多的事情了。那么这个时候，也就是该尝试多态实现了。</p>
+<h3 id="尝试解决"><a href="#尝试解决" class="headerlink" title="尝试解决"></a>尝试解决</h3><p>定义 Interface</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>具体实现 Interface</p>
+<p>XMLWriter可以这样来实现：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">XMLWriter</span> <span class="keyword">implements</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$ret</span> = <span class="string">&#x27;&lt;article&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;title&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;title . <span class="string">&#x27;&lt;/title&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;author&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;author . <span class="string">&#x27;&lt;/author&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;date&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;date . <span class="string">&#x27;&lt;/date&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;category&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;category . <span class="string">&#x27;&lt;/category&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;/article&gt;&#x27;</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$ret</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>JSONWriter：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JSONWriter</span> <span class="keyword">implements</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$array</span> = <span class="keyword">array</span>(<span class="string">&#x27;article&#x27;</span> =&gt; <span class="variable">$obj</span>);</span><br><span class="line">        <span class="keyword">return</span> json_encode(<span class="variable">$array</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样每一种个的class只负责各自的那一件事。</p>
+<p>具体调用</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Writer <span class="variable">$writer</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$writer</span>-&gt;write(<span class="keyword">$this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样article的write方法接收的是一个实现了Writer这个interface的具体类，article不再需要关注具体该用什么样的格式，那已经不是它要负责的了，交给背后具体的Writer去处理就好了。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://pilishen.com/posts/Understanding-and-Applying-Polymorphism-in-PHP">http://pilishen.com/posts/Understanding-and-Applying-Polymorphism-in-PHP</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PHP/" rel="tag"># PHP</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/03/01/%E4%BD%A0%E7%9A%84%E8%BA%AB%E6%9D%90%E5%B0%B1%E6%98%AF%E4%BD%A0%E7%9A%84%E9%98%B6%E5%B1%82/" rel="prev" title="你的身材就是你的阶层">
+                  <i class="fa fa-chevron-left"></i> 你的身材就是你的阶层
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/03/01/php%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E5%92%8C%E8%87%AA%E5%8A%A8%E8%BD%BD%E5%85%A5%E7%90%86%E8%A7%A3/" rel="next" title="php命名空间和自动载入理解">
+                  php命名空间和自动载入理解 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
