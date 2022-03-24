@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">392</span>
+          <span class="site-state-item-count">393</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">136</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,86 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/01/24/MYSQL%E9%9D%99%E6%80%81%E8%A1%A8-%E5%8A%A8%E6%80%81%E8%A1%A8-%E5%8E%8B%E7%BC%A9%E8%A1%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/01/24/MYSQL%E9%9D%99%E6%80%81%E8%A1%A8-%E5%8A%A8%E6%80%81%E8%A1%A8-%E5%8E%8B%E7%BC%A9%E8%A1%A8/" class="post-title-link" itemprop="url">MYSQL静态表-动态表-压缩表</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-01-24 15:26:52" itemprop="dateCreated datePublished" datetime="2017-01-24T15:26:52+09:00">2017-01-24</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:34:24" itemprop="dateModified" datetime="2018-03-27T22:34:24+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我是主角，我不能死。
+</blockquote>
+mysql在创建表的时候定义表的性质（也叫表的类型），共有三种：静态表，动态表，压缩表。默认是静态表，如果存在varchar、blob、text字段，表类型就是动态了。
+
+<h3 id="静态表"><a href="#静态表" class="headerlink" title="静态表"></a>静态表</h3><p>字段有固定长度，例如：char(20)。如果使用gbk字符集存储中文username，将占用40byte，如果username的实际内容没有达到 40byte，将会填充空格，以达到40byte。速度很快，因为mysql知道username总是从第41个字节开始，容易缓存，出现问题后也容易恢 复（mysql知道记录的确切位置），需要更多的硬盘空间（如果有三个上面的字段，一条记录就会占120字节，即使实际只用了其中一部分）</p>
+<h3 id="动态表"><a href="#动态表" class="headerlink" title="动态表"></a>动态表</h3><p>字 段不定长（变长），这种表格式比较节省空间，但是复杂度更高，每条记录都有一个header，作用就是表明该记录有多长，所有的字符串列都是动态的（除非 小于4个字节，这种情况下，节省的空间可以忽略不计，增加的复杂度会反而会导致性能丢失），通常占用比静态表少的多地空间，但是必须经常维护（避免碎 片），例如：更新了用户名somebody为somebodyt，t不能立刻就出现在y的后面，因为空间被其他记录占用，对于出现碎片的列，每个新连接会 损失6个字节。而且出现问题后不容易重建（前面我说的静态表正好相反），如果碎片严重，有可能出现库爆炸（^_^）.</p>
+<p>不包括连接的动态记录的空间消耗可以用下面的公式计算：<br>3+(列数+7)/8+（字符列数）+数字列的打包尺寸+字符串长度+（空列的数量+7）/8</p>
+<p>每条记录的header可以表明那个字符串列是空的，那个数字列包含0（非空），在那种情况下不向磁盘存储，非空字符串包含一个长度字节加上字符串内容。</p>
+<h3 id="压缩表"><a href="#压缩表" class="headerlink" title="压缩表"></a>压缩表</h3><p>只读，使用很少的空间，用myisampack工具创建，表要少得多，每条记录分开压缩，所以不能同时访问，可以压缩静态表和动态表。<br>创建方法：myisampack [options] filename</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -396,7 +476,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:36:48" itemprop="dateModified" datetime="2018-03-27T22:36:48+09:00">2018-03-27</time>
+        <time title="修改时间：2022-03-14 23:38:18" itemprop="dateModified" datetime="2022-03-14T23:38:18+09:00">2022-03-14</time>
       </span>
 
   
@@ -412,8 +492,8 @@
           <blockquote class="blockquote-center">
 全体听令，除我之外~冲锋！
 </blockquote>
-### 配置文件database.php
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;redis&#x27;</span> =&gt; [</span><br><span class="line"></span><br><span class="line">       <span class="string">&#x27;cluster&#x27;</span> =&gt; <span class="literal">false</span>,</span><br><span class="line"></span><br><span class="line">       <span class="string">&#x27;default&#x27;</span> =&gt; [</span><br><span class="line">           <span class="string">&#x27;host&#x27;</span>     =&gt; env(<span class="string">&#x27;REDIS_HOST&#x27;</span>, <span class="string">&#x27;localhost&#x27;</span>),</span><br><span class="line">           <span class="string">&#x27;password&#x27;</span> =&gt; env(<span class="string">&#x27;REDIS_PASSWORD&#x27;</span>, <span class="literal">null</span>),</span><br><span class="line">           <span class="string">&#x27;port&#x27;</span>     =&gt; env(<span class="string">&#x27;REDIS_PORT&#x27;</span>, <span class="number">6379</span>),</span><br><span class="line">           <span class="string">&#x27;database&#x27;</span> =&gt; <span class="number">0</span>,</span><br><span class="line">       ],</span><br><span class="line"></span><br><span class="line">       <span class="string">&#x27;product&#x27;</span> =&gt; [</span><br><span class="line">           <span class="string">&#x27;host&#x27;</span>     =&gt; <span class="string">&#x27;localhost&#x27;</span>,</span><br><span class="line">           <span class="string">&#x27;password&#x27;</span> =&gt;  <span class="literal">null</span>,</span><br><span class="line">           <span class="string">&#x27;port&#x27;</span>     =&gt;  <span class="number">6379</span>,</span><br><span class="line">           <span class="string">&#x27;database&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">       ]</span><br><span class="line">   ],</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置文件database-php"><a href="#配置文件database-php" class="headerlink" title="配置文件database.php"></a>配置文件database.php</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;redis&#x27;</span> =&gt; [</span><br><span class="line"></span><br><span class="line">       <span class="string">&#x27;cluster&#x27;</span> =&gt; <span class="literal">false</span>,</span><br><span class="line"></span><br><span class="line">       <span class="string">&#x27;default&#x27;</span> =&gt; [</span><br><span class="line">           <span class="string">&#x27;host&#x27;</span>     =&gt; env(<span class="string">&#x27;REDIS_HOST&#x27;</span>, <span class="string">&#x27;localhost&#x27;</span>),</span><br><span class="line">           <span class="string">&#x27;password&#x27;</span> =&gt; env(<span class="string">&#x27;REDIS_PASSWORD&#x27;</span>, <span class="literal">null</span>),</span><br><span class="line">           <span class="string">&#x27;port&#x27;</span>     =&gt; env(<span class="string">&#x27;REDIS_PORT&#x27;</span>, <span class="number">6379</span>),</span><br><span class="line">           <span class="string">&#x27;database&#x27;</span> =&gt; <span class="number">0</span>,</span><br><span class="line">       ],</span><br><span class="line"></span><br><span class="line">       <span class="string">&#x27;product&#x27;</span> =&gt; [</span><br><span class="line">           <span class="string">&#x27;host&#x27;</span>     =&gt; <span class="string">&#x27;localhost&#x27;</span>,</span><br><span class="line">           <span class="string">&#x27;password&#x27;</span> =&gt;  <span class="literal">null</span>,</span><br><span class="line">           <span class="string">&#x27;port&#x27;</span>     =&gt;  <span class="number">6379</span>,</span><br><span class="line">           <span class="string">&#x27;database&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">       ]</span><br><span class="line">   ],</span><br></pre></td></tr></table></figure>
 
 <h3 id="连接存储"><a href="#连接存储" class="headerlink" title="连接存储"></a>连接存储</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 连接</span></span><br><span class="line"><span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">connectDatabase</span>(<span class="params"><span class="variable">$name</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">return</span> Redis::connection(<span class="variable">$name</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 存储</span></span><br><span class="line"><span class="variable">$redisConnection</span> = <span class="built_in">parent</span>::getRedisConnectName();</span><br><span class="line"><span class="variable">$redis</span> = RedisHelper::connectDatabase(<span class="variable">$redisConnection</span>[<span class="string">&#x27;store&#x27;</span>]);</span><br><span class="line"><span class="variable">$redis</span>-&gt;rpush(<span class="string">&#x27;productView&#x27;</span>, <span class="variable">$product_id</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 取出</span></span><br><span class="line"><span class="variable">$products</span> = array_count_values(<span class="variable">$redis</span>-&gt;lrange(<span class="string">&#x27;productView&#x27;</span>,<span class="number">0</span>,-<span class="number">1</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 删除</span></span><br><span class="line"><span class="variable">$redis</span>-&gt;del(<span class="string">&#x27;productView&#x27;</span>);</span><br></pre></td></tr></table></figure>
       
@@ -975,87 +1055,6 @@ Elastic{ON}15, the first ES conference is coming, and since nowadays we see a lo
 <p>view rawes_first2.py hosted with ❤ by GitHub</p>
 <h3 id="9-Next-Steps"><a href="#9-Next-Steps" class="headerlink" title="9. Next Steps"></a>9. Next Steps</h3><p>This was just a simple overview on how to set up your Elasticsearch server and start working with some data using Python. The code used here is publicly available in this IPython notebook.<br>We encourage you to learn more about ES and specially take a look at the Elastic stack where you will be able to see beautiful analytics and insights with Kibana and go through logs using Logstash.<br>In following posts we will talk about more advanced ES features and we will try to extend this simple test and use it to show a more interesting Django app powered by this data and by ES.<br>Hope this post was useful for developers trying to enter the ES world.<br>At Tryolabs we’re Elastic official partners. If you want to talk about Elasticsearch, ELK, applications and possible projects using these technologies, drop us a line to <a href="mailto:&#x68;&#101;&#108;&#108;&#x6f;&#64;&#x74;&#x72;&#x79;&#x6f;&#108;&#x61;&#98;&#x73;&#46;&#x63;&#111;&#x6d;">&#x68;&#101;&#108;&#108;&#x6f;&#64;&#x74;&#x72;&#x79;&#x6f;&#108;&#x61;&#98;&#x73;&#46;&#x63;&#111;&#x6d;</a> (or fill out this form) and we will be glad to connect!</p>
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/12/12/javascript%E4%B8%AD%E4%BD%9C%E7%94%A8%E5%9F%9F%E5%92%8C%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/12/12/javascript%E4%B8%AD%E4%BD%9C%E7%94%A8%E5%9F%9F%E5%92%8C%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87/" class="post-title-link" itemprop="url">javascript中作用域和变量提升</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-12-12 16:35:59" itemprop="dateCreated datePublished" datetime="2016-12-12T16:35:59+09:00">2016-12-12</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:20:53" itemprop="dateModified" datetime="2018-03-27T22:20:53+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-留给中国队的时间已经不多了。
-</blockquote>
-“function函数”是一等公民！`编译阶段`，会把定义式的函数优先执行，也会把所有var变量创建，默认值为undefined，以提高程序的执行效率！
-总结：当JavaScript引擎解析脚本时，它会在预编译期对所有声明的变量和函数进行处理！并且是先预声明变量，再预定义函数！
-
-<h3 id="变量提升"><a href="#变量提升" class="headerlink" title="变量提升"></a>变量提升</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> v=<span class="string">&#x27;Hello World&#x27;</span>;</span><br><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    alert(v);</span><br><span class="line">    <span class="keyword">var</span> v=<span class="string">&#x27;I love you&#x27;</span>;</span><br><span class="line">&#125;)()</span><br></pre></td></tr></table></figure>
-<p>提示说“undefined”</p>
-<h3 id="函数提升"><a href="#函数提升" class="headerlink" title="函数提升"></a>函数提升</h3><p>函数声明方式提升【成功】</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">myTest</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    foo();</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        alert(<span class="string">&quot;我来自 foo&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">myTest();</span><br></pre></td></tr></table></figure>
-<p>函数表达式方式提升【失败】</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">myTest</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    foo();</span><br><span class="line">   <span class="keyword">var</span> foo =<span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        alert(<span class="string">&quot;我来自 foo&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">myTest();</span><br></pre></td></tr></table></figure>
       
     </div>
 

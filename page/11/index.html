@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">392</span>
+          <span class="site-state-item-count">393</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">136</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,121 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/20/%E5%9C%A8mysql%E4%B8%AD%E4%BD%BF%E7%94%A8json%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/20/%E5%9C%A8mysql%E4%B8%AD%E4%BD%BF%E7%94%A8json%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/" class="post-title-link" itemprop="url">在mysql中使用json数据类型</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-20 10:25:23 / 修改时间：11:37:14" itemprop="dateCreated datePublished" datetime="2018-06-20T10:25:23+09:00">2018-06-20</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+You are my today and all of my tomorrows. 
+</blockquote>
+
+<p>In my article SQL vs NoSQL: The Differences, I mentioned the line between SQL and NoSQL databases has become increasingly blurred with each camp adopting features from the other. MySQL 5.7 InnoDB and PostgreSQL 9.4 databases both directly support JSON document types in a single field. In this article, we’ll examine MySQL’s JSON implementation in more detail.</p>
+<p>(PostgreSQL supported JSON before version 9.4 and any database will accept JSON documents as a single string blob. However, MySQL and PostgreSQL now directly support validated JSON data in real key/value pairs rather than a basic string.)</p>
+<h3 id="Just-Because-You-Can-Store-JSON-…"><a href="#Just-Because-You-Can-Store-JSON-…" class="headerlink" title="Just Because You Can Store JSON …"></a>Just Because You Can Store JSON …</h3><p>… it doesn’t follow you should.</p>
+<p>Normalization is a technique used to optimize the database structure. The First Normal Form (1NF) rule governs that every column should hold a single value — which is broken by storing multi-value JSON documents.</p>
+<p>If you have clear relational data requirements, use appropriate single-value fields. JSON should be used sparingly as a last resort. JSON value fields cannot be indexed, so avoid using it on columns which are updated or searched regularly. In addition, fewer client applications support JSON, and the technology is newer and possibly less stable than other types.</p>
+<p>That said, there are good JSON use-cases for sparsely-populated data or custom attributes.</p>
+<h3 id="Create-a-Table-with-a-JSON-Field"><a href="#Create-a-Table-with-a-JSON-Field" class="headerlink" title="Create a Table with a JSON Field"></a>Create a Table with a JSON Field</h3><p>Consider a shop selling books. A book table will have an ID, ISBN, title, publisher, number of pages and other relational data which applies to all books. Presume we want to add any number of category tags to any book. We could achieve this in SQL using:</p>
+<ul>
+<li>a tag table which stored each tag name against a unique ID, and</li>
+<li>a tagmap table with many-to-many records mapping book IDs to tag IDs</li>
+</ul>
+<p>It’ll work, but it’s cumbersome and considerable effort for a minor feature. Therefore, we’ll define a tags JSON field in our MySQL database’s book table:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `book` (</span><br><span class="line">  `id` mediumint(<span class="number">8</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `title` <span class="type">varchar</span>(<span class="number">200</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `tags` json <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB;</span><br></pre></td></tr></table></figure>
+
+<p>Note that JSON columns cannot have a default value, be used as a primary key, be referenced as a foreign key or have an index. You can create secondary indexes on generated virtual columns, but it’s possibly easier to retain an indexed value in a separate field.</p>
+<h3 id="Adding-JSON-Data"><a href="#Adding-JSON-Data" class="headerlink" title="Adding JSON Data"></a>Adding JSON Data</h3><p>Whole JSON documents can be passed in INSERT or UPDATE statements. For example, our book tags can be passed as an array:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `book` (`title`, `tags`)</span><br><span class="line"><span class="keyword">VALUES</span> (</span><br><span class="line">  <span class="string">&#x27;ECMAScript 2015: A SitePoint Anthology&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;[&quot;JavaScript&quot;, &quot;ES2015&quot;, &quot;JSON&quot;]&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>JSON can also be created with the:</p>
+<ul>
+<li><p>JSON_ARRAY() function which creates arrays, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns [1, 2, &quot;abc&quot;]:</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="built_in">JSON_ARRAY</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="string">&#x27;abc&#x27;</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>JSON_OBJECT() function which creates objects, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns &#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#125;:</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="built_in">JSON_OBJECT</span>(<span class="string">&#x27;a&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;b&#x27;</span>, <span class="number">2</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>JSON_MERGE() function to merge documents, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns [&quot;a&quot;, 1, &#123;&quot;key&quot;: &quot;value&quot;&#125;]:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_MERGE(<span class="string">&#x27;[&quot;a&quot;, 1]&#x27;</span>, <span class="string">&#x27;&#123;&quot;key&quot;: &quot;value&quot;&#125;&#x27;</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>or you can (CAST anyValue AS JSON).</p>
+</li>
+</ul>
+<p>The JSON_TYPE() function allows you to check JSON value types. It should return OBJECT, ARRAY or an error, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns ARRAY:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;[1, 2, &quot;abc&quot;]&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- returns OBJECT:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;&#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#125;&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- returns an error:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;&#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>Similarly, the JSON_VALID() function returns 1 when the JSON is valid:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns 1:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;[1, 2, &quot;abc&quot;]&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- returns 1:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;&#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#125;&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- returns 0:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;&#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>Attempting to insert an invalid JSON document will raise an error, and the whole record will not be inserted/updated.</p>
+<h3 id="Searching-JSON-Data"><a href="#Searching-JSON-Data" class="headerlink" title="Searching JSON Data"></a>Searching JSON Data</h3><p>The JSON_CONTAINS() function accepts the JSON document being searched and another to compare against. It returns 1 when a match is found, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- all books with the &#x27;JavaScript&#x27; tag:</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `book` </span><br><span class="line"><span class="keyword">WHERE</span> JSON_CONTAINS(tags, <span class="string">&#x27;[&quot;JavaScript&quot;]&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>The similar JSON_SEARCH() function returns the path to the given match or NULL when there’s no match. It is passed the JSON document being searched, ‘one’ to find the first match or ‘all’ to find all matches, and a search string, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- all books with tags starting &#x27;Java&#x27;:</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `book` </span><br><span class="line"><span class="keyword">WHERE</span> JSON_SEARCH(tags, <span class="string">&#x27;one&#x27;</span>, <span class="string">&#x27;Java%&#x27;</span>) <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="JSON-Paths"><a href="#JSON-Paths" class="headerlink" title="JSON Paths"></a>JSON Paths</h3><p>A JSON path targets values and can be used to extract or modify parts of a document. The JSON_EXTRACT() function demonstrates this by extracting one or more values:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns &quot;SitePoint&quot;:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_EXTRACT(</span><br><span class="line">  <span class="string">&#x27;&#123;&quot;id&quot;: 1, &quot;website&quot;: &quot;SitePoint&quot;&#125;&#x27;</span>, </span><br><span class="line">  <span class="string">&#x27;$.website&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.sitepoint.com/use-json-data-fields-mysql-databases/">https://www.sitepoint.com/use-json-data-fields-mysql-databases/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1310,88 +1425,6 @@ Honesty is the best policy.
 <p>Minimize usage of vanilla PHP in Blade templates.</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://github.com/alexeymezenin/laravel-best-practices">https://github.com/alexeymezenin/laravel-best-practices</a><br><a target="_blank" rel="noopener" href="https://laravel-china.org/articles/12762/eighteen-best-practices-of-laravel">https://laravel-china.org/articles/12762/eighteen-best-practices-of-laravel</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/02/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%A4%9A%E4%B8%AA%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/02/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%A4%9A%E4%B8%AA%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE/" class="post-title-link" itemprop="url">Laravel中使用多个数据库操作数据</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-02 12:50:34 / 修改时间：13:56:34" itemprop="dateCreated datePublished" datetime="2018-06-02T12:50:34+09:00">2018-06-02</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-人人尽说江南好，游人只合江南老。春水碧于天，画船听雨眠。
-垆边人似月，皓腕凝霜雪。未老莫还乡，还乡须断肠。
-</blockquote>
-
-<h3 id="定义连接"><a href="#定义连接" class="headerlink" title="定义连接"></a>定义连接</h3><p>在你的数据库配置文件<code>app/config/ database.php</code>你可以定义任何类型的多个数据库连接。事实上，你可以定义尽可能多的连接，只要你愿意。例如，如果你的应用程序有2个 MySQL数据库中提取数据，则可以分别定义他们两个。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">return</span> <span class="keyword">array</span>(</span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;default&#x27;</span> =&gt; <span class="string">&#x27;mysql&#x27;</span>,</span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;connections&#x27;</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 主数据库连接</span></span><br><span class="line">        <span class="string">&#x27;mysql&#x27;</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">&#x27;driver&#x27;</span>    =&gt; <span class="string">&#x27;mysql&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;host&#x27;</span>      =&gt; <span class="string">&#x27;host1&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;database&#x27;</span>  =&gt; <span class="string">&#x27;database1&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;username&#x27;</span>  =&gt; <span class="string">&#x27;user1&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;password&#x27;</span>  =&gt; <span class="string">&#x27;pass1&#x27;</span></span><br><span class="line">            <span class="string">&#x27;charset&#x27;</span>   =&gt; <span class="string">&#x27;utf8&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;collation&#x27;</span> =&gt; <span class="string">&#x27;utf8_unicode_ci&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;prefix&#x27;</span>    =&gt; <span class="string">&#x27;&#x27;</span>,</span><br><span class="line">        ),</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 次数据连接</span></span><br><span class="line">        <span class="string">&#x27;mysql2&#x27;</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">&#x27;driver&#x27;</span>    =&gt; <span class="string">&#x27;mysql&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;host&#x27;</span>      =&gt; <span class="string">&#x27;host2&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;database&#x27;</span>  =&gt; <span class="string">&#x27;database2&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;username&#x27;</span>  =&gt; <span class="string">&#x27;user2&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;password&#x27;</span>  =&gt; <span class="string">&#x27;pass2&#x27;</span></span><br><span class="line">            <span class="string">&#x27;charset&#x27;</span>   =&gt; <span class="string">&#x27;utf8&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;collation&#x27;</span> =&gt; <span class="string">&#x27;utf8_unicode_ci&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;prefix&#x27;</span>    =&gt; <span class="string">&#x27;&#x27;</span>,</span><br><span class="line">        ),</span><br><span class="line">    ),</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-<p>我们默认的连接(default)仍设置为 mysql,这意味着，除非我们特别指定，应用程序将继续使用 mysql 连接.</p>
-<h3 id="Schema"><a href="#Schema" class="headerlink" title="Schema"></a>Schema</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Schema::connection(<span class="string">&#x27;mysql2&#x27;</span>)-&gt;create(<span class="string">&#x27;lp_table&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$table</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$table</span>-&gt;increments(<span class="string">&#x27;id&#x27;</span>):</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="DB类"><a href="#DB类" class="headerlink" title="DB类"></a>DB类</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DB::connection(<span class="string">&#x27;mysql2&#x27;</span>)-&gt;table(<span class="string">&#x27;article&#x27;</span>)-&gt;where...</span><br></pre></td></tr></table></figure>
-
-<h3 id="Eloquent"><a href="#Eloquent" class="headerlink" title="Eloquent"></a>Eloquent</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SomeModel</span> <span class="keyword">extends</span> <span class="title">Eloquent</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$connection</span> = <span class="string">&#x27;mysql2&#x27;</span>;</span><br><span class="line">    .......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SomeController</span> <span class="keyword">extends</span> <span class="title">BaseController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">someMethod</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$someModel</span> = <span class="keyword">new</span> SomeModel;</span><br><span class="line"></span><br><span class="line">        <span class="variable">$someModel</span>-&gt;setConnection(<span class="string">&#x27;mysql2&#x27;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="variable">$something</span> = <span class="variable">$someModel</span>-&gt;find(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$something</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    .......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.itlipeng.cn/2015/12/24/%E5%9C%A8-laravel-%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%A4%9A%E4%B8%AA%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE/">https://www.itlipeng.cn/2015/12/24/%E5%9C%A8-laravel-%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%A4%9A%E4%B8%AA%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE/</a></p>
 </blockquote>
 
       

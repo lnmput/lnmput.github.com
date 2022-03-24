@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">392</span>
+          <span class="site-state-item-count">393</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">136</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,93 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/25/ThinkPHP%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E8%AE%BE%E8%AE%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/25/ThinkPHP%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E8%AE%BE%E8%AE%A1/" class="post-title-link" itemprop="url">ThinkPHP的异常处理设计</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-03-25 20:46:18 / 修改时间：22:35:44" itemprop="dateCreated datePublished" datetime="2018-03-25T20:46:18+09:00">2018-03-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+就算人生终有一散,也别辜负相遇
+</blockquote>
+
+<h3 id="异常的分类"><a href="#异常的分类" class="headerlink" title="异常的分类"></a>异常的分类</h3><ul>
+<li><p>用户行为异常<br>提交了错误的参数<br>没有查询到结果<br>通常不需要记录日志， 需要给用户返回具体的错误信息， 而且一般情况下这些异常是可以预见的；</p>
+</li>
+<li><p>系统异常<br>代码自己的错误<br>需要记录日志， 不应该向客户返回具体的信息，一般无法预见</p>
+</li>
+</ul>
+<h3 id="自定义异常捕捉类"><a href="#自定义异常捕捉类" class="headerlink" title="自定义异常捕捉类"></a>自定义异常捕捉类</h3><p>修改配置文件tp5\application\config.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;exception_handle&#x27;</span>       =&gt; <span class="string">&#x27;app\lib\exception\ExceptionHandler&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>tp5\application\lib\exception\ExceptionHandler.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">lib</span>\<span class="title">exception</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">exception</span>\<span class="title">Handle</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Log</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Request</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExceptionHandler</span> <span class="keyword">extends</span> <span class="title">Handle</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$code</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$msg</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$errorCode</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params">\<span class="built_in">Exception</span> <span class="variable">$e</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$e</span> <span class="keyword">instanceof</span> BaseException) &#123;</span><br><span class="line">            <span class="comment">// 自定义异常</span></span><br><span class="line">            <span class="keyword">$this</span>-&gt;code = <span class="variable">$e</span>-&gt;code;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;msg = <span class="variable">$e</span>-&gt;msg;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;errorCode = <span class="variable">$e</span>-&gt;errorCode;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 调试环境使用tp自己的异常类， 便于调试</span></span><br><span class="line">            <span class="keyword">if</span> (config(<span class="string">&#x27;app_debug&#x27;</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="built_in">parent</span>::render(<span class="variable">$e</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;code = <span class="number">500</span>;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;msg = <span class="string">&#x27;服务器内部错误&#x27;</span>;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;errorCode = <span class="number">999</span>;</span><br><span class="line">            <span class="comment">// 异常</span></span><br><span class="line">            <span class="keyword">$this</span>-&gt;recordErrorLog(<span class="variable">$e</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="variable">$request</span> = Request::instance();</span><br><span class="line"></span><br><span class="line">        <span class="variable">$res</span> = [</span><br><span class="line">            <span class="string">&#x27;msg&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;msg,</span><br><span class="line">            <span class="string">&#x27;error_code&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;errorCode,</span><br><span class="line">            <span class="string">&#x27;request_url&#x27;</span> =&gt; <span class="variable">$request</span>-&gt;url()</span><br><span class="line">        ];</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 以 json 的结构返回异常 </span></span><br><span class="line">        <span class="keyword">return</span> json(<span class="variable">$res</span>, <span class="keyword">$this</span>-&gt;code);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 将异常写入日志</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">recordErrorLog</span>(<span class="params">\<span class="built_in">Exception</span> <span class="variable">$e</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Log::init([</span><br><span class="line">            <span class="string">&#x27;type&#x27;</span>  =&gt;  <span class="string">&#x27;File&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;path&#x27;</span>  =&gt;  LOG_PATH,</span><br><span class="line">            <span class="string">&#x27;level&#x27;</span> =&gt; [<span class="string">&#x27;error&#x27;</span>]</span><br><span class="line">        ]);</span><br><span class="line"></span><br><span class="line">        Log::record(<span class="variable">$e</span>-&gt;getMessage(),<span class="string">&#x27;error&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="控制器"><a href="#控制器" class="headerlink" title="控制器"></a>控制器</h3><p>在结果为空的时候抛出一个自定义的异常<br>tp5\application\api\controller\v1\Products.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">app</span>\<span class="title">lib</span>\<span class="title">exception</span>\<span class="title">ProductException</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getRecent</span>(<span class="params"><span class="variable">$count</span> = <span class="number">15</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    (<span class="keyword">new</span> Count())-&gt;goCheck();</span><br><span class="line"></span><br><span class="line">    <span class="variable">$res</span> = Product::getMostRecent(<span class="variable">$count</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$res</span>-&gt;isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> ProductException();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$res</span> = <span class="variable">$res</span>-&gt;hidden([<span class="string">&#x27;summary&#x27;</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$res</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="异常基类"><a href="#异常基类" class="headerlink" title="异常基类"></a>异常基类</h3><p>tp5\application\lib\exception\BaseException.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">lib</span>\<span class="title">exception</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Exception</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BaseException</span> <span class="keyword">extends</span> <span class="title">Exception</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$code</span> = <span class="number">500</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$msg</span> = <span class="string">&#x27;请求错误&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$errorCode</span> = <span class="number">10000</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$params</span> = []</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(!is_array(<span class="variable">$params</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(array_key_exists(<span class="string">&#x27;code&#x27;</span>,<span class="variable">$params</span>)) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;code = <span class="variable">$params</span>[<span class="string">&#x27;code&#x27;</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(array_key_exists(<span class="string">&#x27;msg&#x27;</span>,<span class="variable">$params</span>)) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;msg = <span class="variable">$params</span>[<span class="string">&#x27;msg&#x27;</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(array_key_exists(<span class="string">&#x27;errorCode&#x27;</span>,<span class="variable">$params</span>)) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;errorCode = <span class="variable">$params</span>[<span class="string">&#x27;errorCode&#x27;</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="自定义异常类"><a href="#自定义异常类" class="headerlink" title="自定义异常类"></a>自定义异常类</h3><p>覆盖基类的几个基本参数， 实现不同的异常返回不同的参数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">lib</span>\<span class="title">exception</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ProductException</span> <span class="keyword">extends</span> <span class="title">BaseException</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$code</span> = <span class="number">404</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$msg</span> = <span class="string">&#x27;指定商品不存在，请检查商品ID&#x27;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$errorCode</span> = <span class="number">20000</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1111,100 +1198,6 @@ Github Api 虽然默认使用了第一种方法，但是其实是推荐并实现
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://simplemde.com/">https://simplemde.com/</a><br><a target="_blank" rel="noopener" href="https://packagist.org/packages/erusev/parsedown">https://packagist.org/packages/erusev/parsedown</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/08/%E7%BB%9F%E4%B8%80%E8%AE%A2%E5%8D%95%E7%AE%A1%E7%90%86erp2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/08/%E7%BB%9F%E4%B8%80%E8%AE%A2%E5%8D%95%E7%AE%A1%E7%90%86erp2/" class="post-title-link" itemprop="url">统一订单管理erp2</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-03-08 11:27:04" itemprop="dateCreated datePublished" datetime="2018-03-08T11:27:04+09:00">2018-03-08</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-05-16 16:02:13" itemprop="dateModified" datetime="2018-05-16T16:02:13+09:00">2018-05-16</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-技术是生产力
-</blockquote>
-
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>由于后期公司业务调整以及业务量增大, 第一版的订单管理系统已经不能很好的满足采购,客服, 仓储,发货等相关人员的需求,于是积极筹备开发第二版.<br>基于laravel5.5开发，用于所有商城的订单管理，实现了采购，供货，发货, 仓储的完全管理;</p>
-<h3 id="功能点"><a href="#功能点" class="headerlink" title="功能点"></a>功能点</h3><h4 id="菜单导航"><a href="#菜单导航" class="headerlink" title="菜单导航"></a>菜单导航</h4><p><img src="/images/erp2-18.gif"></p>
-<h4 id="订单列表"><a href="#订单列表" class="headerlink" title="订单列表"></a>订单列表</h4><p><img src="/images/erp2-01.png"></p>
-<h4 id="订单详情"><a href="#订单详情" class="headerlink" title="订单详情"></a>订单详情</h4><p><img src="/images/erp2-02.png"></p>
-<h4 id="产品单采"><a href="#产品单采" class="headerlink" title="产品单采"></a>产品单采</h4><p><img src="/images/erp2-03.png"></p>
-<h4 id="待发货订单"><a href="#待发货订单" class="headerlink" title="待发货订单"></a>待发货订单</h4><p><img src="/images/erp2-04.png"></p>
-<h4 id="物流停滞核实"><a href="#物流停滞核实" class="headerlink" title="物流停滞核实"></a>物流停滞核实</h4><p><img src="/images/erp2-05.png"></p>
-<h4 id="退款已申请"><a href="#退款已申请" class="headerlink" title="退款已申请"></a>退款已申请</h4><p><img src="/images/erp2-06.png"></p>
-<h4 id="立即退款"><a href="#立即退款" class="headerlink" title="立即退款"></a>立即退款</h4><p><img src="/images/erp2-07.png"></p>
-<h4 id="产品换购"><a href="#产品换购" class="headerlink" title="产品换购"></a>产品换购</h4><p><img src="/images/erp2-08.png"></p>
-<h4 id="采购供货"><a href="#采购供货" class="headerlink" title="采购供货"></a>采购供货</h4><p><img src="/images/erp2-09.png"></p>
-<h4 id="运单号抓取"><a href="#运单号抓取" class="headerlink" title="运单号抓取"></a>运单号抓取</h4><p><img src="/images/erp2-10.png"></p>
-<h4 id="用户信息报错"><a href="#用户信息报错" class="headerlink" title="用户信息报错"></a>用户信息报错</h4><p><img src="/images/erp2-11.png"></p>
-<h4 id="用户投诉处理"><a href="#用户投诉处理" class="headerlink" title="用户投诉处理"></a>用户投诉处理</h4><p><img src="/images/erp2-18.png"></p>
-<h4 id="店铺批量采购列表"><a href="#店铺批量采购列表" class="headerlink" title="店铺批量采购列表"></a>店铺批量采购列表</h4><p><img src="/images/erp2-12.png"></p>
-<h4 id="店铺批量采购"><a href="#店铺批量采购" class="headerlink" title="店铺批量采购"></a>店铺批量采购</h4><p><img src="/images/erp2-13.png"></p>
-<h4 id="导入采购信息"><a href="#导入采购信息" class="headerlink" title="导入采购信息"></a>导入采购信息</h4><p><img src="/images/erp2-14.png"></p>
-<h4 id="数据导出中心"><a href="#数据导出中心" class="headerlink" title="数据导出中心"></a>数据导出中心</h4><p><img src="/images/erp2-15.png"></p>
-<h4 id="站点创建"><a href="#站点创建" class="headerlink" title="站点创建"></a>站点创建</h4><p><img src="/images/erp2-16.png"></p>
-<h4 id="权限管理"><a href="#权限管理" class="headerlink" title="权限管理"></a>权限管理</h4><p><img src="/images/erp2-17.png"></p>
 
       
     </div>

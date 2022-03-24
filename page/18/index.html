@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">392</span>
+          <span class="site-state-item-count">393</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">136</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -187,6 +187,142 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/02/08/fetch-api%E7%AE%80%E4%BB%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/02/08/fetch-api%E7%AE%80%E4%BB%8B/" class="post-title-link" itemprop="url">fetch-api简介</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-02-08 21:37:09" itemprop="dateCreated datePublished" datetime="2018-02-08T21:37:09+09:00">2018-02-08</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-27 15:09:50" itemprop="dateModified" datetime="2021-09-27T15:09:50+09:00">2021-09-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+在抱怨自己赚钱之少之前先努力学着让自己值钱。
+</blockquote>
+十多年来，我们一直使用 XMLHttpRequest（XHR）来发送异步请求，XHR 很实用，但并不是一个设计优良的 API，在设计上并不符合职责分离原则，输入、输出以及状态都杂糅在同一对象中，并用事件机制来跟踪状态变化。并且，基于事件的模型与最近流行的 Promise 和 generator 异步编程模型不太友好。
+
+<p>Fetch API 旨在修正上述缺陷，它提供了与 HTTP 语义相同的 JS 语法，简单来说，它引入了 fetch() 这个实用的方法来获取网络资源。</p>
+<p>在 Fetch 规范中对 API 进行了定义，它结合 ServiceWorkers，尝试做到如下优化：</p>
+<ul>
+<li>改善离线体验</li>
+<li>保持可扩展性</li>
+</ul>
+<h3 id="简单示例"><a href="#简单示例" class="headerlink" title="简单示例"></a>简单示例</h3><p>Fetch API 中最常用的是 fetch() 方法，该方法最简单的形式是，接受一个 URL 参数并返回以一个 promise 对象：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">fetch(<span class="string">&quot;/data.json&quot;</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">res</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// res instanceof Response == true.</span></span><br><span class="line">  <span class="keyword">if</span> (res.ok) &#123;</span><br><span class="line">    res.json().then(<span class="function"><span class="keyword">function</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">      <span class="built_in">console</span>.log(data.entries);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&quot;Looks like the response wasn&#x27;t perfect, got status&quot;</span>, res.status);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;Fetch failed!&quot;</span>, e);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>如果是提交一个POST请求，代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">fetch(<span class="string">&quot;http://www.example.org/submit.php&quot;</span>, &#123;</span><br><span class="line">  <span class="attr">method</span>: <span class="string">&quot;POST&quot;</span>,</span><br><span class="line">  <span class="attr">headers</span>: &#123;</span><br><span class="line">    <span class="string">&quot;Content-Type&quot;</span>: <span class="string">&quot;application/x-www-form-urlencoded&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">body</span>: <span class="string">&quot;firstName=Nikhil&amp;favColor=blue&amp;password=easytoguess&quot;</span></span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">res</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (res.ok) &#123;</span><br><span class="line">    alert(<span class="string">&quot;Perfect! Your settings are saved.&quot;</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (res.status == <span class="number">401</span>) &#123;</span><br><span class="line">    alert(<span class="string">&quot;Oops! You are not authorized.&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">  alert(<span class="string">&quot;Error submitting form!&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>fetch() 方法的参数和 Request() 构造函数的参数完全一致，所以你可以传任意复杂的参数来实现更强大的 fetch()，下面将详细介绍。</p>
+<h3 id="Headers"><a href="#Headers" class="headerlink" title="Headers"></a>Headers</h3><p>Fetch 引入了 3 个接口，分别是 Headers，Request 和 Response。他们直接对应于的 HTTP 中相应的概念，但是基于隐私和安全考虑，也有些区别，例如支持 CORS 规则以及保证 cookies 不能被第三方获取。</p>
+<p>Headers 接口是一个简单的键值对：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ar content = <span class="string">&quot;Hello World&quot;</span>;</span><br><span class="line"><span class="keyword">var</span> reqHeaders = <span class="keyword">new</span> Headers();</span><br><span class="line">reqHeaders.append(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;text/plain&quot;</span></span><br><span class="line">reqHeaders.append(<span class="string">&quot;Content-Length&quot;</span>, content.length.toString());</span><br><span class="line">reqHeaders.append(<span class="string">&quot;X-Custom-Header&quot;</span>, <span class="string">&quot;ProcessThisImmediately&quot;</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>也可以给构造函数传一个多维数组或 JS 字面量对象：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">reqHeaders = <span class="keyword">new</span> Headers(&#123;</span><br><span class="line">  <span class="string">&quot;Content-Type&quot;</span>: <span class="string">&quot;text/plain&quot;</span>,</span><br><span class="line">  <span class="string">&quot;Content-Length&quot;</span>: content.length.toString(),</span><br><span class="line">  <span class="string">&quot;X-Custom-Header&quot;</span>: <span class="string">&quot;ProcessThisImmediately&quot;</span>,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>Headers 的内容可被检索：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(reqHeaders.has(<span class="string">&quot;Content-Type&quot;</span>)); <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(reqHeaders.has(<span class="string">&quot;Set-Cookie&quot;</span>)); <span class="comment">// false</span></span><br><span class="line">reqHeaders.set(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;text/html&quot;</span>);</span><br><span class="line">reqHeaders.append(<span class="string">&quot;X-Custom-Header&quot;</span>, <span class="string">&quot;AnotherValue&quot;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="built_in">console</span>.log(reqHeaders.get(<span class="string">&quot;Content-Length&quot;</span>)); <span class="comment">// 11</span></span><br><span class="line"><span class="built_in">console</span>.log(reqHeaders.getAll(<span class="string">&quot;X-Custom-Header&quot;</span>)); <span class="comment">// [&quot;ProcessThisImmediately&quot;, &quot;AnotherValue&quot;]</span></span><br><span class="line"> </span><br><span class="line">reqHeaders.delete(<span class="string">&quot;X-Custom-Header&quot;</span>);</span><br><span class="line"><span class="built_in">console</span>.log(reqHeaders.getAll(<span class="string">&quot;X-Custom-Header&quot;</span>)); <span class="comment">// []</span></span><br></pre></td></tr></table></figure>
+
+<p>一些操作只在 ServiceWorkers 中可用，但这些 API 使得操作 header 更为方便。</p>
+<p>由于 header 可以在发送请求时被发送或在收到响应时被接收，并规定了那些参数可写，所以在 Headers 对象中有个一 guard 属性，来指定哪些参数可以被改变。</p>
+<p>可能的值如下：</p>
+<ul>
+<li>“none”：默认值</li>
+<li>“request”：Request.headers 对象只读</li>
+<li>“request-no-cors”：在 no-cors 模式下，Request.headers 对象只读</li>
+<li>“response”：Response.headers 对象只读</li>
+<li>“immutable”：通常在 ServiceWorkers 中使用，所有 Header 对象都为只读<br>在规范中对每个 guard 属性值有更详细的描述。例如，当 guard 为 request 时，你将不能添加或修改header 的 Content-Length 属性。</li>
+</ul>
+<p>如果使用了一个不合法的 HTTP Header 名，那么 Headers 的方法通常都抛出 TypeError 异常。如果不小心写入了一个只读属性，也会抛出一个 TypeError 异常。除此以外，失败了将不抛出任何异常。例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> res = Response.error();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  res.headers.set(<span class="string">&quot;Origin&quot;</span>, <span class="string">&quot;http://mybank.com&quot;</span>);</span><br><span class="line">&#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;Cannot pretend to be a bank!&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Request"><a href="#Request" class="headerlink" title="Request"></a>Request</h3><p>通过构造一个 Request 对象来获取网络资源，构造函数需要 URL、method 和 headers 参数，同时也可以提供请求体（body）、请求模式（mode）、credentials 和 cache hints 等参数。</p>
+<p>最简单的形式如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> req = <span class="keyword">new</span> Request(<span class="string">&quot;/index.html&quot;</span>);</span><br><span class="line"><span class="built_in">console</span>.log(req.method); <span class="comment">// &quot;GET&quot;</span></span><br><span class="line"><span class="built_in">console</span>.log(req.url); <span class="comment">// &quot;http://example.com/index.html&quot;</span></span><br></pre></td></tr></table></figure>
+<p>也可以将一个 Request 对象传给构造函数，这将返回该对象的一个副本（这与 clone() 方法不同，后面将介绍）。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> copy = <span class="keyword">new</span> Request(req);</span><br><span class="line"><span class="built_in">console</span>.log(copy.method); <span class="comment">// &quot;GET&quot;</span></span><br><span class="line"><span class="built_in">console</span>.log(copy.url); <span class="comment">// &quot;http://example.com/index.html&quot;</span></span><br></pre></td></tr></table></figure>
+<p>同时，这种形式通常只在 ServiceWorkers 中使用。</p>
+<p>除 URL 之外的参数只能通过第二个参数传递，该参数是一个键值对：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> uploadReq = <span class="keyword">new</span> Request(<span class="string">&quot;/uploadImage&quot;</span>, &#123;</span><br><span class="line">  <span class="attr">method</span>: <span class="string">&quot;POST&quot;</span>,</span><br><span class="line">  <span class="attr">headers</span>: &#123;</span><br><span class="line">    <span class="string">&quot;Content-Type&quot;</span>: <span class="string">&quot;image/png&quot;</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">body</span>: <span class="string">&quot;image data&quot;</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>mode 参数用来决定是否允许跨域请求，以及哪些 response 属性可读。可选的 mode 值为 “same-origin”、”no-cors”（默认）以及 “cors”。</p>
+<h3 id="same-origin"><a href="#same-origin" class="headerlink" title="same-origin"></a>same-origin</h3><p>该模式很简单，如果一个请求是跨域的，那么将返回一个 error，这样确保所有的请求遵守同源策略。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> arbitraryUrl = <span class="built_in">document</span>.getElementById(<span class="string">&quot;url-input&quot;</span>).value;</span><br><span class="line">fetch(arbitraryUrl, &#123; <span class="attr">mode</span>: <span class="string">&quot;same-origin&quot;</span> &#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">res</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;Response succeeded?&quot;</span>, res.ok);</span><br><span class="line">&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;Please enter a same-origin URL!&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Response"><a href="#Response" class="headerlink" title="Response"></a>Response</h3><p>Response 对象通常在 fetch() 的回调中获得，也可以通过 JS 构造，不过这通常只在 ServiceWorkers 中使用。</p>
+<p>Response 对象中最常见的属性是 status（整数，默认值是 200）和statusText（默认值是 “OK”）。还有一个 ok 属性，这是 status 值为 <code>200~299</code> 时的语法糖。</p>
+<p>另外，还有一个 type 属性，它的值可能是 “basic”、”cors”、”default”、”error” 或 “opaque”。</p>
+<ul>
+<li>“basic”：同域的响应，除 Set-Cookie 和 Set-Cookie2 之外的所有 Header 可用</li>
+<li>“cors”：Response 从一个合法的跨域请求获得，某些 Header 和 body 可读</li>
+<li>“error”：网络错误。Response 对象的 status 属性为 0，headers 属性为空并且不可写。当 Response 对象从 Response.error() 中得到时，就是这种类型</li>
+<li>“opaque”：在 “no-cors” 模式下请求了跨域资源。依靠服务端来做限制<br>当 type 属性值为 “error” 时会导致 fetch() 方法的 Promise 被 reject，reject 回调的参数为 TypeError 对象。</li>
+</ul>
+<p>还有一些属性只在 ServerWorker 下有效。在 ServerWorker 下返回一个 Response 的正确方式为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">addEventListener(<span class="string">&#x27;fetch&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">  event.respondWith(<span class="keyword">new</span> Response(<span class="string">&quot;Response body&quot;</span>, &#123;</span><br><span class="line">    <span class="attr">headers</span>: &#123; <span class="string">&quot;Content-Type&quot;</span> : <span class="string">&quot;text/plain&quot;</span> &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>如你所见，Response 构造函数接收两个参数：返回的 body 和一个键值对对象，通过该对象来设置 status、statusText 和 headers 属性。</p>
+<p>静态方法 Response.error() 将返回一个错误响应，Response.redirect(url, status) 将返回一个跳转响应。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://bubkoo.com/2015/05/08/introduction-to-fetch/">http://bubkoo.com/2015/05/08/introduction-to-fetch/</a><br><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch">https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1098,92 +1234,6 @@ PHP在用户自定义函数中支持可变数量的参数列表。在 `PHP 5.6` 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://oomusou.io/laravel/laravel-service/">http://oomusou.io/laravel/laravel-service/</a><br><a target="_blank" rel="noopener" href="http://blog.iwanli.me/article/B8ApLAab.html">http://blog.iwanli.me/article/B8ApLAab.html</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/18/redis%E7%9A%84%E7%AE%A1%E9%81%93%E6%8A%80%E6%9C%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/18/redis%E7%9A%84%E7%AE%A1%E9%81%93%E6%8A%80%E6%9C%AF/" class="post-title-link" itemprop="url">redis的管道技术</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-18 10:13:58" itemprop="dateCreated datePublished" datetime="2018-01-18T10:13:58+09:00">2018-01-18</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 21:53:43" itemprop="dateModified" datetime="2018-03-27T21:53:43+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-那一切都是种子，只有经过埋葬，才有生机。
-</blockquote>
-
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>Redis是一种基于客户端-服务端模型以及请求/响应协议的TCP服务。这意味着通常情况下一个请求会遵循以下步骤：</p>
-<ul>
-<li>客户端向服务端发送一个查询请求，并监听Socket返回，通常是以阻塞模式，等待服务端响应。</li>
-<li>服务端处理命令，并将结果返回给客户端。</li>
-</ul>
-<p>Redis 管道技术可以在服务端未响应时，客户端可以继续向服务端发送请求，并最终一次性读取所有服务端的响应。从而节省网络传输时间, 这在一次需要执行大量命令时特别有用;</p>
-<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>phpredis 支持操作数组，同时操作多个 key，操作 redis 时， </p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$obj</span>-&gt;get([])， <span class="variable">$obj</span>-&gt;del([])</span><br></pre></td></tr></table></figure>
-<p>而 predis 不支持，可以通过 pipeline 来执行</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Redis::pipeline(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$pipe</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="number">1000</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">        <span class="variable">$pipe</span>-&gt;set(<span class="string">&quot;key:<span class="subst">$i</span>&quot;</span>, <span class="variable">$i</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>关于phpredis和predis的区别, 请参考:<br><a href="/2017/09/28/Predis%E5%92%8CPhpredis%E7%9A%84%E5%8C%BA%E5%88%AB/">Predis和Phpredis的区别</a></p>
 
       
     </div>

@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">392</span>
+          <span class="site-state-item-count">393</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">136</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -196,6 +196,100 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/19/python%E4%B8%AD%E7%9A%84%E5%8D%8F%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/07/19/python%E4%B8%AD%E7%9A%84%E5%8D%8F%E7%A8%8B/" class="post-title-link" itemprop="url">python中的协程</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-07-19 17:32:27" itemprop="dateCreated datePublished" datetime="2017-07-19T17:32:27+09:00">2017-07-19</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:27:37" itemprop="dateModified" datetime="2018-03-27T22:27:37+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+开始总是分分钟都妙不可言
+谁都以为热情它永不会减。
+</blockquote>
+
+<p>协程，又称微线程，纤程。英文名Coroutine。<br>子程序，或者称为函数，在所有语言中都是层级调用，比如A调用B，B在执行过程中又调用了C，C执行完毕返回，B执行完毕返回，最后是A执行完毕。</p>
+<p>所以子程序调用是通过栈实现的，一个线程就是执行一个子程序。</p>
+<p>子程序调用总是一个入口，一次返回，调用顺序是明确的。而协程的调用和子程序不同。</p>
+<p>协程看上去也是子程序，但执行过程中，在子程序内部可中断，然后转而执行别的子程序，在适当的时候再返回来接着执行。</p>
+<h3 id="简单说明"><a href="#简单说明" class="headerlink" title="简单说明"></a>简单说明</h3><p>注意，在一个子程序中中断，去执行其他子程序，不是函数调用，有点类似CPU的中断。比如子程序A、B：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">A</span>():</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;3&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">B</span>():</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;x&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;y&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;z&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>假设由协程执行，在执行A的过程中，可以随时中断，去执行B，B也可能在执行过程中中断再去执行A，结果可能是：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line">x</span><br><span class="line">y</span><br><span class="line"><span class="number">3</span></span><br><span class="line">z</span><br></pre></td></tr></table></figure>
+<p>但是在A中是没有调用B的，所以协程的调用比函数调用理解起来要难一些。</p>
+<h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><p>最大的优势就是协程极高的执行效率。因为子程序切换不是线程切换，而是由程序自身控制，因此，没有线程切换的开销，和多线程比，线程数量越多，协程的性能优势就越明显。</p>
+<p>第二大优势就是不需要多线程的锁机制，因为只有一个线程，也不存在同时写变量冲突，在协程中控制共享资源不加锁，只需要判断状态就好了，所以执行效率比多线程高很多。</p>
+<p>因为协程是一个线程执行，那怎么利用多核CPU呢？最简单的方法是多进程+协程，既充分利用多核，又充分发挥协程的高效率，可获得极高的性能。</p>
+<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><p>Python对协程的支持是通过generator实现的。</p>
+<p>在generator中，我们不但可以通过for循环来迭代，还可以不断调用next()函数获取由yield语句返回的下一个值。</p>
+<p>但是Python的yield不但可以返回一个值，它还可以接收调用者发出的参数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">consumer</span>():</span></span><br><span class="line">    r = <span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        n = <span class="keyword">yield</span> r</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> n:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[消费者] Consuming %s...&#x27;</span> % n)</span><br><span class="line">        r = <span class="string">&#x27;200 OK&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">produce</span>(<span class="params">c</span>):</span></span><br><span class="line">    c.send(<span class="literal">None</span>)</span><br><span class="line">    n = <span class="number">0</span></span><br><span class="line">    <span class="keyword">while</span> n &lt; <span class="number">5</span>:</span><br><span class="line">        n = n + <span class="number">1</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[生产者] Producing %s...&#x27;</span> % n)</span><br><span class="line">        r = c.send(n)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[生产者] Consumer return: %s&#x27;</span> % r)</span><br><span class="line">    c.close()</span><br><span class="line"></span><br><span class="line">c = consumer()</span><br><span class="line">produce(c)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001432090171191d05dae6e129940518d1d6cf6eeaaa969000">https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001432090171191d05dae6e129940518d1d6cf6eeaaa969000</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/17/%E4%BD%BF%E7%94%A8php%E6%8C%89%E8%A1%8C%E5%AF%BC%E5%85%A5txt%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%80%E4%B8%AA%E5%9D%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -219,10 +313,16 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2017-07-17 10:12:35 / 修改时间：11:19:26" itemprop="dateCreated datePublished" datetime="2017-07-17T10:12:35+09:00">2017-07-17</time>
+      <time title="创建时间：2017-07-17 10:12:35" itemprop="dateCreated datePublished" datetime="2017-07-17T10:12:35+09:00">2017-07-17</time>
     </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2022-03-14 23:38:12" itemprop="dateModified" datetime="2022-03-14T23:38:12+09:00">2022-03-14</time>
+      </span>
 
   
 </div>
@@ -238,7 +338,8 @@
 岁月你别催，该来的我不推。
 岁月你别催，走远的我不追。
 </blockquote>
-问题产品原因: windows 和  linux 换行符不一致; 所以必须存入数据库之前对一些不可见的符号过滤;
+
+<p>问题产品原因: windows 和  linux 换行符不一致; 所以必须存入数据库之前对一些不可见的符号过滤;</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$file</span> = <span class="variable">$request</span>-&gt;file(<span class="string">&#x27;femails&#x27;</span>);</span><br><span class="line"><span class="variable">$emails</span> = file_get_contents(<span class="variable">$file</span>-&gt;getRealPath());</span><br><span class="line"><span class="variable">$emails</span> = explode(PHP_EOL, <span class="variable">$emails</span>);</span><br><span class="line"><span class="variable">$ids</span> = [];</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$emails</span> <span class="keyword">as</span> <span class="variable">$email</span>) &#123;</span><br><span class="line">    <span class="variable">$result</span> = preg_replace(<span class="string">&#x27;/[\x00-\x1F\x80-\xFF]/&#x27;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$email</span>);</span><br><span class="line">    <span class="variable">$recipient</span> = Recipient::firstOrCreate(</span><br><span class="line">        [</span><br><span class="line">            <span class="string">&#x27;email&#x27;</span> =&gt; trim(<span class="variable">$result</span>)</span><br><span class="line">        ],</span><br><span class="line">        [</span><br><span class="line">            <span class="string">&#x27;is_use&#x27;</span> =&gt; <span class="number">1</span></span><br><span class="line">        ]</span><br><span class="line">    );</span><br><span class="line">    array_push(<span class="variable">$ids</span>, <span class="variable">$recipient</span>-&gt;id);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
@@ -929,92 +1030,6 @@
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://inspiregate.com/programming/php/26-php-to-use-fsockopen-to-send-post-to-another-url-and-get-to-respond-to-the-content.html">http://inspiregate.com/programming/php/26-php-to-use-fsockopen-to-send-post-to-another-url-and-get-to-respond-to-the-content.html</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/06/13/php%E4%B8%AD-POST%E5%92%8Cphp-input%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/06/13/php%E4%B8%AD-POST%E5%92%8Cphp-input%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">php中$_POST和php://input的区别</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-06-13 14:45:11" itemprop="dateCreated datePublished" datetime="2017-06-13T14:45:11+09:00">2017-06-13</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-02 10:10:56" itemprop="dateModified" datetime="2018-04-02T10:10:56+09:00">2018-04-02</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你考95分是因为你的实力只有95分。我考一百分是因为这个卷子只有100分。
-</blockquote>
-
-<h3 id="POST"><a href="#POST" class="headerlink" title="$_POST"></a>$_POST</h3><p><code>$_POST</code> 是获取表单 <code>POST</code> 过来数据（body部分）的最常用方法，上传的文件信息使用 <code>$_FILES</code> 获取。</p>
-<h3 id="php-input"><a href="#php-input" class="headerlink" title="php://input"></a>php://input</h3><p>可以读取没有处理过的POST数据。<br>相较于$HTTP_RAW_POST_DATA而言，它给内存带来的压力较小，并且不需要特殊的php.ini设置。<br>php://input不能用于enctype=multipart/form-data</p>
-<p>由于 php://input 只是数据流，我们可以使用 <code>file_get_contents()</code> 函数去获取它的内容：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$post_data</span> = file_get_contents(<span class="string">&#x27;php://input&#x27;</span>);</span><br><span class="line">print_r(<span class="variable">$post_data</span>);</span><br></pre></td></tr></table></figure>
-<p>获取到的内容和 <code>$HTTP_RAW_POST_DATA</code> 是一样的。</p>
-<h3 id="原始数据"><a href="#原始数据" class="headerlink" title="原始数据"></a>原始数据</h3><p>当浏览器从表单发送 POST 请求的时候，默认的 media type 是 “application/x-www-form-urlencoded”，意思就是字段名和值都编码了，每个 key-value 对使用 ‘&amp;’ 字符分隔开，key 和 value 使用 ‘=’ 分开，并且 key 和 value 中的空格都会被替换成 + ，其他特殊字符都会被使用 urlencode 方式进行编码。<br>比如下面的 key-value 对：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name: Jonathan Doe</span><br><span class="line">age: <span class="number">23</span></span><br><span class="line">formula: a + b == <span class="number">13</span>%!</span><br></pre></td></tr></table></figure>
-<p>会被编码下面的原始数据：<br><code>name=Jonathan+Doe&amp;age=23&amp;formula=a+%2B+b+%3D%3D+13%25%21</code><br>PHP 会解析这些原始的 POST 数据，并且格式化成数组，填充到 $_POST 中：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Array</span></span><br><span class="line">(</span><br><span class="line">    [name] =&gt; Jonathan Doe</span><br><span class="line">    [age] =&gt; <span class="number">23</span></span><br><span class="line">    [formula] =&gt; a + b == <span class="number">13</span>%!</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>很多时候，接收到不是网页 POST 过来的数据，而是可能通过其他方式 POST 过来的 “text/xml” 格式的数据，这些内容无法解析成 $_POST 数组，这个时候我们就需要原始的 POST 数据进行处理。</p>
-<h3 id="重要"><a href="#重要" class="headerlink" title="重要"></a>重要</h3><p>PHP 7 已经取消了 $HTTP_RAW_POST_DATA，请用 php://input 代替。</p>
 
       
     </div>
