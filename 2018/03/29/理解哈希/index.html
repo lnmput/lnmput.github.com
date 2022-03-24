@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="药炉烟里，支枕听河流。   哈希函数 第一种解释哈希函数就是能将任意长度的数据映射为固定长度的数据的函数。哈希函数返回的值被叫做哈希值、哈希码、散列，或者直接叫做哈希。一个使用场景就是哈希表，哈希表被广泛用于快速搜索数据。  另一种解释在记录的关键字与记录的存储地址之间建立的一种对应关系叫哈希函数。哈希函数就是一种映射，是从关键字到存储地址的映射。通常，包含哈希函数的算法的算法复杂度都假设为O(">
+<meta property="og:type" content="article">
+<meta property="og:title" content="理解哈希">
+<meta property="og:url" content="https://swoole.app/2018/03/29/%E7%90%86%E8%A7%A3%E5%93%88%E5%B8%8C/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="药炉烟里，支枕听河流。   哈希函数 第一种解释哈希函数就是能将任意长度的数据映射为固定长度的数据的函数。哈希函数返回的值被叫做哈希值、哈希码、散列，或者直接叫做哈希。一个使用场景就是哈希表，哈希表被广泛用于快速搜索数据。  另一种解释在记录的关键字与记录的存储地址之间建立的一种对应关系叫哈希函数。哈希函数就是一种映射，是从关键字到存储地址的映射。通常，包含哈希函数的算法的算法复杂度都假设为O(">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-03-29T06:36:43.000Z">
+<meta property="article:modified_time" content="2018-03-29T08:23:50.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="哈希">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/03/29/%E7%90%86%E8%A7%A3%E5%93%88%E5%B8%8C/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2018/03/29/%E7%90%86%E8%A7%A3%E5%93%88%E5%B8%8C/","path":"2018/03/29/理解哈希/","title":"理解哈希"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>理解哈希 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">哈希函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%9A%84%E5%8A%A0%E5%AF%86%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">常用的加密哈希算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E8%A1%A8"><span class="nav-number">3.</span> <span class="nav-text">哈希表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%85%E5%8A%A9%E7%90%86%E8%A7%A3"><span class="nav-number">4.</span> <span class="nav-text">辅助理解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E9%87%8A%E4%B8%80"><span class="nav-number">4.1.</span> <span class="nav-text">解释一</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E9%87%8A%E4%BA%8C"><span class="nav-number">4.2.</span> <span class="nav-text">解释二</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP%E4%B8%AD%E7%9A%84hash"><span class="nav-number">5.</span> <span class="nav-text">PHP中的hash</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://www.laruence.com/" title="风雪之隅 → http:&#x2F;&#x2F;www.laruence.com&#x2F;" rel="noopener" target="_blank">风雪之隅</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://tech.youzan.com/" title="有赞技术团队 → http:&#x2F;&#x2F;tech.youzan.com&#x2F;" rel="noopener" target="_blank">有赞技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://tech.meituan.com/archives" title="美团点评技术团队 → https:&#x2F;&#x2F;tech.meituan.com&#x2F;archives" rel="noopener" target="_blank">美团点评技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://macshuo.com/" title="點燈坊 → http:&#x2F;&#x2F;macshuo.com&#x2F;" rel="noopener" target="_blank">點燈坊</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://blog.turn.tw/" title="轉個彎日誌 → http:&#x2F;&#x2F;blog.turn.tw&#x2F;" rel="noopener" target="_blank">轉個彎日誌</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/29/%E7%90%86%E8%A7%A3%E5%93%88%E5%B8%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          理解哈希
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-03-29 15:36:43 / 修改时间：17:23:50" itemprop="dateCreated datePublished" datetime="2018-03-29T15:36:43+09:00">2018-03-29</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+药炉烟里，支枕听河流。
+</blockquote>
+
+<h3 id="哈希函数"><a href="#哈希函数" class="headerlink" title="哈希函数"></a>哈希函数</h3><ul>
+<li><p>第一种解释<br>哈希函数就是能将任意长度的数据映射为固定长度的数据的函数。哈希函数返回的值被叫做哈希值、哈希码、散列，或者直接叫做哈希。一个使用场景就是哈希表，哈希表被广泛用于快速搜索数据。</p>
+</li>
+<li><p>另一种解释<br>在记录的关键字与记录的存储地址之间建立的一种对应关系叫哈希函数。哈希函数就是一种映射，是从关键字到存储地址的映射。<br>通常，包含哈希函数的算法的算法复杂度都假设为O(1)，这就是为什么在哈希表中搜索数据的时间复杂度会被认为是”平均为O(1)的复杂度”.</p>
+</li>
+</ul>
+<h3 id="常用的加密哈希算法"><a href="#常用的加密哈希算法" class="headerlink" title="常用的加密哈希算法"></a>常用的加密哈希算法</h3><ul>
+<li>MD5</li>
+<li>SHA-1</li>
+<li>SHA-2</li>
+<li>RIPEMD-160</li>
+</ul>
+<h3 id="哈希表"><a href="#哈希表" class="headerlink" title="哈希表"></a>哈希表</h3><p>哈希表是一种通过哈希函数，将特定的键映射到特定值的一种数据结构，它维护键和值之间一一对应关系。</p>
+<h3 id="辅助理解"><a href="#辅助理解" class="headerlink" title="辅助理解"></a>辅助理解</h3><h4 id="解释一"><a href="#解释一" class="headerlink" title="解释一"></a>解释一</h4><p>比如这里有一万首歌，给你一首新的歌X，要求你确认这首歌是否在那一万首歌之内。无疑，将一万首歌一个一个比对非常慢。但如果存在一种方式，能将一万首歌的每首数据浓缩到一个数字（称为哈希码）中，于是得到一万个数字，那么用同样的算法计算新的歌X的编码，看看歌X的编码是否在之前那一万个数字中，就能知道歌X是否在那一万首歌中。作为例子，如果要你组织那一万首歌，一个简单的哈希算法就是让歌曲所占硬盘的字节数作为哈希码。这样的话，你可以让一万首歌“按照大小排序”，然后遇到一首新的歌，只要看看新的歌的字节数是否和已有的一万首歌中的某一首的字节数相同，就知道新的歌是否在那一万首歌之内了。当然这个简单的哈希算法很容易出现两者同样大小的歌曲，这就是发送了碰撞。而好的哈希算法发生碰撞的几率非常小。</p>
+<h4 id="解释二"><a href="#解释二" class="headerlink" title="解释二"></a>解释二</h4><p>HASH算法是密码学的基础，比较常用的有MD5和SHA，最重要的两条性质，就是不可逆和无冲突。</p>
+<ul>
+<li>不可逆，就是当你知道x的HASH值，无法求出x；</li>
+<li>无冲突，就是当你知道x，无法求出一个y， 使x与y的HASH值相同。</li>
+</ul>
+<p>这两条性质在数学上都是不成立的。因为一个函数必然可逆，且由于HASH函数的值域有限，理论上会有无穷多个不同的原始值，它们的hash值都相同。MD5和SHA做到的，是求逆和求冲突在计算上不可能，也就是正向计算很容易，而反向计算即使穷尽人类所有的计算资源都做不到。</p>
+<h3 id="PHP中的hash"><a href="#PHP中的hash" class="headerlink" title="PHP中的hash"></a>PHP中的hash</h3><p>Hash Table是PHP的核心,这话一点都不过分.PHP的数组,关联数组,对象属性,函数表,符号表,等等都是用HashTable来做为容器的.PHP的HashTable采用的拉链法来解决冲突,</p>
+<p>插入65536个经过构造的键值的元素到PHP数组, 会需要耗时30秒以上? 而一般的这个过程仅仅需要0.1秒..</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$size</span> = pow(<span class="number">2</span>, <span class="number">16</span>); </span><br><span class="line"> </span><br><span class="line"><span class="variable">$startTime</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="variable">$array</span> = <span class="keyword">array</span>();</span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$key</span> = <span class="number">0</span>, <span class="variable">$maxKey</span> = (<span class="variable">$size</span> - <span class="number">1</span>) * <span class="variable">$size</span>; <span class="variable">$key</span> &lt;= <span class="variable">$maxKey</span>; <span class="variable">$key</span> += <span class="variable">$size</span>) &#123;</span><br><span class="line">    <span class="variable">$array</span>[<span class="variable">$key</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$endTime</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&#x27;插入 &#x27;</span>, <span class="variable">$size</span>, <span class="string">&#x27; 个恶意的元素需要 &#x27;</span>, <span class="variable">$endTime</span> - <span class="variable">$startTime</span>, <span class="string">&#x27; 秒&#x27;</span>, <span class="string">&quot;\n&quot;</span>;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$startTime</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="variable">$array</span> = <span class="keyword">array</span>();</span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$key</span> = <span class="number">0</span>, <span class="variable">$maxKey</span> = <span class="variable">$size</span> - <span class="number">1</span>; <span class="variable">$key</span> &lt;= <span class="variable">$maxKey</span>; ++<span class="variable">$key</span>) &#123;</span><br><span class="line">    <span class="variable">$array</span>[<span class="variable">$key</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$endTime</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&#x27;插入 &#x27;</span>, <span class="variable">$size</span>, <span class="string">&#x27; 个普通元素需要 &#x27;</span>, <span class="variable">$endTime</span> - <span class="variable">$startTime</span>, <span class="string">&#x27; 秒&#x27;</span>, <span class="string">&quot;\n&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>在我的机器上</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">插入 <span class="number">65536</span> 个恶意的元素需要 <span class="number">10.187582969666</span> 秒 </span><br><span class="line">插入 <span class="number">65536</span> 个普通元素需要 <span class="number">0.003000020980835</span> 秒</span><br></pre></td></tr></table></figure>
+<p>经过特殊构造的键值, 使得PHP每一次插入都会造成Hash冲突, 从而使得PHP中array的底层Hash表退化成链表</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20820286">https://www.zhihu.com/question/20820286</a><br><a target="_blank" rel="noopener" href="http://www.laruence.com/2009/07/23/994.html">http://www.laruence.com/2009/07/23/994.html</a><br><a target="_blank" rel="noopener" href="http://www.laruence.com/2011/12/30/2435.html">http://www.laruence.com/2011/12/30/2435.html</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%93%88%E5%B8%8C/" rel="tag"># 哈希</a>
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="tag"># 数据结构</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/03/29/%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E4%B8%8E%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9/" rel="prev" title="缓存穿透与缓存雪崩">
+                  <i class="fa fa-chevron-left"></i> 缓存穿透与缓存雪崩
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/03/30/%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%BA%BF%E7%A8%8B%E7%9A%84%E7%90%86%E8%A7%A3/" rel="next" title="进程和线程的理解">
+                  进程和线程的理解 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

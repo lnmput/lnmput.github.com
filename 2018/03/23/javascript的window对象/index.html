@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="我最不喜欢等，因为这个期限永远都是个未知数。   1.概述在浏览器中，window对象（注意，w为小写）指当前的浏览器窗口。它也是所有对象的顶层对象。“顶层对象”指的是最高一层的对象，所有其他对象都是它的下属。JavaScript规定，浏览器环境的所有全局变量，都是window对象的属性。 12var a &#x3D; 1;window.a &#x2F;&#x2F; 1 上面代码中，变量a是一个全局变量，但是实质上它是win">
+<meta property="og:type" content="article">
+<meta property="og:title" content="javascript的window对象">
+<meta property="og:url" content="https://swoole.app/2018/03/23/javascript%E7%9A%84window%E5%AF%B9%E8%B1%A1/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="我最不喜欢等，因为这个期限永远都是个未知数。   1.概述在浏览器中，window对象（注意，w为小写）指当前的浏览器窗口。它也是所有对象的顶层对象。“顶层对象”指的是最高一层的对象，所有其他对象都是它的下属。JavaScript规定，浏览器环境的所有全局变量，都是window对象的属性。 12var a &#x3D; 1;window.a &#x2F;&#x2F; 1 上面代码中，变量a是一个全局变量，但是实质上它是win">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-03-23T08:14:20.000Z">
+<meta property="article:modified_time" content="2018-03-27T13:20:40.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="JavaScript">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/03/23/javascript%E7%9A%84window%E5%AF%B9%E8%B1%A1/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2018/03/23/javascript%E7%9A%84window%E5%AF%B9%E8%B1%A1/","path":"2018/03/23/javascript的window对象/","title":"javascript的window对象"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>javascript的window对象 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">1.概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-window%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%B1%9E%E6%80%A7"><span class="nav-number">2.</span> <span class="nav-text">2.window对象的属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#window-window%EF%BC%8Cwindow-name"><span class="nav-number">2.1.</span> <span class="nav-text">window.window，window.name</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#window-location"><span class="nav-number">2.2.</span> <span class="nav-text">window.location</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-window%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">3.window对象的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#window-open-window-close"><span class="nav-number">3.1.</span> <span class="nav-text">window.open(), window.close()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#window-getSelection"><span class="nav-number">3.2.</span> <span class="nav-text">window.getSelection()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%A4%9A%E7%AA%97%E5%8F%A3%E6%93%8D%E4%BD%9C"><span class="nav-number">4.</span> <span class="nav-text">4.多窗口操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AA%97%E5%8F%A3%E7%9A%84%E5%BC%95%E7%94%A8"><span class="nav-number">4.1.</span> <span class="nav-text">窗口的引用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#iframe%E6%A0%87%E7%AD%BE"><span class="nav-number">4.2.</span> <span class="nav-text">iframe标签</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#frames%E5%B1%9E%E6%80%A7"><span class="nav-number">4.3.</span> <span class="nav-text">frames属性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6"><span class="nav-number">5.</span> <span class="nav-text">事件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#error-%E4%BA%8B%E4%BB%B6%E5%92%8C-onerror-%E5%B1%9E%E6%80%A7"><span class="nav-number">5.1.</span> <span class="nav-text">error 事件和 onerror 属性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">6.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://www.laruence.com/" title="风雪之隅 → http:&#x2F;&#x2F;www.laruence.com&#x2F;" rel="noopener" target="_blank">风雪之隅</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://tech.youzan.com/" title="有赞技术团队 → http:&#x2F;&#x2F;tech.youzan.com&#x2F;" rel="noopener" target="_blank">有赞技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://tech.meituan.com/archives" title="美团点评技术团队 → https:&#x2F;&#x2F;tech.meituan.com&#x2F;archives" rel="noopener" target="_blank">美团点评技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://macshuo.com/" title="點燈坊 → http:&#x2F;&#x2F;macshuo.com&#x2F;" rel="noopener" target="_blank">點燈坊</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://blog.turn.tw/" title="轉個彎日誌 → http:&#x2F;&#x2F;blog.turn.tw&#x2F;" rel="noopener" target="_blank">轉個彎日誌</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/23/javascript%E7%9A%84window%E5%AF%B9%E8%B1%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          javascript的window对象
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-23 17:14:20" itemprop="dateCreated datePublished" datetime="2018-03-23T17:14:20+09:00">2018-03-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:20:40" itemprop="dateModified" datetime="2018-03-27T22:20:40+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+我最不喜欢等，因为这个期限永远都是个未知数。
+</blockquote>
+
+<h3 id="1-概述"><a href="#1-概述" class="headerlink" title="1.概述"></a>1.概述</h3><p>在浏览器中，<code>window</code>对象（注意，w为小写）指当前的浏览器窗口。它也是所有对象的顶层对象。<br>“顶层对象”指的是最高一层的对象，所有其他对象都是它的下属。JavaScript规定，浏览器环境的所有全局变量，都是<code>window</code>对象的属性。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="built_in">window</span>.a <span class="comment">// 1</span></span><br></pre></td></tr></table></figure>
+<p>上面代码中，变量a是一个全局变量，但是实质上它是window对象的属性。声明一个全局变量，就是为<code>window</code>对象的同名属性赋值。</p>
+<h3 id="2-window对象的属性"><a href="#2-window对象的属性" class="headerlink" title="2.window对象的属性"></a>2.window对象的属性</h3><h4 id="window-window，window-name"><a href="#window-window，window-name" class="headerlink" title="window.window，window.name"></a>window.window，window.name</h4><p>window对象的window属性指向自身。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.window === <span class="built_in">this</span> <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>window.name属性用于设置当前浏览器窗口的名字。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.name = <span class="string">&#x27;Hello World!&#x27;</span>;</span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">window</span>.name)</span><br><span class="line"><span class="comment">// &quot;Hello World!&quot;</span></span><br></pre></td></tr></table></figure>
+<p>各个浏览器对这个值的储存容量有所不同，但是一般来说，可以高达几MB。<br>该属性只能保存字符串，且当浏览器窗口关闭后，所保存的值就会消失。因此局限性比较大，但是与<code>&lt;iframe&gt;</code>窗口通信时，非常有用。</p>
+<h4 id="window-location"><a href="#window-location" class="headerlink" title="window.location"></a>window.location</h4><p>window.location返回一个location对象，用于获取窗口当前的URL信息。它等同于<code>document.location</code>对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.location === <span class="built_in">document</span>.location <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-window对象的方法"><a href="#3-window对象的方法" class="headerlink" title="3.window对象的方法"></a>3.window对象的方法</h3><h4 id="window-open-window-close"><a href="#window-open-window-close" class="headerlink" title="window.open(), window.close()"></a>window.open(), window.close()</h4><p>window.open方法用于新建另一个浏览器窗口，并且返回该窗口对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> popup = <span class="built_in">window</span>.open(<span class="string">&#x27;somefile.html&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>上面代码会让浏览器弹出一个新建窗口，网址是当前域名下的somefile.html。</p>
+<p>open方法一共可以接受四个参数。</p>
+<ul>
+<li>第一个参数：字符串，表示新窗口的网址。如果省略，默认网址就是about:blank。</li>
+<li>第二个参数：字符串，表示新窗口的名字。如果该名字的窗口已经存在，则跳到该窗口，不再新建窗口。如果省略，就默认使用_blank，表示新建一个没有名字的窗口。</li>
+<li>第三个参数：字符串，内容为逗号分隔的键值对，表示新窗口的参数，比如有没有提示栏、工具条等等。如果省略，则默认打开一个完整UI的新窗口。</li>
+<li>第四个参数：布尔值，表示第一个参数指定的网址，是否应该替换<code>history</code>对象之中的当前网址记录，默认值为<code>false</code>。显然，这个参数只有在第二个参数指向已经存在的窗口时，才有意义。</li>
+</ul>
+<h4 id="window-getSelection"><a href="#window-getSelection" class="headerlink" title="window.getSelection()"></a>window.getSelection()</h4><p>window.getSelection方法返回一个Selection对象，表示用户现在选中的文本。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> selObj = <span class="built_in">window</span>.getSelection();</span><br></pre></td></tr></table></figure>
+<p>使用Selction对象的toString方法可以得到选中的文本。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> selectedText = selObj.toString();</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-多窗口操作"><a href="#4-多窗口操作" class="headerlink" title="4.多窗口操作"></a>4.多窗口操作</h3><h4 id="窗口的引用"><a href="#窗口的引用" class="headerlink" title="窗口的引用"></a>窗口的引用</h4><p>各个窗口之中的脚本，可以引用其他窗口。浏览器提供了一些特殊变量，用来返回其他窗口。</p>
+<ul>
+<li><code>top</code>：顶层窗口，即最上层的那个窗口</li>
+<li><code>parent</code>：父窗口</li>
+<li><code>self</code>：当前窗口，即自身</li>
+</ul>
+<p>下面代码可以判断，当前窗口是否为顶层窗口。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">top === self</span><br><span class="line"></span><br><span class="line"><span class="comment">// 更好的写法</span></span><br><span class="line"><span class="built_in">window</span>.top === <span class="built_in">window</span>.self</span><br></pre></td></tr></table></figure>
+<p>下面的代码让父窗口的访问历史后退一次。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parent.history.back();</span><br></pre></td></tr></table></figure>
+
+<p>与这些变量对应，浏览器还提供一些特殊的窗口名，供<code>open</code>方法、<code>&lt;a&gt;</code>标签、<code>&lt;form&gt;</code>标签等引用。</p>
+<ul>
+<li><code>_top</code>：顶层窗口</li>
+<li><code>_parent</code>：父窗口</li>
+<li><code>_blank</code>：新窗口</li>
+</ul>
+<p>下面代码就表示在顶层窗口打开链接。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=<span class="string">&quot;somepage.html&quot;</span> target=<span class="string">&quot;_top&quot;</span>&gt;Link&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="iframe标签"><a href="#iframe标签" class="headerlink" title="iframe标签"></a>iframe标签</h4><p>对于<code>iframe</code>嵌入的窗口，<code>document.getElementById</code>方法可以拿到该窗口的<code>DOM</code>节点，然后使用<code>contentWindow</code>属性获得<code>iframe</code>节点包含的<code>window</code>对象，或者使用<code>contentDocument</code>属性获得包含的<code>document</code>对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> frame = <span class="built_in">document</span>.getElementById(<span class="string">&#x27;theFrame&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> frameWindow = frame.contentWindow;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 等同于 frame.contentWindow.document</span></span><br><span class="line"><span class="keyword">var</span> frameDoc = frame.contentDocument;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取子窗口的变量和属性</span></span><br><span class="line">frameWindow.function()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取子窗口的标题</span></span><br><span class="line">frameWindow.title</span><br></pre></td></tr></table></figure>
+<p><code>iframe</code>元素遵守同源政策，只有当父页面与框架页面来自同一个域名，两者之间才可以用脚本通信，否则只有使用<code>window.postMessage方</code>法。</p>
+<p><code>iframe</code>窗口内部，使用<code>window.parent</code>引用父窗口。如果当前页面没有父窗口，则<code>window.parent</code>属性返回自身。因此，可以通过<code>window.parent</code>是否等于<code>window.self</code>，判断当前窗口是否为<code>iframe</code>窗口。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="built_in">window</span>.parent !== <span class="built_in">window</span>.self) &#123;</span><br><span class="line">  <span class="comment">// 当前窗口是子窗口</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>iframe</code>嵌入窗口的<code>window</code>对象，有一个<code>frameElement</code>属性，返回它在父窗口中的<code>DOM</code>节点。对于那么非嵌入的窗口，该属性等于<code>null</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> f1Element = <span class="built_in">document</span>.getElementById(<span class="string">&#x27;f1&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> fiWindow = f1Element.contentWindow;</span><br><span class="line">f1Window.frameElement === f1Element <span class="comment">// true</span></span><br><span class="line"><span class="built_in">window</span>.frameElement === <span class="literal">null</span> <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="frames属性"><a href="#frames属性" class="headerlink" title="frames属性"></a>frames属性</h4><p>window对象的frames属性返回一个类似数组的对象，成员是所有子窗口的<code>window</code>对象。可以使用这个属性，实现窗口之间的互相引用。比如，<code>frames[0]</code>返回第一个子窗口，<code>frames[1].frames[2]</code>返回第二个子窗口内部的第三个子窗口，<code>parent.frames[1]</code>返回父窗口的第二个子窗口。</p>
+<p>需要注意的是，<code>window.frames</code>每个成员的值，是框架内的窗口（即框架的<code>window</code>对象），而不是<code>iframe</code>标签在父窗口的<code>DOM</code>节点。如果要获取每个框架内部的DOM树，需要使用<code>window.frames[0].document</code>的写法。</p>
+<p>另外，如果<code>iframe</code>元素设置了<code>name</code>或<code>id</code>属性，那么属性值会自动成为全局变量，并且可以通过<code>window.frames</code>属性引用，返回子窗口的<code>window</code>对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HTML代码为&lt;iframe id=&quot;myFrame&quot;&gt;</span></span><br><span class="line">myFrame <span class="comment">// [HTMLIFrameElement]</span></span><br><span class="line">frames.myframe === myFrame <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>另外，name属性的值会自动成为子窗口的名称，可以用在<code>window.open</code>方法的第二个参数，或者<code>&lt;a&gt;</code>和<code>&lt;frame&gt;</code>标签的<code>target</code>属性。</p>
+<h3 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h3><h4 id="error-事件和-onerror-属性"><a href="#error-事件和-onerror-属性" class="headerlink" title="error 事件和 onerror 属性"></a>error 事件和 onerror 属性</h4><p>浏览器脚本发生错误时，会触发window对象的error事件。我们可以通过window.onerror属性对该事件指定回调函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.onerror = <span class="function"><span class="keyword">function</span> (<span class="params">message, filename, lineno, colno, error</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;出错了！--&gt; %s&quot;</span>, error.stack);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>由于历史原因，window的error事件的回调函数不接受错误对象作为参数，而是一共可以接受五个参数，它们的含义依次如下。</p>
+<ul>
+<li>出错信息</li>
+<li>出错脚本的网址</li>
+<li>行号</li>
+<li>列号</li>
+<li>错误对象</li>
+</ul>
+<p>老式浏览器只支持前三个参数。</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="http://javascript.ruanyifeng.com/bom/window.html">http://javascript.ruanyifeng.com/bom/window.html</a><br><a target="_blank" rel="noopener" href="https://danlimerick.wordpress.com/2014/01/18/how-to-catch-javascript-errors-with-window-onerror-even-on-chrome-and-firefox/">https://danlimerick.wordpress.com/2014/01/18/how-to-catch-javascript-errors-with-window-onerror-even-on-chrome-and-firefox/</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/03/22/setTimeout%E5%87%BD%E6%95%B0%E4%B9%8B%E5%BE%AA%E7%8E%AF%E5%92%8C%E9%97%AD%E5%8C%85/" rel="prev" title="setTimeout函数之循环和闭包">
+                  <i class="fa fa-chevron-left"></i> setTimeout函数之循环和闭包
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/03/25/ThinkPHP%E7%9A%84%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81%E8%AE%BE%E8%AE%A1/" rel="next" title="ThinkPHP的数据验证设计">
+                  ThinkPHP的数据验证设计 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

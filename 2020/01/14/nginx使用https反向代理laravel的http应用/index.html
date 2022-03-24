@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="幸有我来山未孤   使用场景反向代理的概念不多做解释，此处应用反向代理主要原因如下：  应用服务器不必暴露在公网，躲在防火墙后，通过内网连接代理服务器（proxy server） DNS设置简单，因为有两个不同应用服务器，对应不同的子域名（a.example.com, b.example.com），只需设置DNS *.example.com 到代理服务器IP即可 SSL证书管理方便，只需申请一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx使用HTTPS反向代理laravel的HTTP应用">
+<meta property="og:url" content="https://swoole.app/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="幸有我来山未孤   使用场景反向代理的概念不多做解释，此处应用反向代理主要原因如下：  应用服务器不必暴露在公网，躲在防火墙后，通过内网连接代理服务器（proxy server） DNS设置简单，因为有两个不同应用服务器，对应不同的子域名（a.example.com, b.example.com），只需设置DNS *.example.com 到代理服务器IP即可 SSL证书管理方便，只需申请一个">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-01-14T03:39:12.000Z">
+<meta property="article:modified_time" content="2020-01-14T04:49:08.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Laravel">
+<meta property="article:tag" content="Nginx">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/","path":"2020/01/14/nginx使用https反向代理laravel的http应用/","title":"Nginx使用HTTPS反向代理laravel的HTTP应用"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Nginx使用HTTPS反向代理laravel的HTTP应用 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83"><span class="nav-number">2.</span> <span class="nav-text">环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">3.</span> <span class="nav-text">配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AE"><span class="nav-number">3.1.</span> <span class="nav-text">应用服务器配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">代理服务器配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">5.</span> <span class="nav-text">问题</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://www.laruence.com/" title="风雪之隅 → http:&#x2F;&#x2F;www.laruence.com&#x2F;" rel="noopener" target="_blank">风雪之隅</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://tech.youzan.com/" title="有赞技术团队 → http:&#x2F;&#x2F;tech.youzan.com&#x2F;" rel="noopener" target="_blank">有赞技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://tech.meituan.com/archives" title="美团点评技术团队 → https:&#x2F;&#x2F;tech.meituan.com&#x2F;archives" rel="noopener" target="_blank">美团点评技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://macshuo.com/" title="點燈坊 → http:&#x2F;&#x2F;macshuo.com&#x2F;" rel="noopener" target="_blank">點燈坊</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://blog.turn.tw/" title="轉個彎日誌 → http:&#x2F;&#x2F;blog.turn.tw&#x2F;" rel="noopener" target="_blank">轉個彎日誌</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Nginx使用HTTPS反向代理laravel的HTTP应用
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2020-01-14 12:39:12 / 修改时间：13:49:08" itemprop="dateCreated datePublished" datetime="2020-01-14T12:39:12+09:00">2020-01-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+幸有我来山未孤
+</blockquote>
+
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>反向代理的概念不多做解释，此处应用反向代理主要原因如下：</p>
+<ul>
+<li>应用服务器不必暴露在公网，躲在防火墙后，通过内网连接代理服务器（proxy server）</li>
+<li>DNS设置简单，因为有两个不同应用服务器，对应不同的子域名（a.example.com, b.example.com），只需设置DNS *.example.com 到代理服务器IP即可</li>
+<li>SSL证书管理方便，只需申请一个通配符的证书 *.example.com 配置在代理服务器</li>
+</ul>
+<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><p>系统环境都是Ubuntu 18.04.2，服务器都是使用Nginx，代理服务器配置SSL，使用HTTPS对外访问（HTTP强制跳转到HTTPS），应用服务器使用Laravel，HTTP对内网访问。</p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><h4 id="应用服务器配置"><a href="#应用服务器配置" class="headerlink" title="应用服务器配置"></a>应用服务器配置</h4><p>应用服务器的nginx照常配置即可，可以设置server_name为对应的域名。</p>
+<h3 id="代理服务器配置"><a href="#代理服务器配置" class="headerlink" title="代理服务器配置"></a>代理服务器配置</h3><p>代理服务器从网上抄来一份，主要是设置proxy_pass，下面只是location block：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_set_header Host <span class="variable">$host</span>;</span><br><span class="line">    proxy_set_header X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-Proto <span class="variable">$scheme</span>;</span><br><span class="line">    proxy_pass    http:<span class="comment">//ip;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意要加 proxy_set_header X-Forwarded-Proto $scheme 这一条，让后面被代理的应用服务器知道对应的协议是什么，这样应用服务器生成url（如css，js文件）使用相应的协议。如果代理服务器确定使用https，那$scheme替换成https也可以。</p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>本以为这样就搞定了，但是在用域名测试的时候发现网站不能正常加载，浏览器有如下错误：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Mixed</span> Content: The page at <span class="string">&#x27;&lt;URL&gt;&#x27;</span> was loaded over HTTPS, but requested an insecure stylesheet <span class="string">&#x27;&lt;URL&gt;&#x27;</span>. This request has been blocked; the content must be served over HTTPS.</span><br></pre></td></tr></table></figure>
+<p>在页面中混用了HTTPS和HTTP，浏览器会block掉不安全的HTTP链接。而HTTP链接主要是用laravel的asset生成的css, js文件，css文件没有加载上，所以就不能正常加载了。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/helpers#method-asset">https://laravel.com/docs/5.5/helpers#method-asset</a><br>多方查询，有推荐使用proxy_redirect来替换HTTP为HTTPS，但是试用不成功。</p>
+</blockquote>
+<p>也有说这些资源文件用uri路径来表示，\css\example.css 这样，不带协议。</p>
+<p>或者页面增加一个meta，让HTTP升级为安全的HTTPS：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;Content-Security-Policy&quot;</span> <span class="attr">content</span>=<span class="string">&quot;upgrade-insecure-requests&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这样在生产环境没问题，但是需要改动很多代码，而且开发、测试环境也需要ssl证书，很不方便。</p>
+<p>在查询到几篇文章中，有提到后端是tomcat，需要修改tomcat的配置来接受X-Forwarded-Proto 这个Header来处理。我思考是不是laravel也需要类似设置，google一下发现了这个：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/requests#configuring-trusted-proxies">https://laravel.com/docs/5.5/requests#configuring-trusted-proxies</a><br>When running your applications behind a load balancer that terminates TLS / SSL certificates, you may notice your application sometimes does not generate HTTPS links. Typically this is because your application is being forwarded traffic from your load balancer on port 80 and does not know it should generate secure links.</p>
+</blockquote>
+<p>Laravel从5.5开始，内置了一个 TrustProxies模块来解决这个问题，专门应对使用了Load Balancer等情况。</p>
+<p>所以按照文档，修改 protected $proxies = ‘<strong>‘，因为应用服务器在内网，所以改成</strong>也无所谓。<br>Laravel 5.5之前的版本，可以自行用composer来安装这个插件。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/fideloper/TrustedProxy">https://github.com/fideloper/TrustedProxy</a></p>
+<p>测试之后，问题解决。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/">http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Laravel/" rel="tag"># Laravel</a>
+              <a href="/tags/Nginx/" rel="tag"># Nginx</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/01/11/golang%E8%BF%94%E5%9B%9Ejson%E7%AD%89%E6%A0%BC%E5%BC%8F%E6%95%B0%E6%8D%AE/" rel="prev" title="golang返回json等格式数据">
+                  <i class="fa fa-chevron-left"></i> golang返回json等格式数据
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/01/17/golang%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84restfulapi/" rel="next" title="golang创建一个简单的restfulapi">
+                  golang创建一个简单的restfulapi <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

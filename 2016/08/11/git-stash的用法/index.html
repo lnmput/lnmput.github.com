@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="生活总是有很多出人意料的事情，比如，你以为我要举个例子。   应用前提12345分支里面的代码如果没有提交commit ，那么切换到其他分支下还是可以看到(git status)这个分支下的代码.但是如果我们现在想要切换到别的分支但是同时又不想提交commit我们的代码该如何处理？ git stash123在你切换分支前，运行：git stash 就可以了当你在其他分支改好了代码并切换回当前分支">
+<meta property="og:type" content="article">
+<meta property="og:title" content="git-stash的用法">
+<meta property="og:url" content="https://swoole.app/2016/08/11/git-stash%E7%9A%84%E7%94%A8%E6%B3%95/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="生活总是有很多出人意料的事情，比如，你以为我要举个例子。   应用前提12345分支里面的代码如果没有提交commit ，那么切换到其他分支下还是可以看到(git status)这个分支下的代码.但是如果我们现在想要切换到别的分支但是同时又不想提交commit我们的代码该如何处理？ git stash123在你切换分支前，运行：git stash 就可以了当你在其他分支改好了代码并切换回当前分支">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-08-11T14:50:19.000Z">
+<meta property="article:modified_time" content="2018-06-21T05:56:03.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Git">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2016/08/11/git-stash%E7%9A%84%E7%94%A8%E6%B3%95/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2016/08/11/git-stash%E7%9A%84%E7%94%A8%E6%B3%95/","path":"2016/08/11/git-stash的用法/","title":"git-stash的用法"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>git-stash的用法 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%89%8D%E6%8F%90"><span class="nav-number">1.</span> <span class="nav-text">应用前提</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#git-stash"><span class="nav-number">2.</span> <span class="nav-text">git stash</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="nav-number">3.</span> <span class="nav-text">相关命令</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://www.laruence.com/" title="风雪之隅 → http:&#x2F;&#x2F;www.laruence.com&#x2F;" rel="noopener" target="_blank">风雪之隅</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://tech.youzan.com/" title="有赞技术团队 → http:&#x2F;&#x2F;tech.youzan.com&#x2F;" rel="noopener" target="_blank">有赞技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://tech.meituan.com/archives" title="美团点评技术团队 → https:&#x2F;&#x2F;tech.meituan.com&#x2F;archives" rel="noopener" target="_blank">美团点评技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://macshuo.com/" title="點燈坊 → http:&#x2F;&#x2F;macshuo.com&#x2F;" rel="noopener" target="_blank">點燈坊</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://blog.turn.tw/" title="轉個彎日誌 → http:&#x2F;&#x2F;blog.turn.tw&#x2F;" rel="noopener" target="_blank">轉個彎日誌</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/11/git-stash%E7%9A%84%E7%94%A8%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          git-stash的用法
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-11 23:50:19" itemprop="dateCreated datePublished" datetime="2016-08-11T23:50:19+09:00">2016-08-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-06-21 14:56:03" itemprop="dateModified" datetime="2018-06-21T14:56:03+09:00">2018-06-21</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+生活总是有很多出人意料的事情，比如，你以为我要举个例子。
+</blockquote>
+
+<h3 id="应用前提"><a href="#应用前提" class="headerlink" title="应用前提"></a>应用前提</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">分支里面的代码如果没有提交commit ，那么切换到其他分支下还是可以看</span><br><span class="line">到(git status)这个分支下的代码.</span><br><span class="line"></span><br><span class="line">但是如果我们现在想要切换到别的分支但是同时又不想提交commit我们的代码</span><br><span class="line">该如何处理？</span><br></pre></td></tr></table></figure>
+<h3 id="git-stash"><a href="#git-stash" class="headerlink" title="git stash"></a>git stash</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">在你切换分支前，运行：git stash 就可以了</span><br><span class="line">当你在其他分支改好了代码并切换回当前分支的时候，请git stash pop </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="相关命令"><a href="#相关命令" class="headerlink" title="相关命令"></a>相关命令</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">git stash</span><br><span class="line">保存当前的工作进度。会分别对暂存区和工作区的状态进行保存</span><br><span class="line"></span><br><span class="line">git stash save <span class="string">&quot;message...&quot;</span></span><br><span class="line">这条命令实际上是第一条 git stash 命令的完整版</span><br><span class="line"></span><br><span class="line">git stash <span class="keyword">list</span></span><br><span class="line">显示进度列表。此命令显然暗示了git stash 可以多次保存工作进度，并用在恢复时候进行选择</span><br><span class="line"></span><br><span class="line">git stash pop [--index] [&lt;stash&gt;]</span><br><span class="line">如果不使用任何参数，会恢复最新保存的工作进度，</span><br><span class="line">并将恢复的工作进度从存储的工作进度列表中清除。</span><br><span class="line">如果提供参数（来自 git stash <span class="keyword">list</span> 显示的列表），则从该 &lt;stash&gt; 中恢复。恢复完毕也将从进度列表中删除 &lt;stash&gt;。</span><br><span class="line">选项--index 除了恢复工作区的文件外，还尝试恢复暂存区。</span><br><span class="line"></span><br><span class="line">git stash apply [--index] [&lt;stash&gt;]</span><br><span class="line">除了不删除恢复的进度之外，其余和 git stash pop 命令一样</span><br><span class="line"></span><br><span class="line">git stash clear</span><br><span class="line">删除所有存储的进度</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Git/" rel="tag"># Git</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/08/11/ssdb%E4%B8%80%E4%B8%AA%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84nosql%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="prev" title="ssdb一个高性能的nosql数据库">
+                  <i class="fa fa-chevron-left"></i> ssdb一个高性能的nosql数据库
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/08/15/%E9%A2%84%E9%98%B2CSRF%E6%94%BB%E5%87%BB/" rel="next" title="预防CSRF攻击">
+                  预防CSRF攻击 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

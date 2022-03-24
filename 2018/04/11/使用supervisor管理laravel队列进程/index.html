@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="你看了一千个正确答案，还是要一秒一秒的等时间    Supervisor 是一个 Python 写的进程管理工具，有时一个进程需要在后台运行，并且意外挂掉后能够自动重启，就需要这么一个管理进程的工具。在 Laravel 开发中，也经常使用到队列监听，可以配合 Supervisor 来管理 Laravel 队列进程。 Supervisor的安装 使用 pip 工具进行安装：123sudo yum">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Supervisor管理Laravel队列进程">
+<meta property="og:url" content="https://swoole.app/2018/04/11/%E4%BD%BF%E7%94%A8supervisor%E7%AE%A1%E7%90%86laravel%E9%98%9F%E5%88%97%E8%BF%9B%E7%A8%8B/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="你看了一千个正确答案，还是要一秒一秒的等时间    Supervisor 是一个 Python 写的进程管理工具，有时一个进程需要在后台运行，并且意外挂掉后能够自动重启，就需要这么一个管理进程的工具。在 Laravel 开发中，也经常使用到队列监听，可以配合 Supervisor 来管理 Laravel 队列进程。 Supervisor的安装 使用 pip 工具进行安装：123sudo yum">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-04-11T09:24:02.000Z">
+<meta property="article:modified_time" content="2019-03-08T13:55:24.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Laravel">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/04/11/%E4%BD%BF%E7%94%A8supervisor%E7%AE%A1%E7%90%86laravel%E9%98%9F%E5%88%97%E8%BF%9B%E7%A8%8B/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2018/04/11/%E4%BD%BF%E7%94%A8supervisor%E7%AE%A1%E7%90%86laravel%E9%98%9F%E5%88%97%E8%BF%9B%E7%A8%8B/","path":"2018/04/11/使用supervisor管理laravel队列进程/","title":"使用Supervisor管理Laravel队列进程"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>使用Supervisor管理Laravel队列进程 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Supervisor%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">Supervisor的安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Supervisor%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">Supervisor的配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Supervisor%E7%AE%A1%E7%90%86Laravel%E9%98%9F%E5%88%97%E8%BF%9B%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">使用Supervisor管理Laravel队列进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E9%94%99%E8%AF%AF"><span class="nav-number">4.</span> <span class="nav-text">一个错误</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Horizon"><span class="nav-number">5.</span> <span class="nav-text">Horizon</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">6.</span> <span class="nav-text">其他</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://www.laruence.com/" title="风雪之隅 → http:&#x2F;&#x2F;www.laruence.com&#x2F;" rel="noopener" target="_blank">风雪之隅</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://tech.youzan.com/" title="有赞技术团队 → http:&#x2F;&#x2F;tech.youzan.com&#x2F;" rel="noopener" target="_blank">有赞技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://tech.meituan.com/archives" title="美团点评技术团队 → https:&#x2F;&#x2F;tech.meituan.com&#x2F;archives" rel="noopener" target="_blank">美团点评技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://macshuo.com/" title="點燈坊 → http:&#x2F;&#x2F;macshuo.com&#x2F;" rel="noopener" target="_blank">點燈坊</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://blog.turn.tw/" title="轉個彎日誌 → http:&#x2F;&#x2F;blog.turn.tw&#x2F;" rel="noopener" target="_blank">轉個彎日誌</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/11/%E4%BD%BF%E7%94%A8supervisor%E7%AE%A1%E7%90%86laravel%E9%98%9F%E5%88%97%E8%BF%9B%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用Supervisor管理Laravel队列进程
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-04-11 18:24:02" itemprop="dateCreated datePublished" datetime="2018-04-11T18:24:02+09:00">2018-04-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2019-03-08 22:55:24" itemprop="dateModified" datetime="2019-03-08T22:55:24+09:00">2019-03-08</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+你看了一千个正确答案，还是要一秒一秒的等时间 
+</blockquote>
+
+<p>Supervisor 是一个 Python 写的进程管理工具，有时一个进程需要在后台运行，并且意外挂掉后能够自动重启，就需要这么一个管理进程的工具。在 Laravel 开发中，也经常使用到队列监听，可以配合 Supervisor 来管理 Laravel 队列进程。</p>
+<h3 id="Supervisor的安装"><a href="#Supervisor的安装" class="headerlink" title="Supervisor的安装"></a>Supervisor的安装</h3><ul>
+<li>使用 pip 工具进行安装：<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo yum install epel-release</span><br><span class="line">sudo yum -y install  python-pip</span><br><span class="line">sudo pip install supervisor</span><br></pre></td></tr></table></figure></li>
+<li>Ubuntu 系统使用 apt-get<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install supervisor</span><br></pre></td></tr></table></figure></li>
+<li>还有其他的安装方式，请见官网（<a target="_blank" rel="noopener" href="http://supervisord.org/%EF%BC%89">http://supervisord.org/）</a></li>
+</ul>
+<h3 id="Supervisor的配置"><a href="#Supervisor的配置" class="headerlink" title="Supervisor的配置"></a>Supervisor的配置</h3><p>一般配置文件在<code>/etc/supervisor/conf.d</code> 目录下<br>也可以运行这个命令可以生成一个默认的配置文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo_supervisord_conf &gt; /etc/supervisor/supervisord.conf</span><br></pre></td></tr></table></figure>
+<p>生成成功后，打开编辑这个文件，把最后的 include 块的注释打开，并修改如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[include]</span><br><span class="line">files = /etc/supervisor/*.conf</span><br></pre></td></tr></table></figure>
+<p>新增的 Supervisor 配置文件放在 /etc/supervisor 目录下，并且以 conf 结尾。</p>
+<p>这时我们使用新的配置文件来启动 Supervisor：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">supervisord -c /etc/supervisord.conf</span><br></pre></td></tr></table></figure>
+<p>如果提示已经有进程在运行，那么先 kill 掉它。</p>
+<h3 id="使用Supervisor管理Laravel队列进程"><a href="#使用Supervisor管理Laravel队列进程" class="headerlink" title="使用Supervisor管理Laravel队列进程"></a>使用Supervisor管理Laravel队列进程</h3><p>我们使用 Laravel 队列，会用到 php artisan queue:work 命令，让它监听队列，我们可以通过 nohup 方式让它在后台运行，但是进程如果意外中断是不会自动重启的，所以使用 Supervisor 来监控进程是个很好的方式。</p>
+<p>首先在 /etc/supervisor 目录下新增一个 Supervisor 的配置文件，如下：<br>文件名<code>erp2-worker.conf</code>,和配置文件中指定的program保持一致</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[program:erp2-worker]</span><br><span class="line">process_name=%(program_name)s_%(process_num)<span class="number">02</span>d</span><br><span class="line">command=/usr/bin/php7 /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">user=vagrant</span><br><span class="line">numprocs=<span class="number">8</span></span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile=/<span class="keyword">var</span>/log/supervisor/laravel-queue.log</span><br></pre></td></tr></table></figure>
+<p>这里 user 填写网站运行进程的用户，如 vagrant，numprocs 表示启动多少个进程来监听 Laravel 队列。<br>一切就绪后，我们使用如下命令就可以启动队列进程的监听了：</p>
+<blockquote>
+<p>注意: 修改了配置文件以后都要进行 reload 和 update</p>
+</blockquote>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">supervisord <span class="comment"># 先执行</span></span><br><span class="line"></span><br><span class="line">sudo supervisorctl reload</span><br><span class="line"></span><br><span class="line">sudo supervisorctl update</span><br><span class="line"></span><br><span class="line">sudo supervisorctl start erp2-worker:*</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或者</span></span><br><span class="line">sudo supervisorctl start all</span><br></pre></td></tr></table></figure>
+<p>但是在这一步，发生了错误，提示如下：</p>
+<blockquote>
+<p>laravel-worker:laravel-worker_00: ERROR (spawn error)<br>laravel-worker:laravel-worker_01: ERROR (spawn error)<br>laravel-worker:laravel-worker_02: ERROR (spawn error)<br>laravel-worker:laravel-worker_03: ERROR (spawn error)<br>laravel-worker:laravel-worker_04: ERROR (spawn error)<br>laravel-worker:laravel-worker_05: ERROR (spawn error)<br>laravel-worker:laravel-worker_06: ERROR (spawn error)<br>laravel-worker:laravel-worker_07: ERROR (spawn error)</p>
+</blockquote>
+<p>经过一番折腾，解决方法是，把 Supervisor 的日志文件，和新增的队列配置文件中的日志文件，用 chown 把用户和组设置为正确的，如本例是 chown vagrant:vagrant file_name，另外把日志文件权限设置为 777.</p>
+<p>再次经过上述步骤，成功开启进程管理：</p>
+<blockquote>
+<p>laravel-worker:laravel-worker_00: started<br>laravel-worker:laravel-worker_01: started<br>laravel-worker:laravel-worker_02: started<br>laravel-worker:laravel-worker_03: started<br>laravel-worker:laravel-worker_04: started<br>laravel-worker:laravel-worker_05: started<br>laravel-worker:laravel-worker_06: started<br>laravel-worker:laravel-worker_07: started</p>
+</blockquote>
+<p>可以看到 Laravel 队列开始正常运行了，这里值得注意的是，如果 Laravel 处理队列的代码更改了，需要重启 Supervisor 的队列管理才能生效。</p>
+<p>查看运行情况:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef|grep <span class="string">&#x27;queue:work&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vagrant   <span class="number">4899</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4900</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4901</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4902</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4903</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4904</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4905</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4906</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4978</span>  <span class="number">2575</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">11</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep --color=auto queue:work</span><br></pre></td></tr></table></figure>
+
+<h3 id="一个错误"><a href="#一个错误" class="headerlink" title="一个错误"></a>一个错误</h3><p>使用<code>supervisorctl reload</code>却得到报错提示：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">error</span>: &lt;<span class="class"><span class="keyword">class</span> &#x27;<span class="title">socket</span>.<span class="title">error</span>&#x27;&gt;, [<span class="title">Errno</span> 2] <span class="title">No</span> <span class="title">such</span> <span class="title">file</span> <span class="title">or</span> <span class="title">directory</span>: <span class="title">file</span>: /<span class="title">usr</span>/<span class="title">lib</span>/<span class="title">python2</span>.7/<span class="title">socket</span>.<span class="title">py</span> <span class="title">line</span>: 228  </span></span><br></pre></td></tr></table></figure>
+<p>在运行 reload 命令前，先运行如下两个命令</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo supervisord -c /etc/supervisor/supervisord.conf  </span><br><span class="line">sudo supervisorctl -c /etc/supervisor/supervisord.conf  </span><br></pre></td></tr></table></figure>
+<p>或者直接</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo supervisord</span><br></pre></td></tr></table></figure>
+<p>即可解决</p>
+<h3 id="Horizon"><a href="#Horizon" class="headerlink" title="Horizon"></a>Horizon</h3><p><code>Horizon</code>为 Laravel 官方出品的 Redis 队列提供了一个可以通过代码进行配置、并且非常漂亮的仪表盘，并且能够轻松监控队列的任务吞吐量、执行时间以及任务失败情况等关键指标。</p>
+<p>队列执行者的所有配置项都存放在一个简单的配置文件中，所以团队可以通过版本控制进行协作维护。</p>
+<p>生产环境中，我们需要配置一个进程管理工具来监控 php artisan horizon 命令的执行，以便在其意外退出时自动重启。当服务器部署新代码时，需要终止当前 Horizon 主进程，然后通过进程管理工具来重启，从而使用最新的代码。</p>
+<p>使用 Artisan 命令 <code>horizon:terminate</code> 来正常停止系统中的 <code>Horizon</code> 主进程，此命令执行时，<code>Horizon</code> 当前执行中的任务会被正常完成，然后 Horizon 执行结束：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan horizon:terminate</span><br></pre></td></tr></table></figure>
+<p>Supervisor 配置<br>可以使用进程管理工具 Supervisor 来管理 horizon 进程，下面配置文件就已够用：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[program:horizon]</span><br><span class="line">process_name=%(program_name)</span><br><span class="line">command=php /home/forge/app.com/artisan horizon</span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">user=forge</span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile=/home/forge/app.com/horizon.log</span><br></pre></td></tr></table></figure>
+<p>注意Horizon仅仅支持redis, 不支持database等其他队列引擎;</p>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>配置说明:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">; 设置进程的名称，使用 supervisorctl 来管理进程时需要使用该进程名</span><br><span class="line">[program:foo] </span><br><span class="line">; 可以在 command 这里用 python 表达式传递不同的参数给每个进程</span><br><span class="line">command=python server.py --port=<span class="number">90</span>%(process_num)<span class="number">02</span>d</span><br><span class="line"><span class="built_in">directory</span>=/home/python/tornado_server ; 执行 command 之前，先切换到工作目录</span><br><span class="line">; 若 numprocs 不为<span class="number">1</span>，process_name 的表达式中一定要包含 process_num 来区分不同的进程</span><br><span class="line">numprocs=<span class="number">2</span>                   </span><br><span class="line">process_name=%(program_name)s_%(process_num)<span class="number">02</span>d; </span><br><span class="line">user=oxygen                 ; 使用 oxygen 用户来启动该进程</span><br><span class="line">autorestart=<span class="literal">true</span>            ; 程序崩溃时自动重启</span><br><span class="line">redirect_stderr=<span class="literal">true</span>        ; 重定向输出的日志</span><br><span class="line">stdout_logfile = /<span class="keyword">var</span>/log/supervisor/tornado_server.log</span><br><span class="line">loglevel=info</span><br></pre></td></tr></table></figure>
+
+<p>上面这个例子会启动两个进程，process_name 分别为 foo:foo_01 和 foo:foo_02。通过这样一种方式，就可以用一个 [program:x] 配置项，来启动一组非常类似的进程。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/3592/using-supervisor-to-manage-laravel-queue-processes">https://laravel-china.org/topics/3592/using-supervisor-to-manage-laravel-queue-processes</a><br><a target="_blank" rel="noopener" href="https://laravel-china.org/docs/laravel/5.5/horizon">https://laravel-china.org/docs/laravel/5.5/horizon</a><br><a target="_blank" rel="noopener" href="https://www.restran.net/2015/10/04/supervisord-tutorial/">https://www.restran.net/2015/10/04/supervisord-tutorial/</a><br><a target="_blank" rel="noopener" href="http://weidwonder.leanote.com/post/Untitled-55faa25638f4111167000067-6">http://weidwonder.leanote.com/post/Untitled-55faa25638f4111167000067-6</a><br><a target="_blank" rel="noopener" href="https://linuxize.com/post/how-to-install-pip-on-centos-7/">https://linuxize.com/post/how-to-install-pip-on-centos-7/</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Laravel/" rel="tag"># Laravel</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/04/11/laravel%E4%BD%BF%E7%94%A8%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8%E7%B1%BB/" rel="prev" title="Laravel使用自定义异常类">
+                  <i class="fa fa-chevron-left"></i> Laravel使用自定义异常类
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/04/12/php%E7%9A%84arrayaccess%E6%8E%A5%E5%8F%A3%E5%BA%94%E7%94%A8/" rel="next" title="PHP的ArrayAccess接口应用">
+                  PHP的ArrayAccess接口应用 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

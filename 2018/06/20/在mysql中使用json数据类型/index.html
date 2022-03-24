@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="You are my today and all of my tomorrows.    In my article SQL vs NoSQL: The Differences, I mentioned the line between SQL and NoSQL databases has become increasingly blurred with each camp adopting">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在mysql中使用json数据类型">
+<meta property="og:url" content="https://swoole.app/2018/06/20/%E5%9C%A8mysql%E4%B8%AD%E4%BD%BF%E7%94%A8json%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/index.html">
+<meta property="og:site_name" content="杨子鳄鱼 ● 外贸自建站">
+<meta property="og:description" content="You are my today and all of my tomorrows.    In my article SQL vs NoSQL: The Differences, I mentioned the line between SQL and NoSQL databases has become increasingly blurred with each camp adopting">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-06-20T01:25:23.000Z">
+<meta property="article:modified_time" content="2018-06-20T02:37:14.000Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="翻译">
+<meta property="article:tag" content="translate">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2018/06/20/%E5%9C%A8mysql%E4%B8%AD%E4%BD%BF%E7%94%A8json%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2018/06/20/%E5%9C%A8mysql%E4%B8%AD%E4%BD%BF%E7%94%A8json%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/","path":"2018/06/20/在mysql中使用json数据类型/","title":"在mysql中使用json数据类型"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>在mysql中使用json数据类型 | 杨子鳄鱼 ● 外贸自建站</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Just-Because-You-Can-Store-JSON-%E2%80%A6"><span class="nav-number">1.</span> <span class="nav-text">Just Because You Can Store JSON …</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-a-Table-with-a-JSON-Field"><span class="nav-number">2.</span> <span class="nav-text">Create a Table with a JSON Field</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Adding-JSON-Data"><span class="nav-number">3.</span> <span class="nav-text">Adding JSON Data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Searching-JSON-Data"><span class="nav-number">4.</span> <span class="nav-text">Searching JSON Data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JSON-Paths"><span class="nav-number">5.</span> <span class="nav-text">JSON Paths</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://www.laruence.com/" title="风雪之隅 → http:&#x2F;&#x2F;www.laruence.com&#x2F;" rel="noopener" target="_blank">风雪之隅</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://tech.youzan.com/" title="有赞技术团队 → http:&#x2F;&#x2F;tech.youzan.com&#x2F;" rel="noopener" target="_blank">有赞技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://tech.meituan.com/archives" title="美团点评技术团队 → https:&#x2F;&#x2F;tech.meituan.com&#x2F;archives" rel="noopener" target="_blank">美团点评技术团队</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://macshuo.com/" title="點燈坊 → http:&#x2F;&#x2F;macshuo.com&#x2F;" rel="noopener" target="_blank">點燈坊</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://blog.turn.tw/" title="轉個彎日誌 → http:&#x2F;&#x2F;blog.turn.tw&#x2F;" rel="noopener" target="_blank">轉個彎日誌</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/20/%E5%9C%A8mysql%E4%B8%AD%E4%BD%BF%E7%94%A8json%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在mysql中使用json数据类型
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-20 10:25:23 / 修改时间：11:37:14" itemprop="dateCreated datePublished" datetime="2018-06-20T10:25:23+09:00">2018-06-20</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+You are my today and all of my tomorrows. 
+</blockquote>
+
+<p>In my article SQL vs NoSQL: The Differences, I mentioned the line between SQL and NoSQL databases has become increasingly blurred with each camp adopting features from the other. MySQL 5.7 InnoDB and PostgreSQL 9.4 databases both directly support JSON document types in a single field. In this article, we’ll examine MySQL’s JSON implementation in more detail.</p>
+<p>(PostgreSQL supported JSON before version 9.4 and any database will accept JSON documents as a single string blob. However, MySQL and PostgreSQL now directly support validated JSON data in real key/value pairs rather than a basic string.)</p>
+<h3 id="Just-Because-You-Can-Store-JSON-…"><a href="#Just-Because-You-Can-Store-JSON-…" class="headerlink" title="Just Because You Can Store JSON …"></a>Just Because You Can Store JSON …</h3><p>… it doesn’t follow you should.</p>
+<p>Normalization is a technique used to optimize the database structure. The First Normal Form (1NF) rule governs that every column should hold a single value — which is broken by storing multi-value JSON documents.</p>
+<p>If you have clear relational data requirements, use appropriate single-value fields. JSON should be used sparingly as a last resort. JSON value fields cannot be indexed, so avoid using it on columns which are updated or searched regularly. In addition, fewer client applications support JSON, and the technology is newer and possibly less stable than other types.</p>
+<p>That said, there are good JSON use-cases for sparsely-populated data or custom attributes.</p>
+<h3 id="Create-a-Table-with-a-JSON-Field"><a href="#Create-a-Table-with-a-JSON-Field" class="headerlink" title="Create a Table with a JSON Field"></a>Create a Table with a JSON Field</h3><p>Consider a shop selling books. A book table will have an ID, ISBN, title, publisher, number of pages and other relational data which applies to all books. Presume we want to add any number of category tags to any book. We could achieve this in SQL using:</p>
+<ul>
+<li>a tag table which stored each tag name against a unique ID, and</li>
+<li>a tagmap table with many-to-many records mapping book IDs to tag IDs</li>
+</ul>
+<p>It’ll work, but it’s cumbersome and considerable effort for a minor feature. Therefore, we’ll define a tags JSON field in our MySQL database’s book table:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `book` (</span><br><span class="line">  `id` mediumint(<span class="number">8</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `title` <span class="type">varchar</span>(<span class="number">200</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `tags` json <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB;</span><br></pre></td></tr></table></figure>
+
+<p>Note that JSON columns cannot have a default value, be used as a primary key, be referenced as a foreign key or have an index. You can create secondary indexes on generated virtual columns, but it’s possibly easier to retain an indexed value in a separate field.</p>
+<h3 id="Adding-JSON-Data"><a href="#Adding-JSON-Data" class="headerlink" title="Adding JSON Data"></a>Adding JSON Data</h3><p>Whole JSON documents can be passed in INSERT or UPDATE statements. For example, our book tags can be passed as an array:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `book` (`title`, `tags`)</span><br><span class="line"><span class="keyword">VALUES</span> (</span><br><span class="line">  <span class="string">&#x27;ECMAScript 2015: A SitePoint Anthology&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;[&quot;JavaScript&quot;, &quot;ES2015&quot;, &quot;JSON&quot;]&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>JSON can also be created with the:</p>
+<ul>
+<li><p>JSON_ARRAY() function which creates arrays, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns [1, 2, &quot;abc&quot;]:</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="built_in">JSON_ARRAY</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="string">&#x27;abc&#x27;</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>JSON_OBJECT() function which creates objects, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns &#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#125;:</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="built_in">JSON_OBJECT</span>(<span class="string">&#x27;a&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;b&#x27;</span>, <span class="number">2</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>JSON_MERGE() function to merge documents, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns [&quot;a&quot;, 1, &#123;&quot;key&quot;: &quot;value&quot;&#125;]:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_MERGE(<span class="string">&#x27;[&quot;a&quot;, 1]&#x27;</span>, <span class="string">&#x27;&#123;&quot;key&quot;: &quot;value&quot;&#125;&#x27;</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>or you can (CAST anyValue AS JSON).</p>
+</li>
+</ul>
+<p>The JSON_TYPE() function allows you to check JSON value types. It should return OBJECT, ARRAY or an error, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns ARRAY:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;[1, 2, &quot;abc&quot;]&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- returns OBJECT:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;&#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#125;&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- returns an error:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;&#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>Similarly, the JSON_VALID() function returns 1 when the JSON is valid:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns 1:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;[1, 2, &quot;abc&quot;]&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- returns 1:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;&#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#125;&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- returns 0:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_TYPE(<span class="string">&#x27;&#123;&quot;a&quot;: 1, &quot;b&quot;: 2&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>Attempting to insert an invalid JSON document will raise an error, and the whole record will not be inserted/updated.</p>
+<h3 id="Searching-JSON-Data"><a href="#Searching-JSON-Data" class="headerlink" title="Searching JSON Data"></a>Searching JSON Data</h3><p>The JSON_CONTAINS() function accepts the JSON document being searched and another to compare against. It returns 1 when a match is found, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- all books with the &#x27;JavaScript&#x27; tag:</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `book` </span><br><span class="line"><span class="keyword">WHERE</span> JSON_CONTAINS(tags, <span class="string">&#x27;[&quot;JavaScript&quot;]&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>The similar JSON_SEARCH() function returns the path to the given match or NULL when there’s no match. It is passed the JSON document being searched, ‘one’ to find the first match or ‘all’ to find all matches, and a search string, e.g.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- all books with tags starting &#x27;Java&#x27;:</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `book` </span><br><span class="line"><span class="keyword">WHERE</span> JSON_SEARCH(tags, <span class="string">&#x27;one&#x27;</span>, <span class="string">&#x27;Java%&#x27;</span>) <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="JSON-Paths"><a href="#JSON-Paths" class="headerlink" title="JSON Paths"></a>JSON Paths</h3><p>A JSON path targets values and can be used to extract or modify parts of a document. The JSON_EXTRACT() function demonstrates this by extracting one or more values:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- returns &quot;SitePoint&quot;:</span></span><br><span class="line"><span class="keyword">SELECT</span> JSON_EXTRACT(</span><br><span class="line">  <span class="string">&#x27;&#123;&quot;id&quot;: 1, &quot;website&quot;: &quot;SitePoint&quot;&#125;&#x27;</span>, </span><br><span class="line">  <span class="string">&#x27;$.website&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.sitepoint.com/use-json-data-fields-mysql-databases/">https://www.sitepoint.com/use-json-data-fields-mysql-databases/</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag"># 翻译</a>
+              <a href="/tags/translate/" rel="tag"># translate</a>
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/06/14/nginx%E7%9A%84%E9%85%8D%E7%BD%AE%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%92%8C%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%89/" rel="prev" title="nginx的配置虚拟主机负载均衡和反向代理三">
+                  <i class="fa fa-chevron-left"></i> nginx的配置虚拟主机负载均衡和反向代理三
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/06/21/%E5%88%86%E5%BC%80%E9%83%A8%E7%BD%B2nginx%E5%92%8Cphp-fpm%E5%AE%9E%E4%BE%8B%E6%B5%8B%E8%AF%95/" rel="next" title="分开部署nginx和php-fpm实例测试">
+                  分开部署nginx和php-fpm实例测试 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
