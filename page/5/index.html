@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-count">394</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,97 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/22/go%E8%AF%AD%E8%A8%80%E5%B0%86interface%E5%8F%98%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BA%E5%9B%BA%E5%AE%9A%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8F%82%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/03/22/go%E8%AF%AD%E8%A8%80%E5%B0%86interface%E5%8F%98%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BA%E5%9B%BA%E5%AE%9A%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8F%82%E6%95%B0/" class="post-title-link" itemprop="url">go语言将interface变量转换为固定类型的参数</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-03-22 23:35:53" itemprop="dateCreated datePublished" datetime="2020-03-22T23:35:53+09:00">2020-03-22</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:55:05" itemprop="dateModified" datetime="2021-09-10T13:55:05+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+终有一天 我有属于我的天
+</blockquote>
+
+<p>Goのプログラミングでは、どんな型の引数でも受け取れる関数を作るのにinterface{}を使います。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">v</span><span class="params">(x <span class="keyword">interface</span>&#123;&#125;)</span></span>&#123;</span><br><span class="line">  fmt.Println(x)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// v(1)     =&gt; 1</span></span><br><span class="line"><span class="comment">// v(&quot;abc&quot;) =&gt; abc</span></span><br></pre></td></tr></table></figure>
+<p>しかし、interface{}型な変数を、たとえばintを引数にとる関数に渡すと、エラーになります。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">var</span> x <span class="keyword">interface</span>&#123;&#125; = <span class="number">1</span></span><br><span class="line">  fmt.Println( add2(x) )</span><br><span class="line">  <span class="comment">//=&gt; cannot use x (type interface &#123;&#125;) as type int in argument to add2: need type assertion</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">add2</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="title">int</span></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> n + <span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>このようなことをしたい場合は、castするか、switch式を使うことで、型を変換して関数に渡すことができます。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">var</span> x <span class="keyword">interface</span>&#123;&#125; = <span class="number">1</span></span><br><span class="line">  <span class="keyword">var</span> y <span class="keyword">interface</span>&#123;&#125; = <span class="number">5</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// cast</span></span><br><span class="line">  <span class="keyword">if</span> xi, ok := x.(<span class="keyword">int</span>); ok&#123;</span><br><span class="line">    fmt.Println( add2(xi) ) <span class="comment">//=&gt; 3</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//switch</span></span><br><span class="line">  <span class="keyword">switch</span> yi := y.(<span class="keyword">type</span>)&#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="keyword">int</span>:</span><br><span class="line">    <span class="comment">// ここに入ってきた時は、yiの型はintとして扱われる</span></span><br><span class="line">    fmt.Println( add2(yi) ) <span class="comment">//=&gt; 5</span></span><br><span class="line">  <span class="keyword">case</span> <span class="keyword">int64</span>, <span class="keyword">int32</span>, <span class="keyword">int8</span>:</span><br><span class="line">    <span class="comment">// ここに入ってきた時は、yiの型はint64, int32, int8のうち適切な型が選ばれている</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">add2</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="title">int</span></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> n + <span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>パッケージ的なものを自作していると、</p>
+<ul>
+<li>どんな型の変数も渡せる</li>
+<li>特定の型の関数を渡せる</li>
+</ul>
+<p>ような関数が欲しくなることがあります。具体的には以下のように使える関数です</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">exec</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">  v <span class="keyword">interface</span>&#123;&#125;, // value</span></span></span><br><span class="line"><span class="params"><span class="function">  f <span class="keyword">interface</span>&#123;&#125;, // valueを引数に実行する<span class="keyword">func</span></span></span></span><br><span class="line"><span class="params"><span class="function">)</span> <span class="title">interface</span></span>&#123;&#125; &#123;</span><br><span class="line">  fv := reflect.ValueOf(f)</span><br><span class="line">  <span class="keyword">if</span> fv.Kind() != reflect.Func&#123;</span><br><span class="line">    <span class="built_in">panic</span>(<span class="string">&quot;2&#x27;nd argument is not func.&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  rv := reflect.ValueOf(v)</span><br><span class="line">  <span class="keyword">return</span> fv.Call([]reflect.Value&#123;rv&#125;)[<span class="number">0</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//　以下のように使える</span></span><br><span class="line">exec(<span class="number">5</span>, <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span> <span class="title">int</span></span>&#123; <span class="keyword">return</span> i * ( i + <span class="number">1</span>) &#125;)</span><br><span class="line">exec(<span class="string">&quot;Tom&quot;</span>, <span class="function"><span class="keyword">func</span><span class="params">(s <span class="keyword">string</span>)</span> <span class="title">string</span></span>&#123; <span class="keyword">return</span> <span class="string">&quot;hello! &quot;</span> + s &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 第一引数と、第二引数の引数の型が違うと、buildはできるが実行時にエラーが起きる</span></span><br><span class="line">exec(<span class="string">&quot;Tom&quot;</span>, <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span> <span class="title">int</span></span>&#123; <span class="keyword">return</span> i * ( i + <span class="number">1</span>) &#125;)</span><br></pre></td></tr></table></figure>
+<p>build時に、エラーを出してほしいのですが、なかなかそうもいかない…</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://qiita.com/umanoda/items/07887d33ef1155b26ed2">https://qiita.com/umanoda/items/07887d33ef1155b26ed2</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1118,84 +1209,6 @@
 <p><a target="_blank" rel="noopener" href="https://www.alexedwards.net/blog/golang-response-snippets">https://www.alexedwards.net/blog/golang-response-snippets</a></p>
 </blockquote>
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/07/jquery%E7%9B%B8%E9%82%BB%E9%80%89%E6%8B%A9%E5%99%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/01/07/jquery%E7%9B%B8%E9%82%BB%E9%80%89%E6%8B%A9%E5%99%A8/" class="post-title-link" itemprop="url">jquery相邻选择器</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-01-07 13:01:29" itemprop="dateCreated datePublished" datetime="2020-01-07T13:01:29+09:00">2020-01-07</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-16 23:23:52" itemprop="dateModified" datetime="2021-09-16T23:23:52+09:00">2021-09-16</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-所爱隔山海，山海不可平
-</blockquote>
-
-<h3 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h3><p>选择所有紧接在 “prev” 元素后的 “next” 元素.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">JQuery(<span class="string">&quot;prev + next&quot;</span>)</span><br><span class="line">prev	任何可用的选择器.</span><br><span class="line">next	一个选择器，过滤刚好在第一个选择器后面的元素.</span><br></pre></td></tr></table></figure>
-
-<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><p>找出所有紧挨在label后面的inputs</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;../jquery.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">form</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">label</span>&gt;</span>Name:<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;name&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">fieldset</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">label</span>&gt;</span>Newsletter:<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;newsletter&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">fieldset</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;none&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript">$(<span class="string">&quot;label + input&quot;</span>).css(<span class="string">&quot;color&quot;</span>, <span class="string">&quot;blue&quot;</span>).val(<span class="string">&quot;Labeled!&quot;</span>)</span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
       
     </div>
 

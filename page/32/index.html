@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">393</span>
+          <span class="site-state-item-count">394</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,82 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/04/06/Laravel%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95sql/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/04/06/Laravel%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95sql/" class="post-title-link" itemprop="url">Laravel开发记录sql</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-04-06 17:09:54" itemprop="dateCreated datePublished" datetime="2017-04-06T17:09:54+09:00">2017-04-06</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-04-25 10:36:34" itemprop="dateModified" datetime="2018-04-25T10:36:34+09:00">2018-04-25</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+啊 这瞌睡 这瞌睡像十除以三
+</blockquote>
+
+<h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">trace_sql</span>(<span class="params"><span class="variable">$dump</span> = <span class="literal">false</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    DB::listen(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$event</span></span>) <span class="keyword">use</span>(<span class="params"><span class="variable">$dump</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$dump</span>) &#123;</span><br><span class="line">            dump(<span class="variable">$event</span>-&gt;sql);</span><br><span class="line">            dump(<span class="variable">$event</span>-&gt;bindings);</span><br><span class="line">        &#125;</span><br><span class="line">        Log::info(<span class="variable">$event</span>-&gt;sql);</span><br><span class="line">        Log::info(<span class="variable">$event</span>-&gt;bindings);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    trace_sql();</span><br><span class="line">    <span class="variable">$query</span> = Order::query();</span><br><span class="line">    <span class="comment">//$query-&gt;whereBetween(&#x27;updated_at&#x27;,[Carbon::today(), Carbon::tomorrow()]);</span></span><br><span class="line">    <span class="variable">$query</span>-&gt;whereHas(<span class="string">&#x27;incomeExpenditure&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$query</span></span>) </span>&#123;</span><br><span class="line">       <span class="variable">$query</span>-&gt;whereBetween(<span class="string">&#x27;created_at&#x27;</span>,[Carbon::today(), Carbon::tomorrow()])-&gt;where(<span class="string">&#x27;value&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, <span class="number">0</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="variable">$orders</span> = <span class="variable">$query</span>-&gt;where(<span class="string">&#x27;status&#x27;</span>, <span class="string">&#x27;paid&#x27;</span>)-&gt;with(<span class="string">&#x27;products&#x27;</span>)-&gt;orderBy(<span class="string">&#x27;updated_at&#x27;</span>, <span class="string">&#x27;desc&#x27;</span>)-&gt;paginate(<span class="number">1000</span>);</span><br><span class="line">    <span class="variable">$datas</span> = <span class="keyword">$this</span>-&gt;todayStatistics();</span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">&#x27;home.index&#x27;</span>, [<span class="string">&#x27;orders&#x27;</span> =&gt; <span class="variable">$orders</span>, <span class="string">&#x27;datas&#x27;</span> =&gt; <span class="variable">$datas</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -980,87 +1056,6 @@ Laravel facades 就是服务容器里那些基类的「静态代理」，相比�
 <h3 id="使用注意"><a href="#使用注意" class="headerlink" title="使用注意"></a>使用注意</h3><p>使用 facades 最主要的风险就是会引起类的体积的膨胀。由于 facades 使用起来非常简单而且不需要注入，我们会不经意间在单个类中大量使用。不像是使用依赖注入，用得越多，构造方法会越长，在视觉上就会引起注意，提醒你这个类有点太庞大了。所以，在使用 facades 时，要特别注意把类的体积控制在一个合理的范围。<br>在开发第三方扩展包时，如果需要使用和 Laravel 交互的扩展包，最好是注入 Laravel contracts 而不是使用 facades，因为扩展包不是在 Laravel 内部使用的，无法使用 Laravel 的 facades 的测试辅助函数。</p>
 <h3 id="Laravel-contracts"><a href="#Laravel-contracts" class="headerlink" title="Laravel contracts"></a>Laravel contracts</h3><p>Laravel 中的 Contract 是一组定义了框架核心服务的接口。例如，<code>Illuminate\Contracts\Queue\Queue contract</code> 定义了实现队列任务所需实现的方法，而 <code>Illuminate\Contracts\Mail\Mailer</code> contract 定义了发送邮件所需要实现的方法。</p>
 <p>框架为每个 contract 都提供了一个相对应的实现。例如，Laravel 为队列提供了各种驱动的实现，以及基于 SwiftMailer 对邮件功能的实现。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/02/27/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Presenter%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/02/27/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Presenter%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">如何使用Presenter模式?</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-02-27 13:59:35" itemprop="dateCreated datePublished" datetime="2017-02-27T13:59:35+09:00">2017-02-27</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:02:53" itemprop="dateModified" datetime="2018-03-27T22:02:53+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-岁月不饶人，我亦未曾饶过岁月。
-</blockquote>
-避免在模板中使用过多的复杂的判断,@inject 的用法
-
-
-<h3 id="新建文件-app-Presenters-UserPresenter-php"><a href="#新建文件-app-Presenters-UserPresenter-php" class="headerlink" title="新建文件 app\Presenters\UserPresenter.php"></a>新建文件 app\Presenters\UserPresenter.php</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Presenters</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserPresenter</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$name</span> == <span class="string">&#x27;Laurine Deckow&#x27;</span>)</span><br><span class="line">            <span class="variable">$fullName</span> = <span class="string">&#x27;Mr. &#x27;</span> . <span class="variable">$name</span>;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="variable">$fullName</span> = <span class="string">&#x27;Mrs. &#x27;</span> . <span class="variable">$name</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$fullName</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="控制器-app-Http-Controllers-UserController-php"><a href="#控制器-app-Http-Controllers-UserController-php" class="headerlink" title="控制器 app\Http\Controllers\UserController.php"></a>控制器 app\Http\Controllers\UserController.php</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">User</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getUser</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$users</span> = User::all();</span><br><span class="line">        <span class="keyword">return</span> view(<span class="string">&#x27;home/user&#x27;</span>,[<span class="string">&#x27;users&#x27;</span>=&gt;<span class="variable">$users</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="视图-resources-views-home-user-blade-php"><a href="#视图-resources-views-home-user-blade-php" class="headerlink" title="视图 resources\views\home\user.blade.php"></a>视图 resources\views\home\user.blade.php</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;list-group&quot;</span>&gt;</span></span><br><span class="line">    @inject(&#x27;UserPresenter&#x27;,&#x27;App\Presenters\UserPresenter&#x27;)</span><br><span class="line">    @foreach($users as $user)</span><br><span class="line">        <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">&quot;list-group-item&quot;</span>&gt;</span></span><br><span class="line">            &#123;&#123; $UserPresenter-&gt;setName($user-&gt;name) &#125;&#125;</span><br><span class="line">        <span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    @endforeach</span><br><span class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
       
     </div>
