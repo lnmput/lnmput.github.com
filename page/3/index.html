@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">394</span>
+          <span class="site-state-item-count">395</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,104 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/09/27/%E5%85%B3%E4%BA%8EPHP%E6%89%A9%E5%B1%95%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/09/27/%E5%85%B3%E4%BA%8EPHP%E6%89%A9%E5%B1%95%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/" class="post-title-link" itemprop="url">关于PHP扩展的一些思考</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-09-27 13:39:50" itemprop="dateCreated datePublished" datetime="2021-09-27T13:39:50+09:00">2021-09-27</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-10-26 17:00:46" itemprop="dateModified" datetime="2021-10-26T17:00:46+09:00">2021-10-26</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+可一想到终将是你的路人，
+便觉得，沦为整个世界的路人。
+</blockquote>
+
+<h3 id="PHP-库包含了哪些扩展"><a href="#PHP-库包含了哪些扩展" class="headerlink" title="PHP 库包含了哪些扩展"></a>PHP 库包含了哪些扩展</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -m</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看动态链接库位置"><a href="#查看动态链接库位置" class="headerlink" title="查看动态链接库位置"></a>查看动态链接库位置</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -i | grep extension_dir</span><br></pre></td></tr></table></figure>
+
+<h3 id="执行PHP代码"><a href="#执行PHP代码" class="headerlink" title="执行PHP代码"></a>执行PHP代码</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -r <span class="string">&quot;print_r( gd_info() );&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="写文件"><a href="#写文件" class="headerlink" title="写文件"></a>写文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> extension=gd.so &gt;&gt; /usr/local/php/lib/php.ini</span><br></pre></td></tr></table></figure>
+
+<h3 id="编译方式"><a href="#编译方式" class="headerlink" title="编译方式"></a>编译方式</h3><p>默认情况下，大多数的扩展都是静态编译的，即它们将成为生成的二进制文件的一部分。默认只有 <code>opcache</code> 扩展共享，即它将在 <code>modules/</code> 目录生成一个 <code>opcache.so</code> 共享对象 。你可以通过 <code>--enable-NAME=shared</code> 或者 <code>--with-NAME=shared</code> 将其他扩展编译成共享对象（但不是所有的扩展支持这个）。</p>
+<h3 id="修复编译问题"><a href="#修复编译问题" class="headerlink" title="修复编译问题"></a>修复编译问题</h3><p>如果运行 <code>make</code> 时遇到奇怪的错误或生成的二进制文件损坏（例如，在运行第一次测试之前， <code>make test</code> 就崩溃了），你应该尝试运行 <code>make clean</code>。它会删除所有已编译的对象，强制下一次 make 调用运行完整构建。</p>
+<p>有时候，你必须在更改 <code>./configure</code> 选项之后运行 <code>make clean</code>。 如果只是启用额外的扩展，则增量构建应是安全的，但是改变其他的选项可能需要完全重建。</p>
+<h3 id="共享扩展"><a href="#共享扩展" class="headerlink" title="共享扩展"></a>共享扩展</h3><p>PHP 扩展既能构建成静态库也可以构建成动态库（.so）。大多数静态库是与 PHP 捆绑在一起编译的，动态库可以显式地传递参数 <code>--enable-EXTNAME=shared</code> 或 <code>--with-EXTNAME=shared</code> 给 <code>./configure</code>。</p>
+<p>静态扩展默认是可用的，动态库需要增加 <code>extension</code> 或者 <code>zend_extension</code> 的 <code>ini</code> 配置。俩者可以是绝对路径，也可以是相对路径。</p>
+<h3 id="从-PECL-安装扩展"><a href="#从-PECL-安装扩展" class="headerlink" title="从 PECL 安装扩展"></a>从 PECL 安装扩展</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~/myphp&gt; bin/pecl install apcu</span><br></pre></td></tr></table></figure>
+<p>该命令将下载、编译并安装 APCu 扩展。结果会是 <code>apcu.so</code> 文件在扩展目录下，可以通过传递 <code>extension=apcu.so</code> 配置选项来加载此文件。</p>
+<h3 id="使用-phpize-构建扩展"><a href="#使用-phpize-构建扩展" class="headerlink" title="使用 phpize 构建扩展"></a>使用 phpize 构建扩展</h3><p>进入扩展源码目录执行phpize</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/tmp/apcu-<span class="number">4.0</span>.<span class="number">2</span>&gt; ~/myphp/bin/phpize</span><br><span class="line">Configuring <span class="keyword">for</span>:</span><br><span class="line">PHP Api Version:         <span class="number">20121113</span></span><br><span class="line">Zend Module Api No:      <span class="number">20121113</span></span><br><span class="line">Zend Extension Api No:   <span class="number">220121113</span></span><br><span class="line"></span><br><span class="line">/tmp/apcu-<span class="number">4.0</span>.<span class="number">2</span>&gt; ./configure --with-php-config=<span class="variable">$HOME</span>/myphp/bin/php-config</span><br><span class="line">/tmp/apcu-<span class="number">4.0</span>.<span class="number">2</span>&gt; make -jN &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+
+<p>当你构建扩展时，你应该总是指定 <code>--with-php-config</code> 选项（除非你只有一个全局的 PHP 安装），否则 <code>./configure</code> 无法确定要构建的 PHP 版本和标志。指定 <code>php-config</code> 脚本也确保了 <code>make install</code> 将移动生成的 <code>.so</code> 文件（可以在<code> modules/</code> 目录找到）到正确的扩展目录。</p>
+<p>删除已编译对象的 <code>make clean</code> 也是可用的，并且允许你增量构建失败时强制重新构建扩展。 另外 <code>phpize</code> 提供了一个清理选项 <code>phpize --clean</code>。该命令将删除所有 <code>phpize</code> 导入的文件和通过 <code>/configure</code> 脚本生成的文件。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://learnku.com/docs/php-internals/php7/building_extensions/6849">https://learnku.com/docs/php-internals/php7/building_extensions/6849</a><br><a target="_blank" rel="noopener" href="https://digitalist-tech.se/blogg/webp-enabling-php-gd-library">https://digitalist-tech.se/blogg/webp-enabling-php-gd-library</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1013,93 +1111,6 @@
 <p>这样，所有非Nginx IP访问都会被拒绝，这样的话，整个源站的保护基本已经做到比较完善的程度了。</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://jayshao.com/cloudflare-nginx-ssl/">https://jayshao.com/cloudflare-nginx-ssl/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/08/22/javascript-code-plays-google-dinosaur-t-rex-game-automatically/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/08/22/javascript-code-plays-google-dinosaur-t-rex-game-automatically/" class="post-title-link" itemprop="url">javascript-code-plays-google-dinosaur-t-rex-game-automatically</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-08-22 09:56:17" itemprop="dateCreated datePublished" datetime="2020-08-22T09:56:17+09:00">2020-08-22</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-10-09 21:31:24" itemprop="dateModified" datetime="2021-10-09T21:31:24+09:00">2021-10-09</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-钱是治疗情绪的最佳良药，简单，粗暴，好用。
-</blockquote>
-
-<h3 id="Step-1"><a href="#Step-1" class="headerlink" title="Step 1"></a>Step 1</h3><p> Open Google Chrome in your computer.</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chrome:<span class="comment">//dino/</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="Step-2"><a href="#Step-2" class="headerlink" title="Step 2"></a>Step 2</h3><p>Now enter chrome://dino/ in the URL address bar and press “Enter”. Or simply disconnect your internet and try to visit any website. After performing this step you will see the Google Dinosaur/T-Rex Game.</p>
-<h3 id="Step-3"><a href="#Step-3" class="headerlink" title="Step 3"></a>Step 3</h3><p>Press “F12” on your keyboard. It will open a new window/box on your screen. You need to click the “Console” button/tab on this new window.</p>
-<h3 id="Step-4"><a href="#Step-4" class="headerlink" title="Step 4"></a>Step 4</h3><p>It’s time to add some code here.</p>
-<p>Just copy the code given below and paste it inside the “Console” window. After that press “Enter”.</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">keyDown</span>(<span class="params">e</span>)</span>&#123;Podium=&#123;&#125;;<span class="keyword">var</span> n=<span class="built_in">document</span>.createEvent(<span class="string">&quot;KeyboardEvent&quot;</span>);<span class="built_in">Object</span>.defineProperty(n,<span class="string">&quot;keyCode&quot;</span>,&#123;<span class="attr">get</span>:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;<span class="keyword">return</span> <span class="built_in">this</span>.keyCodeVal&#125;&#125;),n.initKeyboardEvent?n.initKeyboardEvent(<span class="string">&quot;keydown&quot;</span>,!<span class="number">0</span>,!<span class="number">0</span>,<span class="built_in">document</span>.defaultView,e,e,<span class="string">&quot;&quot;</span>,<span class="string">&quot;&quot;</span>,!<span class="number">1</span>,<span class="string">&quot;&quot;</span>):n.initKeyEvent(<span class="string">&quot;keydown&quot;</span>,!<span class="number">0</span>,!<span class="number">0</span>,<span class="built_in">document</span>.defaultView,!<span class="number">1</span>,!<span class="number">1</span>,!<span class="number">1</span>,!<span class="number">1</span>,e,<span class="number">0</span>),n.keyCodeVal=e,<span class="built_in">document</span>.body.dispatchEvent(n)&#125;<span class="function"><span class="keyword">function</span> <span class="title">keyUp</span>(<span class="params">e</span>)</span>&#123;Podium=&#123;&#125;;<span class="keyword">var</span> n=<span class="built_in">document</span>.createEvent(<span class="string">&quot;KeyboardEvent&quot;</span>);<span class="built_in">Object</span>.defineProperty(n,<span class="string">&quot;keyCode&quot;</span>,&#123;<span class="attr">get</span>:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;<span class="keyword">return</span> <span class="built_in">this</span>.keyCodeVal&#125;&#125;),n.initKeyboardEvent?n.initKeyboardEvent(<span class="string">&quot;keyup&quot;</span>,!<span class="number">0</span>,!<span class="number">0</span>,<span class="built_in">document</span>.defaultView,e,e,<span class="string">&quot;&quot;</span>,<span class="string">&quot;&quot;</span>,!<span class="number">1</span>,<span class="string">&quot;&quot;</span>):n.initKeyEvent(<span class="string">&quot;keyup&quot;</span>,!<span class="number">0</span>,!<span class="number">0</span>,<span class="built_in">document</span>.defaultView,!<span class="number">1</span>,!<span class="number">1</span>,!<span class="number">1</span>,!<span class="number">1</span>,e,<span class="number">0</span>),n.keyCodeVal=e,<span class="built_in">document</span>.body.dispatchEvent(n)&#125;<span class="built_in">setInterval</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;Runner.instance_.horizon.obstacles.length&gt;<span class="number">0</span>&amp;&amp;(Runner.instance_.horizon.obstacles[<span class="number">0</span>].xPos&lt;<span class="number">25</span>*Runner.instance_.currentSpeed-Runner.instance_.horizon.obstacles[<span class="number">0</span>].width/<span class="number">2</span>&amp;&amp;Runner.instance_.horizon.obstacles[<span class="number">0</span>].yPos&gt;<span class="number">75</span>&amp;&amp;(keyUp(<span class="number">40</span>),keyDown(<span class="number">38</span>)),Runner.instance_.horizon.obstacles[<span class="number">0</span>].xPos&lt;<span class="number">30</span>*Runner.instance_.currentSpeed-Runner.instance_.horizon.obstacles[<span class="number">0</span>].width/<span class="number">2</span>&amp;&amp;Runner.instance_.horizon.obstacles[<span class="number">0</span>].yPos&lt;=<span class="number">75</span>&amp;&amp;keyDown(<span class="number">40</span>))&#125;,<span class="number">5</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="Step-5"><a href="#Step-5" class="headerlink" title="Step 5"></a>Step 5</h3><p>Start the game by pressing “Space” or “Up Arrow” key.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.edopedia.com/blog/javascript-code-plays-google-dinosaur-t-rex-game-automatically/">https://www.edopedia.com/blog/javascript-code-plays-google-dinosaur-t-rex-game-automatically/</a></p>
 </blockquote>
 
       

@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">394</span>
+          <span class="site-state-item-count">395</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,89 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/04/06/php%E6%95%B0%E5%AD%A6%E6%89%A9%E5%B1%95bcmath/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/04/06/php%E6%95%B0%E5%AD%A6%E6%89%A9%E5%B1%95bcmath/" class="post-title-link" itemprop="url">php数学扩展bcmath</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-04-06 17:14:54" itemprop="dateCreated datePublished" datetime="2017-04-06T17:14:54+09:00">2017-04-06</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-04-03 18:11:53" itemprop="dateModified" datetime="2018-04-03T18:11:53+09:00">2018-04-03</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我在这里准备了一百口棺材，九十九口留给贪官，一口留给自己。
+</blockquote>
+
+<h3 id="问题引出"><a href="#问题引出" class="headerlink" title="问题引出"></a>问题引出</h3><p>看下面这个代码片段的结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$res1</span> = <span class="number">0.07</span> * <span class="number">100</span> == <span class="number">7</span>;</span><br><span class="line">dump(<span class="variable">$res1</span>); <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>结果竟然是 <code>false</code><br>这个和电脑中存储小数的原理有关。大家都知道计算机只能存储0和1，我们日常生活习惯使用的是10进制的数据，像0.07这个小数在计算机中存储时会有精度损失.</p>
+<h3 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$res2</span> = bcmul(<span class="number">0.07</span>, <span class="number">100</span>) == <span class="number">7</span>;</span><br><span class="line">dump(<span class="variable">$res2</span>);  <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>BC 数学 函数<br>  ● bcadd — 2个任意精度数字的加法计算<br>  ● bccomp — 比较两个任意精度的数字<br>  ● bcdiv — 2个任意精度的数字除法计算<br>  ● bcmod — 对一个任意精度数字取模<br>  ● bcmul — 2个任意精度数字乘法计算<br>  ● bcpow — 任意精度数字的乘方<br>  ● bcpowmod — Raise an arbitrary precision number to another, reduced by a specified modulus<br>  ● bcscale — 设置所有bc数学函数的默认小数点保留位数<br>  ● bcsqrt — 任意精度数字的二次方根<br>  ● bcsub — 2个任意精度数字的减法</p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$re</span> = intval(<span class="number">18.99</span>*<span class="number">100</span>)/<span class="number">100</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$re</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;&lt;br&gt;&quot;</span>;</span><br><span class="line"><span class="variable">$gg</span> = bcdiv(bcmul(<span class="string">&#x27;18.99&#x27;</span>,<span class="string">&#x27;100&#x27;</span>), <span class="string">&#x27;100&#x27;</span>,<span class="number">2</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$gg</span>;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://php.net/manual/zh/book.bc.php">http://php.net/manual/zh/book.bc.php</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -976,86 +1059,6 @@ Let’s imagine the situation: you have a big database table (like 10 000 rows o
 </blockquote>
 
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"><span class="keyword">import</span> markdown</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MarkdownToHtml</span>:</span></span><br><span class="line"></span><br><span class="line">    headTag = <span class="string">&#x27;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;/head&gt;&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, cssFilePath = <span class="literal">None</span></span>):</span></span><br><span class="line">        <span class="keyword">if</span> cssFilePath != <span class="literal">None</span>:</span><br><span class="line">            self.genStyle(cssFilePath)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">genStyle</span>(<span class="params">self,cssFilePath</span>):</span></span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(cssFilePath,<span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            cssString = f.read()</span><br><span class="line">        self.headTag = self.headTag[:-<span class="number">7</span>] + <span class="string">&#x27;&lt;style type=&quot;text/css&quot;&gt;&#123;&#125;&lt;/style&gt;&#x27;</span>.<span class="built_in">format</span>(cssString) + self.headTag[-<span class="number">7</span>:]</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">markdownToHtml</span>(<span class="params">self,**arguments</span>):</span></span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;sourceFilePath&#x27;</span> <span class="keyword">in</span> arguments:</span><br><span class="line">            sourceFilePath = arguments[<span class="string">&#x27;sourceFilePath&#x27;</span>]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;destinationDirectory&#x27;</span> <span class="keyword">in</span> arguments:</span><br><span class="line">            destinationDirectory = arguments[<span class="string">&#x27;destinationDirectory&#x27;</span>]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 未定义输出目录则将源文件目录(注意要转换为绝对路径)作为输出目录</span></span><br><span class="line">            destinationDirectory = os.path.dirname(os.path.abspath(sourceFilePath))</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;outputFileName&#x27;</span> <span class="keyword">in</span> arguments:</span><br><span class="line">            outputFileName = arguments[<span class="string">&#x27;outputFileName&#x27;</span>]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 未定义输出文件名则沿用输入文件名</span></span><br><span class="line">            outputFileName = os.path.splitext(os.path.basename(sourceFilePath))[<span class="number">0</span>] + <span class="string">&#x27;.html&#x27;</span></span><br><span class="line">        <span class="keyword">if</span> destinationDirectory[-<span class="number">1</span>] != <span class="string">&#x27;/&#x27;</span>:</span><br><span class="line">            destinationDirectory += <span class="string">&#x27;/&#x27;</span></span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(sourceFilePath,<span class="string">&#x27;r&#x27;</span>, encoding=<span class="string">&#x27;utf8&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            markdownText = f.read()</span><br><span class="line">        <span class="comment"># 编译出原始 HTML 文本</span></span><br><span class="line">        rawHtml = self.headTag + markdown.markdown(markdownText,output_format=<span class="string">&#x27;html5&#x27;</span>)</span><br><span class="line">        <span class="comment"># 格式化 HTML 文本为可读性更强的格式</span></span><br><span class="line">        beautifyHtml = BeautifulSoup(rawHtml,<span class="string">&#x27;html5lib&#x27;</span>).prettify()</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(destinationDirectory + outputFileName, <span class="string">&#x27;w&#x27;</span>, encoding=<span class="string">&#x27;utf8&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(beautifyHtml)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    mth = MarkdownToHtml()</span><br><span class="line">    <span class="comment"># 做一个命令行参数列表的浅拷贝，不包含脚本文件名</span></span><br><span class="line">    argv = sys.argv[<span class="number">1</span>:]</span><br><span class="line">    <span class="comment"># 目前列表 argv 可能包含源文件路径之外的元素（即选项信息）</span></span><br><span class="line">    <span class="comment"># 程序最后遍历列表 argv 进行编译 markdown 时，列表中的元素必须全部是源文件路径</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&#x27;-s&#x27;</span> <span class="keyword">in</span> argv:</span><br><span class="line">        cssArgIndex = argv.index(<span class="string">&#x27;-s&#x27;</span>) +<span class="number">1</span></span><br><span class="line">        cssFilePath = argv[cssArgIndex]</span><br><span class="line">        <span class="comment"># 检测样式表文件路径是否有效</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> os.path.isfile(cssFilePath):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;Invalid Path: &#x27;</span> + cssFilePath)</span><br><span class="line">            sys.exit()</span><br><span class="line">        mth.genStyle(cssFilePath)</span><br><span class="line">        <span class="comment"># POP顺序不能随意变化</span></span><br><span class="line">        argv.pop(cssArgIndex)</span><br><span class="line">        argv.pop(cssArgIndex-<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&#x27;-o&#x27;</span> <span class="keyword">in</span> argv:</span><br><span class="line">        dirArgIndex = argv.index(<span class="string">&#x27;-o&#x27;</span>) +<span class="number">1</span></span><br><span class="line">        outputDirectory = argv[dirArgIndex]</span><br><span class="line">        <span class="comment"># 检测输出目录是否有效</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> os.path.isdir(outputDirectory):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;Invalid Directory: &#x27;</span> + outputDirectory)</span><br><span class="line">            sys.exit()</span><br><span class="line">        <span class="comment"># POP顺序不能随意变化</span></span><br><span class="line">        argv.pop(dirArgIndex)</span><br><span class="line">        argv.pop(dirArgIndex-<span class="number">1</span>)</span><br><span class="line">        argumentsList = [<span class="built_in">dict</span>([(<span class="string">&#x27;sourceFilePath&#x27;</span>,filePath), (<span class="string">&#x27;destinationDirectory&#x27;</span>,outputDirectory)]) <span class="keyword">for</span> filePath <span class="keyword">in</span> argv]</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        argumentsList = [<span class="built_in">dict</span>([(<span class="string">&#x27;sourceFilePath&#x27;</span>,filePath)]) <span class="keyword">for</span> filePath <span class="keyword">in</span> argv]</span><br><span class="line">    <span class="comment"># 至此，列表 argv 中的元素均是源文件路径</span></span><br><span class="line">    <span class="keyword">for</span> argument <span class="keyword">in</span> argumentsList:</span><br><span class="line">        <span class="comment"># 检测文件路径是否有效</span></span><br><span class="line">        <span class="keyword">if</span> os.path.isfile(argument[<span class="string">&#x27;sourceFilePath&#x27;</span>]):</span><br><span class="line">            mth.markdownToHtml(**argument)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;Invalid Path: &#x27;</span>+argument[<span class="string">&#x27;sourceFilePath&#x27;</span>])</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/02/28/laravel%E4%BD%BF%E7%94%A8Facades%E4%B8%AD%E6%B3%A8%E6%84%8F%E7%9A%84%E5%9C%B0%E6%96%B9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/02/28/laravel%E4%BD%BF%E7%94%A8Facades%E4%B8%AD%E6%B3%A8%E6%84%8F%E7%9A%84%E5%9C%B0%E6%96%B9/" class="post-title-link" itemprop="url">laravel使用Facades中注意的地方</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-02-28 10:01:35" itemprop="dateCreated datePublished" datetime="2017-02-28T10:01:35+09:00">2017-02-28</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-05-03 12:33:17" itemprop="dateModified" datetime="2018-05-03T12:33:17+09:00">2018-05-03</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你为什么从事喜剧行业？人们总是嘲笑我，所以我想，去他妈的，干脆收他们点儿钱！
-</blockquote>
-Laravel facades 就是服务容器里那些基类的「静态代理」，相比于传统的静态方法调用，facades 在提供更简洁且丰富的语法的同时，还有更好的可测试性和扩展性。
-
-<p>所有的 Laravel facades 都在 Illuminate\Support\Facades 这个命名空间下。所以我们可以用类似下面的代码轻松调用：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">Cache</span>;</span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">&#x27;/cache&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Cache::get(<span class="string">&#x27;key&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<h3 id="使用注意"><a href="#使用注意" class="headerlink" title="使用注意"></a>使用注意</h3><p>使用 facades 最主要的风险就是会引起类的体积的膨胀。由于 facades 使用起来非常简单而且不需要注入，我们会不经意间在单个类中大量使用。不像是使用依赖注入，用得越多，构造方法会越长，在视觉上就会引起注意，提醒你这个类有点太庞大了。所以，在使用 facades 时，要特别注意把类的体积控制在一个合理的范围。<br>在开发第三方扩展包时，如果需要使用和 Laravel 交互的扩展包，最好是注入 Laravel contracts 而不是使用 facades，因为扩展包不是在 Laravel 内部使用的，无法使用 Laravel 的 facades 的测试辅助函数。</p>
-<h3 id="Laravel-contracts"><a href="#Laravel-contracts" class="headerlink" title="Laravel contracts"></a>Laravel contracts</h3><p>Laravel 中的 Contract 是一组定义了框架核心服务的接口。例如，<code>Illuminate\Contracts\Queue\Queue contract</code> 定义了实现队列任务所需实现的方法，而 <code>Illuminate\Contracts\Mail\Mailer</code> contract 定义了发送邮件所需要实现的方法。</p>
-<p>框架为每个 contract 都提供了一个相对应的实现。例如，Laravel 为队列提供了各种驱动的实现，以及基于 SwiftMailer 对邮件功能的实现。</p>
 
       
     </div>
