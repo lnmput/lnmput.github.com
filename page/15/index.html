@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">395</span>
+          <span class="site-state-item-count">398</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,288 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/11/laravel%E4%BD%BF%E7%94%A8%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8%E7%B1%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/11/laravel%E4%BD%BF%E7%94%A8%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8%E7%B1%BB/" class="post-title-link" itemprop="url">Laravel使用自定义异常类</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-04-11 16:14:31 / 修改时间：18:34:57" itemprop="dateCreated datePublished" datetime="2018-04-11T16:14:31+09:00">2018-04-11</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+今夜月明人尽望，不知秋思落谁家
+</blockquote>
+
+<h3 id="自定义异常类"><a href="#自定义异常类" class="headerlink" title="自定义异常类"></a>自定义异常类</h3><p>app\Exceptions\ExportException.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Exceptions</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Throwable</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExportException</span> <span class="keyword">extends</span> \<span class="title">Exception</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$message</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="keyword">string</span> <span class="variable">$message</span> = <span class="string">&quot;&quot;</span>, <span class="keyword">int</span> <span class="variable">$code</span> = <span class="number">0</span>, <span class="built_in">Throwable</span> <span class="variable">$previous</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">parent</span>::__construct(<span class="variable">$message</span>, <span class="variable">$code</span>, <span class="variable">$previous</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;message = <span class="variable">$message</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">report</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 这里自定义发生异常发生时要额外做的事情</span></span><br><span class="line">        <span class="comment">// 比如发邮件通知管理员</span></span><br><span class="line">        <span class="comment">// </span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 这里需要给浏览器或者API返回必要的通知信息</span></span><br><span class="line">        <span class="comment">// 可以是json 结构, 一般是针对API调用的</span></span><br><span class="line">        <span class="comment">// 也可以渲染一个网页, 一般是针对浏览器访问的页面</span></span><br><span class="line">        <span class="comment">// 也可以直接重定向到其他网页</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;status&#x27;</span> =&gt; <span class="number">200</span>, <span class="string">&#x27;message&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;message], <span class="number">503</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>说明:<br>如果在文件 app\Exceptions\Handler.php 中申明了以下代码, 针对该异常类的<code>report</code>方法将不会在被执行;</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Handler</span> <span class="keyword">extends</span> <span class="title">ExceptionHandler</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A list of the exception types that are not reported.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$dontReport</span> = [</span><br><span class="line">        </span><br><span class="line">         ExportException::class</span><br><span class="line">    ];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="抛出并捕获异常"><a href="#抛出并捕获异常" class="headerlink" title="抛出并捕获异常"></a>抛出并捕获异常</h3><p>首先尝试抛出异常:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">   <span class="variable">$res</span> = <span class="number">1</span>/<span class="number">0</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> (\App\Exceptions\ExportException <span class="variable">$e</span>) &#123;</span><br><span class="line">   <span class="keyword">throw</span> <span class="keyword">new</span> \App\Exceptions\ExportException(<span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面这段代码并不会在我们自定义的<code>ExportException</code>中捕获, 而会在全局异常中捕获,原因我们打印出这个异常类型看看<br>app\Exceptions\Handler.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Exception</span> <span class="variable">$exception</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   dd(get_class(<span class="variable">$exception</span>));  <span class="comment">// ErrorException</span></span><br><span class="line">        </span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">parent</span>::render(<span class="variable">$request</span>, <span class="variable">$exception</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该异常类型属于<code>ErrorException</code>, 并不是我们自定的<code>ExportException</code>, 所以并不会被我们捕获;<br>我们可以这样, 既然我们已经知道这个异常类似是<code>ErrorException</code>, 那么</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="variable">$res</span> = <span class="number">1</span>/<span class="number">0</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> ( <span class="built_in">ErrorException</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> \App\Exceptions\ExportException(<span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当然也可以直接这样</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">   <span class="variable">$res</span> = <span class="number">1</span>/<span class="number">0</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> ( <span class="built_in">Exception</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">   <span class="keyword">throw</span> <span class="keyword">new</span> \App\Exceptions\ExportException(<span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样就可以用我们自定义的异常类来捕捉从而进一步处理了</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   <span class="attr">&quot;status&quot;</span>: <span class="number">200</span>,</span><br><span class="line">   <span class="attr">&quot;message&quot;</span>: <span class="string">&quot;Division by zero&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="关于异常的理解"><a href="#关于异常的理解" class="headerlink" title="关于异常的理解"></a>关于异常的理解</h3><ul>
+<li>由程序员设计不足所导致的错误，需要用异常来捕捉和处理</li>
+<li>程序在运行过程中, 有可能会发生一些不可预知的错误, 无法用if…else这样的语句来处理的时候.</li>
+<li>函数无法满足调用方的期望的时候使用异常, 比如用户要请求一个API获得最新的商品信息, 但是查询结果为空的时候</li>
+</ul>
+<p>所以我们自定义的异常可以是在不符合实现给定的情况下抛出的, 而不是真正程序在运行过程中发生了错误, 在Laravel的源码中我们可以找到很多一样的例子<br>vendor\laravel\framework\src\Illuminate\Foundation\Auth\AuthenticatesUsers.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">sendFailedLoginResponse</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">throw</span> ValidationException::withMessages([</span><br><span class="line">        <span class="keyword">$this</span>-&gt;username() =&gt; [trans(<span class="string">&#x27;auth.failed&#x27;</span>)],</span><br><span class="line">    ]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>vendor\guzzlehttp\psr7\src\functions.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">str</span>(<span class="params">MessageInterface <span class="variable">$message</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$message</span> <span class="keyword">instanceof</span> RequestInterface) &#123;</span><br><span class="line">        <span class="variable">$msg</span> = trim(<span class="variable">$message</span>-&gt;getMethod() . <span class="string">&#x27; &#x27;</span></span><br><span class="line">                . <span class="variable">$message</span>-&gt;getRequestTarget())</span><br><span class="line">            . <span class="string">&#x27; HTTP/&#x27;</span> . <span class="variable">$message</span>-&gt;getProtocolVersion();</span><br><span class="line">        <span class="keyword">if</span> (!<span class="variable">$message</span>-&gt;hasHeader(<span class="string">&#x27;host&#x27;</span>)) &#123;</span><br><span class="line">            <span class="variable">$msg</span> .= <span class="string">&quot;\r\nHost: &quot;</span> . <span class="variable">$message</span>-&gt;getUri()-&gt;getHost();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">elseif</span> (<span class="variable">$message</span> <span class="keyword">instanceof</span> ResponseInterface) &#123;</span><br><span class="line">        <span class="variable">$msg</span> = <span class="string">&#x27;HTTP/&#x27;</span> . <span class="variable">$message</span>-&gt;getProtocolVersion() . <span class="string">&#x27; &#x27;</span></span><br><span class="line">            . <span class="variable">$message</span>-&gt;getStatusCode() . <span class="string">&#x27; &#x27;</span></span><br><span class="line">            . <span class="variable">$message</span>-&gt;getReasonPhrase();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> \<span class="built_in">InvalidArgumentException</span>(<span class="string">&#x27;Unknown message type&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$message</span>-&gt;getHeaders() <span class="keyword">as</span> <span class="variable">$name</span> =&gt; <span class="variable">$values</span>) &#123;</span><br><span class="line">        <span class="variable">$msg</span> .= <span class="string">&quot;\r\n<span class="subst">&#123;$name&#125;</span>: &quot;</span> . implode(<span class="string">&#x27;, &#x27;</span>, <span class="variable">$values</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;<span class="subst">&#123;$msg&#125;</span>\r\n\r\n&quot;</span> . <span class="variable">$message</span>-&gt;getBody();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/11/php%E4%BD%BF%E7%94%A8yield%E6%9D%A5%E5%81%9A%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/11/php%E4%BD%BF%E7%94%A8yield%E6%9D%A5%E5%81%9A%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">PHP使用yield来做内存优化</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-04-11 13:38:28 / 修改时间：14:52:21" itemprop="dateCreated datePublished" datetime="2018-04-11T13:38:28+09:00">2018-04-11</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+只要想起一生中后悔的事
+梅花便落满了南山 
+</blockquote>
+
+<h3 id="什么是-“yield”"><a href="#什么是-“yield”" class="headerlink" title="什么是 “yield”"></a>什么是 “yield”</h3><p>生成器函数看上去就像一个普通函数， 除了不是返回一个值之外， 生成器会根据需求产生更多的值。</p>
+<p>来看以下的例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 输出字符串 &quot;value&quot;</span></span><br><span class="line"><span class="keyword">echo</span> getValues();</span><br></pre></td></tr></table></figure>
+<p>当然， 这不是他生效的方式， 前面的例子会给你一个致命的错误,类生成器的对象不能被转换成字符串， 让我们清楚的说明</p>
+<h3 id="“yield”-amp-“return”-的区别"><a href="#“yield”-amp-“return”-的区别" class="headerlink" title="“yield” &amp; “return” 的区别"></a>“yield” &amp; “return” 的区别</h3><p>前面的错误意味着 <code>getValues()</code> 方法不会如预期返回一个字符串，让我们检查一下他的类型：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;value&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line">var_dump(getValues()); <span class="comment">// string(5) &quot;value&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line">var_dump(getValues()); <span class="comment">// class Generator#1 (0) &#123;&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>生成器 类实现了 生成器 接口， 这意味着你必须遍历 getValue() 方法来取值：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span> (getValues() <span class="keyword">as</span> <span class="variable">$value</span>) &#123;</span><br><span class="line">   <span class="keyword">echo</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用变量也是好的</span></span><br><span class="line"><span class="variable">$values</span> = getValues();</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$values</span> <span class="keyword">as</span> <span class="variable">$value</span>) &#123;</span><br><span class="line">   <span class="keyword">echo</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但这不是唯一的不同！</p>
+<p>一个生成器运行你写使用循环来迭代一维数组的代码，而不需要在内存中创建是一个数组，这可能会导致你超出内存限制。</p>
+<p>在下面的例子里我们创建一个有 800,000 元素的数字同时从 getValues() 方法中返回他，同时在此期间，我们将使用函数 memory_get_usage() 来获取分配给次脚本的内存， 我们将会每增加 200,000 个元素来获取一下内存使用量，这意味着我们将会提出四个检查点：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="variable">$valuesArray</span> = [];</span><br><span class="line">   <span class="comment">// 获取初始内存使用量</span></span><br><span class="line">   <span class="keyword">echo</span> round(memory_get_usage() / <span class="number">1024</span> / <span class="number">1024</span>, <span class="number">2</span>) . <span class="string">&#x27; MB&#x27;</span> . PHP_EOL;</span><br><span class="line">   <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">1</span>; <span class="variable">$i</span> &lt; <span class="number">800000</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">      <span class="variable">$valuesArray</span>[] = <span class="variable">$i</span>;</span><br><span class="line">      <span class="comment">// 为了让我们能进行分析，所以我们测量一下内存使用量</span></span><br><span class="line">      <span class="keyword">if</span> ((<span class="variable">$i</span> % <span class="number">200000</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">         <span class="comment">// 来 MB 为单位获取内存使用量</span></span><br><span class="line">         <span class="keyword">echo</span> round(memory_get_usage() / <span class="number">1024</span> / <span class="number">1024</span>, <span class="number">2</span>) . <span class="string">&#x27; MB&#x27;</span>. PHP_EOL;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> <span class="variable">$valuesArray</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$myValues</span> = getValues(); <span class="comment">// 一旦我们调用函数将会在这里创建数组</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$myValues</span> <span class="keyword">as</span> <span class="variable">$value</span>) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>前面例子发生的情况是这个脚本的内存消耗和输出：</p>
+<blockquote>
+<p>0.34 MB<br>8.35 MB<br>16.35 MB<br>32.35 MB</p>
+</blockquote>
+<p>这意味着我们的几行脚本消耗了超过 30 MB 的内存， 每次你你添加一个元素到 $valuesArray 数组中， 都会增加他在内存中的大小。</p>
+<p>让我们使用 yield 同样的例子:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="comment">// 获取内存使用数据</span></span><br><span class="line">   <span class="keyword">echo</span> round(memory_get_usage() / <span class="number">1024</span> / <span class="number">1024</span>, <span class="number">2</span>) . <span class="string">&#x27; MB&#x27;</span> . PHP_EOL;</span><br><span class="line">   <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">1</span>; <span class="variable">$i</span> &lt; <span class="number">800000</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">      <span class="keyword">yield</span> <span class="variable">$i</span>;</span><br><span class="line">      <span class="comment">// 做性能分析，因此可测量内存使用率</span></span><br><span class="line">      <span class="keyword">if</span> ((<span class="variable">$i</span> % <span class="number">200000</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">         <span class="comment">// 内存使用以 MB 为单位</span></span><br><span class="line">         <span class="keyword">echo</span> round(memory_get_usage() / <span class="number">1024</span> / <span class="number">1024</span>, <span class="number">2</span>) . <span class="string">&#x27; MB&#x27;</span>. PHP_EOL;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$myValues</span> = getValues(); <span class="comment">// 在循环之前都不会有动作</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$myValues</span> <span class="keyword">as</span> <span class="variable">$value</span>) &#123;&#125; <span class="comment">// 开始生成数据</span></span><br></pre></td></tr></table></figure>
+<p>这个脚本的输出令人惊讶:</p>
+<blockquote>
+<p>0.34 MB<br>0.34 MB<br>0.34 MB<br>0.34 MB</p>
+</blockquote>
+<p>这不意味着你从 return 表达式迁移到 yield，但如果你在应用中创建会导致服务器上内存出问题的巨大数组，则 yield 更加适合你的情况。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/8704/using-yield-to-do-memory-optimization-in-php?utm_source=coffeephp.com">https://laravel-china.org/topics/8704/using-yield-to-do-memory-optimization-in-php?utm_source=coffeephp.com</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/10/php%E5%AE%9A%E4%B9%89%E4%B8%80%E4%B8%AA%E9%AB%98%E8%B4%A8%E9%87%8F%E7%9A%84%E5%87%BD%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/10/php%E5%AE%9A%E4%B9%89%E4%B8%80%E4%B8%AA%E9%AB%98%E8%B4%A8%E9%87%8F%E7%9A%84%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">PHP定义一个高质量的函数</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-04-10 17:47:15 / 修改时间：19:11:18" itemprop="dateCreated datePublished" datetime="2018-04-10T17:47:15+09:00">2018-04-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+枕上诗书闲处好，门前风景雨来佳
+</blockquote>
+
+<h3 id="参数类型"><a href="#参数类型" class="headerlink" title="参数类型"></a>参数类型</h3><ul>
+<li><p>可执行的(PHP 5.4+)</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"><span class="keyword">callable</span> <span class="variable">$callback</span></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>可迭代的(PHP 7.1+)</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"><span class="keyword">iterable</span> <span class="variable">$data</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$data</span> <span class="keyword">as</span> <span class="variable">$item</span>) &#123;</span><br><span class="line">        dump(<span class="variable">$item</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foo([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</span><br></pre></td></tr></table></figure></li>
+<li><p>接受某一个类的实例</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getReuestParams</span>(<span class="params">Request <span class="variable">$request</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$request</span>-&gt;only(<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;email&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>数组, 整形, 字符串<br>整形</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"><span class="keyword">int</span> <span class="variable">$number</span></span>) </span>&#123;</span><br><span class="line">      </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>数组</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$number</span></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>字符串</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"><span class="keyword">string</span> <span class="variable">$number</span></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="可选参数"><a href="#可选参数" class="headerlink" title="可选参数"></a>可选参数</h3><p>通过给定默认值实现</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"><span class="keyword">int</span> <span class="variable">$number</span> = <span class="number">1</span></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="可空参数"><a href="#可空参数" class="headerlink" title="可空参数"></a>可空参数</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params">?<span class="keyword">string</span> <span class="variable">$name</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$name</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> foo(<span class="literal">null</span>); <span class="comment">// 不会返回任何东西</span></span><br><span class="line"><span class="keyword">echo</span> foo(<span class="string">&#x27;Nauman&#x27;</span>); <span class="comment">// Nauman</span></span><br><span class="line"><span class="keyword">echo</span> foo(); <span class="comment">// 致命错误</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>可空参数不是可选参数，你必须传递一个值或者是 null</p>
+</blockquote>
+<h3 id="指定返回值类型"><a href="#指定返回值类型" class="headerlink" title="指定返回值类型"></a>指定返回值类型</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params">?<span class="keyword">string</span> <span class="variable">$name</span></span>) : <span class="title">string</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$name</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> foo(<span class="literal">null</span>); <span class="comment">// 致命错误，必须返回 string 类型</span></span><br><span class="line"><span class="keyword">echo</span> foo(<span class="string">&#x27;Nauman&#x27;</span>); <span class="comment">// Nauman</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回 void 类型</span></span><br><span class="line"><span class="variable">$attribute</span> = <span class="number">2</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">changeAttribute</span>(<span class="params"><span class="keyword">string</span> &amp;<span class="variable">$param</span>, <span class="variable">$value</span></span>) : <span class="title">void</span> </span>&#123;</span><br><span class="line">    <span class="variable">$param</span> = <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -848,278 +1130,6 @@
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/0014319272686365ec7ceaeca33428c914edf8f70cca383000">https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/0014319272686365ec7ceaeca33428c914edf8f70cca383000</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/29/%E7%90%86%E8%A7%A3%E5%93%88%E5%B8%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/29/%E7%90%86%E8%A7%A3%E5%93%88%E5%B8%8C/" class="post-title-link" itemprop="url">理解哈希</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-03-29 15:36:43 / 修改时间：17:23:50" itemprop="dateCreated datePublished" datetime="2018-03-29T15:36:43+09:00">2018-03-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-药炉烟里，支枕听河流。
-</blockquote>
-
-<h3 id="哈希函数"><a href="#哈希函数" class="headerlink" title="哈希函数"></a>哈希函数</h3><ul>
-<li><p>第一种解释<br>哈希函数就是能将任意长度的数据映射为固定长度的数据的函数。哈希函数返回的值被叫做哈希值、哈希码、散列，或者直接叫做哈希。一个使用场景就是哈希表，哈希表被广泛用于快速搜索数据。</p>
-</li>
-<li><p>另一种解释<br>在记录的关键字与记录的存储地址之间建立的一种对应关系叫哈希函数。哈希函数就是一种映射，是从关键字到存储地址的映射。<br>通常，包含哈希函数的算法的算法复杂度都假设为O(1)，这就是为什么在哈希表中搜索数据的时间复杂度会被认为是”平均为O(1)的复杂度”.</p>
-</li>
-</ul>
-<h3 id="常用的加密哈希算法"><a href="#常用的加密哈希算法" class="headerlink" title="常用的加密哈希算法"></a>常用的加密哈希算法</h3><ul>
-<li>MD5</li>
-<li>SHA-1</li>
-<li>SHA-2</li>
-<li>RIPEMD-160</li>
-</ul>
-<h3 id="哈希表"><a href="#哈希表" class="headerlink" title="哈希表"></a>哈希表</h3><p>哈希表是一种通过哈希函数，将特定的键映射到特定值的一种数据结构，它维护键和值之间一一对应关系。</p>
-<h3 id="辅助理解"><a href="#辅助理解" class="headerlink" title="辅助理解"></a>辅助理解</h3><h4 id="解释一"><a href="#解释一" class="headerlink" title="解释一"></a>解释一</h4><p>比如这里有一万首歌，给你一首新的歌X，要求你确认这首歌是否在那一万首歌之内。无疑，将一万首歌一个一个比对非常慢。但如果存在一种方式，能将一万首歌的每首数据浓缩到一个数字（称为哈希码）中，于是得到一万个数字，那么用同样的算法计算新的歌X的编码，看看歌X的编码是否在之前那一万个数字中，就能知道歌X是否在那一万首歌中。作为例子，如果要你组织那一万首歌，一个简单的哈希算法就是让歌曲所占硬盘的字节数作为哈希码。这样的话，你可以让一万首歌“按照大小排序”，然后遇到一首新的歌，只要看看新的歌的字节数是否和已有的一万首歌中的某一首的字节数相同，就知道新的歌是否在那一万首歌之内了。当然这个简单的哈希算法很容易出现两者同样大小的歌曲，这就是发送了碰撞。而好的哈希算法发生碰撞的几率非常小。</p>
-<h4 id="解释二"><a href="#解释二" class="headerlink" title="解释二"></a>解释二</h4><p>HASH算法是密码学的基础，比较常用的有MD5和SHA，最重要的两条性质，就是不可逆和无冲突。</p>
-<ul>
-<li>不可逆，就是当你知道x的HASH值，无法求出x；</li>
-<li>无冲突，就是当你知道x，无法求出一个y， 使x与y的HASH值相同。</li>
-</ul>
-<p>这两条性质在数学上都是不成立的。因为一个函数必然可逆，且由于HASH函数的值域有限，理论上会有无穷多个不同的原始值，它们的hash值都相同。MD5和SHA做到的，是求逆和求冲突在计算上不可能，也就是正向计算很容易，而反向计算即使穷尽人类所有的计算资源都做不到。</p>
-<h3 id="PHP中的hash"><a href="#PHP中的hash" class="headerlink" title="PHP中的hash"></a>PHP中的hash</h3><p>Hash Table是PHP的核心,这话一点都不过分.PHP的数组,关联数组,对象属性,函数表,符号表,等等都是用HashTable来做为容器的.PHP的HashTable采用的拉链法来解决冲突,</p>
-<p>插入65536个经过构造的键值的元素到PHP数组, 会需要耗时30秒以上? 而一般的这个过程仅仅需要0.1秒..</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$size</span> = pow(<span class="number">2</span>, <span class="number">16</span>); </span><br><span class="line"> </span><br><span class="line"><span class="variable">$startTime</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="variable">$array</span> = <span class="keyword">array</span>();</span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$key</span> = <span class="number">0</span>, <span class="variable">$maxKey</span> = (<span class="variable">$size</span> - <span class="number">1</span>) * <span class="variable">$size</span>; <span class="variable">$key</span> &lt;= <span class="variable">$maxKey</span>; <span class="variable">$key</span> += <span class="variable">$size</span>) &#123;</span><br><span class="line">    <span class="variable">$array</span>[<span class="variable">$key</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$endTime</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&#x27;插入 &#x27;</span>, <span class="variable">$size</span>, <span class="string">&#x27; 个恶意的元素需要 &#x27;</span>, <span class="variable">$endTime</span> - <span class="variable">$startTime</span>, <span class="string">&#x27; 秒&#x27;</span>, <span class="string">&quot;\n&quot;</span>;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$startTime</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="variable">$array</span> = <span class="keyword">array</span>();</span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$key</span> = <span class="number">0</span>, <span class="variable">$maxKey</span> = <span class="variable">$size</span> - <span class="number">1</span>; <span class="variable">$key</span> &lt;= <span class="variable">$maxKey</span>; ++<span class="variable">$key</span>) &#123;</span><br><span class="line">    <span class="variable">$array</span>[<span class="variable">$key</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$endTime</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&#x27;插入 &#x27;</span>, <span class="variable">$size</span>, <span class="string">&#x27; 个普通元素需要 &#x27;</span>, <span class="variable">$endTime</span> - <span class="variable">$startTime</span>, <span class="string">&#x27; 秒&#x27;</span>, <span class="string">&quot;\n&quot;</span>;</span><br></pre></td></tr></table></figure>
-
-<p>在我的机器上</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">插入 <span class="number">65536</span> 个恶意的元素需要 <span class="number">10.187582969666</span> 秒 </span><br><span class="line">插入 <span class="number">65536</span> 个普通元素需要 <span class="number">0.003000020980835</span> 秒</span><br></pre></td></tr></table></figure>
-<p>经过特殊构造的键值, 使得PHP每一次插入都会造成Hash冲突, 从而使得PHP中array的底层Hash表退化成链表</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20820286">https://www.zhihu.com/question/20820286</a><br><a target="_blank" rel="noopener" href="http://www.laruence.com/2009/07/23/994.html">http://www.laruence.com/2009/07/23/994.html</a><br><a target="_blank" rel="noopener" href="http://www.laruence.com/2011/12/30/2435.html">http://www.laruence.com/2011/12/30/2435.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/29/%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E4%B8%8E%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/29/%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E4%B8%8E%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9/" class="post-title-link" itemprop="url">缓存穿透与缓存雪崩</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-03-29 09:52:12 / 修改时间：11:18:14" itemprop="dateCreated datePublished" datetime="2018-03-29T09:52:12+09:00">2018-03-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-柔情似水，佳期如梦，忍顾鹊桥归路!
-两情若是久长时，又岂在、朝朝暮暮!
-</blockquote>
-
-<h3 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h3><h4 id="出现场景"><a href="#出现场景" class="headerlink" title="出现场景"></a>出现场景</h4><p>查询一个一定不存在的数据，由于缓存是不命中时被动写的，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到存储层去查询，失去了缓存的意义。当在流量较大时，出现这样的情况，一直请求DB，很容易导致服务挂掉。 </p>
-<h4 id="处理方法"><a href="#处理方法" class="headerlink" title="处理方法"></a>处理方法</h4><ul>
-<li>在封装的缓存SET和GET部分增加个步骤，如果查询一个KEY不存在，就已这个KEY为前缀设定一个标识KEY；以后再查询该KEY的时候，先查询标识KEY，如果标识KEY存在，就返回一个协定好的非false或者NULL值，然后APP做相应的处理，这样缓存层就不会被穿透。当然这个验证KEY的失效时间不能太长。</li>
-<li>如果一个查询返回的数据为空（不管是数据不存在，还是系统故障），我们仍然把这个空结果进行缓存，但它的过期时间会很短，一般只有几分钟。</li>
-<li>采用布隆过滤器，将所有可能存在的数据哈希到一个足够大的bitmap中，一个一定不存在的数据会被这个bitmap拦截掉，从而避免了对底层存储系统的查询压力。</li>
-</ul>
-<h3 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h3><h4 id="出现场景-1"><a href="#出现场景-1" class="headerlink" title="出现场景"></a>出现场景</h4><p>引起这个原因的主要因素是高并发下，我们一般设定一个缓存的过期时间时，可能有一些会设置5分钟啊，10分钟这些；并发很高时可能会出在某一个时间同时生成了很多的缓存，并且过期时间在同一时刻，这个时候就可能引发——当过期时间到后，这些缓存同时失效，请求全部转发到DB，DB可能会压力过重。 </p>
-<h4 id="处理方法-1"><a href="#处理方法-1" class="headerlink" title="处理方法"></a>处理方法</h4><p>一个简单方案就是将缓存失效时间分散开，不要所以缓存时间长度都设置成5分钟或者10分钟；比如我们可以在原有的失效时间基础上增加一个随机值，比如1-5分钟随机，这样每一个缓存的过期时间的重复率就会降低，就很难引发集体失效的事件。 缓存失效时产生的雪崩效应，将所有请求全部放在数据库上，这样很容易就达到数据库的瓶颈，导致服务无法正常提供。尽量避免这种场景的发生。 </p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/35060009?group_id=962606647398658048">https://zhuanlan.zhihu.com/p/35060009?group_id=962606647398658048</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/28/php%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%9B%B8%E5%85%B3%E5%8F%82%E6%95%B0%E8%A7%A3%E8%AF%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/28/php%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%9B%B8%E5%85%B3%E5%8F%82%E6%95%B0%E8%A7%A3%E8%AF%BB/" class="post-title-link" itemprop="url">php的配置文件相关参数解读</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-03-28 16:11:39" itemprop="dateCreated datePublished" datetime="2018-03-28T16:11:39+09:00">2018-03-28</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-30 11:09:01" itemprop="dateModified" datetime="2018-03-30T11:09:01+09:00">2018-03-30</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-何时杖尔看南雪, 我与梅花两白头
-</blockquote>
-
-<h3 id="max-execution-time"><a href="#max-execution-time" class="headerlink" title="max_execution_time"></a>max_execution_time</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">max_execution_time = <span class="number">30</span></span><br></pre></td></tr></table></figure>
-<p>影响脚本本身执行的时间, 默认值是30S, 在CLI命令行被硬编码为0, 即没有执行时间的限制, 函数<code>set_time_limit()</code>,在相关脚本执行之前执行该函数可以改变这个系统设置, 如果被设置成</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set_time_limit(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-<p>则表示脚本不受执行时间的限制</p>
-<h3 id="sql-safe-mode"><a href="#sql-safe-mode" class="headerlink" title="sql.safe_mode"></a>sql.safe_mode</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sql.safe_mode = Off</span><br></pre></td></tr></table></figure>
-<p>如果打开，指定默认值的数据库连接函数将使用这些值代替提供的参数。也就是说像<code>mysql_connect()</code>和<code>mysql_pconnect()</code>就忽视传送给它们的任何变量,第三方开源应用程序（如WordPress）及其他应用程序可能根本运行不了。</p>
-<h3 id="post-max-size"><a href="#post-max-size" class="headerlink" title="post_max_size"></a>post_max_size</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">post_max_size=<span class="number">10240</span>K</span><br></pre></td></tr></table></figure>
-<p>限制PHP将处理的POST请求的最大大小</p>
-<h3 id="upload-max-filesize"><a href="#upload-max-filesize" class="headerlink" title="upload_max_filesize"></a>upload_max_filesize</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">upload_max_filesize=<span class="number">1</span>M</span><br></pre></td></tr></table></figure>
-<p>该设置限制了PHP允许通过上传的文件的最大值</p>
-<h3 id="max-input-vars"><a href="#max-input-vars" class="headerlink" title="max_input_vars"></a>max_input_vars</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">max_input_vars = <span class="number">1000</span></span><br></pre></td></tr></table></figure>
-<p>提交表单字段数量的最大值</p>
-<h3 id="allow-url-fopen"><a href="#allow-url-fopen" class="headerlink" title="allow_url_fopen"></a>allow_url_fopen</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">allow_url_fopen = On</span><br></pre></td></tr></table></figure>
-<p>如果启用则允许PHP的文件函数——如<code>file_get_contents()</code>、<code>include</code>语句和<code>require</code>语句——可以从远程地方（如ftp或网站）获取数据。</p>
-<h3 id="allow-url-include"><a href="#allow-url-include" class="headerlink" title="allow_url_include"></a>allow_url_include</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">allow_url_include = off</span><br></pre></td></tr></table></figure>
-<p>出于安全原因，建议禁用, 不过PHP 已经将改配置默认禁用, 如果开启, 就有可能造成远程文件执行漏洞, 像下面的代码, 虽然是txt文件, 但是里面包含了php代码, 服务器还是会按照PHP文件执行.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> <span class="string">&#x27;http://yangzie.qiniudn.com/test.txt&#x27;</span>;</span><br></pre></td></tr></table></figure>
-<h3 id="memory-limit"><a href="#memory-limit" class="headerlink" title="memory_limit"></a>memory_limit</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">memory_limit = <span class="number">128</span>M</span><br></pre></td></tr></table></figure>
-<p>即限制 PHP 进程对于内存的使用, 可以通过下面的代码对此配置进行更改, <code>memory_limit</code> 主要是为了防止程序 bug, 或者死循环占用大量的内存，导致系统宕机。在引入大量三方插件，或者代码时，进行内存限制就非常有必要了。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ini_set(<span class="string">&quot;memory_limit&quot;</span>, <span class="string">&quot;128M&quot;</span>);</span><br><span class="line">memory_get_usage(); <span class="comment">// 获取PHP脚本所用的内存大小</span></span><br><span class="line">memory_get_peak_usage(); <span class="comment">//返回当前脚本到目前位置所占用的内存峰值。</span></span><br></pre></td></tr></table></figure>
 
       
     </div>

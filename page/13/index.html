@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">395</span>
+          <span class="site-state-item-count">398</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,302 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/30/%E5%A6%82%E4%BD%95%E6%9B%B4%E5%A5%BD%E7%9A%84%E7%BB%84%E7%BB%87%E4%BD%A0%E7%9A%84laravel%E6%A8%A1%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/30/%E5%A6%82%E4%BD%95%E6%9B%B4%E5%A5%BD%E7%9A%84%E7%BB%84%E7%BB%87%E4%BD%A0%E7%9A%84laravel%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">如何更好的组织你的Laravel模型</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-05-30 16:40:55 / 修改时间：17:58:31" itemprop="dateCreated datePublished" datetime="2018-05-30T16:40:55+09:00">2018-05-30</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+做你害怕做的事情。
+</blockquote>
+我经常发现自己希望在Laravel应用程序中获得更多关于模型的结构。
+
+<p>默认情况下，模型位于 App 命名空间内，如果你正在处理大型应用程序，这可能会变得非常难以理解。所以我决定在 App\Models 命名空间内组织我的模型。</p>
+<h3 id="更新用户模型"><a href="#更新用户模型" class="headerlink" title="更新用户模型"></a>更新用户模型</h3><p>要做到这一点，你需要做的第一件事就是将 User 模型移动到 app/Models 目录并相应地更新命名空间。</p>
+<p>这要求你更新引用 App\User 类的所有文件。</p>
+<p>第一个是 config/auth.php：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;providers&#x27;</span> =&gt; [</span><br><span class="line">    <span class="string">&#x27;users&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;driver&#x27;</span> =&gt; <span class="string">&#x27;eloquent&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;model&#x27;</span> =&gt; App\Models\User::class, <span class="comment">// 修改这里</span></span><br><span class="line">    ],</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
+<p>第二个是 config/services.php 文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;stripe&#x27;</span> =&gt; [</span><br><span class="line">    <span class="string">&#x27;model&#x27;</span> =&gt; App\Models\User::class, <span class="comment">// 修改这里</span></span><br><span class="line">    <span class="string">&#x27;key&#x27;</span> =&gt; env(<span class="string">&#x27;STRIPE_KEY&#x27;</span>),</span><br><span class="line">    <span class="string">&#x27;secret&#x27;</span> =&gt; env(<span class="string">&#x27;STRIPE_SECRET&#x27;</span>),</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
+<p>最后，修改 database/factories/UserFactory.php 文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$factory</span>-&gt;define(App\Models\User::class, <span class="function"><span class="keyword">function</span> (<span class="params">Faker <span class="variable">$faker</span></span>) </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="生成模型"><a href="#生成模型" class="headerlink" title="生成模型"></a>生成模型</h3><p>现在我们已经改变了 User 模型的命名空间，但是如何生成新的模型。正如我们所知，默认情况下它们将被放置在 App 命名空间下。</p>
+<p>为了解决这个问题，我们可以扩展默认的 ModelMakeCommand ：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Console</span>\<span class="title">Commands</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Console</span>\<span class="title">ModelMakeCommand</span> <span class="title">as</span> <span class="title">Command</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ModelMakeCommand</span> <span class="keyword">extends</span> <span class="title">Command</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Get the default namespace for the class.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  string  $rootNamespace</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> string</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">getDefaultNamespace</span>(<span class="params"><span class="variable">$rootNamespace</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;<span class="subst">&#123;$rootNamespace&#125;</span>\Models&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>并通过将以下内容添加到 AppServiceProvider 中来覆盖服务容器中的现有绑定：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Providers</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">ServiceProvider</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Console</span>\<span class="title">Commands</span>\<span class="title">ModelMakeCommand</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppServiceProvider</span> <span class="keyword">extends</span> <span class="title">ServiceProvider</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Bootstrap any application services.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register any application services.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">register</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;app-&gt;extend(<span class="string">&#x27;command.model.make&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$command</span>, <span class="variable">$app</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> ModelMakeCommand(<span class="variable">$app</span>[<span class="string">&#x27;files&#x27;</span>]);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上就是需要修改的。现在我们可以继续生成模型，就像我们在我们的终端中使用的一样：<code>php artisan make:model Order</code>，它们将位于 <code>App\Models</code> 命名空间中。</p>
+<p>希望你能使用它！</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://phpcasts.org/posts/how-to-organize-your-laravel-models">https://phpcasts.org/posts/how-to-organize-your-laravel-models</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/29/php%E5%A4%9A%E5%8F%82%E6%95%B0%E6%96%B9%E6%B3%95%E7%9A%84%E9%87%8D%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/29/php%E5%A4%9A%E5%8F%82%E6%95%B0%E6%96%B9%E6%B3%95%E7%9A%84%E9%87%8D%E6%9E%84/" class="post-title-link" itemprop="url">PHP多参数方法的重构</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-05-29 22:32:41 / 修改时间：23:37:36" itemprop="dateCreated datePublished" datetime="2018-05-29T22:32:41+09:00">2018-05-29</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+说用心没有用的人，以为光有钱就有用了么。
+</blockquote>
+
+<p>假设我们要完成一个保存文章的功能，如果采用函数编程的方式，大概会是下面这个样子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">saveArticle</span>(<span class="params"><span class="variable">$title</span>, <span class="variable">$content</span>, <span class="variable">$categoryId</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>每个参数代表一个属性，但带来一个问题，参数列表会变得很长。此时采用对象编程的技术会是个好方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$content</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$categoryId</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这里，原来的方法参数都转换为以对象的属性方式存在，从而大大降低了方法的参数数量。多数时候这个方法是不错的，不过并不是所有的参数都适合以对象属性的方式存在，区分的原则是，看这些参数是属于对象的内在属性还是外在特征，如果不加区分的统统转换为对象属性，这会让对象本身失去意义。</p>
+<p>举个例子，比如说我们的Article对象还有一个名为find的方法，使用它时可能会涉及limit, offset, order等参数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$content</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$categoryId</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$limit</span> = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$offset</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$order</span> = <span class="string">&#x27;created DESC&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">find</span>(<span class="params"><span class="variable">$categoryId</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如上所示，一旦我们把limit，offset，order等参数转换为对象的属性，这个对象本身就变得不伦不类了，因为虽然title，content，categoryId可以算作是对象的内在属性，而limit，offset，order却不是，顶多也只能算作是外部特征，不加区分的结果基本是噩梦的开始。所以，还是老老实实的把外在特征放到方法的参数里好些（更严格的说，find方法应该是一个static类型的方法，不过文本就是一个简单的说明，不必细究）：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$content</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$categoryId</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">find</span>(<span class="params"><span class="variable">$categoryId</span>, <span class="variable">$limit</span> = <span class="number">10</span>, <span class="variable">$offset</span> = <span class="number">0</span>, <span class="variable">$order</span> = <span class="string">&#x27;created DESC&#x27;</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可惜如此一来又出现了文章开头所说的问题，find方法的参数太多了，缺乏可读性，所以还得重构：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$content</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$categoryId</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">find</span>(<span class="params"><span class="variable">$categoryId</span>, <span class="variable">$options</span> = <span class="keyword">array</span>(<span class="params"></span>)</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$default</span> = <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">&#x27;limit&#x27;</span> =&gt; <span class="number">10</span>,</span><br><span class="line">            <span class="string">&#x27;offset&#x27;</span> =&gt; <span class="number">0</span>,</span><br><span class="line">            <span class="string">&#x27;order&#x27;</span> =&gt; <span class="string">&#x27;created DESC&#x27;</span></span><br><span class="line">        );</span><br><span class="line"></span><br><span class="line">        <span class="variable">$options</span> = array_merge(<span class="variable">$default</span>, (<span class="keyword">array</span>)<span class="variable">$options</span>);</span><br><span class="line"></span><br><span class="line">         <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看上去还不错，调用时可以使用类似下面的方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$article</span>-&gt;find(<span class="number">123</span>, <span class="keyword">array</span>(<span class="string">&#x27;limit&#x27;</span> =&gt; <span class="number">20</span>));</span><br></pre></td></tr></table></figure>
+<p>简单的说，就是用数组方式的参数，来模拟一种类似关键字参数的效果，采用这种方式的话，可以通过数组的键名来描述参数的作用，从而增加代码的可读性。类似这样的重构方法在CakePHP等项目里被大量使用，仔细体会，以后再写代码的时候就可以本能的写出高可读性的代码来。</p>
+<p>补充：相对array_merge来说，使用$options += $default;也是不错的选择。另外，如果options的逻辑很复杂的话，也可以不用数组的方式，转而使用一个专门的对象来封装逻辑操作。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.awaimai.com/869.html">https://www.awaimai.com/869.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/15/%E5%9C%A8php7-1%E4%B8%AD%E4%BD%BF%E7%94%A8openssl%E5%8F%96%E4%BB%A3mcrypt/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/15/%E5%9C%A8php7-1%E4%B8%AD%E4%BD%BF%E7%94%A8openssl%E5%8F%96%E4%BB%A3mcrypt/" class="post-title-link" itemprop="url">在PHP7.1中使用openssl取代mcrypt</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-05-15 16:43:55" itemprop="dateCreated datePublished" datetime="2018-05-15T16:43:55+09:00">2018-05-15</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-05-16 15:55:29" itemprop="dateModified" datetime="2018-05-16T15:55:29+09:00">2018-05-16</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+学着把眼泪像珍珠一样收藏，把眼泪都贮存在成功的那一天流淌，那一天，哪怕流它个大海汪洋。
+</blockquote>
+
+<p>The mcrypt extension has been abandonware for nearly a decade now, and was also fairly complex to use. It has therefore been deprecated in favour of OpenSSL, where it will be removed from the core and into PECL in PHP 7.2.</p>
+<h3 id="加密基础"><a href="#加密基础" class="headerlink" title="加密基础"></a>加密基础</h3><p>加密算法一般分为两种：对称加密算法和非对称加密算法。</p>
+<ul>
+<li>对称加密<br>对称加密算法是消息发送者和接收者使用同一个密匙，发送者使用密匙加密了文件，接收者使用同样的密匙解密，获取信息。常见的对称加密算法有：des/aes/3des.</li>
+</ul>
+<p> 对称加密算法的特点有：速度快，加密前后文件大小变化不大，但是密匙的保管是个大问题，因为消息发送方和接收方任意一方的密匙丢失，都会导致信息传输变得不安全。</p>
+<ul>
+<li>非对称加密<br>与对称加密相对的是非对称加密，非对称加密的核心思想是使用一对相对的密匙，分为公匙和私匙，私匙自己安全保存，而将公匙公开。公钥与私钥是一对，如果用公钥对数据进行加密，只有用对应的私钥才能解密；如果用私钥对数据进行加密，那么只有用对应的公钥才能解密。发送数据前只需要使用接收方的公匙加密就行了。常见的非对称加密算法有RSA/DSA:</li>
+</ul>
+<p> 非对称加密虽然没有密匙保存问题，但其计算量大，加密速度很慢,有时候我们还需要对大块数据进行分块加密。</p>
+<h3 id="PHP的openssl扩展"><a href="#PHP的openssl扩展" class="headerlink" title="PHP的openssl扩展"></a>PHP的openssl扩展</h3><p>openssl扩展使用openssl加密扩展包，封装了多个用于加密解密相关的PHP函数，极大地方便了对数据的加密解密。</p>
+<h3 id="非对称加密-RSA为例"><a href="#非对称加密-RSA为例" class="headerlink" title="非对称加密(RSA为例)"></a>非对称加密(RSA为例)</h3><p>生成RSA私钥,可以指定长度,单位bit</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out yangzie_private.pem <span class="number">1024</span></span><br></pre></td></tr></table></figure>
+<p>生成对应的公钥</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl rsa -pubout -in yangzie_private.pem -out yangzie_public.pem</span><br></pre></td></tr></table></figure>
+<p>你可以把这里生成的公钥拷贝到其他的服务端, 用户加密或者解密数据</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$private_key_path</span> = storage_path(<span class="string">&#x27;yangzie_private.pem&#x27;</span>);</span><br><span class="line"><span class="variable">$public_key_path</span> = storage_path(<span class="string">&#x27;yangzie_public.pem&#x27;</span>);</span><br><span class="line"><span class="variable">$private_key</span> = file_get_contents(<span class="variable">$private_key_path</span>);</span><br><span class="line"><span class="variable">$public_key</span> = file_get_contents(<span class="variable">$public_key_path</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断私钥是否是可用的</span></span><br><span class="line"><span class="variable">$pi_key</span> = openssl_pkey_get_private(<span class="variable">$private_key</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断公钥是否是可用的</span></span><br><span class="line"><span class="variable">$pu_key</span> = openssl_pkey_get_public(<span class="variable">$public_key</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//原始数据</span></span><br><span class="line"><span class="variable">$data</span> = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 加密后的数据</span></span><br><span class="line"><span class="variable">$encrypted</span> = <span class="string">&quot;&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解密后的数据</span></span><br><span class="line"><span class="variable">$decrypted</span> = <span class="string">&quot;&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//私钥加密，也可使用openssl_public_encrypt公钥加密，然后使用openssl_private_decrypt解密，加密后数据在$encrypted</span></span><br><span class="line">openssl_private_encrypt(<span class="variable">$data</span>, <span class="variable">$encrypted</span>, <span class="variable">$pi_key</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//加密后的内容通常含有特殊字符，需要编码转换下，在网络间通过url传输时要注意base64编码是否是url安全的</span></span><br><span class="line"><span class="variable">$encrypted</span> = base64_encode(<span class="variable">$encrypted</span>);</span><br><span class="line"></span><br><span class="line">dump(<span class="variable">$encrypted</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//私钥加密的内容通过公钥可解密出来,公钥加密的可用私钥解密。不能混淆</span></span><br><span class="line">openssl_public_decrypt(base64_decode(<span class="variable">$encrypted</span>),<span class="variable">$decrypted</span>,<span class="variable">$pu_key</span>);</span><br><span class="line"></span><br><span class="line">dump(<span class="variable">$decrypted</span>);</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//私钥加密</span></span><br><span class="line">openssl_private_encrypt(<span class="variable">$data</span>,<span class="variable">$encrypted</span>,<span class="variable">$pi_key</span>);</span><br><span class="line"><span class="variable">$encrypted</span> = base64_encode(<span class="variable">$encrypted</span>);</span><br><span class="line"><span class="comment">//公钥解密</span></span><br><span class="line">openssl_public_decrypt(base64_decode(<span class="variable">$encrypted</span>),<span class="variable">$decrypted</span>,<span class="variable">$pu_key</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$decrypted</span>; <span class="comment">//hello</span></span><br></pre></td></tr></table></figure>
+<p>使用PHP自己也可生成一对公私钥</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$config</span> = <span class="keyword">array</span>(</span><br><span class="line">    <span class="string">&quot;digest_alg&quot;</span> =&gt; <span class="string">&quot;sha512&quot;</span>,</span><br><span class="line">    <span class="string">&quot;private_key_bits&quot;</span> =&gt; <span class="number">4096</span>,</span><br><span class="line">    <span class="string">&quot;private_key_type&quot;</span> =&gt; OPENSSL_KEYTYPE_RSA,</span><br><span class="line">);</span><br><span class="line"><span class="comment">// 创建公私钥</span></span><br><span class="line"><span class="variable">$res</span> = openssl_pkey_new(<span class="variable">$config</span>);</span><br><span class="line"><span class="comment">// 获得私钥 $privKey</span></span><br><span class="line">openssl_pkey_export(<span class="variable">$res</span>, <span class="variable">$privKey</span>);</span><br><span class="line"><span class="comment">// 获得公钥 $pubKey</span></span><br><span class="line"><span class="variable">$pubKey</span> = openssl_pkey_get_details(<span class="variable">$res</span>);</span><br><span class="line"><span class="variable">$pubKey</span> = <span class="variable">$pubKey</span>[<span class="string">&quot;key&quot;</span>];</span><br><span class="line"><span class="variable">$data</span> = <span class="string">&#x27;hello&#x27;</span>;</span><br><span class="line"><span class="comment">// 私钥加密</span></span><br><span class="line">openssl_private_encrypt(<span class="variable">$data</span>, <span class="variable">$encrypted</span> ,<span class="variable">$privKey</span>);</span><br><span class="line"><span class="comment">// 公钥解密</span></span><br><span class="line">openssl_public_decrypt(<span class="variable">$encrypted</span>, <span class="variable">$decrypted</span>, <span class="variable">$pubKey</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$decrypted</span>;</span><br></pre></td></tr></table></figure>
+<p>非对称加密的缺点是加密和解密花费时间长、速度慢，只适合对少量数据进行加密。如果既想有很快的加密速度又想保证数据比对称加密更加安全，可对数据进行对称加密，对秘钥做非对称加密，因为一般秘钥的长度会小于数据的长度。</p>
+<h3 id="对称加密-AES为例"><a href="#对称加密-AES为例" class="headerlink" title="对称加密(AES为例)"></a>对称加密(AES为例)</h3><p>AES加密时需要统一四个参数：</p>
+<ul>
+<li>密钥长度 (Key Size)</li>
+<li>加密模式 (Cipher Mode)</li>
+<li>填充方式 (Padding)</li>
+<li>初始向量 (Initialization Vector)</li>
+</ul>
+<p>由于前后端开发所使用的语言不统一，导致经常出现前后端之间互相不能解密的情况出现，其实，无论什么语言系统，AES的算法总是相同的，导致结果不一致的原因在于上述的四个参数不一致，下面就来了解一下这四个参数的含义</p>
+<ul>
+<li>密钥长度<br>AES算法下，key的长度有三种：128、192、256 bits，三种不同密钥长度就需要我们传入的key传入不同长度的字符串，例如我们选择AES-128,那我们定的key需要是长度为16的字符串</li>
+<li>加密模式<br>AES属于块加密，块加密中有CBC、ECB、CTR、OFB、CFB等几种工作模式，为了保持前后端统一，我们选择ECB模式</li>
+<li>填充方式<br>由于块加密只能对特定长度的数据块进行加密，因此CBC、ECB模式需要在最后一数据块加密前进行数据填充</li>
+<li>初始向量<br>使用除ECB以外的其他加密模式均需要传入一个初始向量，其大小与Block Size相等</li>
+</ul>
+<p>参考Laravel中的加密类<code>vendor\laravel\framework\src\Illuminate\Encryption\Encrypter.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 加密</span></span><br><span class="line"><span class="variable">$name</span> = <span class="string">&#x27;yangguoqi&#x27;</span>;</span><br><span class="line"><span class="variable">$secret</span> = encrypt(<span class="variable">$name</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$a</span> = <span class="string">&#x27;eyJpdiI6Im42Z3IzeVNmTDNtXC9nT0NvaGV0NjNRPT0iLCJ2YWx1ZSI6IjhlTGRGYyt6aWhubjREM1BTM0EybExpdlhuMU1FTFwvSUhzUTVnNHRwekJNPSIsIm1hYyI6IjlmZTY3MDczMDg0NzJiMDUwNTRiMGNiYWM3YTAzYzQ4Y2EwOTA4MjJkMDM2OWEyZmVhODcwODUxZWNjMDRkYWEifQ==&#x27;</span>;</span><br><span class="line"><span class="variable">$b</span> = <span class="string">&#x27;eyJpdiI6InJcL1IwcklzbFcyTUZsSVhNS1k3RXFBPT0iLCJ2YWx1ZSI6IlwvV1dCcWdXS21hbERmWnFPWDVYa1hlN0RadkJlQUt4Nkh4bzczS2JuOEFRPSIsIm1hYyI6IjhhN2E0OWE2ZTc3ZTU4YzQzOGYzYmUzZDA3NWYwNTVlOTllNzQ1ZWY5YTE0NzE4NTUzM2E2MDY4ZDVkMzNhOTYifQ==&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解密</span></span><br><span class="line">dump(decrypt(<span class="variable">$a</span>));</span><br><span class="line">dump(decrypt(<span class="variable">$b</span>));</span><br></pre></td></tr></table></figure>
+
+<h3 id="题外话"><a href="#题外话" class="headerlink" title="题外话"></a>题外话</h3><p>如何限制放在公网的服务器只有局域网内部的人才可以使用或者登录?</p>
+<p>一开始想到的就是针对IP的限制, 但是由于公司使用网络的出口 IP 并不固定, 而且 IP 太多, 一个个设置太过麻烦, 然后在想想是否可以通过这样的方式, 比如进入系统的第一步就是登录, 我们就在登录这做一些手脚, 登录的时候在JS访问一个放置在局域网内的脚本, 可以返回一些加密过后约定的内容, 连同登录表单一起提交到系统后台验证, 因为外网的人无法访问到这个脚本, 既然也无法拿到我们事先约定好的加密数据, 自然无法登录.<br>JS脚本</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line">    $(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        $.ajax(&#123;</span><br><span class="line">              <span class="attr">url</span>: <span class="string">&#x27;http://192.168.1.6/zq_check_login/auth.php&#x27;</span>,</span><br><span class="line">              <span class="attr">dataType</span>: <span class="string">&#x27;jsonp&#x27;</span>, <span class="attr">jsonp</span>: <span class="string">&#x27;hash&#x27;</span>,</span><br><span class="line">              <span class="attr">data</span>: &#123;<span class="attr">get</span>: <span class="number">1</span>&#125;</span><br><span class="line">        &#125;).done(<span class="function"><span class="keyword">function</span> (<span class="params"> data </span>) </span>&#123;</span><br><span class="line">              <span class="keyword">if</span> (data.code === <span class="number">200</span>) &#123;</span><br><span class="line">                  <span class="keyword">var</span> token = $(<span class="string">&quot;&lt;input/&gt;&quot;</span>).attr(&#123;</span><br><span class="line">                      <span class="attr">name</span>: <span class="string">&#x27;access_token&#x27;</span>,</span><br><span class="line">                      <span class="attr">type</span>: <span class="string">&#x27;hidden&#x27;</span></span><br><span class="line">                  &#125;).val(data.token);</span><br><span class="line">  </span><br><span class="line">                  <span class="keyword">var</span> ip = $(<span class="string">&quot;&lt;input/&gt;&quot;</span>).attr(&#123;</span><br><span class="line">                      <span class="attr">name</span>: <span class="string">&#x27;access_private_ip&#x27;</span>,</span><br><span class="line">                      <span class="attr">type</span>: <span class="string">&#x27;hidden&#x27;</span></span><br><span class="line">                  &#125;).val(data.ip);</span><br><span class="line">  </span><br><span class="line">                  $(<span class="string">&quot;form&quot;</span>).prepend(token, ip);</span><br><span class="line">  </span><br><span class="line">                  $(<span class="string">&quot;button[type=&#x27;submit&#x27;]&quot;</span>).attr(<span class="string">&#x27;disabled&#x27;</span>, <span class="literal">false</span>);</span><br><span class="line">              &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>登录验证</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$publicKey</span> = file_get_contents(storage_path(<span class="string">&#x27;app/public.pem&#x27;</span>));</span><br><span class="line"><span class="variable">$key</span> = openssl_pkey_get_public(<span class="variable">$publicKey</span>);</span><br><span class="line"><span class="variable">$encode</span> = base64_decode(<span class="variable">$request</span>[<span class="string">&#x27;access_token&#x27;</span>]);</span><br><span class="line"><span class="variable">$result</span> = openssl_public_decrypt(<span class="variable">$encode</span>, <span class="variable">$decrypted</span>, <span class="variable">$key</span>);</span><br><span class="line"><span class="keyword">if</span> (!<span class="variable">$result</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> flash_message(<span class="string">&#x27;身份验证失败！&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$arr</span> = json_decode(<span class="variable">$decrypted</span>, <span class="literal">true</span>);</span><br><span class="line"><span class="variable">$rt</span> = substr(now()-&gt;toDateTimeString(), <span class="number">0</span>, <span class="number">13</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!starts_with(<span class="variable">$arr</span>[<span class="string">&#x27;date&#x27;</span>], <span class="variable">$rt</span>)) &#123;</span><br><span class="line">    <span class="keyword">return</span> flash_message(<span class="string">&#x27;身份验证失败，请重试。&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!starts_with(<span class="variable">$arr</span>[<span class="string">&#x27;ip&#x27;</span>], <span class="string">&#x27;192.168&#x27;</span>) &amp;&amp; !starts_with(<span class="variable">$arr</span>[<span class="string">&#x27;ip&#x27;</span>], <span class="string">&#x27;127.&#x27;</span>)) &#123;</span><br><span class="line">    <span class="keyword">return</span> flash_message(<span class="string">&#x27;身份验证失败，请重试！&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -868,272 +1164,6 @@
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/liuyanfeier/article/details/62422742">https://blog.csdn.net/liuyanfeier/article/details/62422742</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/24/laravel%E5%9C%A8eloquent%E4%B8%AD%E7%AE%A1%E7%90%86%E5%AF%B9%E5%BA%94%E7%9A%84url/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/24/laravel%E5%9C%A8eloquent%E4%B8%AD%E7%AE%A1%E7%90%86%E5%AF%B9%E5%BA%94%E7%9A%84url/" class="post-title-link" itemprop="url">laravel在eloquent中管理对应的url</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-24 16:17:02 / 修改时间：17:20:50" itemprop="dateCreated datePublished" datetime="2018-04-24T16:17:02+09:00">2018-04-24</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-No pain, no gain.
-</blockquote>
-
-<p>It’s not uncommon to have tens, if not hundreds of views in a Laravel application. Something that soon gets out of hand is the various references to routes. Think about how many times you’ve done something like this in your blade views:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=<span class="string">&quot;&#123;&#123; route(&#x27;users.show&#x27;, <span class="subst">$user</span>) &#125;&#125;&quot;</span>&gt;&#123;&#123; <span class="variable">$user</span>-&gt;name &#125;&#125;&lt;/a&gt;</span><br></pre></td></tr></table></figure>
-<p>If for whatever reason we have to make a change to either the route alias or default query string values you’ll soon find yourself doing mass string replacements across your entire application which brings the risk of breakage within many files.</p>
-<p>What can we do to possibly better handle this? There are a couple of different approaches.</p>
-<h3 id="Eloquent-Only"><a href="#Eloquent-Only" class="headerlink" title="Eloquent Only"></a>Eloquent Only</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="variable">$appends</span> = [</span><br><span class="line">    <span class="string">&#x27;url&#x27;</span></span><br><span class="line">  ];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getUrlAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> route(<span class="string">&#x27;users.show&#x27;</span>, <span class="keyword">$this</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Then in your views it would look like this:</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&#123;&#123; $user-&gt;url &#125;&#125;&quot;</span>&gt;</span>&#123;&#123; $user-&gt;name &#125;&#125;<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>Super clean, right? For you advanced developers you’ll probably want to go with this next approach.</p>
-<h3 id="Eloquent-with-URL-Presenter"><a href="#Eloquent-with-URL-Presenter" class="headerlink" title="Eloquent with URL Presenter"></a>Eloquent with URL Presenter</h3><p>At first glance, you’ll see some similarities, but the key difference is that our accessor will return an instance of the presenter.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Presenters</span>\<span class="title">User</span>\<span class="title">UrlPresenter</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="variable">$appends</span> = [</span><br><span class="line">    <span class="string">&#x27;url&#x27;</span></span><br><span class="line">  ];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getUrlAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> UrlPresenter(<span class="keyword">$this</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Presenters</span>\<span class="title">User</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">User</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UrlPresenter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$user</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params">User <span class="variable">$user</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;user = <span class="variable">$user</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__get</span>(<span class="params"><span class="variable">$key</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(method_exists(<span class="keyword">$this</span>, <span class="variable">$key</span>))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;<span class="variable">$key</span>();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;<span class="variable">$key</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">delete</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> route(<span class="string">&#x27;users.delete&#x27;</span>, <span class="keyword">$this</span>-&gt;user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">edit</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> route(<span class="string">&#x27;users.edit&#x27;</span>, <span class="keyword">$this</span>-&gt;user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">show</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> route(<span class="string">&#x27;users.show&#x27;</span>, <span class="keyword">$this</span>-&gt;user);</span><br><span class="line">    &#125;    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">update</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> route(<span class="string">&#x27;users.update&#x27;</span>, <span class="keyword">$this</span>-&gt;user);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Then you would use it like this:</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&#123;&#123; $user-&gt;url-&gt;show &#125;&#125;&quot;</span>&gt;</span>&#123;&#123; $user-&gt;name &#125;&#125;<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>As you can see with either approach, the view now doesn’t care about how we determine the URL, just that a URL is returned. The beauty to this is should you have to adjust any routes you only have to edit two files, not hundreds.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-news.com/leverage-eloquent-to-prepare-your-urls">https://laravel-news.com/leverage-eloquent-to-prepare-your-urls</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/24/laravel5-6%E7%9A%84%E8%B7%AF%E7%94%B1%E7%AD%BE%E5%90%8D/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/24/laravel5-6%E7%9A%84%E8%B7%AF%E7%94%B1%E7%AD%BE%E5%90%8D/" class="post-title-link" itemprop="url">laravel5.6的路由签名</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-24 15:54:57 / 修改时间：17:07:02" itemprop="dateCreated datePublished" datetime="2018-04-24T15:54:57+09:00">2018-04-24</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-Still water run deep.
-</blockquote>
-
-<p>In the latest Laravel 5.6.12 Release a new signed URLs feature was introduced. In this article, we’ll work on enabling signed URLs in an application and look at a few options of how to use them.</p>
-<h3 id="Setup"><a href="#Setup" class="headerlink" title="Setup"></a>Setup</h3><p>First, you’ll need to run composer update laravel/framework in your terminal to pull the latest changes.</p>
-<p>Second, you’ll need to add the new ValidateSignature to your route middleware in <code>/app/Http/Kernel.php</code>.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="variable">$routeMiddleware</span> = [</span><br><span class="line">         <span class="comment">// ...</span></span><br><span class="line">         <span class="string">&#x27;guest&#x27;</span> =&gt; \App\Http\Middleware\RedirectIfAuthenticated::class,</span><br><span class="line">+        <span class="string">&#x27;signed&#x27;</span> =&gt; \Illuminate\Routing\Middleware\ValidateSignature::class,</span><br><span class="line">         <span class="string">&#x27;throttle&#x27;</span> =&gt; \Illuminate\Routing\Middleware\ThrottleRequests::class,</span><br><span class="line">     ];</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p>That’s it! Now you can start adding signed URLs to your application.</p>
-<h3 id="Starting-Point"><a href="#Starting-Point" class="headerlink" title="Starting Point"></a>Starting Point</h3><p>Let’s say we have an event planning application that we let users RSVP to upcoming events. We want to email all users a link so they can quickly respond “yes” or “no” if they are going. However, we don’t want to force them to log into the application again if they happen to be logged out.</p>
-<p>Currently, we have the following event.rsvp route in our <code>routes/web.php</code> file.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;event/&#123;id&#125;/rsvp/&#123;user&#125;/&#123;response&#125;&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$id</span>, <span class="variable">$user</span>, <span class="variable">$response</span></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// Add response from user for event.</span></span><br><span class="line">&#125;)-&gt;name(<span class="string">&#x27;event.rsvp&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>and our URL is generated like so</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> \<span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">URL</span>;</span><br><span class="line">Url::route(<span class="string">&#x27;event.rsvp&#x27;</span>, [<span class="string">&#x27;id&#x27;</span> =&gt; <span class="number">25</span>, <span class="string">&#x27;user&#x27;</span> =&gt; <span class="number">100</span>, <span class="string">&#x27;response&#x27;</span> =&gt; <span class="string">&#x27;yes&#x27;</span>]);</span><br></pre></td></tr></table></figure>
-<p>which generates:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//example.com/event/25/rsvp/100/yes</span></span><br></pre></td></tr></table></figure>
-<p>We can see that a curious or malicious user will be easily able to change any variables in the URL, which is far from ideal.</p>
-<h3 id="Signing-a-URL"><a href="#Signing-a-URL" class="headerlink" title="Signing a URL"></a>Signing a URL</h3><p>Now that we have a prime candidate for a signed URL let’s add the signature handling.</p>
-<p>First, we’ll need to add the signed middleware to our route definition.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;event/&#123;id&#125;/rsvp/&#123;user&#125;/&#123;response&#125;&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$id</span>, <span class="variable">$user</span>, <span class="variable">$response</span></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// Add response from user for event.</span></span><br><span class="line">&#125;)-&gt;name(<span class="string">&#x27;event.rsvp&#x27;</span>)-&gt;middleware(<span class="string">&#x27;signed&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>Next, we’ll change our <code>Url::route()</code> to <code>Url::signedRoute()</code> in our application.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> \<span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">URL</span>;</span><br><span class="line"></span><br><span class="line">Url::signedRoute(<span class="string">&#x27;event.rsvp&#x27;</span>, [<span class="string">&#x27;id&#x27;</span> =&gt; <span class="number">25</span>, <span class="string">&#x27;user&#x27;</span> =&gt; <span class="number">100</span>, <span class="string">&#x27;response&#x27;</span> =&gt; <span class="string">&#x27;yes&#x27;</span>]);</span><br></pre></td></tr></table></figure>
-<p>Laravel will generate a new signed URL given the route name, and all of the parameters, which generates a URL similar to the following:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//example.com/event/25/rsvp/100/yes?</span></span><br><span class="line">signature=<span class="number">30</span>a3877b00890fff0d7ca25f82c6387ff16a98d21008ddc9689ed3c20ef13cd4</span><br></pre></td></tr></table></figure>
-<p>Now by using this signed URL if that same “curious” user tries to tamper with the user id, changing it from 100 to 101, or the signature ending with 4 to 5 Laravel will throw an <code>Illuminate\Routing\Exceptions\InvalidSignatureException</code>.</p>
-<h3 id="Temporary-URLs"><a href="#Temporary-URLs" class="headerlink" title="Temporary URLs"></a>Temporary URLs</h3><p>In addition to just signing a URL, Laravel gives us a great way to add an expiration to a signature as well. If we want the link to expire in 1 hour from generation, we can update our code to the following.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> \<span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">URL</span>;</span><br><span class="line"></span><br><span class="line">URL::temporarySignedRoute(<span class="string">&#x27;event.rsvp&#x27;</span>, now()-&gt;addHour(), [</span><br><span class="line">    <span class="string">&#x27;id&#x27;</span> =&gt; <span class="number">25</span>, </span><br><span class="line">    <span class="string">&#x27;user&#x27;</span> =&gt; <span class="number">100</span>, </span><br><span class="line">    <span class="string">&#x27;response&#x27;</span> =&gt; <span class="string">&#x27;yes&#x27;</span></span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
-<p>which generates the following:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//example.com/event/25/rsvp/100/yes?expires=1521543365</span></span><br><span class="line">&amp;signature=d32f53ced4a781f287b612d21a3b7d3c38ebc5ae53951115bb9af4bc3f88a87a</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-news.com/signed-routes">https://laravel-news.com/signed-routes</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/24/git%E5%BF%BD%E7%95%A5%E5%B7%B2%E7%BB%8F%E8%A2%AB%E6%8F%90%E4%BA%A4%E7%9A%84%E6%96%87%E4%BB%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/24/git%E5%BF%BD%E7%95%A5%E5%B7%B2%E7%BB%8F%E8%A2%AB%E6%8F%90%E4%BA%A4%E7%9A%84%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">git忽略已经被提交的文件</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-24 13:46:41 / 修改时间：15:10:34" itemprop="dateCreated datePublished" datetime="2018-04-24T13:46:41+09:00">2018-04-24</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-现在努力的你，未来的事情谁说得清楚呢？
-但你不努力，未来是怎样大概都知道了。
-</blockquote>
-
-<h3 id="问题起因"><a href="#问题起因" class="headerlink" title="问题起因"></a>问题起因</h3><p>有时候我们会遇到这样的场景,失误或是不小心将IDE的一些配置文件(如.idea文件夹)推送到了git仓库.而且你的同事拉取了代码,那么无论他们修改配置文件还是修复路径,他们:</p>
-<ul>
-<li><p>要么提交上去,谁拉代码谁冲突</p>
-</li>
-<li><p>要么不提,每次提交的时候小心翼翼不把这些配置文件提上去</p>
-</li>
-</ul>
-<h3 id="为什么-gitignore文件不管用"><a href="#为什么-gitignore文件不管用" class="headerlink" title="为什么.gitignore文件不管用"></a>为什么.gitignore文件不管用</h3><p>也许这时你马上会想,”shit,最好马上把这些文件添加到.gitignore”.然后你就做了,结果坑爹的发现:那些已经被添加到仓库的文件,只要修改就会出现在被修改的列表里,根本不管用</p>
-<p>这是因为.gitignore的设计就是为了那些没有被追踪的文件(即不在仓库中),如果你将一个已经被追踪的文件添加到.gitignore文件(或者使用add -f强制添加),这个文件还是会像工程里的其他文件一样被追踪的</p>
-<h3 id="正确的姿势"><a href="#正确的姿势" class="headerlink" title="正确的姿势"></a>正确的姿势</h3><ul>
-<li>将要忽略的文件或者文件夹加入 .gitignore 文件</li>
-<li>停止追踪文件或者文件夹 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm --cached log -r <span class="comment">// log文件夹</span></span><br></pre></td></tr></table></figure></li>
-<li>提交</li>
-</ul>
 
       
     </div>

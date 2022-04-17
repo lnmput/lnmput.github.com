@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">395</span>
+          <span class="site-state-item-count">398</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,260 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/09/29/How-to-Handle-Multiple-Events-with-a-Single-Listener-in-Laravel/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/09/29/How-to-Handle-Multiple-Events-with-a-Single-Listener-in-Laravel/" class="post-title-link" itemprop="url">How-to-Handle-Multiple-Events-with-a-Single-Listener-in-Laravel</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-09-29 11:40:20 / 修改时间：12:15:12" itemprop="dateCreated datePublished" datetime="2021-09-29T11:40:20+09:00">2021-09-29</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+佛是过来人，人是未来佛，我也曾如你般天真。
+</blockquote>
+
+
+<p>Laravel provides a simple way to declare event listeners out of the box via the <code>EventServiceProvider</code> class.</p>
+<p>Here’s a quick example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EventServiceProvider</span> <span class="keyword">extends</span> <span class="title">ServiceProvider</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The event listener mappings for the application.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$listen</span> = [</span><br><span class="line">        LoginEvent::class =&gt; [</span><br><span class="line">            HandleLoginListener::class</span><br><span class="line">        ],</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>With the above, anytime the LoginEvent is fired, the <code>handle()</code> method of the HandleLoginListener class will be called. Pretty simple, right?</p>
+<p>But what if you have dozens or even hundreds of events that you want to all go through the same handler?</p>
+<p>One option would be to list them out individually in the <code>EventServiceProvider</code> class.</p>
+<p>Yikes! What if you forget to add the listener when you add a new event?</p>
+<p>Another option would be to listen to an <code>interface</code>, and have your events implement the interface.</p>
+<p>Here’s an example interface:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// App\Events\NotifiableEvent.php</span></span><br><span class="line"> </span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Events</span>;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">NotifiableEvent</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns the display name of the event.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> string</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getEventName</span>(<span class="params"></span>): <span class="title">string</span></span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns the description of the event.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> string</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getEventDescription</span>(<span class="params"></span>): <span class="title">string</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>And here’s an example event, that implements the interface:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// App\Events\CreatedApplicationMember.php</span></span><br><span class="line"> </span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Events</span>;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CreatedApplicationMember</span> <span class="keyword">implements</span> <span class="title">NotifiableEvent</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getEventName</span>(<span class="params"></span>): <span class="title">string</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;Created Application Member&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getEventDescription</span>(<span class="params"></span>): <span class="title">string</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;Fired whenever a new Application Member is added to your Application.&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// constructor and stuff goes here...</span></span><br></pre></td></tr></table></figure>
+<p>Then in <code>EventServiceProvider</code>, you can listen for the interface instead of the specific event classes:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EventServiceProvider</span> <span class="keyword">extends</span> <span class="title">ServiceProvider</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The event listener mappings for the application.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$listen</span> = [</span><br><span class="line">        NotifiableEvent::class =&gt; [</span><br><span class="line">            SendEventNotification::class</span><br><span class="line">        ],</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Now anytime an event that implements the <code>NotifiableEvent</code> interface is dispatched, the <code>SendEventNotification</code> listener will be called.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://owenconti.com/posts/how-to-handle-multiple-events-with-a-single-listener-in-laravel">https://owenconti.com/posts/how-to-handle-multiple-events-with-a-single-listener-in-laravel</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/09/29/Caching-Laravel-HTML-With-Cloudflare/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/09/29/Caching-Laravel-HTML-With-Cloudflare/" class="post-title-link" itemprop="url">Caching-Laravel-HTML-With-Cloudflare</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-09-29 11:30:43 / 修改时间：12:16:45" itemprop="dateCreated datePublished" datetime="2021-09-29T11:30:43+09:00">2021-09-29</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+哪里会有人喜欢孤独，不过是不喜欢失望
+</blockquote>
+
+<p>If you’re serving any sort of content site with Laravel, you’ve probably looked into setting up caching for your page responses. For this site owenconti.com, I’m letting Cloudflare handle the caching for me. I do this by setting up a Page Rule to “cache everything”:</p>
+<img style="margin-left: 0;" src="/images/post001.png">
+
+<p>The above page rule will cache everything that the Laravel app returns. However, Cloudflare does not cache responses that modify cookies. By default, Laravel’s web middleware is setup to handle sessions for you.</p>
+<h3 id="Removing-Session-Middleware"><a href="#Removing-Session-Middleware" class="headerlink" title="Removing Session Middleware"></a>Removing Session Middleware</h3><p>Since this site is purely for anonymous visitors, I’ll never need to use sessions or cookies of any sort. Because of that, I am able to remove all of the session and cookie middlewares from the web middleware group:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// app\Http\Kernel.php</span></span><br><span class="line"> </span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Http</span>\<span class="title">Kernel</span> <span class="title">as</span> <span class="title">HttpKernel</span>;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Kernel</span> <span class="keyword">extends</span> <span class="title">HttpKernel</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$middleware</span> = [</span><br><span class="line">      <span class="comment">// ...</span></span><br><span class="line">    ];</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The application&#x27;s route middleware groups.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$middlewareGroups</span> = [</span><br><span class="line">        <span class="string">&#x27;web&#x27;</span> =&gt; [</span><br><span class="line">            \App\Http\Middleware\EncryptCookies::class, </span><br><span class="line">            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class, </span><br><span class="line">            \Illuminate\Session\Middleware\StartSession::class, </span><br><span class="line">            <span class="comment">// \Illuminate\Session\Middleware\AuthenticateSession::class, // </span></span><br><span class="line">            \Illuminate\View\Middleware\ShareErrorsFromSession::class, </span><br><span class="line">            \App\Http\Middleware\VerifyCsrfToken::class, </span><br><span class="line">            \Illuminate\Routing\Middleware\SubstituteBindings::class,</span><br><span class="line">        ],</span><br><span class="line"> </span><br><span class="line">        <span class="string">&#x27;api&#x27;</span> =&gt; [</span><br><span class="line">            <span class="string">&#x27;throttle:api&#x27;</span>,</span><br><span class="line">            \Illuminate\Routing\Middleware\SubstituteBindings::class,</span><br><span class="line">        ],</span><br><span class="line">    ];</span><br></pre></td></tr></table></figure>
+
+<p>After removing the session and cookie middlewares, Cloudflare will start to properly cache HTML responses from the Laravel application.</p>
+<p>You can validate this by checking the response headers of the HTML response:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cache-control: <span class="keyword">public</span>, max-age=<span class="number">3600</span>, s-maxage=<span class="number">86400</span></span><br><span class="line">cf-cache-status: HIT </span><br><span class="line">cf-ray: <span class="number">6803</span>f1964956e472-SEA</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://owenconti.com/posts/caching-laravel-html-with-cloudflare">https://owenconti.com/posts/caching-laravel-html-with-cloudflare</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/09/27/%E9%87%8D%E6%96%B0%E7%BC%96%E8%AF%91GD%E6%89%A9%E5%B1%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/09/27/%E9%87%8D%E6%96%B0%E7%BC%96%E8%AF%91GD%E6%89%A9%E5%B1%95/" class="post-title-link" itemprop="url">重新编译GD扩展</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-09-27 15:41:18 / 修改时间：16:30:37" itemprop="dateCreated datePublished" datetime="2021-09-27T15:41:18+09:00">2021-09-27</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+哪有什么坚强，不过都是硬撑罢了。
+</blockquote>
+
+<h3 id="编译安装php7-4"><a href="#编译安装php7-4" class="headerlink" title="编译安装php7.4"></a>编译安装php7.4</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/usr/local/php \</span><br><span class="line">--with-config-file-path=/usr/local/php/etc \</span><br><span class="line">--with-config-file-scan-dir=/usr/local/php/etc/php.d \</span><br><span class="line">--with-fpm-user=www \</span><br><span class="line">--with-fpm-group=www \</span><br><span class="line">--enable-fpm \</span><br><span class="line">--enable-opcache \</span><br><span class="line">--disable-fileinfo \</span><br><span class="line">--enable-mysqlnd \</span><br><span class="line">--with-mysqli=mysqlnd \</span><br><span class="line">--with-pdo-mysql=mysqlnd \</span><br><span class="line">--with-iconv-dir=/usr/local/libiconv \</span><br><span class="line">--with-freetype \</span><br><span class="line">--with-jpeg \</span><br><span class="line">--with-zlib \</span><br><span class="line">--enable-xml \</span><br><span class="line">--disable-rpath \</span><br><span class="line">--enable-bcmath \</span><br><span class="line">--enable-shmop \</span><br><span class="line">--enable-exif \</span><br><span class="line">--enable-sysvsem \</span><br><span class="line">--enable-inline-optimization \</span><br><span class="line">--with-curl=/usr/local/curl \</span><br><span class="line">--enable-mbregex \</span><br><span class="line">--enable-mbstring \</span><br><span class="line">--with-password-argon2 \</span><br><span class="line">--with-sodium=/usr/local \</span><br><span class="line">--enable-gd \</span><br><span class="line">--with-openssl=/usr/local/openssl \</span><br><span class="line">--with-mhash \</span><br><span class="line">--enable-pcntl \</span><br><span class="line">--enable-sockets \</span><br><span class="line">--with-xmlrpc \</span><br><span class="line">--enable-ftp \</span><br><span class="line">--enable-intl \</span><br><span class="line">--with-xsl \</span><br><span class="line">--with-gettext \</span><br><span class="line">--with-zip=/usr/local \</span><br><span class="line">--enable-soap \</span><br><span class="line">--disable-debug \</span><br><span class="line">PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/:</span><br></pre></td></tr></table></figure>
+<p>今天就出现了一个问题，我的gd库中没有webp支持，看看错误提示</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Call to undefined <span class="function"><span class="keyword">function</span> <span class="title">imagecreatefromwebp</span>(<span class="params"></span>)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="重新编译GD库"><a href="#重新编译GD库" class="headerlink" title="重新编译GD库"></a>重新编译GD库</h3><p>重新编译gd，但是又由于我采用的是静态编译，所以必须要重新编译php，然后编译gd，最后在php.ini文件中添加扩展so文件。</p>
+<h4 id="重新编译php"><a href="#重新编译php" class="headerlink" title="重新编译php"></a>重新编译php</h4><p>不要添加 <code>--enable-gd</code> 参数即可</p>
+<h4 id="编译GD"><a href="#编译GD" class="headerlink" title="编译GD"></a>编译GD</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install libwebp-devel libwebp autoconf automake gcc libjpeg-devel libpng-devel libXpm-devel freetype-devel</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">wget https:<span class="comment">//www.php.net/distributions/php-7.4.28.tar.bz2</span></span><br><span class="line">tar xf php-<span class="number">7.4</span>.<span class="number">28</span>.tar.bz2</span><br><span class="line">cd php-<span class="number">7.4</span>.<span class="number">28</span></span><br><span class="line">cd ext/gd/</span><br><span class="line">phpize</span><br><span class="line"> </span><br><span class="line"><span class="comment">## Run the actual configure</span></span><br><span class="line"> </span><br><span class="line">./configure --with-php-config=/usr/local/php/bin/php-config --with-gd --enable-gd --with-jpeg=/usr/<span class="keyword">include</span> --with-webp=/usr/<span class="keyword">include</span>/webp</span><br><span class="line"></span><br><span class="line">make &amp;&amp; make install</span><br><span class="line"> </span><br><span class="line"><span class="comment">## Copy new gd.so file in place, backup old one</span></span><br><span class="line">cp /usr/lib64/php/modules/gd.so ~/gd.so.bak</span><br><span class="line">cp /<span class="keyword">var</span>/www/php-<span class="number">7.4</span>.<span class="number">28</span>/ext/gd/modules/gd.so /usr/lib64/php/modules/gd.so</span><br><span class="line"> </span><br><span class="line"><span class="comment"># Right after, otherwise server goes down.</span></span><br><span class="line">sudo service httpd restart</span><br><span class="line"> </span><br><span class="line"><span class="comment"># Check if WebP support is enabled:</span></span><br><span class="line">php -r <span class="string">&quot;print_r( gd_info() );&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>编辑php.ini</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> extension=gd.so &gt;&gt; /usr/local/php/lib/php.ini</span><br><span class="line"></span><br><span class="line">extension = gd.so</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl reload php-fpm</span><br></pre></td></tr></table></figure>
+
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>尚未尝试</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--enable-gd --with-webp --with-jpeg  --with-freetype --enable-gd-jis-conv  --with-iconv-dir=/usr/local/lib</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -860,257 +1114,6 @@
 <p>这两种用法，也将使索引失效。但是NOT IN 还是走索引的，千万不要误解为 IN 全部是不走索引的。</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000023911554">https://segmentfault.com/a/1190000023911554</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/12/18/chromedriver%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/12/18/chromedriver%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">chromedriver安装</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-12-18 15:06:54" itemprop="dateCreated datePublished" datetime="2020-12-18T15:06:54+09:00">2020-12-18</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-16 23:21:32" itemprop="dateModified" datetime="2021-09-16T23:21:32+09:00">2021-09-16</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-被门夹过的核桃还能补脑嘛
-</blockquote>
-
-<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><ul>
-<li>win10 64 位系统</li>
-</ul>
-<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>下载地址： <a target="_blank" rel="noopener" href="http://chromedriver.storage.googleapis.com/index.html">http://chromedriver.storage.googleapis.com/index.html</a><br>注意： chrome版本必须和chromedriver版本相同，如果没有一模一样的版本，选择能包括它的版本即可<br>chrome版本的查看方式，打开地址<code>chrome://settings/help</code>即可<br><img style="margin-left: 0;" src="/images/chrome_version.png"></p>
-<img style="margin-left: 0;" src="/images/chrome_down.png">
-
-<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>将下载后的文件解压<code>chromedriver.exe</code>放到目录<code>C:\Program Files\bin</code>下,并记下这个目录，理论上可以放到本地的任何位置，全凭个人喜好<br><img style="margin-left: 0;" src="/images/chrome_pos.png"></p>
-<h3 id="配置环境变量"><a href="#配置环境变量" class="headerlink" title="配置环境变量"></a>配置环境变量</h3><p>将存放<code>chromedriver.exe</code>的目录添加到环境变量中<br><img style="margin-left: 0;" src="/images/setenv.png"></p>
-<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>使用<code>win+r</code>快捷键调出 运行窗口， 并输入<code>cmd</code> 命令， 打开cmd窗口， 在窗口中输入<code>chromedriver</code>,是否能够正确显示版本号， 如不生效，可以尝试重启计算机<br><img style="margin-left: 0;" src="/images/cmd.png"></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/12/17/php-fpm%E5%AE%9A%E4%BD%8D%E6%85%A2%E8%84%9A%E6%9C%AC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/12/17/php-fpm%E5%AE%9A%E4%BD%8D%E6%85%A2%E8%84%9A%E6%9C%AC/" class="post-title-link" itemprop="url">php-fpm定位慢脚本</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2020-12-17 13:39:32 / 修改时间：14:44:06" itemprop="dateCreated datePublished" datetime="2020-12-17T13:39:32+09:00">2020-12-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-所谓的光辉岁月，并不是以后，闪耀的日子，而是无人问津时，你对梦想的偏执。
-</blockquote>
-
-<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>PHP-FPM 提供一个叫 慢日志 (slowlog) 的功能，来帮助我们定位执行慢的脚本。</p>
-<h3 id="开启"><a href="#开启" class="headerlink" title="开启"></a>开启</h3><p>以 PHP 7.2 为例，FPM 的配置信息位于：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/php/<span class="number">7.2</span>/fpm/pool.d/www.conf</span><br></pre></td></tr></table></figure>
-<p>相关配置项：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">; 慢日志的存储路径，默认 `<span class="variable">$pool</span>` 设置为 `www`</span><br><span class="line">slowlog = /<span class="keyword">var</span>/log/<span class="variable">$pool</span>.slow.log</span><br><span class="line"></span><br><span class="line">; 设置慢日志超时标准，设置为 <span class="number">0</span> 代表关闭慢日志</span><br><span class="line">request_slowlog_timeout = <span class="number">1</span>s</span><br><span class="line"></span><br><span class="line">; 慢日志记录脚本堆栈的深度</span><br><span class="line">request_slowlog_trace_depth = <span class="number">20</span></span><br></pre></td></tr></table></figure>
-<p>以上的配置翻译过来：指定 FPM 当发现有请求执行超过 1 秒钟的时候，将整个调用堆栈记录到 <code>/var/log/www.slow.log</code> 文件里，堆栈的深度不超过 20。</p>
-<p>你可以把 1s 改成其他值，如 10s。有了以上的设置，裁剪图像尺寸的方法、 网络 I/O 相关的一些请求都经常出现在 PHP 慢日志中。你可以根据自己的情况来选择调整或者忽略。</p>
-<h3 id="如何分析？"><a href="#如何分析？" class="headerlink" title="如何分析？"></a>如何分析？</h3><p>开启了慢日志，网站运行一段时间后，如果记录了较多的慢日志，如何进行有效分析？<br>可以使用 grep 命令来快速定位某个函数调用、或者脚本名称被记录的次数，记录的次数越多，优化的优先级就越高。以下是简单的 示例：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ grep -o <span class="string">&#x27;fetch_github_user&#x27;</span> /<span class="keyword">var</span>/log/www.slow.log | wc -l</span><br><span class="line"><span class="number">56</span></span><br><span class="line">$ grep -o <span class="string">&#x27;sendEmail&#x27;</span> /<span class="keyword">var</span>/log/www.slow.log | wc -l</span><br><span class="line"><span class="number">48</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>慢日志可以帮助我们定位到运用程序里的瓶颈，是一个非常好用的工具，也是每个 PHP 开发者都需要知道的工具。<br>需要注意的是，监控 Slowlog 和记录日志的过程会对 PHP 造成消耗， 切记 调试结束后，务必将其关闭。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/12/17/%E7%94%A8cloudflare%E5%92%8Cnginx%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/12/17/%E7%94%A8cloudflare%E5%92%8Cnginx%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">用Cloudflare和Nginx的相关配置</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2020-12-17 13:26:24 / 修改时间：14:37:48" itemprop="dateCreated datePublished" datetime="2020-12-17T13:26:24+09:00">2020-12-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你那能叫活着么？你那只能叫没死。
-</blockquote>
-
-<h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><p>因为CDN的存在，所以SSL需要分为两部分，一部分是浏览器到Cloudflare CDN服务器的传输加密，一部分是Cloudflare CDN服务器到你网站服务器之间的数据传输。一般来说，如果选择Off，那你的网站全程都没有SSL加密，如果选择Flexible，那么Cloudflare CDN服务器到你网站服务器之间是明文传输，有可能存在一定的被监听风险，如果选择Full，则全程都是用SSL加密，但是并不校验网站服务器的证书有效性（所以当被中间人攻击时，仍然会有数据被监听的可能性），如果选择Full(strict)，那么不仅全程都SSL加密，并且Cloudflare会验证网站服务器证书，需要是受信任的证书或者由Cloudflare签署的专门用于服务器上的证书。</p>
-<img style="margin-left: 0;" src="/images/cloudflare-ssl.jpg">
-
-<h3 id="加密浏览器到Cloudflare的CDN"><a href="#加密浏览器到Cloudflare的CDN" class="headerlink" title="加密浏览器到Cloudflare的CDN"></a>加密浏览器到Cloudflare的CDN</h3><p>加密这一段流量非常简单，你只需要在上面的SSL设置中，选择Off以外的其他选项，即可完成这一段的SSL加密，默认情况下，免费版本的Cloudflare提供Universal SSL证书，这类证书目前基本被大多数浏览器所信任，只是在证书名称上你看到的可能是sni.cloudflare.com的域名。如果你希望提升SSL证书的兼容性，那可以在SSL/TLS下的Edge Certificates菜单中，单独订购SSL证书，独立证书5美金一个月，订购之后，您的证书就会像下图一样属于独立域名证书，兼容性也会更好，当然，如果你有钱（例如有的企业需要OV甚至EV证书），那么你可以购买Enterprise Plan后，选择上传自己的证书，只是价格么就贵了。</p>
-<h3 id="加密Cloudflare-CDN服务器到你网站服务器"><a href="#加密Cloudflare-CDN服务器到你网站服务器" class="headerlink" title="加密Cloudflare CDN服务器到你网站服务器"></a>加密Cloudflare CDN服务器到你网站服务器</h3><p>加密这一段流量，就需要您在Nginx上做HTTPS的配置了，一般情况下，订购一个受信任的证书总是费钱的，Cloudflare建议你使用他们的Origin CA，证书周期15年且免费，使用方法也非常简单，首先在SSL/TLS的Origin Server菜单下，选择”Create Certificate“，创建一张证书，选择Cloudflare创建CSR即可，域名和时常一般不用更改，创建之后，即可保存证书和私钥，Nginx一般使用pem格式，因此把证书和私钥保存成cert.pem和key.pem两个文件，并上传到你的服务器上。<br>第二步，打开你的Nginx配置，加入如下的设置(假设你的证书都储存在/usr/local/nginx/conf/ssl/目录下)</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">listen <span class="number">443</span> ssl http2;</span><br><span class="line">ssl_certificate    /usr/local/nginx/conf/ssl/cert.pem;</span><br><span class="line">ssl_certificate_key    /usr/local/nginx/conf/ssl/key.pem;</span><br></pre></td></tr></table></figure>
-<p>保存并重启你的Nginx服务器后，在SSL/TLS下选择Full(strict)模式，即可完成Cloudflare CDN服务器到你网站服务器之间的加密了。</p>
-<h3 id="使用Authenticated-Origin-Pulls"><a href="#使用Authenticated-Origin-Pulls" class="headerlink" title="使用Authenticated Origin Pulls"></a>使用Authenticated Origin Pulls</h3><p>Authenticated Origin Pulls保证了客户端在获取你网站服务器的内容时，需要提交客户端证书验证，否则不允许访问，这个设置通常可以进一步防止你的服务器数据被非Cloudflare CDN服务器访问，当你的源站全站采用CDN后，可以打开这个选项进一步提升安全性，在打开之前，需要在Nginx上做如下配置：</p>
-<ul>
-<li>下载Origin Pull证书：<a target="_blank" rel="noopener" href="https://support.cloudflare.com/hc/zh-cn/article_attachments/360044928032/origin-pull-ca.pem">https://support.cloudflare.com/hc/zh-cn/article_attachments/360044928032/origin-pull-ca.pem</a> ，并保存为origin-pull-ca.crt</li>
-<li>在Nginx的配置中，加入如下两行配置(假设你的证书都储存在/usr/local/nginx/conf/ssl/目录下)<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssl_client_certificate /usr/local/nginx/conf/ssl/origin-pull-ca.crt;</span><br><span class="line">ssl_verify_client on;</span><br></pre></td></tr></table></figure></li>
-<li>重启Nginx，此时再访问你的网站，会出现400错误，那说明Nginx已经配置成功，这个时候去Cloudflare后台打开Authenticated Origin Pulls的开关，即可实现对源站内容的进一步保护</li>
-</ul>
-<h3 id="终极：屏蔽非Cloudflare-CDN的访问"><a href="#终极：屏蔽非Cloudflare-CDN的访问" class="headerlink" title="终极：屏蔽非Cloudflare CDN的访问"></a>终极：屏蔽非Cloudflare CDN的访问</h3><p>当然，终极策略，我们可以考虑在Nginx上，屏蔽一切非Cloudflare CDN服务器的访问，我们可以在 <a target="_blank" rel="noopener" href="https://www.cloudflare.com/ips/">https://www.cloudflare.com/ips/</a> 看到所有Cloudflare使用的IP，我们可以在新建一个如下的cf.conf的配置，填写如下内容：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># https://www.cloudflare.com/ips</span></span><br><span class="line"><span class="comment"># IPv4</span></span><br><span class="line">allow <span class="number">173.245</span>.<span class="number">48.0</span>/<span class="number">20</span>;</span><br><span class="line">allow <span class="number">103.21</span>.<span class="number">244.0</span>/<span class="number">22</span>;</span><br><span class="line">allow <span class="number">103.22</span>.<span class="number">200.0</span>/<span class="number">22</span>;</span><br><span class="line">allow <span class="number">103.31</span>.<span class="number">4.0</span>/<span class="number">22</span>;</span><br><span class="line">allow <span class="number">141.101</span>.<span class="number">64.0</span>/<span class="number">18</span>;</span><br><span class="line">allow <span class="number">108.162</span>.<span class="number">192.0</span>/<span class="number">18</span>;</span><br><span class="line">allow <span class="number">190.93</span>.<span class="number">240.0</span>/<span class="number">20</span>;</span><br><span class="line">allow <span class="number">188.114</span>.<span class="number">96.0</span>/<span class="number">20</span>;</span><br><span class="line">allow <span class="number">197.234</span>.<span class="number">240.0</span>/<span class="number">22</span>;</span><br><span class="line">allow <span class="number">198.41</span>.<span class="number">128.0</span>/<span class="number">17</span>;</span><br><span class="line">allow <span class="number">162.158</span>.<span class="number">0.0</span>/<span class="number">15</span>;</span><br><span class="line">allow <span class="number">104.16</span>.<span class="number">0.0</span>/<span class="number">12</span>;</span><br><span class="line">allow <span class="number">172.64</span>.<span class="number">0.0</span>/<span class="number">13</span>;</span><br><span class="line">allow <span class="number">131.0</span>.<span class="number">72.0</span>/<span class="number">22</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment"># IPv6</span></span><br><span class="line">allow <span class="number">2400</span>:cb00::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2606</span>:<span class="number">4700</span>::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2803</span>:f800::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2405</span>:b500::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2405</span>:<span class="number">8100</span>::/<span class="number">32</span>;</span><br><span class="line">allow <span class="number">2</span>a06:<span class="number">98</span>c0::/<span class="number">29</span>;</span><br><span class="line">allow <span class="number">2</span>c0f:f248::/<span class="number">32</span>;</span><br></pre></td></tr></table></figure>
-<p>然后，我们在Nginx的配置下，增加如下配置</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> cf.conf;</span><br><span class="line">deny all;</span><br></pre></td></tr></table></figure>
-<p>这样，所有非Nginx IP访问都会被拒绝，这样的话，整个源站的保护基本已经做到比较完善的程度了。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://jayshao.com/cloudflare-nginx-ssl/">https://jayshao.com/cloudflare-nginx-ssl/</a></p>
 </blockquote>
 
       

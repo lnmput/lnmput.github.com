@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">395</span>
+          <span class="site-state-item-count">398</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,322 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/02/21/how-to-add-a-panel-to-chrome-dev-tools/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/02/21/how-to-add-a-panel-to-chrome-dev-tools/" class="post-title-link" itemprop="url">How-to-add-a-panel-to-Chrome-Dev-Tools</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-02-21 11:26:16" itemprop="dateCreated datePublished" datetime="2020-02-21T11:26:16+09:00">2020-02-21</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:29:43" itemprop="dateModified" datetime="2021-09-10T13:29:43+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+她曾那么可爱。然后一切都变了。
+</blockquote>
+
+<p>I’m a big fan of the Chrome Extension API. It is a simple (and cool) way to extend my favorite browser using HTML and JavaScript. One of the features I’ve been excited about for a while now is the DevTools API. This has been in “experimental” status for a while but is now (mostly) available in the main release.</p>
+<p>The DevTools API allows you to integrate extensions directly into your DevTools. There are multiple samples of this API. But there aren’t any samples that detail how to create panels. There is documentation for creating panels, but it wasn’t clear how to use that API in a real extension. I dug at it for a while and finally figured it out. What follows is what I had to do to make panel creation work. It may not be the right way, but it worked. First, you must set a devtools_page value in your manifest.json. Here is my sample manifest.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;ColdFire&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;version&quot;</span>: <span class="string">&quot;1.0.2&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;manifest_version&quot;</span>: <span class="number">2</span>,</span><br><span class="line">  <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Adds ColdFire support.&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;devtools_page&quot;</span>: <span class="string">&quot;devtools.html&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;permissions&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;tabs&quot;</span>,</span><br><span class="line">    <span class="string">&quot;http://*/*&quot;</span>,</span><br><span class="line">    <span class="string">&quot;https://*/*&quot;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>the critical part here is devtools_page. You specify a HTML file that will be executed every time the devtools UI is opened. Here is my HTML file:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;devtools.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>Not much, right? As far as I can tell, the actual HTML for this file is never going to be rendered - anywhere. Instead, the entire point of this file is to load a JavaScript script. If so, it would be nice if Google would let us simply point devtools_page to a JavaScript script instead. Now let’s look at the script.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">&quot;hello from devtools&quot;</span>);</span><br><span class="line">chrome.devtools.panels.create(<span class="string">&quot;ColdFire&quot;</span>,</span><br><span class="line">                              <span class="string">&quot;coldfusion10.png&quot;</span>,</span><br><span class="line">                              <span class="string">&quot;panel.html&quot;</span>,</span><br><span class="line">                              <span class="function"><span class="keyword">function</span>(<span class="params">panel</span>) </span>&#123; <span class="built_in">console</span>.log(<span class="string">&quot;hello from callback&quot;</span>); &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>The main part of this script - for now - is just one line. It runs the panels.create API to define a new panel. The first argument is the title. The second is the icon. The third is the HTML file for the panel. Finally, the last argument is a callback to execute when the panel is created. There is no documentation on what size the icon should be. It seems to be 32x32.</p>
+<p>Now let’s look at panel.html. I’ve only just begun development so for right now it is pretty simple.</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;panel.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h2</span>&gt;</span>ColdFire<span class="tag">&lt;/<span class="name">h2</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>And last but not least, the JavaScript file loaded by the panel:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">&quot;panel.js&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>So - what about all those console messages? As I tried to get things working, I used console messages all over the place so I could - hopefully - see what was going on. I had very little luck with this. I’ve blogged before about how to use console with Chrome Extensions, but that tip only works when you have a background script. My test extension did not. What finally worked was this:</p>
+<p>Click the button that detaches Chrome Dev Tools<br>With the Chrome Dev Tools in its own window and currently focused, use the keyboard combo to open Chrome Dev Tools<br>This opens a second Chrome Dev Tools and I could see all my log messages there.</p>
+<p>I hope this helps. As I said, I just got this working so I probably have a lot more to learn.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.raymondcamden.com/2012/07/15/How-to-add-a-panel-to-Chrome-Dev-Tools">https://www.raymondcamden.com/2012/07/15/How-to-add-a-panel-to-Chrome-Dev-Tools</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/17/golang%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84restfulapi/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/01/17/golang%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84restfulapi/" class="post-title-link" itemprop="url">golang创建一个简单的restfulapi</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-01-17 19:03:25" itemprop="dateCreated datePublished" datetime="2020-01-17T19:03:25+09:00">2020-01-17</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:59:42" itemprop="dateModified" datetime="2021-09-10T13:59:42+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你如今的气质里，藏着你走过的路，读过的书，和爱过的人。
+</blockquote>
+
+<p>Webからエンタープライズアプリケーションまで、RESTfulというアーキテクチャーが使われています。ステートレス設計として、別々のソフトウェアコンポーネント間の通信を提供する強力な方法であります。 Web開発者として、RESTful APIを作るために、主にPythonを使いますが、最近Goプログラミング言語に出会い、興味を持ってきました。Goプログラミング言語（golangでも呼ばれる）は、Googleのプロジェクトで、マイクロサービスアーキテクチャに適当な多くの機能も提供するので、人気が増えています。</p>
+<p>本記事、golangを使ってシンプルなRESTful APIをどう作るか説明したいと思います。</p>
+<h3 id="仕様"><a href="#仕様" class="headerlink" title="仕様"></a>仕様</h3><p>RESTful APIは、通常CRUDができます。CRUDとは、データベースの四つの主要な機能、「作成（Create）」「読み出し（Read）」「更新（Update）」「削除（Delete）」ですが、今回は、簡単にするために、読み出しの機能しか作りません。そして、データがJSONの形式で書きます。</p>
+<p>そして、このエンドポイントがあります：</p>
+<ul>
+<li>/ -&gt; ホームページですが、とりあえずテキストしかを見せない</li>
+<li>/items/ -&gt; Itemのリスト、Itemデータを全部見せる</li>
+<li>/items/{id} -&gt; 特定のItemの情報<br>それぞれのItemは、「title」と「description」のデータがあって、簡単にするために、データベースを使用するのではなく、データを事前に定義します。</li>
+</ul>
+<h3 id="開発プロセス"><a href="#開発プロセス" class="headerlink" title="開発プロセス"></a>開発プロセス</h3><p>最初は、必要なパッケージをインストールします。ルーティングのために、Muxというパッケージを使っていきます。CMD / Terminalを開けて、このコマンドを実行してください：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go get -u github.com/gorilla/mux</span><br></pre></td></tr></table></figure>
+<p>その後、main.goというファイルを作成して、このコードを入れてください：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;net/http&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;github.com/gorilla/mux&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>すべてのgolangを使って作られたプログラムがパッケージで構成されています。この部分では、何のパッケージが必要かが書いてあります。この場合には、四つのパッケージが必要です。</p>
+<h3 id="ルーティング"><a href="#ルーティング" class="headerlink" title="ルーティング"></a>ルーティング</h3><p>同じファイルで、さっきの書いたコードの下に、このコードを入れてください：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Controller for the / route (home)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">homePage</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    fmt.Fprintf(w, <span class="string">&quot;This is the home page. Welcome!&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Controller for the /items route</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnAllItems</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    <span class="comment">// Code for returning all items here</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Controller for the /items/&#123;id&#125; route</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnSingleItem</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    <span class="comment">// Code for returning a single item here</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">handleRequests</span><span class="params">()</span></span> &#123;</span><br><span class="line">    myRouter := mux.NewRouter().StrictSlash(<span class="literal">true</span>)</span><br><span class="line">    myRouter.HandleFunc(<span class="string">&quot;/&quot;</span>, homePage)</span><br><span class="line">    myRouter.HandleFunc(<span class="string">&quot;/items&quot;</span>, returnAllItems)</span><br><span class="line">    myRouter.HandleFunc(<span class="string">&quot;/items/&#123;id&#125;&quot;</span>, returnSingleItem)</span><br><span class="line">    log.Fatal(http.ListenAndServe(<span class="string">&quot;:8000&quot;</span>, myRouter))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    handleRequests()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>main()</code>という関数は、このプログラムをスタートすると、自動的に実行されます。その中に、<code>handleRequests()</code>という関数が実行されます。<code>handleRequests()</code>の関数で、それぞれのエンドポイントがアクセスされると、何が起こるかが書いてあります。例えば、/のエンドポイントがアクセスされると、<code>homePage</code>という関数が実行されるとか、<code>/items</code>のエンドポイントがアクセスされると、<code>returnAllItems</code>という関数が実行されます。</p>
+<p>そして、このコード：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">log.Fatal(http.ListenAndServe(<span class="string">&quot;:8000&quot;</span>, myRouter))</span><br></pre></td></tr></table></figure>
+<p>の意味は、このプログラムが8000のポートで、アクセスできます。これで、もう使えるなので、スタートしてみましょう！</p>
+<p>CMD / Terminal で、このコマンドを実行してください：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> run main.<span class="keyword">go</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="サポート関数"><a href="#サポート関数" class="headerlink" title="サポート関数"></a>サポート関数</h3><p>これから、二つのパッケージが必要なので、インポートしましょう。最初のimport部分をこれに変更してください：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/json&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;net/http&quot;</span></span><br><span class="line">    <span class="string">&quot;strconv&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;github.com/gorilla/mux&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>encoding/jsonとstrconvというパッケージを追加しました。もうすぐこの二つを使います。</p>
+<p>それから、二つのサポート関数を書きましょう：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">respondWithError</span><span class="params">(w http.ResponseWriter, code <span class="keyword">int</span>, msg <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    respondWithJson(w, code, <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span>&#123;<span class="string">&quot;error&quot;</span>: msg&#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">respondWithJson</span><span class="params">(w http.ResponseWriter, code <span class="keyword">int</span>, payload <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">    response, _ := json.Marshal(payload)</span><br><span class="line">    w.Header().Set(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json&quot;</span>)</span><br><span class="line">    w.WriteHeader(code)</span><br><span class="line">    w.Write(response)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>両方の関数は、JSONの形式でHTTP requestに答える役割があります。</p>
+<h3 id="Itemデータ構造"><a href="#Itemデータ構造" class="headerlink" title="Itemデータ構造"></a>Itemデータ構造</h3><p>Itemのデータ構造を書きましょう。importの部分の下に、このコードを入れてください：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Item representation</span></span><br><span class="line"><span class="keyword">type</span> Item <span class="keyword">struct</span> &#123;</span><br><span class="line">    Title   <span class="keyword">string</span> <span class="string">`json:&quot;title&quot;`</span></span><br><span class="line">    Description    <span class="keyword">string</span> <span class="string">`json:&quot;description&quot;`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>仕様に基づいて、それぞれのItemは、「title」と「description」のデータがあります。そして、その下に、これを入れて下さい：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Global, static list of items</span></span><br><span class="line"><span class="keyword">var</span> itemList = []Item&#123;</span><br><span class="line">    Item&#123;Title: <span class="string">&quot;Item A&quot;</span>, Description: <span class="string">&quot;The first item&quot;</span>&#125;,</span><br><span class="line">    Item&#123;Title: <span class="string">&quot;Item B&quot;</span>, Description: <span class="string">&quot;The second item&quot;</span>&#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>今回は、データベースを使わないので、これでデータを事前に定義します。二つのItemだけ書きましたが、自由にいくつでもいいですよ。</p>
+<h3 id="コア関数"><a href="#コア関数" class="headerlink" title="コア関数"></a>コア関数</h3><p>最後に、コア関数（returnAllItemsとreturnSingleItem）を書きます。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Controller for the /items route</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnAllItems</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    respondWithJson(w, http.StatusOK, itemList)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>基本的に、/itemsのエンドポイントをアクセスすると、returnAllItems()という関数がすべてのItemをJSONの形式で答えます。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Controller for the /items/&#123;id&#125; route</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">returnSingleItem</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    <span class="comment">// Get query parameters using Mux</span></span><br><span class="line">    vars := mux.Vars(r)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Convert &#123;id&#125; parameter from string to int</span></span><br><span class="line">    key, err := strconv.Atoi(vars[<span class="string">&quot;id&quot;</span>])</span><br><span class="line"></span><br><span class="line">    <span class="comment">// If &#123;id&#125; parameter is not valid int</span></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        respondWithError(w, http.StatusBadRequest, <span class="string">&quot;Invalid request payload&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// If Item with ID of &#123;id&#125; does not exist</span></span><br><span class="line">    <span class="keyword">if</span> key &gt;= <span class="built_in">len</span>(itemList) &#123;</span><br><span class="line">        respondWithError(w, http.StatusNotFound, <span class="string">&quot;Item does not exist&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    respondWithJson(w, http.StatusOK, itemList[key])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>そして、<code>returnSingleItem()</code>という関数が、idのURLパラメーターに基づいて特定のItemの情報をJSONの形式で答えます。</p>
+<p>例えば、localhost:8000/items/1をアクセスしたら、1がidになります。それから、そのidは、indexとしてitemListという配列からデータを取ってJSONの形式で答えます。idは1の場合は、二つ目のデータが取られます。そして、idは0の場合は、一つ目のデータが取られます。</p>
+<p>idは、数だけであるべきであり、Itemの数以上になってはいけないので、二つのチェックを書きました。これで、終わりです。作ってみましょう！</p>
+<h3 id="テスト"><a href="#テスト" class="headerlink" title="テスト"></a>テスト</h3><p>CMD / Terminal で、さっきのrunを閉じて、もう一回実行してください：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> run main.<span class="keyword">go</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://qiita.com/sbenemerito/items/d94b811f14ce0a546a3f">https://qiita.com/sbenemerito/items/d94b811f14ce0a546a3f</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/" class="post-title-link" itemprop="url">Nginx使用HTTPS反向代理laravel的HTTP应用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2020-01-14 12:39:12 / 修改时间：13:49:08" itemprop="dateCreated datePublished" datetime="2020-01-14T12:39:12+09:00">2020-01-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+幸有我来山未孤
+</blockquote>
+
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>反向代理的概念不多做解释，此处应用反向代理主要原因如下：</p>
+<ul>
+<li>应用服务器不必暴露在公网，躲在防火墙后，通过内网连接代理服务器（proxy server）</li>
+<li>DNS设置简单，因为有两个不同应用服务器，对应不同的子域名（a.example.com, b.example.com），只需设置DNS *.example.com 到代理服务器IP即可</li>
+<li>SSL证书管理方便，只需申请一个通配符的证书 *.example.com 配置在代理服务器</li>
+</ul>
+<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><p>系统环境都是Ubuntu 18.04.2，服务器都是使用Nginx，代理服务器配置SSL，使用HTTPS对外访问（HTTP强制跳转到HTTPS），应用服务器使用Laravel，HTTP对内网访问。</p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><h4 id="应用服务器配置"><a href="#应用服务器配置" class="headerlink" title="应用服务器配置"></a>应用服务器配置</h4><p>应用服务器的nginx照常配置即可，可以设置server_name为对应的域名。</p>
+<h3 id="代理服务器配置"><a href="#代理服务器配置" class="headerlink" title="代理服务器配置"></a>代理服务器配置</h3><p>代理服务器从网上抄来一份，主要是设置proxy_pass，下面只是location block：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_set_header Host <span class="variable">$host</span>;</span><br><span class="line">    proxy_set_header X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-Proto <span class="variable">$scheme</span>;</span><br><span class="line">    proxy_pass    http:<span class="comment">//ip;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意要加 proxy_set_header X-Forwarded-Proto $scheme 这一条，让后面被代理的应用服务器知道对应的协议是什么，这样应用服务器生成url（如css，js文件）使用相应的协议。如果代理服务器确定使用https，那$scheme替换成https也可以。</p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>本以为这样就搞定了，但是在用域名测试的时候发现网站不能正常加载，浏览器有如下错误：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Mixed</span> Content: The page at <span class="string">&#x27;&lt;URL&gt;&#x27;</span> was loaded over HTTPS, but requested an insecure stylesheet <span class="string">&#x27;&lt;URL&gt;&#x27;</span>. This request has been blocked; the content must be served over HTTPS.</span><br></pre></td></tr></table></figure>
+<p>在页面中混用了HTTPS和HTTP，浏览器会block掉不安全的HTTP链接。而HTTP链接主要是用laravel的asset生成的css, js文件，css文件没有加载上，所以就不能正常加载了。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/helpers#method-asset">https://laravel.com/docs/5.5/helpers#method-asset</a><br>多方查询，有推荐使用proxy_redirect来替换HTTP为HTTPS，但是试用不成功。</p>
+</blockquote>
+<p>也有说这些资源文件用uri路径来表示，\css\example.css 这样，不带协议。</p>
+<p>或者页面增加一个meta，让HTTP升级为安全的HTTPS：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;Content-Security-Policy&quot;</span> <span class="attr">content</span>=<span class="string">&quot;upgrade-insecure-requests&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这样在生产环境没问题，但是需要改动很多代码，而且开发、测试环境也需要ssl证书，很不方便。</p>
+<p>在查询到几篇文章中，有提到后端是tomcat，需要修改tomcat的配置来接受X-Forwarded-Proto 这个Header来处理。我思考是不是laravel也需要类似设置，google一下发现了这个：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/requests#configuring-trusted-proxies">https://laravel.com/docs/5.5/requests#configuring-trusted-proxies</a><br>When running your applications behind a load balancer that terminates TLS / SSL certificates, you may notice your application sometimes does not generate HTTPS links. Typically this is because your application is being forwarded traffic from your load balancer on port 80 and does not know it should generate secure links.</p>
+</blockquote>
+<p>Laravel从5.5开始，内置了一个 TrustProxies模块来解决这个问题，专门应对使用了Load Balancer等情况。</p>
+<p>所以按照文档，修改 protected $proxies = ‘<strong>‘，因为应用服务器在内网，所以改成</strong>也无所谓。<br>Laravel 5.5之前的版本，可以自行用composer来安装这个插件。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/fideloper/TrustedProxy">https://github.com/fideloper/TrustedProxy</a></p>
+<p>测试之后，问题解决。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/">http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -815,256 +1131,6 @@
 
 <h3 id="接口使用"><a href="#接口使用" class="headerlink" title="接口使用"></a>接口使用</h3><p>接下来我们可以使用一下这个类型了：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> duck Duck</span><br><span class="line">duck = ToyDuck&#123;&#125;</span><br><span class="line">duck.Swim()</span><br><span class="line">duck.Feathers()</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/10/05/go%E8%AF%AD%E8%A8%80%E4%B8%AD%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BD%BF%E7%94%A8%E6%8C%87%E9%92%88/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/10/05/go%E8%AF%AD%E8%A8%80%E4%B8%AD%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BD%BF%E7%94%A8%E6%8C%87%E9%92%88/" class="post-title-link" itemprop="url">Go语言中什么时候使用指针</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2019-10-05 22:47:42" itemprop="dateCreated datePublished" datetime="2019-10-05T22:47:42+09:00">2019-10-05</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:53:31" itemprop="dateModified" datetime="2021-09-10T13:53:31+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-当快乐到来时，我就不再思考人生
-当寂寞来临时，我就低头努力读书
-</blockquote>
-
-<p>什么是指针：即一个指针变量指向一个值的内存地址。</p>
-<h3 id="使用值类型和指针类型的区别"><a href="#使用值类型和指针类型的区别" class="headerlink" title="使用值类型和指针类型的区别"></a>使用值类型和指针类型的区别</h3><p>首先，我们来看一个计算面积的代码，如下所示。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Rect <span class="keyword">struct</span> &#123;                               <span class="comment">//定义一个结构体</span></span><br><span class="line">    width  <span class="keyword">float64</span></span><br><span class="line">    length <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rect Rect)</span> <span class="title">area</span><span class="params">()</span> <span class="title">float64</span></span> &#123;               <span class="comment">//定义一个方法，按值传递</span></span><br><span class="line">	<span class="keyword">return</span> rect.width * rect.length</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rect *Rect)</span> <span class="title">area1</span><span class="params">()</span> <span class="title">float64</span></span> &#123;            <span class="comment">//定义一个方法，按指针传递</span></span><br><span class="line">    rect.width *= <span class="number">2</span></span><br><span class="line">    rect.length *= <span class="number">2</span></span><br><span class="line">    <span class="keyword">return</span> rect.width * rect.length</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> rect = <span class="built_in">new</span>(Rect)     <span class="comment">//使用new函数创建一个结构体指针rect，也就是说rect的类型是*Rect</span></span><br><span class="line">    rect.width = <span class="number">100</span></span><br><span class="line">    rect.length = <span class="number">200</span></span><br><span class="line">    fmt.Println(<span class="string">&quot;Width:&quot;</span>, rect.width, <span class="string">&quot;Length:&quot;</span>, rect.length,<span class="string">&quot;Area:&quot;</span>, rect.area())  <span class="comment">//通过结构体指针类型的变量调用area()方法</span></span><br><span class="line">    fmt.Println(<span class="string">&quot;Width:&quot;</span>, rect.width, <span class="string">&quot;Length:&quot;</span>, rect.length,<span class="string">&quot;Area:&quot;</span>, rect.area1())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在Go语言中，默认是按值传递。当一个变量当作参数传递的时候，会创建一个变量的副本，然后传递给函数或者方法，你可以看到这个副本的地址和变量的地址是不一样的。当变量当做指针被传递的时候，一个新的指针被创建，它指向变量同样的内存地址，所以你可以将这个指针看成原始变量指针的副本。</p>
-<p>故此</p>
-<ul>
-<li>1.是否使用结构体指针，取决于是否要在函数内部改变传递进来的参数的值。如果你的struct足够大，使用指针可以加快效率。如果不使用指针，在函数内部则无法修改struct中的值。</li>
-<li>2.结构体赋值默认是按值传递，你要改变原来的那个值，要使用指针（即如果你要修改对象本身，那就要传指针，否则修改的是副本）。</li>
-</ul>
-<h3 id="go什么情况下使用指针"><a href="#go什么情况下使用指针" class="headerlink" title="go什么情况下使用指针"></a>go什么情况下使用指针</h3><ul>
-<li>推荐在方法上使用指针（前提是这个类型不是 map、slice 等引用类型）</li>
-<li>当结构体较大的时候使用指针会更高效，可以避免内存拷贝，“结构较大” 到底多大才算大可能需要自己或团队衡量，如超过 5 个字段或者根据结构体内存占用来计算</li>
-<li>如果要修改结构体内部的数据或状态必须使用指针</li>
-<li>如果方法的receiver是map、slice 、channel等引用类型不要使用指针</li>
-<li>小数据类型如 bool、int 等没必要使用指针传递</li>
-<li>如果该函数会修改receiver或变量等，使用指针</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/09/05/safari%E6%89%8B%E6%9C%BA%E6%B5%8F%E8%A7%88%E5%99%A8%E7%82%B9%E5%87%BB%E4%BA%8B%E4%BB%B6%E5%A4%B1%E6%95%88/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/09/05/safari%E6%89%8B%E6%9C%BA%E6%B5%8F%E8%A7%88%E5%99%A8%E7%82%B9%E5%87%BB%E4%BA%8B%E4%BB%B6%E5%A4%B1%E6%95%88/" class="post-title-link" itemprop="url">safari手机浏览器点击事件失效</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2019-09-05 15:25:29 / 修改时间：16:33:05" itemprop="dateCreated datePublished" datetime="2019-09-05T15:25:29+09:00">2019-09-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-天之涯，地之角，知交半零落。
-一瓢浊酒尽余欢，今宵别梦寒。
-</blockquote>
-
-<h3 id="添加点击事件"><a href="#添加点击事件" class="headerlink" title="添加点击事件"></a>添加点击事件</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="built_in">document</span>).on(<span class="string">&#x27;click&#x27;</span>, <span class="string">&#x27;#MenuToggle&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    $(<span class="string">&quot;#divBox&quot;</span>).addClass(<span class="string">&quot;box-overflow&quot;</span>);</span><br><span class="line">    $(<span class="string">&quot;.divBoxOverlay&quot;</span>).addClass(<span class="string">&quot;push-overlay&quot;</span>);</span><br><span class="line">    $(<span class="string">&quot;.divBoxOverlay&quot;</span>).on(<span class="string">&#x27;touchmove&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123;</span><br><span class="line">        e.preventDefault();</span><br><span class="line">    &#125;);</span><br><span class="line">    $(<span class="string">&quot;#topMenu&quot;</span>).addClass(<span class="string">&quot;animate-translate&quot;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">document</span>.addEventListener(<span class="string">&#x27;click&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (e.target &amp;&amp; e.target.matches(<span class="string">&#x27;#btn&#x27;</span>)) &#123;</span><br><span class="line">    <span class="built_in">window</span>.alert(<span class="string">&#x27;hello ios safari&#x27;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-<p>iOS 的 Safari 下，委托点击事件在某些情况下会出现点击失效</p>
-<h3 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h3><ul>
-<li>最简单的，给 CSS 加上 cursor: pointer；</li>
-<li>停止委托，直接给 #btn 绑定事件处理器；</li>
-<li>给div元素加上 onclick=’void(0);’；</li>
-<li>将 div 换成其它不受该 bug 特性影响的元素，比如 a、button 等。</li>
-</ul>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event#Safari_Mobile">https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event#Safari_Mobile</a><br><a target="_blank" rel="noopener" href="https://blog.zfanw.com/ios-safari-click-not-working/">https://blog.zfanw.com/ios-safari-click-not-working/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/07/23/elasticsearch%E6%8C%89%E7%85%A7%E7%BB%99%E5%AE%9A%E7%9A%84id%E9%A1%BA%E5%BA%8F%E6%8E%92%E5%BA%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/07/23/elasticsearch%E6%8C%89%E7%85%A7%E7%BB%99%E5%AE%9A%E7%9A%84id%E9%A1%BA%E5%BA%8F%E6%8E%92%E5%BA%8F/" class="post-title-link" itemprop="url">elasticsearch按照给定的id顺序排序</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2019-07-23 11:07:05 / 修改时间：12:13:14" itemprop="dateCreated datePublished" datetime="2019-07-23T11:07:05+09:00">2019-07-23</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-春风再美也比不上你的笑
-没见过你的人不会明了
-</blockquote>
-
-<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><ul>
-<li>Laravel 5.5</li>
-<li>ElasticSearch 6.5</li>
-</ul>
-<h3 id="代码片段"><a href="#代码片段" class="headerlink" title="代码片段"></a>代码片段</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$params</span> = [];</span><br><span class="line"><span class="variable">$length</span> = count(<span class="variable">$conditions</span>[<span class="string">&#x27;id&#x27;</span>]);</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$conditions</span>[<span class="string">&#x27;id&#x27;</span>] <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$id</span>) &#123;</span><br><span class="line">    <span class="variable">$params</span>[] = [<span class="string">&#x27;id&#x27;</span> =&gt; <span class="variable">$id</span>, <span class="string">&#x27;score&#x27;</span> =&gt; <span class="variable">$length</span> - <span class="variable">$key</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$source</span> = [<span class="string">&#x27;id&#x27;</span>, <span class="string">&#x27;title&#x27;</span>, <span class="string">&#x27;url&#x27;</span>, <span class="string">&#x27;price&#x27;</span>, <span class="string">&#x27;list_price&#x27;</span>, <span class="string">&#x27;images&#x27;</span>, <span class="string">&#x27;thumbs&#x27;</span>, <span class="string">&#x27;status&#x27;</span>, <span class="string">&#x27;rating&#x27;</span>, <span class="string">&#x27;sort&#x27;</span>, <span class="string">&#x27;reviews_amount&#x27;</span>, <span class="string">&#x27;cids&#x27;</span>];</span><br><span class="line"><span class="variable">$params</span> = [</span><br><span class="line">    <span class="string">&#x27;index&#x27;</span> =&gt; <span class="variable">$index</span>,</span><br><span class="line">    <span class="string">&#x27;type&#x27;</span> =&gt; <span class="string">&#x27;products&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;body&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;query&#x27;</span> =&gt; [</span><br><span class="line">            <span class="string">&#x27;function_score&#x27;</span> =&gt; [</span><br><span class="line">                <span class="string">&#x27;query&#x27;</span> =&gt; [</span><br><span class="line">                    <span class="string">&#x27;bool&#x27;</span> =&gt; [</span><br><span class="line">                        <span class="string">&#x27;must&#x27;</span> =&gt; [</span><br><span class="line">                            [</span><br><span class="line">                                <span class="string">&#x27;terms&#x27;</span> =&gt; [</span><br><span class="line">                                    <span class="string">&#x27;id&#x27;</span> =&gt; <span class="variable">$conditions</span>[<span class="string">&#x27;id&#x27;</span>]</span><br><span class="line">                                ]</span><br><span class="line">                            ]</span><br><span class="line">                        ]</span><br><span class="line">                    ]</span><br><span class="line">                ],</span><br><span class="line">                <span class="string">&#x27;script_score&#x27;</span> =&gt; [</span><br><span class="line">                    <span class="string">&#x27;script&#x27;</span> =&gt; [</span><br><span class="line">                        <span class="string">&#x27;lang&#x27;</span> =&gt; <span class="string">&#x27;painless&#x27;</span>,</span><br><span class="line">                        <span class="string">&#x27;params&#x27;</span> =&gt; [</span><br><span class="line">                            <span class="string">&#x27;scoring&#x27;</span> =&gt; <span class="variable">$params</span></span><br><span class="line">                        ],</span><br><span class="line">                        <span class="string">&#x27;source&#x27;</span> =&gt; <span class="string">&quot;for(i in params.scoring) &#123; if(doc[&#x27;id&#x27;].value == i.id ) return i.score; &#125; return 0;&quot;</span></span><br><span class="line">                    ]</span><br><span class="line">                ]</span><br><span class="line">            ]</span><br><span class="line">        ],</span><br><span class="line">        <span class="string">&#x27;_source&#x27;</span> =&gt; <span class="variable">$source</span>,</span><br><span class="line">    ],</span><br><span class="line">    <span class="string">&#x27;from&#x27;</span> =&gt; (<span class="variable">$page</span> - <span class="number">1</span>) * <span class="variable">$perPage</span>,</span><br><span class="line">    <span class="string">&#x27;size&#x27;</span> =&gt; <span class="variable">$perPage</span>,</span><br><span class="line">];</span><br><span class="line"></span><br><span class="line"><span class="variable">$results</span> = Searches::getEsInstance()-&gt;search(<span class="variable">$params</span>);</span><br><span class="line"><span class="variable">$total</span> = <span class="variable">$results</span>[<span class="string">&#x27;hits&#x27;</span>][<span class="string">&#x27;total&#x27;</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">empty</span>(<span class="variable">$items</span> = <span class="variable">$results</span>[<span class="string">&#x27;hits&#x27;</span>][<span class="string">&#x27;hits&#x27;</span>])) &#123;</span><br><span class="line">    <span class="keyword">return</span> [];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><p>不同版本的ES语法可能不同， 具体请参阅官方文档</p>
-
       
     </div>
 

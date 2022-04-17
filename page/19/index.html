@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">395</span>
+          <span class="site-state-item-count">398</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,305 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/23/php%E7%9A%84%E5%89%A9%E4%BD%99%E5%8F%82%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/23/php%E7%9A%84%E5%89%A9%E4%BD%99%E5%8F%82%E6%95%B0/" class="post-title-link" itemprop="url">php的剩余参数</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-23 18:27:51" itemprop="dateCreated datePublished" datetime="2018-01-23T18:27:51+09:00">2018-01-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:31:07" itemprop="dateModified" datetime="2018-03-27T22:31:07+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+没想到，我已经这么老了.
+</blockquote>
+PHP在用户自定义函数中支持可变数量的参数列表。在 `PHP 5.6` 及以上的版本中，由 ... 语法实现；在 PHP 5.5 及更早版本中，使用函数 `func_num_args()`，`func_get_arg()`，和 `func_get_args()` 。
+
+<h3 id="代表全体参数"><a href="#代表全体参数" class="headerlink" title="代表全体参数"></a>代表全体参数</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params">...<span class="variable">$numbers</span></span>) </span>&#123;</span><br><span class="line">  dump(<span class="variable">$numbers</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sum(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+<p>这里的<code>$numbers</code>的结果就是一个数组;</p>
+<h3 id="解压一个数组"><a href="#解压一个数组" class="headerlink" title="解压一个数组"></a>解压一个数组</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params"><span class="variable">$a</span>, <span class="variable">$b</span></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="variable">$a</span> + <span class="variable">$b</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> add(...[<span class="number">1</span>, <span class="number">2</span>]).<span class="string">&quot;\n&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$a</span> = [<span class="number">1</span>, <span class="number">2</span>];</span><br><span class="line"><span class="keyword">echo</span> add(...<span class="variable">$a</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="只能用在参数的最后"><a href="#只能用在参数的最后" class="headerlink" title="只能用在参数的最后"></a>只能用在参数的最后</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"><span class="variable">$header</span>,...<span class="variable">$numbers</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$acc</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$numbers</span> <span class="keyword">as</span> <span class="variable">$n</span>) &#123;</span><br><span class="line">        <span class="variable">$acc</span> += <span class="variable">$n</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$header</span>.<span class="variable">$acc</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> sum(<span class="string">&#x27;结果是:&#x27;</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+<p>打印结果: 结果是:10</p>
+<h3 id="PHP5-6之前的操作"><a href="#PHP5-6之前的操作" class="headerlink" title="PHP5.6之前的操作"></a>PHP5.6之前的操作</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$acc</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">foreach</span> (func_get_args() <span class="keyword">as</span> <span class="variable">$n</span>) &#123;</span><br><span class="line">        <span class="variable">$acc</span> += <span class="variable">$n</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$acc</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> sum(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>在ES6中也有相似的用法…</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://php.net/manual/zh/functions.arguments.php">http://php.net/manual/zh/functions.arguments.php</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/23/%E7%94%A8array-map%E5%92%8Carray-reduce%E6%9B%BF%E4%BB%A3foreach%E5%BE%AA%E7%8E%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/23/%E7%94%A8array-map%E5%92%8Carray-reduce%E6%9B%BF%E4%BB%A3foreach%E5%BE%AA%E7%8E%AF/" class="post-title-link" itemprop="url">用array_map和array_reduce替代foreach循环</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-01-23 11:07:07 / 修改时间：13:13:34" itemprop="dateCreated datePublished" datetime="2018-01-23T11:07:07+09:00">2018-01-23</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+零落成泥碾作尘，只有香如故。
+</blockquote>
+
+
+
+<h3 id="array-map"><a href="#array-map" class="headerlink" title="array_map"></a>array_map</h3><p>返回用户自定义函数作用后的数组<br>向array_map传入数组，出来的还是数组，而不是上面array_reduce()的一个值。所以，array_map()最简单的就是把 callback函数作用到每个数组的值上，最常见的场景就是 intval()、trim()  数组中的值，在一些框架的源码中也经常见到，比如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = <span class="keyword">array</span>(<span class="string">&#x27;2&#x27;</span>,<span class="string">&#x27;3&#x27;</span>,<span class="string">&#x27;4&#x27;</span>,<span class="string">&#x27;5&#x27;</span>);</span><br><span class="line">array_map(<span class="string">&#x27;intval&#x27;</span> , <span class="variable">$arr</span>);</span><br><span class="line">array_map(<span class="string">&#x27;htmlspecialchars&#x27;</span> , <span class="variable">$arr</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="array-reduce"><a href="#array-reduce" class="headerlink" title="array_reduce"></a>array_reduce</h3><p>使用回调函数迭代地将数组简化为单一的值<br>使用array_reduce()替代foreach()循环最常用的一个业务场景也许就是数组求和，比如:</p>
+<h4 id="使用foreach"><a href="#使用foreach" class="headerlink" title="使用foreach"></a>使用foreach</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="string">&#x27;2&#x27;</span>,<span class="string">&#x27;3&#x27;</span>,<span class="string">&#x27;4&#x27;</span>,<span class="string">&#x27;5&#x27;</span>];</span><br><span class="line">array_map(<span class="string">&#x27;intval&#x27;</span> , <span class="variable">$arr</span>);</span><br><span class="line">array_map(<span class="string">&#x27;htmlspecialchars&#x27;</span> , <span class="variable">$arr</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用array-reduce"><a href="#使用array-reduce" class="headerlink" title="使用array_reduce"></a>使用array_reduce</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$nums</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">6</span>];</span><br><span class="line"><span class="variable">$sum</span> = array_reduce(<span class="variable">$nums</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$res</span>, <span class="variable">$num</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$res</span> + <span class="variable">$num</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">dd(<span class="variable">$sum</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="array-reduce带初始值"><a href="#array-reduce带初始值" class="headerlink" title="array_reduce带初始值"></a>array_reduce带初始值</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="string">&#x27;AAAA&#x27;</span>, <span class="string">&#x27;BBBB&#x27;</span>, <span class="string">&#x27;CCCC&#x27;</span>];</span><br><span class="line"><span class="variable">$res</span> = array_reduce(<span class="variable">$arr</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$carry</span> . <span class="variable">$item</span>;</span><br><span class="line">&#125;, <span class="string">&#x27;所有字符:&#x27;</span>);</span><br><span class="line">dd(<span class="variable">$res</span>);</span><br><span class="line"><span class="comment">// 所有字符:AAAABBBBCCCC</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="扩展array-filter"><a href="#扩展array-filter" class="headerlink" title="扩展array_filter"></a>扩展array_filter</h3><p>该函数把输入数组中的每个键值传给回调函数。如果回调函数返回 true，则把输入数组中的当前键值返回结果数组中。数组键名保持不变。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">odd</span>(<span class="params"><span class="variable">$var</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="variable">$var</span> % <span class="number">2</span> == <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">even</span>(<span class="params"><span class="variable">$var</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="variable">$var</span> % <span class="number">2</span> == <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$array1</span> = [<span class="string">&quot;a&quot;</span>=&gt;<span class="number">1</span>, <span class="string">&quot;b&quot;</span>=&gt;<span class="number">2</span>, <span class="string">&quot;c&quot;</span>=&gt;<span class="number">3</span>, <span class="string">&quot;d&quot;</span>=&gt;<span class="number">4</span>, <span class="string">&quot;e&quot;</span>=&gt;<span class="number">5</span>];</span><br><span class="line"><span class="variable">$array2</span> = [<span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>, <span class="number">11</span>, <span class="number">12</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;Odd : &quot;</span>;</span><br><span class="line">dump(array_filter(<span class="variable">$array1</span>, <span class="string">&quot;odd&quot;</span>));</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;Even: &quot;</span>;</span><br><span class="line">dump(array_filter(<span class="variable">$array2</span>, <span class="string">&quot;even&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.tanteng.me/2015/07/array-map-reduce-foreach/">https://blog.tanteng.me/2015/07/array-map-reduce-foreach/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/23/S-O-L-I-D%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E8%AE%BE%E8%AE%A1%E7%9A%845%E5%A4%A7%E5%8E%9F%E5%88%99/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/23/S-O-L-I-D%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E8%AE%BE%E8%AE%A1%E7%9A%845%E5%A4%A7%E5%8E%9F%E5%88%99/" class="post-title-link" itemprop="url">S.O.L.I.D面向对象设计的5大原则</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-23 10:32:05" itemprop="dateCreated datePublished" datetime="2018-01-23T10:32:05+09:00">2018-01-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-05-02 10:20:44" itemprop="dateModified" datetime="2018-05-02T10:20:44+09:00">2018-05-02</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+专注、极致、大道至简。
+</blockquote>
+
+<h3 id="S-O-L-I-D-代表什么"><a href="#S-O-L-I-D-代表什么" class="headerlink" title="S.O.L.I.D 代表什么"></a>S.O.L.I.D 代表什么</h3><ul>
+<li>S – 单一职责原则(Single responsibility)</li>
+<li>O – 开放封闭原则(Open Close)</li>
+<li>L – 里氏替换原则(Liskov Substitution)</li>
+<li>I – 接口隔离原则(Interface Segregation)</li>
+<li>D – 依赖倒置原则(Dependence Inversion)</li>
+</ul>
+<h3 id="单一职责原则"><a href="#单一职责原则" class="headerlink" title="单一职责原则"></a>单一职责原则</h3><p>一个类应该有且只有一个去改变它的理由，这意味着一个类应该只有一项工作。<br>例如，假设我们有一些shape（形状），并且我们想求所有shape的面积的和。这很简单对吗?</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Circle</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$radius</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$radius</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;radius = <span class="variable">$radius</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Square</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$length</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$length</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;length = <span class="variable">$length</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先，我们创建shape类，让构造函数设置需要的参数。接下来，我们继续通过创建AreaCalculator类，然后编写求取所提供的shape面积之和的逻辑。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AreaCalculator</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$shapes</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$shapes</span> = <span class="keyword">array</span>(<span class="params"></span>)</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;shapes = <span class="variable">$shapes</span>;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// logic to sum the areas</span></span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">output</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> implode(<span class="string">&#x27;&#x27;</span>, <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">&quot;&lt;h1&gt;&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Sum of the areas of provided shapes: &quot;</span>,</span><br><span class="line">                <span class="keyword">$this</span>-&gt;sum(),</span><br><span class="line">            <span class="string">&quot;&lt;/h1&gt;&quot;</span></span><br><span class="line">        ));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用AreaCalculator类，我们简单地实例化类，同时传入一个shape数组，并在页面的底部显示输出。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$shapes</span> = <span class="keyword">array</span>(</span><br><span class="line">    <span class="keyword">new</span> Circle(<span class="number">2</span>),</span><br><span class="line">    <span class="keyword">new</span> Square(<span class="number">5</span>),</span><br><span class="line">    <span class="keyword">new</span> Square(<span class="number">6</span>)</span><br><span class="line">);</span><br><span class="line"> </span><br><span class="line"><span class="variable">$areas</span> = <span class="keyword">new</span> AreaCalculator(<span class="variable">$shapes</span>);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$areas</span>-&gt;output();</span><br></pre></td></tr></table></figure>
+<p>输出方法的问题在于，AreaCalculator处理了输出数据的逻辑。因此，如果用户想要以json或其他方式输出数据该怎么办?<br>所有的逻辑将由AreaCalculator类处理，这是违反单一职责原则（SRP）的；AreaCalculator类应该只对提供的shape进行面积求和，它不应该关心用户是需要json还是HTML。<br>因此，为了解决这个问题，你可以创建一个SumCalculatorOutputter类，使用这个来处理你所需要的逻辑，即对所提供的shape进行面积求和后如何显示。<br>SumCalculatorOutputter类按如下方式工作:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$shapes</span> = <span class="keyword">array</span>(</span><br><span class="line">    <span class="keyword">new</span> Circle(<span class="number">2</span>),</span><br><span class="line">    <span class="keyword">new</span> Square(<span class="number">5</span>),</span><br><span class="line">    <span class="keyword">new</span> Square(<span class="number">6</span>)</span><br><span class="line">);</span><br><span class="line"> </span><br><span class="line"><span class="variable">$areas</span> = <span class="keyword">new</span> AreaCalculator(<span class="variable">$shapes</span>);</span><br><span class="line"><span class="variable">$output</span> = <span class="keyword">new</span> SumCalculatorOutputter(<span class="variable">$areas</span>);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$output</span>-&gt;JSON();</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$output</span>-&gt;HAML();</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$output</span>-&gt;HTML();</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$output</span>-&gt;JADE();</span><br></pre></td></tr></table></figure>
+
+<h3 id="开放封闭原则"><a href="#开放封闭原则" class="headerlink" title="开放封闭原则"></a>开放封闭原则</h3><p>对象或实体应该对扩展开放，对修改封闭。<br>这就意味着一个类应该无需修改类本身但却容易扩展。让我们看看AreaCalculator类，尤其是它的sum方法。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="keyword">$this</span>-&gt;shapes <span class="keyword">as</span> <span class="variable">$shape</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span>(is_a(<span class="variable">$shape</span>, <span class="string">&#x27;Square&#x27;</span>)) &#123;</span><br><span class="line">            <span class="variable">$area</span>[] = pow(<span class="variable">$shape</span>-&gt;length, <span class="number">2</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(is_a(<span class="variable">$shape</span>, <span class="string">&#x27;Circle&#x27;</span>)) &#123;</span><br><span class="line">            <span class="variable">$area</span>[] = pi() * pow(<span class="variable">$shape</span>-&gt;radius, <span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">return</span> array_sum(<span class="variable">$area</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果我们希望sum方法能够对更多的shape进行面积求和，我们会添加更多的If / else块，这违背了开放封闭原则。<br>能让这个sum方法做的更好的一种方式是，将计算每个shape面积的逻辑从sum方法中移出，将它附加到shape类上。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Square</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$length</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$length</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;length = <span class="variable">$length</span>;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">area</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pow(<span class="keyword">$this</span>-&gt;length, <span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对Circle类应该做同样的事情，area方法应该添加。现在，计算任何所提的shape的面积的和的方法应该和如下简单：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="keyword">$this</span>-&gt;shapes <span class="keyword">as</span> <span class="variable">$shape</span>) &#123;</span><br><span class="line">        <span class="variable">$area</span>[] = <span class="variable">$shape</span>-&gt;area;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">return</span> array_sum(<span class="variable">$area</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在我们可以创建另一个shape类，并在计算和时将其传递进来，这不会破坏我们的代码。然而，现在另一个问题出现了，我们怎么知道传递到AreaCalculator上的对象确实是一个shape，或者这个shape具有一个叫做area的方法?</p>
+<p>对接口编程是S.O.L.I.D不可或缺的一部分，一个快速的例子是我们创建一个接口，让每个shape实现它:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">ShapeInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">area</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Circle</span> <span class="keyword">implements</span> <span class="title">ShapeInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$radius</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$radius</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;radius = <span class="variable">$radius</span>;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">area</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pi() * pow(<span class="keyword">$this</span>-&gt;radius, <span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在我们AreaCalculator的求和中，我们可以检查所提供的shape确实是ShapeInterface的实例，否则我们抛出一个异常:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="keyword">$this</span>-&gt;shapes <span class="keyword">as</span> <span class="variable">$shape</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span>(is_a(<span class="variable">$shape</span>, <span class="string">&#x27;ShapeInterface&#x27;</span>)) &#123;</span><br><span class="line">            <span class="variable">$area</span>[] = <span class="variable">$shape</span>-&gt;area();</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> AreaCalculatorInvalidShapeException;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">return</span> array_sum(<span class="variable">$area</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="里氏替换原则"><a href="#里氏替换原则" class="headerlink" title="里氏替换原则"></a>里氏替换原则</h3><p>每一个子类或派生类应该可以替换它们基类或父类。</p>
+<h3 id="接口隔离原则"><a href="#接口隔离原则" class="headerlink" title="接口隔离原则"></a>接口隔离原则</h3><p>不应强迫客户端实现一个它用不上的接口，或是说客户端不应该被迫依赖它们不使用的方法。<br>我们知道也有立体shape，如果我们也想计算shape的体积，我们可以添加另一个合约到ShapeInterface:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">ShapeInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">area</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">volume</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>任何我们创建的shape必须实现volume的方法，但是我们知道正方形是平面形状没有体积，所以这个接口将迫使正方形类实现一个它没有使用的方法。</p>
+<p>接口隔离原则（ISP）不允许这样，你可以创建另一个名为SolidShapeInterface的接口，它有一个volume合约，对于立体形状比如立方体等等，可以实现这个接口:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">ShapeInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">area</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">SolidShapeInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">volume</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Cuboid</span> <span class="keyword">implements</span> <span class="title">ShapeInterface</span>, <span class="title">SolidShapeInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">area</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// calculate the surface area of the cuboid</span></span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">volume</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// calculate the volume of the cuboid</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是一个更好的方法，但小心一个陷阱，当这些接口做类型提示时，不要使用ShapeInterface或SolidShapeInterface。</p>
+<p>你可以创建另一个接口，可以是ManageShapeInterface，平面和立体shape都可用，这样你可以很容易地看到它有一个管理shape的单一API。例如:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">ManageShapeInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">calculate</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Square</span> <span class="keyword">implements</span> <span class="title">ShapeInterface</span>, <span class="title">ManageShapeInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">area</span>(<span class="params"></span>) </span>&#123; <span class="comment">/*Do stuff here*/</span> &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">calculate</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;area();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Cuboid</span> <span class="keyword">implements</span> <span class="title">ShapeInterface</span>, <span class="title">SolidShapeInterface</span>, <span class="title">ManageShapeInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">area</span>(<span class="params"></span>) </span>&#123; <span class="comment">/*Do stuff here*/</span> &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">volume</span>(<span class="params"></span>) </span>&#123; <span class="comment">/*Do stuff here*/</span> &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">calculate</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;area() + <span class="keyword">$this</span>-&gt;volume();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在AreaCalculator类中，我们可以轻易用calculate替代area调用，同时可以检查一个对象是ManageShapeInterface而不是ShapeInterface的实例。</p>
+<h3 id="依赖反转原则"><a href="#依赖反转原则" class="headerlink" title="依赖反转原则"></a>依赖反转原则</h3><p>实体必须依靠抽象而不是具体实现。它表示高层次的模块不应该依赖于低层次的模块，它们都应该依赖于抽象(接口)。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PasswordReminder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$dbConnection</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params">MySQLConnection <span class="variable">$dbConnection</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;dbConnection = <span class="variable">$dbConnection</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先MySQLConnection是低层次模块，而PasswordReminder处于高层次，但根据S.O.L.I.D.中D的定义，即依赖抽象而不是具体实现，上面这段代码违反这一原则，PasswordReminder类被迫依赖于MySQLConnection类。</p>
+<p>以后如果你改变数据库引擎，你还必须编辑PasswordReminder类，因此违反了开闭原则。</p>
+<p>PasswordReminder类不应该关心你的应用程序使用什么数据库，为了解决这个问题我们又一次“对接口编程”，因为高层次和低层次模块应该依赖于抽象，我们可以创建一个接口:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">DBConnectionInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">connect</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接口有一个connect方法，MySQLConnection类实现该接口，在PasswordReminder类的构造函数不使用MySQLConnection类，而是使用接口替换，不用管你的应用程序使用的是什么类型的数据库，PasswordReminder类可以很容易地连接到数据库，没有任何问题，且不违反OCP。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MySQLConnection</span> <span class="keyword">implements</span> <span class="title">DBConnectionInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">connect</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;Database connection&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PasswordReminder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$dbConnection</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params">DBConnectionInterface <span class="variable">$dbConnection</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;dbConnection = <span class="variable">$dbConnection</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根据上面的代码片段，你现在可以看到，高层次和低层次模块依赖于抽象。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://blog.jobbole.com/86267/">http://blog.jobbole.com/86267/</a><br><a target="_blank" rel="noopener" href="https://juejin.im/entry/587f1c331b69e6005853ecfa">https://juejin.im/entry/587f1c331b69e6005853ecfa</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -896,259 +1195,6 @@
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://imweb.io/topic/5682938b57d7a6c47914fc00">http://imweb.io/topic/5682938b57d7a6c47914fc00</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/09/laravel%E5%AE%9E%E7%8E%B0%E7%94%A8%E6%88%B7%E7%9A%84%E7%A6%81%E6%AD%A2%E7%99%BB%E9%99%86%E5%92%8C%E7%A6%81%E6%AD%A2%E6%B3%A8%E5%86%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/09/laravel%E5%AE%9E%E7%8E%B0%E7%94%A8%E6%88%B7%E7%9A%84%E7%A6%81%E6%AD%A2%E7%99%BB%E9%99%86%E5%92%8C%E7%A6%81%E6%AD%A2%E6%B3%A8%E5%86%8C/" class="post-title-link" itemprop="url">laravel实现用户的禁止登陆和禁止注册</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-09 22:11:29" itemprop="dateCreated datePublished" datetime="2018-01-09T22:11:29+09:00">2018-01-09</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:17:11" itemprop="dateModified" datetime="2018-03-27T22:17:11+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你跑得慢，听到的是骂声，你跑得快，听到的就是风声。
-</blockquote>
-
-<h3 id="禁止登录"><a href="#禁止登录" class="headerlink" title="禁止登录"></a>禁止登录</h3><p>app\Http\Controllers\Auth\LoginController.php<br>users表增加一个status字段，并重写两个方法</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">attemptLogin</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="variable">$request</span>-&gt;merge([</span><br><span class="line">    <span class="string">&#x27;status&#x27;</span> =&gt; <span class="literal">true</span></span><br><span class="line">  ]);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;guard()-&gt;attempt(</span><br><span class="line">    <span class="keyword">$this</span>-&gt;credentials(<span class="variable">$request</span>), <span class="variable">$request</span>-&gt;filled(<span class="string">&#x27;remember&#x27;</span>)</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">credentials</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">return</span> <span class="variable">$request</span>-&gt;only(<span class="keyword">$this</span>-&gt;username(), <span class="string">&#x27;password&#x27;</span>, <span class="string">&#x27;status&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="禁止注册"><a href="#禁止注册" class="headerlink" title="禁止注册"></a>禁止注册</h3><p>app\Http\Controllers\Auth\RegisterController.php<br>修改前：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">$this</span>-&gt;middleware(<span class="string">&#x27;guest&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>修改后：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">$this</span>-&gt;middleware(<span class="string">&#x27;auth&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/09/json%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BE%8E%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/09/json%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BE%8E%E5%8C%96/" class="post-title-link" itemprop="url">json字符串美化</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-09 18:29:49" itemprop="dateCreated datePublished" datetime="2018-01-09T18:29:49+09:00">2018-01-09</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:19:50" itemprop="dateModified" datetime="2018-03-27T22:19:50+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你多学一样本事，就少说一句求人的话
-</blockquote>
-如果我们需要向我们的用用户展示一段`json`数据, 直接展示效果就会非常差,需要做一点点改变
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&quot;button&quot;</span>).click(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> url = $(<span class="string">&quot;input&quot;</span>).val();</span><br><span class="line">    <span class="built_in">console</span>.log(url);</span><br><span class="line">    axios.post(<span class="string">&#x27;/api/E1WWrhcuN0xm&#x27;</span>, &#123;</span><br><span class="line">        <span class="attr">url</span> : url</span><br><span class="line">    &#125;)</span><br><span class="line">        .then(<span class="function"><span class="keyword">function</span> (<span class="params">response</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (response.data) &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(response.data);</span><br><span class="line">                $(<span class="string">&quot;pre&quot;</span>).html(<span class="built_in">JSON</span>.stringify(response.data, <span class="literal">null</span>, <span class="number">2</span>)).parent().removeClass(<span class="string">&#x27;hidden&#x27;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">        .catch(<span class="function"><span class="keyword">function</span> (<span class="params">error</span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(error);</span><br><span class="line">        &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/02/php%E4%B8%AD%E5%87%BD%E6%95%B0%E5%92%8C%E6%96%B9%E6%B3%95%E7%9A%84%E8%B0%83%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/02/php%E4%B8%AD%E5%87%BD%E6%95%B0%E5%92%8C%E6%96%B9%E6%B3%95%E7%9A%84%E8%B0%83%E7%94%A8/" class="post-title-link" itemprop="url">php中函数和方法的调用</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-01-02 11:28:52 / 修改时间：13:08:44" itemprop="dateCreated datePublished" datetime="2018-01-02T11:28:52+09:00">2018-01-02</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-酒贱常愁客少，月明多被云妨.
-</blockquote>
-
-<h3 id="函数调用"><a href="#函数调用" class="headerlink" title="函数调用"></a>函数调用</h3><p>第一种调用方式:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="keyword">echo</span> <span class="string">&#x27;test&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">test();</span><br></pre></td></tr></table></figure>
-
-<p>第二种调用方式:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="string">&#x27;test&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">call_user_func(<span class="string">&#x27;test&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>参数传递:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"><span class="variable">$a</span>, <span class="variable">$b</span></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="variable">$a</span>;</span><br><span class="line">  <span class="keyword">echo</span> <span class="variable">$b</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">call_user_func_array (<span class="string">&#x27;test&#x27;</span>, [<span class="number">1</span>, <span class="string">&#x27;ff&#x27;</span>]);</span><br></pre></td></tr></table></figure>
-<p>不定参数:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">oldAdd</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="variable">$args</span> = func_get_args();</span><br><span class="line">   dd(<span class="variable">$args</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">oldAdd(<span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;2&#x27;</span>, <span class="string">&#x27;3&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="variable">$args</span> = func_get_args();</span><br><span class="line">   dd(<span class="variable">$args</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">call_user_func_array (<span class="string">&#x27;test&#x27;</span>, [<span class="number">1</span>, <span class="string">&#x27;ff&#x27;</span>]);</span><br></pre></td></tr></table></figure>
-
-<h3 id="方法调用"><a href="#方法调用" class="headerlink" title="方法调用"></a>方法调用</h3><p>第一种方法:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">   <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">hehe</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">   </span>&#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">&#x27;hehe&#x27;</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">(<span class="keyword">new</span> Test())-&gt;hehe();</span><br></pre></td></tr></table></figure>
-<p>第二种方法:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">   <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">hehe</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">   </span>&#123;</span><br><span class="line">       <span class="keyword">echo</span> <span class="string">&#x27;hehe&#x27;</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$f</span> = <span class="keyword">new</span> Test();</span><br><span class="line">call_user_func([ <span class="variable">$f</span>, <span class="string">&#x27;hehe&#x27;</span>]);</span><br></pre></td></tr></table></figure>
-<p>静态方法:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">hehe</span>(<span class="params"><span class="variable">$a</span>, <span class="variable">$b</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="variable">$a</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">call_user_func_array([ <span class="string">&#x27;Test&#x27;</span>, <span class="string">&#x27;hehe&#x27;</span>], [<span class="string">&#x27;we&#x27;</span>, <span class="number">34</span>]);</span><br></pre></td></tr></table></figure>
-
-<p>普通方法传递参数:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">hehe</span>(<span class="params"><span class="variable">$a</span>, <span class="variable">$b</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="variable">$a</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$f</span> = <span class="keyword">new</span> Test();</span><br><span class="line">call_user_func_array([ <span class="variable">$f</span>, <span class="string">&#x27;hehe&#x27;</span>], [<span class="string">&#x27;we&#x27;</span>, <span class="number">34</span>]);</span><br></pre></td></tr></table></figure>
-
-<p>类内部的方法调用</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">hehe</span>(<span class="params"><span class="variable">$a</span>, <span class="variable">$b</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        call_user_func([<span class="keyword">$this</span>, <span class="string">&#x27;init&#x27;</span>]);</span><br><span class="line">        <span class="keyword">echo</span> <span class="variable">$a</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">init</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&#x27;--init--&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$f</span> = <span class="keyword">new</span> Test();</span><br><span class="line">call_user_func_array([ <span class="variable">$f</span>, <span class="string">&#x27;hehe&#x27;</span>], [<span class="string">&#x27;we&#x27;</span>, <span class="number">34</span>]);</span><br></pre></td></tr></table></figure>
-<h3 id="两种调用的区别"><a href="#两种调用的区别" class="headerlink" title="两种调用的区别"></a>两种调用的区别</h3><p>call_user_func is for calling functions whose name you don’t know ahead of time but it is much less efficient since the program has to lookup the function at runtime.</p>
 
       
     </div>
