@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">398</span>
+          <span class="site-state-item-count">399</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,102 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/14/%E5%A0%86%E5%92%8C%E6%A0%88%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/08/14/%E5%A0%86%E5%92%8C%E6%A0%88%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">堆和栈的区别</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2017-08-14 10:37:33 / 修改时间：11:56:18" itemprop="dateCreated datePublished" datetime="2017-08-14T10:37:33+09:00">2017-08-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+人不能为了尊严连钱都不要了。
+</blockquote>
+### 预备知识—程序的内存分配  
+一个由C/C++编译的程序占用的内存分为以下几个部分:
+- 1、栈区（stack）—  由编译器自动分配释放,存放函数的参数值，局部变量的值等。其  
+操作方式类似于数据结构中的栈。  
+- 2、堆区（heap） — 一般由程序员分配释放，若程序员不释放，程序结束时可能由OS回  
+收   。注意它与数据结构中的堆是两回事，分配方式倒是类似于链表，呵呵。  
+- 3、全局区（静态区）（static）—，全局变量和静态变量的存储是放在一块的，初始化的  
+全局变量和静态变量在一块区域，未初始化的全局变量和未初始化的静态变量在相邻的另  
+一块区域。   -   程序结束后由系统释放。  
+- 4、文字常量区   —常量字符串就是放在这里的。程序结束后由系统释放  
+- 5、程序代码区—存放函数体的二进制代码。
+
+<h3 id="例子程序"><a href="#例子程序" class="headerlink" title="例子程序"></a>例子程序</h3><p>这是一个前辈写的，非常详细   </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//main.cpp    </span></span><br><span class="line"><span class="keyword">int</span>   a   =   <span class="number">0</span>; 全局初始化区    </span><br><span class="line"><span class="keyword">char</span> *p1; 全局未初始化区    </span><br><span class="line">main()    </span><br><span class="line">&#123;    </span><br><span class="line"><span class="keyword">int</span>  b;   <span class="comment">//栈    </span></span><br><span class="line"><span class="keyword">char</span>   s[]   =   <span class="string">&quot;abc&quot;</span>;   <span class="comment">//栈    </span></span><br><span class="line"><span class="keyword">char</span>   *p2;   <span class="comment">//栈    </span></span><br><span class="line"><span class="keyword">char</span>   *p3   =   <span class="string">&quot;123456&quot;</span>;   <span class="comment">//123456/0在常量区，p3在栈上。    </span></span><br><span class="line"><span class="keyword">static</span>   <span class="keyword">int</span>   c   =<span class="number">0</span>；   <span class="comment">//全局（静态）初始化区    </span></span><br><span class="line">p1   =   (<span class="keyword">char</span>   *)<span class="built_in">malloc</span>(<span class="number">10</span>);    </span><br><span class="line">p2   =   (<span class="keyword">char</span>   *)<span class="built_in">malloc</span>(<span class="number">20</span>);    </span><br><span class="line"><span class="comment">//分配得来得10和20字节的区域就在堆区。    </span></span><br><span class="line"><span class="built_in">strcpy</span>(p1,   <span class="string">&quot;123456&quot;</span>);   <span class="comment">//123456/0放在常量区，编译器可能会将它与p3所指向的&quot;123456&quot; 优化成一个地方。    </span></span><br><span class="line">&#125;    </span><br></pre></td></tr></table></figure>
+
+<h3 id="堆和栈的理论知识"><a href="#堆和栈的理论知识" class="headerlink" title="堆和栈的理论知识"></a>堆和栈的理论知识</h3><h4 id="申请方式"><a href="#申请方式" class="headerlink" title="申请方式"></a>申请方式</h4><p>stack:<br>由系统自动分配。例如，声明在函数中一个局部变量int b;系统自动在栈中为b开辟空间<br>heap:<br>需要程序员自己申请，并指明大小，在c中malloc函数<br>如p1 = (char *)malloc(10);<br>在C++中用new运算符<br>如p2 = new char[10];<br>但是注意p1、p2本身是在栈中的。    </p>
+<h4 id="申请后系统的响应"><a href="#申请后系统的响应" class="headerlink" title="申请后系统的响应"></a>申请后系统的响应</h4><p>栈：只要栈的剩余空间大于所申请空间，系统将为程序提供内存，否则将报异常提示栈溢<br>出。<br>堆：首先应该知道操作系统有一个记录空闲内存地址的链表，当系统收到程序的申请时，<br>会遍历该链表，寻找第一个空间大于所申请空间的堆结点，然后将该结点从空闲结点链表<br>中删除，并将该结点的空间分配给程序，另外，对于大多数系统，会在这块内存空间中的<br>首地址处记录本次分配的大小，这样，代码中的delete语句才能正确的释放本内存空间。<br>另外，由于找到的堆结点的大小不一定正好等于申请的大小，系统会自动的将多余的那部<br>分重新放入空闲链表中。    </p>
+<h4 id="申请大小的限制"><a href="#申请大小的限制" class="headerlink" title="申请大小的限制"></a>申请大小的限制</h4><p>栈：在Windows下,栈是向低地址扩展的数据结构，是一块连续的内存的区域。这句话的意<br>思是栈顶的地址和栈的最大容量是系统预先规定好的，在WINDOWS下，栈的大小是2M（也有<br>的说是1M，总之是一个编译时就确定的常数），如果申请的空间超过栈的剩余空间时，将<br>提示overflow。因此，能从栈获得的空间较小。<br>堆：堆是向高地址扩展的数据结构，是不连续的内存区域。这是由于系统是用链表来存储<br>的空闲内存地址的，自然是不连续的，而链表的遍历方向是由低地址向高地址。堆的大小<br>受限于计算机系统中有效的虚拟内存。由此可见，堆获得的空间比较灵活，也比较大。    </p>
+<h4 id="申请效率的比较："><a href="#申请效率的比较：" class="headerlink" title="申请效率的比较："></a>申请效率的比较：</h4><p>栈由系统自动分配，速度较快。但程序员是无法控制的。<br>堆是由new分配的内存，一般速度比较慢，而且容易产生内存碎片,不过用起来最方便.<br>另外，在WINDOWS下，最好的方式是用VirtualAlloc分配内存，他不是在堆，也不是在栈是<br>直接在进程的地址空间中保留一块内存，虽然用起来最不方便。但是速度快，也最灵活。  </p>
+<h4 id="堆和栈中的存储内容"><a href="#堆和栈中的存储内容" class="headerlink" title="堆和栈中的存储内容"></a>堆和栈中的存储内容</h4><p>栈：   在函数调用时，第一个进栈的是主函数中后的下一条指令（函数调用语句的下一条可<br>执行语句）的地址，然后是函数的各个参数，在大多数的C编译器中，参数是由右往左入栈<br>的，然后是函数中的局部变量。注意静态变量是不入栈的。<br>当本次函数调用结束后，局部变量先出栈，然后是参数，最后栈顶指针指向最开始存的地<br>址，也就是主函数中的下一条指令，程序由该点继续运行。<br>堆：一般是在堆的头部用一个字节存放堆的大小。堆中的具体内容由程序员安排。    </p>
+<h4 id="存取效率的比较"><a href="#存取效率的比较" class="headerlink" title="存取效率的比较"></a>存取效率的比较</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span>   s1[]   =   <span class="string">&quot;aaaaaaaaaaaaaaa&quot;</span>;    </span><br><span class="line"><span class="keyword">char</span>   *s2   =   <span class="string">&quot;bbbbbbbbbbbbbbbbb&quot;</span>;    </span><br></pre></td></tr></table></figure>
+<p>aaaaaaaaaaa是在运行时刻赋值的；<br>而bbbbbbbbbbb是在编译时就确定的；<br>但是，在以后的存取中，在栈上的数组比指针所指向的字符串(例如堆)快。<br>比如：  </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span>    </span></span><br><span class="line"><span class="function"><span class="keyword">void</span>   <span class="title">main</span><span class="params">()</span>    </span></span><br><span class="line"><span class="function"></span>&#123;    </span><br><span class="line"><span class="keyword">char</span>   a   =   <span class="number">1</span>;    </span><br><span class="line"><span class="keyword">char</span>   c[]   =   <span class="string">&quot;1234567890&quot;</span>;    </span><br><span class="line"><span class="keyword">char</span>   *p   =<span class="string">&quot;1234567890&quot;</span>;    </span><br><span class="line">a   =   c[<span class="number">1</span>];    </span><br><span class="line">a   =   p[<span class="number">1</span>];    </span><br><span class="line"><span class="keyword">return</span>;    </span><br><span class="line">&#125;    </span><br></pre></td></tr></table></figure>
+<p>对应的汇编代码    </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">10</span>:   a   =   c[<span class="number">1</span>];    </span><br><span class="line"><span class="number">00401067</span>   <span class="number">8</span>A   <span class="number">4</span>D   F1   mov   cl,byte   ptr   [ebp<span class="number">-0F</span>h]    </span><br><span class="line"><span class="number">0040106</span>A   <span class="number">88</span>   <span class="number">4</span>D   FC   mov   byte   ptr   [ebp<span class="number">-4</span>],cl    </span><br><span class="line"><span class="number">11</span>:   a   =   p[<span class="number">1</span>];    </span><br><span class="line"><span class="number">0040106</span>D   <span class="number">8B</span>   <span class="number">55</span>   EC   mov   edx,dword   ptr   [ebp<span class="number">-14</span>h]    </span><br><span class="line"><span class="number">00401070</span>   <span class="number">8</span>A   <span class="number">42</span>   <span class="number">01</span>   mov   al,byte   ptr   [edx+<span class="number">1</span>]    </span><br><span class="line"><span class="number">00401073</span>   <span class="number">88</span>   <span class="number">45</span>   FC   mov   byte   ptr   [ebp<span class="number">-4</span>],al    </span><br></pre></td></tr></table></figure>
+<p>第一种在读取时直接就把字符串中的元素读到寄存器cl中，而第二种则要先把指针值读到<br>edx中，再根据edx读取字符，显然慢了。    </p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://blog.csdn.net/hairetz/article/details/4141043">http://blog.csdn.net/hairetz/article/details/4141043</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1072,86 +1168,6 @@ list 是一个静态的 Node List，是一个 li 集合的快照，对文档的�
 
 <p>getElementById<br>list 是一个动态的 Node List， 每一次调用 lis 都会重新对文档进行查询，导致无限循环的问题。</p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">li</span>&gt;</span>111<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">li</span>&gt;</span>222<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">li</span>&gt;</span>333<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> ul=<span class="built_in">document</span>.getElementsByTagName(<span class="string">&#x27;ul&#x27;</span>)[<span class="number">0</span>];</span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> list=ul.getElementsByTagName(<span class="string">&#x27;li&#x27;</span>);</span></span><br><span class="line"><span class="javascript"><span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">0</span>;i&lt;<span class="number">5</span>;i++)&#123;</span></span><br><span class="line"><span class="javascript">    ul.appendChild(<span class="built_in">document</span>.createElement(<span class="string">&#x27;li&#x27;</span>));</span></span><br><span class="line"><span class="javascript">&#125;   </span></span><br><span class="line"><span class="javascript"><span class="built_in">console</span>.log(list.length)<span class="comment">//此时输出的结果就是3+5=8</span></span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/07/%E8%AE%A1%E7%AE%97PHP%E8%84%9A%E6%9C%AC%E7%9A%84%E6%89%A7%E8%A1%8C%E6%97%B6%E9%97%B4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/08/07/%E8%AE%A1%E7%AE%97PHP%E8%84%9A%E6%9C%AC%E7%9A%84%E6%89%A7%E8%A1%8C%E6%97%B6%E9%97%B4/" class="post-title-link" itemprop="url">计算PHP脚本的执行时间</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-08-07 22:31:52" itemprop="dateCreated datePublished" datetime="2017-08-07T22:31:52+09:00">2017-08-07</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:08:29" itemprop="dateModified" datetime="2018-03-27T22:08:29+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你我之间本无缘分，全靠我死撑
-</blockquote>
-### sleep()与usleep()的区别
-sleep()是暂停多少秒
-usleep()是暂停多少微秒
-注意：usleep()单位是微秒，1秒 = 1000毫秒 ，1毫秒 = 1000微秒，即1微秒等于百万分之一秒。
-### microtime
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$start</span> = microtime(<span class="literal">true</span>);</span><br><span class="line">sleep(<span class="number">2</span>);</span><br><span class="line"><span class="variable">$end</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="variable">$execution_time</span> = number_format(<span class="variable">$end</span>-<span class="variable">$start</span>, <span class="number">2</span>); <span class="comment">// 单位秒</span></span><br></pre></td></tr></table></figure>
-### 文件修改时间
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$updateTime</span> = filemtime(<span class="variable">$tokenPath</span>);</span><br><span class="line"><span class="variable">$nowTime</span> = microtime(<span class="literal">true</span>);</span><br><span class="line"><span class="variable">$diffTime</span> = round(<span class="variable">$nowTime</span> - <span class="variable">$updateTime</span>);</span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$diffTime</span> &lt; <span class="number">7000</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> file_get_contents(<span class="variable">$tokenPath</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
     </div>
 

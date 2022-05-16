@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">398</span>
+          <span class="site-state-item-count">399</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,95 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/03/13/%E5%AF%BC%E8%87%B4mysql%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E7%9A%84%E5%87%A0%E7%A7%8D%E5%86%99%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/03/13/%E5%AF%BC%E8%87%B4mysql%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E7%9A%84%E5%87%A0%E7%A7%8D%E5%86%99%E6%B3%95/" class="post-title-link" itemprop="url">导致mysql索引失效的几种写法</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-03-13 18:06:43" itemprop="dateCreated datePublished" datetime="2021-03-13T18:06:43+09:00">2021-03-13</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2022-03-24 12:36:23" itemprop="dateModified" datetime="2022-03-24T12:36:23+09:00">2022-03-24</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+人生若只如初见，何事秋风悲画扇
+</blockquote>
+
+<h3 id="使用-或者-lt-gt-导致索引失效"><a href="#使用-或者-lt-gt-导致索引失效" class="headerlink" title="使用!= 或者 &lt;&gt; 导致索引失效"></a>使用!= 或者 &lt;&gt; 导致索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> name` <span class="operator">!=</span> <span class="string">&#x27;冰峰&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>我们给name字段建立了索引，但是如果!= 或者 &lt;&gt; 这种都会导致索引失效，进行全表扫描，所以如果数据量大的话，谨慎使用</p>
+<h3 id="类型不一致导致的索引失效"><a href="#类型不一致导致的索引失效" class="headerlink" title="类型不一致导致的索引失效"></a>类型不一致导致的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span>` <span class="keyword">WHERE</span> height<span class="operator">=</span> <span class="number">175</span>;</span><br></pre></td></tr></table></figure>
+<p>height表字段类型是varchar，但是我查询的时候使用了数字类型，因为这个中间存在一个隐式的类型转换，所以就会导致索引失效，进行全表扫描。</p>
+<h3 id="函数导致的索引失效"><a href="#函数导致的索引失效" class="headerlink" title="函数导致的索引失效"></a>函数导致的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span>` <span class="keyword">WHERE</span> <span class="type">DATE</span>(create_time) <span class="operator">=</span> <span class="string">&#x27;2020-09-03&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>如果你的索引字段使用了索引，对不起，他是真的不走索引的</p>
+<h3 id="运算符导致的索引失效"><a href="#运算符导致的索引失效" class="headerlink" title="运算符导致的索引失效"></a>运算符导致的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span>` <span class="keyword">WHERE</span> age <span class="operator">-</span> <span class="number">1</span> <span class="operator">=</span> <span class="number">20</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="OR引起的索引失效"><a href="#OR引起的索引失效" class="headerlink" title="OR引起的索引失效"></a>OR引起的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> name` <span class="operator">=</span> <span class="string">&#x27;张三&#x27;</span> <span class="keyword">OR</span> height <span class="operator">=</span> <span class="string">&#x27;175&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>OR导致索引是在特定情况下的，并不是所有的OR都是使索引失效，如果OR连接的是同一个字段，那么索引不会失效，反之索引失效。</p>
+<h3 id="模糊搜索导致的索引失效"><a href="#模糊搜索导致的索引失效" class="headerlink" title="模糊搜索导致的索引失效"></a>模糊搜索导致的索引失效</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> s.<span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> s <span class="keyword">WHERE</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> (<span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> u <span class="keyword">WHERE</span> u.name <span class="operator">=</span> s.name <span class="keyword">AND</span> u.name` <span class="operator">=</span> <span class="string">&#x27;冰峰&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> name` <span class="keyword">NOT</span> <span class="keyword">IN</span> (<span class="string">&#x27;冰峰&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>这两种用法，也将使索引失效。但是NOT IN 还是走索引的，千万不要误解为 IN 全部是不走索引的。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000023911554">https://segmentfault.com/a/1190000023911554</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1012,104 +1101,6 @@
 <p>相比于 promise.then，它只是获取 promise 的结果的一个更优雅的语法，同时也更易于读写。</p>
 <h3 id="编辑器报错"><a href="#编辑器报错" class="headerlink" title="编辑器报错"></a>编辑器报错</h3><h4 id="async-function-is-only-available-in-es8"><a href="#async-function-is-only-available-in-es8" class="headerlink" title="async function is only available in es8"></a>async function is only available in es8</h4><p>You can create “.jshintrc” file (see jshint.com/docs/) at project root and simply add to it lines given below:</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;esversion&quot;</span>: <span class="number">8</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/04/17/golang%E4%B9%8Bhttp-eof%E5%92%8Cconnection-reset-by-peer%E9%94%99%E8%AF%AF%E8%AF%A6%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/04/17/golang%E4%B9%8Bhttp-eof%E5%92%8Cconnection-reset-by-peer%E9%94%99%E8%AF%AF%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">golang之http-eof和connection-reset-by-peer错误详解</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-04-17 21:28:52" itemprop="dateCreated datePublished" datetime="2020-04-17T21:28:52+09:00">2020-04-17</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:56:56" itemprop="dateModified" datetime="2021-09-10T13:56:56+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-多花一點心思去說溫柔的話，那些話可能改變他人一生
-</blockquote>
-
-<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>使用net/http同时发起多个简单请求时，偶尔会出现EOF或connect: connection reset by peer的情况。明明就是一个很简单的例子，为何会出现这种情况呢？</p>
-<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">eq, err := http.NewRequest(method, url, body)</span><br><span class="line"><span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">resp, err := http.DefaultClient.Do(req)</span><br><span class="line"><span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">defer</span> resp.Body.Close()</span><br><span class="line"></span><br><span class="line">b, err := ioutil.ReadAll(resp.Body)</span><br><span class="line"><span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> b,<span class="literal">nil</span></span><br></pre></td></tr></table></figure>
-<p>如此简单的几行代码，在我们套上大并发以后，各种异常情况接踵而至，最常见的就是下面的几个：</p>
-<ul>
-<li>EOF</li>
-<li>connection reset by peer</li>
-</ul>
-<h3 id="探讨"><a href="#探讨" class="headerlink" title="探讨"></a>探讨</h3><p>HTTP也是针对TCP的一个封装，go得益于goroutine和channel，与其他语言的实现方式不太一样，它是直接起了两个协程，一个用于读（readLoop），一个用于写（writeLoop）。</p>
-<h4 id="conn-Read"><a href="#conn-Read" class="headerlink" title="conn.Read"></a>conn.Read</h4><ul>
-<li>socket无数据：read阻塞，直到有数据。</li>
-<li>socket有部分数据：如果socket中有部分数据，且长度小于一次Read操作所期望读出的数据长度，那么Read将会成功读出这部分数据并返回，而不是等待所有期望数据全部读取后再返回。</li>
-<li>socket有足够数据：如果socket中有数据，且长度大于等于一次Read操作所期望读出的数据长度，那么Read将会成功读出这部分数据并返回。这个情景是最符合我们对Read的期待的了：Read将用Socket中的数据将我们传入的slice填满后返回：n = 10, err = nil</li>
-<li>有数据，socket关闭：第一次Read成功读出了所有的数据，当第二次Read时，由于client端 socket关闭，Read返回EOF error；</li>
-<li>无数据，socket关闭：Read直接返回EOF error</li>
-</ul>
-<h4 id="conn-Write"><a href="#conn-Write" class="headerlink" title="conn.Write"></a>conn.Write</h4><ul>
-<li>成功写：Write调用返回的n与预期要写入的数据长度相等，且error = nil；</li>
-<li>写阻塞：当发送方将对方的接收缓冲区以及自身的发送缓冲区写满后，Write就会阻塞；</li>
-<li>写入部分数据：Write操作存在写入部分数据的情况，没有按照预期的写入所有数据，则需要循环写入。</li>
-</ul>
-<h3 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h3><p>通过上面的描述，我们大致已经明白了为何会出现EOF了，其实就是readLoop在进行读的时候，检测到socket被关闭了。在HTTP1.1，我们默认都是采用了Keep-Alive的，也就是会启动长连接，当server端断掉了该socket后，我们的EOF就出来了。所以尽量避免该情况发生的话，直接这样<code>req.Close = true</code>。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://dpjeep.com/golangzhi-http-eofxiang-jie/">https://dpjeep.com/golangzhi-http-eofxiang-jie/</a></p>
-</blockquote>
-
       
     </div>
 

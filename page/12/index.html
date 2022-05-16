@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">398</span>
+          <span class="site-state-item-count">399</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,124 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E7%9A%84hash%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E7%9A%84hash%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">laravel中使用redis的hash操作</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-14 14:48:08 / 修改时间：15:56:33" itemprop="dateCreated datePublished" datetime="2018-06-14T14:48:08+09:00">2018-06-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+The first step is as good as half over.
+</blockquote>
+
+<p>While recording the product sales of a multi-tenant application, we need a way to store the metrics in a way that guarantees a solid separation between each tenant, one idea is to use key names like shop:{shopId}:product:{productId}:sales that way we’ll have a key per product for each shop, since product IDs might co-exist in multiple shops, we can increment the values of each key on every purchase and get that value when needed, if we need the sales for the whole business we can do something like:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::mget(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:product:1&quot;</span>, <span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:product:2&quot;</span>, ...);</span><br></pre></td></tr></table></figure>
+<p>This will bring the sales of every product inside a given business.</p>
+<p>That sounds cool, but seems like you’ll introduce a better approach?<br>I’ve been reading this post from the Instagram Engineering blog and I was amazed about the performance gain they described from using Redis Hashes over regular strings, let me share some of the numbers:</p>
+<ul>
+<li>Having 1 Million string keys needed about 70MB of memory</li>
+<li>Having 1000 Hashes each with 1000 Keys only needed 17MB!</li>
+</ul>
+<p>The reason behind that is that hashes can be encoded efficiently in a very small memory space, so Redis makers recommend that we use hashes whenever possible since “a few keys use a lot more memory than a single key containing a hash with a few fields”, a key represents a Redis Object holds a lot more information than just its value, on the other hand a hash field only hold the value assigned, thus why it’s much more efficient.</p>
+<h3 id="Let’s-build-our-hash"><a href="#Let’s-build-our-hash" class="headerlink" title="Let’s build our hash"></a>Let’s build our hash</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hmset(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>, <span class="number">100</span>, <span class="string">&quot;products:2&quot;</span>, <span class="number">400</span>);</span><br></pre></td></tr></table></figure>
+
+<p>This will build a Redis hash with two fields product:1 and products:2 holding the values 100 and 400.</p>
+<p>The command hmset gives us the ability to set multiple fields of a hash in one go, there’s a hset command that we can use to set a single field though.</p>
+<p>We can read the values of hash fields using the following:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Redis::hget(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&#x27;product:1&#x27;</span>);</span><br><span class="line"><span class="comment">// To return a single value</span></span><br><span class="line"></span><br><span class="line">Redis::hmget(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&#x27;product:1&#x27;</span>, <span class="string">&#x27;product:2&#x27;</span>);</span><br><span class="line"><span class="comment">// To return values from multiple keys</span></span><br><span class="line"></span><br><span class="line">Redis::hvals(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>);</span><br><span class="line"><span class="comment">// To return values of all fields</span></span><br><span class="line"></span><br><span class="line">Redis::hgetall(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>);</span><br><span class="line"><span class="comment">// Also returns values of all fields</span></span><br></pre></td></tr></table></figure>
+
+<p>In case of hmget and hvals the return value is an array of values [100, 400], however in case of hgetall the return value is an array of keys &amp; values:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">&quot;product:1&quot;</span>, <span class="number">100</span>, <span class="string">&quot;product:2&quot;</span>, <span class="number">400</span>]</span><br></pre></td></tr></table></figure>
+<p>Much organized than having multiple keys<br>Yes and you also stop polluting the key namespace with lots of complex-named keys.</p>
+<p>With all the above mentioned benefits there are also a number of useful operations you can do on a hash key:</p>
+<h4 id="Incrementing-amp-Decrementing"><a href="#Incrementing-amp-Decrementing" class="headerlink" title="Incrementing &amp; Decrementing"></a>Incrementing &amp; Decrementing</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Redis:hincrby(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>, <span class="number">18</span>);</span><br><span class="line"><span class="comment">// To increment the sales of product one by 18</span></span><br><span class="line"></span><br><span class="line">Redis:hincrbyfloat(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>, <span class="number">18.9</span>);</span><br><span class="line"><span class="comment">// To increment the sales of product one by 18.9</span></span><br></pre></td></tr></table></figure>
+
+<p>To decrement you just need to provide a negative value, there’s no decrby command for hash fields.</p>
+<h3 id="Field-Existence"><a href="#Field-Existence" class="headerlink" title="Field Existence"></a>Field Existence</h3><p>Like string fields you can check if a hash key exists:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hexists(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>You can also make sure you don’t override an existing field when that’s not the desired behaviour:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hsetnx(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>This will make sure the field doesn’t exist before overriding it.</p>
+<h3 id="Other-operations"><a href="#Other-operations" class="headerlink" title="Other operations"></a>Other operations</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hdel(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>, <span class="string">&quot;product:2&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>This command deletes the given fields from the hash.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hstrlen(<span class="string">&quot;shop:<span class="subst">&#123;$shopId&#125;</span>:sales&quot;</span>, <span class="string">&quot;product:1&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>This command returns the string length of the value stored at the given field.</p>
+<h3 id="Performance-comes-with-a-cost"><a href="#Performance-comes-with-a-cost" class="headerlink" title="Performance comes with a cost"></a>Performance comes with a cost</h3><p>As we mentioned before, a hash with a few fields is much more efficient than storing a few keys, a key stores a complete Redis object that contains information about the value stored as well as expiration time, idle time, information about the object reference count, and the type of encoding used internally.</p>
+<p>Technically if we create 1 key (Redis Object) that contains multiple string fields it’ll require much less memory since every field holds nothing but a reference to the value it holds, and in hashes with small number of fields it’s even encoded into a length-prefixed string in a format like:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hashValue = [<span class="number">6</span>]field1[<span class="number">4</span>]val1[<span class="number">6</span>]field2[<span class="number">4</span>]val2</span><br></pre></td></tr></table></figure>
+
+<p>Since a hash field holds only a string value we can’t associate an expiration time for it, the makers of Redis suggest that we store an individual field to hold the expiration time for each field if need be and get both fields together to compare if the field is still alive:</p>
+<p>Redis::hmset(‘hashKey’, ‘field1’, ‘field1_value’, ‘field1_expiration’, ‘1495786559’);<br>So whenever we want to use that key we need to bring the expiration value as well and do the extra work ourselves:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::hmget(<span class="string">&#x27;hashKey&#x27;</span>, <span class="string">&#x27;field1&#x27;</span>, <span class="string">&#x27;field1_expiration&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>Some information about encoding hashes<br>From the Redis docs:</p>
+<blockquote>
+<p>Hashes, when smaller than a given number of fields, and up to a maximum field size, are encoded in a very memory efficient way that uses up to 10 times less memory (with 5 time less memory used being the average saving). Since this is a CPU / memory trade off it is possible to tune the maximum number of fields and maximum field size.</p>
+</blockquote>
+<p>By default hashes are encoded when they contain less than 512 fields or when the largest values stored in a field is less than 64 in length, but you can adjust these values using the config command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Redis::config(<span class="string">&#x27;set&#x27;</span>, <span class="string">&#x27;hash-max-zipmap-entries&#x27;</span>, <span class="number">1000</span>);</span><br><span class="line"><span class="comment">// Sets the maximum number of fields before the hash stops being encoded</span></span><br><span class="line"></span><br><span class="line">Redis::config(<span class="string">&#x27;set&#x27;</span>, <span class="string">&#x27;hash-max-zipmap-value&#x27;</span>, <span class="number">128</span>);</span><br><span class="line"><span class="comment">// Sets the maximum size of a hash field before the hash stops being encoded</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://divinglaravel.com/redis/redis-hashes">https://divinglaravel.com/redis/redis-hashes</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1168,114 +1286,6 @@ Honesty is the best policy.
 <p>好，就到此为止了，当然虽然我非常喜欢第二种办法，但第二种毕竟需要对线上机器做一次大的改动，需要运维同学支持下。但是也需要具体情况具体来选择吧。</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://xuwenzhi.com/2016/07/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E3%80%81%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/">http://xuwenzhi.com/2016/07/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E3%80%81%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/30/%E7%8E%B0%E4%BB%A3%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91%E8%80%85%E5%BF%85%E5%A4%87%E6%8A%80%E8%83%BD/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/05/30/%E7%8E%B0%E4%BB%A3%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91%E8%80%85%E5%BF%85%E5%A4%87%E6%8A%80%E8%83%BD/" class="post-title-link" itemprop="url">现代后端开发者必备技能</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-05-30 16:47:52 / 修改时间：17:53:45" itemprop="dateCreated datePublished" datetime="2018-05-30T16:47:52+09:00">2018-05-30</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-能够击败我的不会是孤独，而是试图摆脱孤独。
-</blockquote>
-
-<h3 id="第1步-学习一门语言"><a href="#第1步-学习一门语言" class="headerlink" title="第1步 - 学习一门语言"></a>第1步 - 学习一门语言</h3><p>谈到选择语言有很多选择。我已经将它们分成几类，以便你更容易做出决定。对于刚开始进入后端开发的初学者，我建议你选择任何脚本语言，因为它们有很多需求，它可以让你快速起步。如果你有一些前端知识，你可能会发现Node.js更容易，再加上有一个很大的就业市场。</p>
-<p>如果你已经在做后端开发并且知道一些脚本语言，我建议你不要选择另一种脚本语言，并从“功能”或“多参数”部分中选择一些。<br>例如，如果你已经在使用PHP或Node.js，请不要使用Python或Ruby，而应尝试使用Erlang或Golang。它肯定会帮助你延伸思维，并开启你的思想到新的视野。</p>
-<h3 id="第2步-练习你学到的东西"><a href="#第2步-练习你学到的东西" class="headerlink" title="第2步 - 练习你学到的东西"></a>第2步 - 练习你学到的东西</h3><p>没有比实践更好的学习方式。一旦你选择了你的语言，并且对这些概念有了基本的了解，就可以使用它们。尽你所能制作尽可能多的小应用程序。尽你所能制作尽可能多的小应用程序：</p>
-<p>在bash中实现一些你自己使用的命令尝试实现 ls 的功能<br>编写一个命令，为你提供JSON格式的目录结构，例如 jsonify dir-name 给你一个带有 dir-name 内结构的JSON文件<br>编写一个从上面的步骤读取JSON的命令并创建目录结构<br>想想你每天都在做的一些任务，并尝试将其自动化</p>
-<h3 id="第3步-学习软件包管理器"><a href="#第3步-学习软件包管理器" class="headerlink" title="第3步 - 学习软件包管理器"></a>第3步 - 学习软件包管理器</h3><p>了解了该语言的基础知识并制作了一些示例应用程序后，请了解如何使用你选择的语言的软件包管理器。软件包管理器可帮助你在应用程序中使用外部库，并分发你的库供其他人使用。</p>
-<p>如果你选择了PHP，你将不得不学习 Composer，Node.js 有 NPM 或 Yarn，Python 有 Pip，Ruby 有 RubyGems。无论你选择什么，请继续学习如何使用其包管理器。</p>
-<h3 id="第4步-标准和最佳实践"><a href="#第4步-标准和最佳实践" class="headerlink" title="第4步 - 标准和最佳实践"></a>第4步 - 标准和最佳实践</h3><p>每种语言都有自己的标准和做事的最佳实践。研究他们为你挑选的语言。例如 PHP 有 PHP-FIG 和 PSR 。使用 Node.js 有许多不同的社区驱动指南，其他语言也有相同的指导。</p>
-<h3 id="第5步-安全"><a href="#第5步-安全" class="headerlink" title="第5步 - 安全"></a>第5步 - 安全</h3><p>请务必阅读有关安全的最佳做法。阅读 OWASP 指南并了解不同的安全问题以及如何以你选择的语言避免它们。</p>
-<h3 id="第6步-练习"><a href="#第6步-练习" class="headerlink" title="第6步 - 练习"></a>第6步 - 练习</h3><p>现在你已经掌握了语言，标准和最佳实践的基础知识，安全性以及如何使用软件包管理器。现在开始创建一个包并分发给其他人使用，并确保遵循你迄今为止学到的标准和最佳实践。例如，如果你选择了PHP，那么你将在Packagist上发布它，如果你选择了Node.js，那么你将在Npm注册源中发布它，等等。</p>
-<p>一旦你完成了，在Github上搜索一些项目，并在某些项目中打开一些pull请求。对此的一些想法：</p>
-<p>重构并实施你学到的最佳实践<br>查看未解决的问题并尝试解决<br>添加任何附加功能</p>
-<h3 id="第7步-了解测试"><a href="#第7步-了解测试" class="headerlink" title="第7步 - 了解测试"></a>第7步 - 了解测试</h3><p>测试有几种不同的测试类型。了解这些类型它们的目的是什么。了解如何在应用程序中编写单元测试和集成测试。另外，了解不同的测试术语，如 mocks, stubs 等。</p>
-<h3 id="第8步-实践"><a href="#第8步-实践" class="headerlink" title="第8步 - 实践"></a>第8步 - 实践</h3><p>对于练习，继续编写单元测试，以完成目前为止所做的实际任务，特别是你在步骤6中所做的练习。</p>
-<p>还要学习和计算你编写的测试的覆盖率。</p>
-<h3 id="第9步-了解关系数据库"><a href="#第9步-了解关系数据库" class="headerlink" title="第9步 - 了解关系数据库"></a>第9步 - 了解关系数据库</h3><p>了解如何将数据保存在关系数据库中。在你选择要学习的工具之前，请先了解不同的数据库术语，例如键，索引，规范化等。</p>
-<p>这里有几个选项。但是，如果你学习一个，其他的应该相当容易。你想学习的是MySQL，MariaDB（大部分是相同的，是MySQL的分支）和PostgreSQL。选择MySQL开始。</p>
-<h3 id="第十步-实践时间"><a href="#第十步-实践时间" class="headerlink" title="第十步 - 实践时间"></a>第十步 - 实践时间</h3><p>现在是时候把你所学到的一切都用到这里去了。</p>
-<p>使用你迄今为止学到的所有内容创建一个简单的应用程序。可以选择任何想法​​，也许创建一个简单的博客应用程序，并实现其中的以下功能。</p>
-<p>用户帐户 - 注册和登录<br>注册用户可以创建博客文章<br>用户应该能够查看他创建的所有博客文章<br>他们应该能够删除他们的博客文章<br>确保用户只能看到他的个人博客帖子，而不能看到他人<br>编写应用程序的单元/集成测试<br>你应该为查询应用索引。分析查询以确保正在使用索引</p>
-<h3 id="第11步-了解一个框架"><a href="#第11步-了解一个框架" class="headerlink" title="第11步 - 了解一个框架"></a>第11步 - 了解一个框架</h3><p>根据你选择的项目和语言，你可能需要也可能不需要框架。每种语言都有几个不同的选项，继续看看你选择的语言有哪些选项可供选择，然后选择相关的一个。</p>
-<p>如果你选择了PHP，我会建议你使用 Laravel或Symfony，如果是为框架的话，使用Lumen或Slim。如果你选择Node.js，有几种不同的选择，但突出的是Express.js。</p>
-<h3 id="第12步-实践时间"><a href="#第12步-实践时间" class="headerlink" title="第12步 - 实践时间"></a>第12步 - 实践时间</h3><p>为了实现此步骤，请将你在 步骤10 中创建的应用程序转换为使用你选择的框架。还要确保移植包括测试在内的所有内容。</p>
-<h3 id="第13步-学习NoSQL数据库"><a href="#第13步-学习NoSQL数据库" class="headerlink" title="第13步 - 学习NoSQL数据库"></a>第13步 - 学习NoSQL数据库</h3><p>首先了解它们是什么，它们与关系数据库有何不同以及为什么它们是需要的。有几种不同的选择，研究一点看看，并比较它们的特点和差异。你可以选择的一些常用选项是Rdeis，MongoDB，Cassandra，RethinkDB和Couchbase。如果你必须选择一个，请使用Redis。</p>
-<h3 id="第14步-缓存"><a href="#第14步-缓存" class="headerlink" title="第14步 - 缓存"></a>第14步 - 缓存</h3><p>了解如何在你的应用程序中实施应用程序级缓存。了解如何使用Redis或Memcached并在你在 步骤12 中创建的应用程序中实施缓存。</p>
-<h3 id="第15步-创建RESTful-API"><a href="#第15步-创建RESTful-API" class="headerlink" title="第15步 - 创建RESTful API"></a>第15步 - 创建RESTful API</h3><p>了解REST并学习如何制作RESTful API，并确保从 Roy Fielding 的原始文章中阅读关于REST的部分。如果他们说REST仅适用于HTTP API，请确保你能够与其他人对战。</p>
-<h3 id="第16步-了解不同的身份验证方法"><a href="#第16步-了解不同的身份验证方法" class="headerlink" title="第16步 - 了解不同的身份验证方法"></a>第16步 - 了解不同的身份验证方法</h3><p>了解不同的身份验证和授权方法。你应该知道他们是什么，他们有什么不同以及什么时候偏好某一个</p>
-<p>OAuth - 开放认证<br>基本认证<br>令牌认证<br>JWT - JSON Web令牌<br>OpenID</p>
-<h3 id="第17步-消息代理"><a href="#第17步-消息代理" class="headerlink" title="第17步 - 消息代理"></a>第17步 - 消息代理</h3><p>了解消息代理并了解何时以及为何使用它们。有多种选择，但突出的是 RabbitMQ 和 Kafka。现在学习如何使用RabbitMQ，如果你想选择一个。</p>
-<h3 id="第18步-搜索引擎"><a href="#第18步-搜索引擎" class="headerlink" title="第18步 - 搜索引擎"></a>第18步 - 搜索引擎</h3><p>随着应用程序的增长，对关系数据库或NoSQL数据库的简单查询不会将其切断，你将不得不求助于搜索引擎。有多种选择，每种选择都有自己的差异。比如 Solr, Sphinx, ElasticSearch，Xapian等。</p>
-<h3 id="第19步-了解如何使用Docker"><a href="#第19步-了解如何使用Docker" class="headerlink" title="第19步 - 了解如何使用Docker"></a>第19步 - 了解如何使用Docker</h3><p>无论你是在复制与生产环境相同的环境，还是保持操作系统清洁或加快你的编码，测试或部署，Docker都可以在开发过程中大大方便你的工作。在这一步中，继续学习如何使用Docker。</p>
-<h3 id="第20步-关于Web服务器的知识"><a href="#第20步-关于Web服务器的知识" class="headerlink" title="第20步 - 关于Web服务器的知识"></a>第20步 - 关于Web服务器的知识</h3><p>如果你已经走到这么远，你可能不得不在前面的步骤中使用服务器。这一步主要是找出不同Web服务器之间的差异，了解限制和不同的可用配置选项，以及如何最好地利用这些限制编写应用程序。</p>
-<h3 id="第21步-了解如何使用Web-Sockets"><a href="#第21步-了解如何使用Web-Sockets" class="headerlink" title="第21步 - 了解如何使用Web Sockets"></a>第21步 - 了解如何使用Web Sockets</h3><p>虽然不是必需的，但在工具带中有这些知识是有益的。学习如何使用 Web sockets 编写实时Web应用程序并使用它创建一些示例应用程序。你可以在上面制作的博客应用程序中使用它来实现博客文章列表中的实时更新。</p>
-<h3 id="第22步-学习GraphQL"><a href="#第22步-学习GraphQL" class="headerlink" title="第22步 - 学习GraphQL"></a>第22步 - 学习GraphQL</h3><p>学习如何使用GraphQL制作API。了解它与REST的不同之处，以及它为什么被称为 REST 2.0。</p>
-<h3 id="第23步-研究Graph数据库"><a href="#第23步-研究Graph数据库" class="headerlink" title="第23步 - 研究Graph数据库"></a>第23步 - 研究Graph数据库</h3><p>Graph 模型代表了一种处理数据中关系的非常灵活的方式，图数据库为其提供了快速高效的存储，检索和查询。学习如何使用 Neo4j或 OrientDB。</p>
-<h3 id="第24步-保持探索"><a href="#第24步-保持探索" class="headerlink" title="第24步 - 保持探索"></a>第24步 - 保持探索</h3><p>一旦你开始学习和练习，你一定会遇到我们在这个路线图中没有涉及的东西。只要保持开放的心态和对新事物的健康渴望。</p>
-<p>记住关键是要尽可能多地练习。它在开始时看起来更加可怕，你可能会觉得你并没有抓住任何东西，但这是正常的，随着时间的推移，你会觉得自己越来越好。</p>
-<p>好了，就这么多。感谢阅读。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://phpcasts.org/posts/modern-backend-developer-in-2018">https://phpcasts.org/posts/modern-backend-developer-in-2018</a></p>
 </blockquote>
 
       

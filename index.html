@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">398</span>
+          <span class="site-state-item-count">399</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,104 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/05/14/Laravel%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%9C%A8%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8env%E5%87%BD%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/05/14/Laravel%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%9C%A8%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8env%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">Laravel为什么不能在程序中直接使用env函数</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-05-14 13:28:56 / 修改时间：13:37:27" itemprop="dateCreated datePublished" datetime="2022-05-14T13:28:56+09:00">2022-05-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+一定要爱着点什么，恰似草木对光阴的钟情。
+</blockquote>
+
+<h3 id="HH"><a href="#HH" class="headerlink" title="HH"></a>HH</h3><ul>
+<li><code>env()</code>は コントローラー, モデル, etc.. 内で直接使わない。</li>
+<li><code>config/*.php</code>に<code>env()</code>の値を入れて<code>config()</code>から参照する。</li>
+</ul>
+<p>例</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// config/my-app.php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> [</span><br><span class="line">    <span class="comment">// configに.envの内容を入れる。</span></span><br><span class="line">    <span class="string">&#x27;my-env&#x27;</span> =&gt; env(<span class="string">&#x27;MY_ENV&#x27;</span>),</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// コントローラー内など</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// config() を使用。</span></span><br><span class="line"><span class="variable">$my_env</span> = config(<span class="string">&#x27;my-app.my-env&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// これはダメなパターン。</span></span><br><span class="line"><span class="variable">$my_env</span> = env(<span class="string">&#x27;MY_ENV&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="何故-env-を使ってはいけないのか"><a href="#何故-env-を使ってはいけないのか" class="headerlink" title="何故 env() を使ってはいけないのか"></a>何故 env() を使ってはいけないのか</h3><p>本番環境で<code>config:cache</code>コマンドを実行した際、<code>.env</code>ファイルを読み込まないから。</p>
+<p><code>.env</code>ファイルは<code>Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables</code>クラスの<code>bootstrap()</code>で読み込まれるのですが、読み込む前に<code>config</code>のキャッシュの有無を確認し、キャッシュがあった場合は<code>.env</code>ファイルを読み込まない仕様になっています。</p>
+<p>当該部分のLaravelのコードを引用。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// 省略</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">bootstrap</span>(<span class="params">Application <span class="variable">$app</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$app</span>-&gt;configurationIsCached()) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;checkForSpecificEnvironmentFile(<span class="variable">$app</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            (<span class="keyword">new</span> Dotenv(<span class="variable">$app</span>-&gt;environmentPath(), <span class="variable">$app</span>-&gt;environmentFile()))-&gt;load();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InvalidPathException <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (InvalidFileException <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">&#x27;The environment file is invalid: &#x27;</span>.<span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 省略</span></span><br></pre></td></tr></table></figure>
+
+<p>大体の場合の本番環境では、高速化の為に設定を一纏めにする<code>config:cache</code>コマンドを実行すると思うのですが、前述の通りキャッシュがあると.envが読み込まれないので、<code>env()</code>を直接叩いてると開発時やテスト時には動くけど本番環境で死ぬ。といった事になります。(実際なった)</p>
+<h3 id="実際に試す"><a href="#実際に試す" class="headerlink" title="実際に試す"></a>実際に試す</h3><p>適当なコントローラーを用意してddを使って値をダンプするだけ。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HogeController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getHoge</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        dd(</span><br><span class="line">            env(<span class="string">&#x27;MY_ENV&#x27;</span>),</span><br><span class="line">            config(<span class="string">&#x27;my-app.my-env&#x27;</span>)</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>まずはキャッシュ無しでアクセス。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;Foo&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;Foo&quot;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>テスト環境や開発環境と同じ様にキャッシュを作成していないのでどちらも同じ値が取得できます。</p>
+<p>次にキャッシュさせてアクセス。<code>artisan</code>の<code>config:cache</code>を実行して<code>bootstrap/cache/config.php</code>を作成します。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan config:cache</span><br></pre></td></tr></table></figure>
+<p>で、先ほどと同じ様にアクセスしてみる。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">null</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;Foo&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>.env</code>ファイルが読み出されていないので<code>env()</code>で取得した所で値が入ってる訳もなくnullを返します。</p>
+<p>と言う訳で最初に書いた通り、env()は直接使わずにconfig()に.envの値を入れて使いましょう。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://hiroto-k.hatenablog.com/entry/2018/03/28/213000">https://hiroto-k.hatenablog.com/entry/2018/03/28/213000</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1029,114 +1127,6 @@ Home is behind, world ahead.
 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_39985511/article/details/80089212">https://blog.csdn.net/qq_39985511/article/details/80089212</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/26/elasticsearch%E7%A3%81%E7%9B%98%E5%8D%A0%E7%94%A8%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/10/26/elasticsearch%E7%A3%81%E7%9B%98%E5%8D%A0%E7%94%A8%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">elasticsearch磁盘占用问题</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2021-10-26 15:14:41 / 修改时间：17:01:54" itemprop="dateCreated datePublished" datetime="2021-10-26T15:14:41+09:00">2021-10-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我什么也没忘，但是有些事只适合收藏。不能说，也不能想，却又不能忘
-</blockquote>
-
-<h3 id="问题出现"><a href="#问题出现" class="headerlink" title="问题出现"></a>问题出现</h3><p>当Elasticsearch所在磁盘占用大于等于95%时，Elasticsearch会把所有相关索引自动置为只读。无法插入新的数据,错误信息如下：</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;error&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;root_cause&quot;</span>: [</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cluster_block_exception&quot;</span>,</span><br><span class="line">                <span class="attr">&quot;reason&quot;</span>: <span class="string">&quot;blocked by: [FORBIDDEN/12/index read-only / allow delete (api)];&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">        <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cluster_block_exception&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;reason&quot;</span>: <span class="string">&quot;blocked by: [FORBIDDEN/12/index read-only / allow delete (api)];&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;status&quot;</span>: <span class="number">403</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>查看index信息</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -GET &#x27;localhost:9200/index_name/_settings?pretty&#x27;</span><br></pre></td></tr></table></figure>
-<p>返回信息</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;index_name&quot;</span> : &#123;</span><br><span class="line">    <span class="attr">&quot;settings&quot;</span> : &#123;</span><br><span class="line">      <span class="attr">&quot;index&quot;</span> : &#123;</span><br><span class="line">        <span class="attr">&quot;number_of_shards&quot;</span> : <span class="string">&quot;5&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;blocks&quot;</span> : &#123;</span><br><span class="line">          <span class="attr">&quot;read_only_allow_delete&quot;</span> : <span class="string">&quot;true&quot;</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">&quot;provided_name&quot;</span> : <span class="string">&quot;index_name&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;creation_date&quot;</span> : <span class="string">&quot;1516454800021&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;number_of_replicas&quot;</span> : <span class="string">&quot;1&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;uuid&quot;</span> : <span class="string">&quot;6WjhtrARTOOjsEUaOqNzlw&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;version&quot;</span> : &#123;</span><br><span class="line">          <span class="attr">&quot;created&quot;</span> : <span class="string">&quot;6010199&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>发现确实这个索引的 <code>read_only_allow_delete</code> 属性是 <code>true</code>，由此导致了无法再向其中插入文档。</p>
-<p>解决方案有两种：</p>
-<ul>
-<li>1.清理磁盘，使占用低于95%。</li>
-<li>2.调整自动锁阀值，官方文档中有详尽方法。</li>
-</ul>
-<p>建议采用第一种，注意解决之后，需要手动把被锁的索引的只读模式关闭。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPUT -H &quot;Content-Type: application/json&quot; http://127.0.0.1:9200/_all/_settings -d &#x27;&#123;&quot;index.blocks.read_only_allow_delete&quot;: null&#125;&#x27;</span><br></pre></td></tr></table></figure>
-<p>返回成功</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">&quot;acknowledged&quot;</span>:<span class="literal">true</span>&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="清理磁盘占用"><a href="#清理磁盘占用" class="headerlink" title="清理磁盘占用"></a>清理磁盘占用</h3><p>删除文档并没有真正删除，仅作了删除标记，从而不能再被搜索到</p>
-<p>查看磁盘占用</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XGET 127.0.0.1:9200/_cat/allocation?v</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">shards disk.indices disk.used disk.avail disk.total disk.percent host       ip         node</span><br><span class="line">    <span class="number">12</span>       <span class="number">72.9</span>kb    <span class="number">56.6</span>gb      <span class="number">2.3</span>gb     <span class="number">58.9</span>gb           <span class="number">96</span> <span class="number">172.18</span><span class="number">.0</span><span class="number">.2</span> <span class="number">172.18</span><span class="number">.0</span><span class="number">.2</span> elasticsearch</span><br><span class="line">    <span class="number">12</span>                                                                                 UNASSIGNED</span><br></pre></td></tr></table></figure>
-<p>使用df -h命令，发现docker下的overlay磁盘占用很大</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">文件系统        容量  已用  可用 已用% 挂载点</span><br><span class="line">/dev/vda1        40G   35G  3.2G   92% /</span><br><span class="line">devtmpfs        3.9G     0  3.9G    0% /dev</span><br><span class="line">tmpfs           3.9G     0  3.9G    0% /dev/shm</span><br><span class="line">tmpfs           3.9G  137M  3.7G    4% /run</span><br><span class="line">tmpfs           3.9G     0  3.9G    0% /sys/fs/cgroup</span><br><span class="line">tmpfs           783M     0  783M    0% /run/user/1000</span><br><span class="line">overlay          40G   35G  3.2G   92% /var/lib/docker/overlay/110e4d61d36d50cee7c5990fb42a84f4c7ae6003ea30032e10f497f4bf535bbb/merged</span><br><span class="line">shm              64M     0   64M    0% /var/lib/docker/containers/2f532a830e88ca7d8483e34e3d940e25b371f09560dca4106900323da6943433/shm</span><br><span class="line">tmpfs           783M     0  783M    0% /run/user/0</span><br><span class="line">overlay          40G   35G  3.2G   92% /var/lib/docker/overlay/f17d62b3550c9ec4138aab76bb1e2da0abf289bb378ef78e5a843dd8b3924902/merged</span><br><span class="line">shm              64M     0   64M    0% /var/lib/docker/containers/6d3e12fbf3137c6c11797957c2ee593ee068c3486397672965f6e8c5af31390f/shm</span><br></pre></td></tr></table></figure>
-<p>使用docker ps -a查看是否存在已经死掉的容器没有被删除，发现果然存在</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CONTAINER ID        IMAGE                 COMMAND                  CREATED             STATUS                     PORTS                                            NAMES</span><br><span class="line">6d3e12fbf313        halcms                <span class="string">&quot;/bin/sh -c &#x27;echo ...&quot;</span>   24 hours ago        Up 24 hours                0.0.0.0:8083-&gt;8080/tcp                           docker_halcms-app_1</span><br><span class="line">2f532a830e88        elasticsearch:2.3.5   <span class="string">&quot;/docker-entrypoin...&quot;</span>   2 years ago         Up 4 weeks                 0.0.0.0:9200-&gt;9200/tcp, 0.0.0.0:9300-&gt;9300/tcp   halcms-elasticsearch</span><br><span class="line">8e73d3c2b62d        6fd9e186667b          <span class="string">&quot;/bin/sh -c &#x27;sh -c...&quot;</span>   2 years ago         Exited (127) 2 years ago                                                    adoring_curran</span><br><span class="line">cfc19946e8b6        817e3ed9255c          <span class="string">&quot;/bin/sh -c &#x27;sh -c...&quot;</span>   2 years ago         Exited (127) 2 years ago                                                    elated_banach</span><br></pre></td></tr></table></figure>
-<p>使用docker system df命令查看Docker的磁盘使用情况</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">TYPE                TOTAL               ACTIVE              SIZE                RECLAIMABLE</span><br><span class="line">Images              94                  2                   18.77GB             18.22GB (97%)</span><br><span class="line">Containers          4                   2                   60.17kB             0B (0%)</span><br><span class="line">Local Volumes       2                   2                   6.92MB              0B (0%)</span><br></pre></td></tr></table></figure>
-<p>使用docker system prune自动清理空间</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker system prune命令只能清除悬空镜像，未被使用的镜像不会被删除。</span><br><span class="line"></span><br><span class="line">docker system prune -a命令可以清理</span><br></pre></td></tr></table></figure>
-
-<h3 id="拓展API"><a href="#拓展API" class="headerlink" title="拓展API"></a>拓展API</h3><p>查看所有index</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &#x27;127.0.0.1:9200/_cat/indices?v&#x27;</span><br></pre></td></tr></table></figure>
-<p>删除index</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XDELETE http://127.0.0.1:9200/indexname1,indexname2</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.villagehead.cn/2019/11/19/docker%E4%B8%8B%E7%9A%84-var-lib-docker-overlay%E6%96%87%E4%BB%B6%E5%BE%88%E5%A4%A7%EF%BC%8C%E9%80%A0%E6%88%90%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A3%81%E7%9B%98%E6%8A%A5%E8%AD%A6/">https://www.villagehead.cn/2019/11/19/docker%E4%B8%8B%E7%9A%84-var-lib-docker-overlay%E6%96%87%E4%BB%B6%E5%BE%88%E5%A4%A7%EF%BC%8C%E9%80%A0%E6%88%90%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A3%81%E7%9B%98%E6%8A%A5%E8%AD%A6/</a></p>
 </blockquote>
 
       

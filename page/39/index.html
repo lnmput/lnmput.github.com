@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">398</span>
+          <span class="site-state-item-count">399</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,84 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/15/%E9%A2%84%E9%98%B2CSRF%E6%94%BB%E5%87%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/08/15/%E9%A2%84%E9%98%B2CSRF%E6%94%BB%E5%87%BB/" class="post-title-link" itemprop="url">预防CSRF攻击</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-15 19:18:44" itemprop="dateCreated datePublished" datetime="2016-08-15T19:18:44+09:00">2016-08-15</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:13:59" itemprop="dateModified" datetime="2018-03-27T22:13:59+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你这么擅长安慰他人，一定度过了很多自己安慰自己的日子吧
+</blockquote>
+
+<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><p>CSRF（Cross-site request forgery），中文名称：跨站请求伪造，也被称为：one click attack/session riding，缩写为：CSRF/XSRF。<br>那么CSRF到底能够干嘛呢？你可以这样简单的理解：攻击者可以盗用你的登陆信息，以你的身份模拟发送各种请求。攻击者只要借助少许的社会工程学的诡计，例如通过QQ等聊天软件发送的链接(有些还伪装成短域名，用户无法分辨)，攻击者就能迫使Web应用的用户去执行攻击者预设的操作。例如，当用户登录网络银行去查看其存款余额，在他没有退出时，就点击了一个QQ好友发来的链接，那么该用户银行帐户中的资金就有可能被转移到攻击者指定的帐户中。<br>所以遇到CSRF攻击时，将对终端用户的数据和操作指令构成严重的威胁；当受攻击的终端用户具有管理员帐户的时候，CSRF攻击将危及整个Web应用程序。</p>
+<h3 id="CSRF的攻击过程"><a href="#CSRF的攻击过程" class="headerlink" title="CSRF的攻击过程"></a>CSRF的攻击过程</h3><p>要完成一次CSRF攻击，受害者必须依次完成两个步骤 ：<br>1.登录受信任网站A，并在本地生成Cookie 。<br>2.在不退出A的情况下，访问危险网站B。<br>看到这里，读者也许会问：“如果我不满足以上两个条件中的任意一个，就不会受到CSRF的攻击”。是的，确实如此，但你不能保证以下情况不会发生：<br>你不能保证你登录了一个网站后，不再打开一个tab页面并访问另外的网站，特别现在浏览器都是支持多tab的。<br>你不能保证你关闭浏览器了后，你本地的Cookie立刻过期，你上次的会话已经结束。<br>上图中所谓的攻击网站，可能是一个存在其他漏洞的可信任的经常被人访问的网站。<br>因此对于用户来说很难避免在登陆一个网站之后不点击一些链接进行其他操作，所以随时可能成为CSRF的受害者。<br>CSRF攻击主要是因为Web的隐式身份验证机制，Web的身份验证机制虽然可以保证一个请求是来自于某个用户的浏览器，但却无法保证该请求是用户批准发送的</p>
+<h3 id="如何预防CSRF"><a href="#如何预防CSRF" class="headerlink" title="如何预防CSRF"></a>如何预防CSRF</h3><p>CSRF的防御可以从服务端和客户端两方面着手，防御效果是从服务端着手效果比较好，现在一般的CSRF防御也都在服务端进行。<br>服务端的预防CSRF攻击的方式方法有多种，但思想上都是差不多的，主要从以下2个方面入手：<br>1、正确使用GET,POST和Cookie；<br>2、在非GET请求中增加伪随机数；</p>
+<p>为每个用户生成一个唯一的cookie token，所有表单都包含同一个伪随机值，这种方案最简单，因为攻击者不能获得第三方的Cookie(理论上)，所以表单中的数据也就构造失败，但是由于用户的Cookie很容易由于网站的XSS漏洞而被盗取，所以这个方案必须要在没有XSS的情况下才安全。<br>每个请求使用验证码，这个方案是完美的，因为要多次输入验证码，所以用户友好性很差，所以不适合实际运用。<br>不同的表单包含一个不同的伪随机值，我们在4.4小节介绍“如何防止表单多次递交”时介绍过此方案，复用相关代码，实现如下：</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -952,99 +1030,6 @@ value3
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 直接使用！对于熟悉MVC的亲知道这个意义之所在！</span></span><br><span class="line"><span class="variable">$user</span> = <span class="keyword">new</span> ORM(<span class="string">&#x27;user&#x27;</span>);  <span class="comment">// ORM都有自己的规则，这里直接使用了MySQL的表名</span></span><br><span class="line"><span class="variable">$user</span>-&gt;name = <span class="string">&#x27;fancy&#x27;</span>;    <span class="comment">// MySQL的表的字段就是$user对象的成员变量</span></span><br><span class="line"><span class="variable">$user</span>-&gt;save();            <span class="comment">// 掉用ORM提供的接口函数</span></span><br></pre></td></tr></table></figure>
 <h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><blockquote>
 <p>在某些复杂的sql中有性能问题</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/28/%E5%85%B3%E4%BA%8E%E5%87%BA%E7%8E%B0php-m%E5%92%8Cphpinfo%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/07/28/%E5%85%B3%E4%BA%8E%E5%87%BA%E7%8E%B0php-m%E5%92%8Cphpinfo%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">关于出现php-m和phpinfo不一致的问题</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-07-28 09:44:23" itemprop="dateCreated datePublished" datetime="2016-07-28T09:44:23+09:00">2016-07-28</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 21:58:14" itemprop="dateModified" datetime="2018-03-27T21:58:14+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我前半生最强烈三次心跳，分别发生在上课被老师点名 ，下楼梯一脚踩空， 和你对我微笑的时候！
-</blockquote>
-### 本文系转载
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">命令查看：</span><br><span class="line">php -m</span><br><span class="line">which php</span><br></pre></td></tr></table></figure>
-昨天有个学员私聊我，说他的`php -m`和在`apache` 中运行`phpinfo`不一致(这力默认`apache`是把`php`编译成模块的)，譬如模块加载不一致。
-
-<p>理论上这是不可能的。除非你的PHP做了特别的设置（此处不表，-c参数即可搞定), 默认情况下,两者都是一致的。</p>
-<p>经过我一番询问，发现并没有特别之处。于是我也纳闷了、抑郁了、纠结了。这也引起了我的“执着心”，我很讨厌在这种问题上还能卡住。于是我告诉那位学员，今天不找出原因咱两一起“切腹”。学员弱弱的答应了。。。。</p>
-<p>然而，经过我一步步询问确认（注意：我不帮学员远程调试，这是游戏规则）。终于发现了问题。接下来放出原因，大家可能也会碰到</p>
-<p>1、学员执行的是<code>php -m</code> .并不是类似 <code>/usr/local/php/bin/php -m</code>  这说明他的PHP存在于某个环境变量路径里。</p>
-<p>2、也就是恰恰上面这个原因给忽略了。我们一直始终认为 他的环境变量是正确的。</p>
-<p>3、最后，我让他执行了 重新编译PHP。问题依旧。（此时学员已经有切腹的愿望）</p>
-<p>4、最后，我让它（就是它）执行了 <code>which php</code> .这时发现它的PHP在 <code>/usr/bin</code> 里面。</p>
-<p>5、也就是说不管他怎么编译PHP，最终执行的php -m 的那个PHP可执行程序 永远是定位在 /usr/bin里面的那个老PHP</p>
-<p>6、学员已经忘了怎么操作使之 <code>/usr/bin</code>里也有个PHP</p>
-<p>7、解决方法如下：删掉 <code>/usr/bin</code>里面的那个老PHP 。把环境变量 设置到<code>/usr/local/php/bin</code>里。</p>
-<p>8、再次执行 php -m 一切正常了。</p>
-<p>本次解决问题的结论是：</p>
-<p>  不要相信一些“你认为不可能出错的步骤”。往往有的步骤你觉得“绝对不可能出错”，而问题恰恰就在你最信任的步骤里。 交朋友也是，往往你最最信任的人也是最有可能在关键部分干你一菊花的人。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.hishenyi.com/archives/1095">http://www.hishenyi.com/archives/1095</a></p>
 </blockquote>
 
       

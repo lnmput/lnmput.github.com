@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">398</span>
+          <span class="site-state-item-count">399</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,139 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/11/%E4%BD%BF%E7%94%A8supervisor%E7%AE%A1%E7%90%86laravel%E9%98%9F%E5%88%97%E8%BF%9B%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/11/%E4%BD%BF%E7%94%A8supervisor%E7%AE%A1%E7%90%86laravel%E9%98%9F%E5%88%97%E8%BF%9B%E7%A8%8B/" class="post-title-link" itemprop="url">使用Supervisor管理Laravel队列进程</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-04-11 18:24:02" itemprop="dateCreated datePublished" datetime="2018-04-11T18:24:02+09:00">2018-04-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2019-03-08 22:55:24" itemprop="dateModified" datetime="2019-03-08T22:55:24+09:00">2019-03-08</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你看了一千个正确答案，还是要一秒一秒的等时间 
+</blockquote>
+
+<p>Supervisor 是一个 Python 写的进程管理工具，有时一个进程需要在后台运行，并且意外挂掉后能够自动重启，就需要这么一个管理进程的工具。在 Laravel 开发中，也经常使用到队列监听，可以配合 Supervisor 来管理 Laravel 队列进程。</p>
+<h3 id="Supervisor的安装"><a href="#Supervisor的安装" class="headerlink" title="Supervisor的安装"></a>Supervisor的安装</h3><ul>
+<li>使用 pip 工具进行安装：<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo yum install epel-release</span><br><span class="line">sudo yum -y install  python-pip</span><br><span class="line">sudo pip install supervisor</span><br></pre></td></tr></table></figure></li>
+<li>Ubuntu 系统使用 apt-get<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install supervisor</span><br></pre></td></tr></table></figure></li>
+<li>还有其他的安装方式，请见官网（<a target="_blank" rel="noopener" href="http://supervisord.org/%EF%BC%89">http://supervisord.org/）</a></li>
+</ul>
+<h3 id="Supervisor的配置"><a href="#Supervisor的配置" class="headerlink" title="Supervisor的配置"></a>Supervisor的配置</h3><p>一般配置文件在<code>/etc/supervisor/conf.d</code> 目录下<br>也可以运行这个命令可以生成一个默认的配置文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo_supervisord_conf &gt; /etc/supervisor/supervisord.conf</span><br></pre></td></tr></table></figure>
+<p>生成成功后，打开编辑这个文件，把最后的 include 块的注释打开，并修改如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[include]</span><br><span class="line">files = /etc/supervisor/*.conf</span><br></pre></td></tr></table></figure>
+<p>新增的 Supervisor 配置文件放在 /etc/supervisor 目录下，并且以 conf 结尾。</p>
+<p>这时我们使用新的配置文件来启动 Supervisor：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">supervisord -c /etc/supervisord.conf</span><br></pre></td></tr></table></figure>
+<p>如果提示已经有进程在运行，那么先 kill 掉它。</p>
+<h3 id="使用Supervisor管理Laravel队列进程"><a href="#使用Supervisor管理Laravel队列进程" class="headerlink" title="使用Supervisor管理Laravel队列进程"></a>使用Supervisor管理Laravel队列进程</h3><p>我们使用 Laravel 队列，会用到 php artisan queue:work 命令，让它监听队列，我们可以通过 nohup 方式让它在后台运行，但是进程如果意外中断是不会自动重启的，所以使用 Supervisor 来监控进程是个很好的方式。</p>
+<p>首先在 /etc/supervisor 目录下新增一个 Supervisor 的配置文件，如下：<br>文件名<code>erp2-worker.conf</code>,和配置文件中指定的program保持一致</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[program:erp2-worker]</span><br><span class="line">process_name=%(program_name)s_%(process_num)<span class="number">02</span>d</span><br><span class="line">command=/usr/bin/php7 /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">user=vagrant</span><br><span class="line">numprocs=<span class="number">8</span></span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile=/<span class="keyword">var</span>/log/supervisor/laravel-queue.log</span><br></pre></td></tr></table></figure>
+<p>这里 user 填写网站运行进程的用户，如 vagrant，numprocs 表示启动多少个进程来监听 Laravel 队列。<br>一切就绪后，我们使用如下命令就可以启动队列进程的监听了：</p>
+<blockquote>
+<p>注意: 修改了配置文件以后都要进行 reload 和 update</p>
+</blockquote>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">supervisord <span class="comment"># 先执行</span></span><br><span class="line"></span><br><span class="line">sudo supervisorctl reload</span><br><span class="line"></span><br><span class="line">sudo supervisorctl update</span><br><span class="line"></span><br><span class="line">sudo supervisorctl start erp2-worker:*</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或者</span></span><br><span class="line">sudo supervisorctl start all</span><br></pre></td></tr></table></figure>
+<p>但是在这一步，发生了错误，提示如下：</p>
+<blockquote>
+<p>laravel-worker:laravel-worker_00: ERROR (spawn error)<br>laravel-worker:laravel-worker_01: ERROR (spawn error)<br>laravel-worker:laravel-worker_02: ERROR (spawn error)<br>laravel-worker:laravel-worker_03: ERROR (spawn error)<br>laravel-worker:laravel-worker_04: ERROR (spawn error)<br>laravel-worker:laravel-worker_05: ERROR (spawn error)<br>laravel-worker:laravel-worker_06: ERROR (spawn error)<br>laravel-worker:laravel-worker_07: ERROR (spawn error)</p>
+</blockquote>
+<p>经过一番折腾，解决方法是，把 Supervisor 的日志文件，和新增的队列配置文件中的日志文件，用 chown 把用户和组设置为正确的，如本例是 chown vagrant:vagrant file_name，另外把日志文件权限设置为 777.</p>
+<p>再次经过上述步骤，成功开启进程管理：</p>
+<blockquote>
+<p>laravel-worker:laravel-worker_00: started<br>laravel-worker:laravel-worker_01: started<br>laravel-worker:laravel-worker_02: started<br>laravel-worker:laravel-worker_03: started<br>laravel-worker:laravel-worker_04: started<br>laravel-worker:laravel-worker_05: started<br>laravel-worker:laravel-worker_06: started<br>laravel-worker:laravel-worker_07: started</p>
+</blockquote>
+<p>可以看到 Laravel 队列开始正常运行了，这里值得注意的是，如果 Laravel 处理队列的代码更改了，需要重启 Supervisor 的队列管理才能生效。</p>
+<p>查看运行情况:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef|grep <span class="string">&#x27;queue:work&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vagrant   <span class="number">4899</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4900</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4901</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4902</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4903</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4904</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4905</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4906</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4978</span>  <span class="number">2575</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">11</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep --color=auto queue:work</span><br></pre></td></tr></table></figure>
+
+<h3 id="一个错误"><a href="#一个错误" class="headerlink" title="一个错误"></a>一个错误</h3><p>使用<code>supervisorctl reload</code>却得到报错提示：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">error</span>: &lt;<span class="class"><span class="keyword">class</span> &#x27;<span class="title">socket</span>.<span class="title">error</span>&#x27;&gt;, [<span class="title">Errno</span> 2] <span class="title">No</span> <span class="title">such</span> <span class="title">file</span> <span class="title">or</span> <span class="title">directory</span>: <span class="title">file</span>: /<span class="title">usr</span>/<span class="title">lib</span>/<span class="title">python2</span>.7/<span class="title">socket</span>.<span class="title">py</span> <span class="title">line</span>: 228  </span></span><br></pre></td></tr></table></figure>
+<p>在运行 reload 命令前，先运行如下两个命令</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo supervisord -c /etc/supervisor/supervisord.conf  </span><br><span class="line">sudo supervisorctl -c /etc/supervisor/supervisord.conf  </span><br></pre></td></tr></table></figure>
+<p>或者直接</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo supervisord</span><br></pre></td></tr></table></figure>
+<p>即可解决</p>
+<h3 id="Horizon"><a href="#Horizon" class="headerlink" title="Horizon"></a>Horizon</h3><p><code>Horizon</code>为 Laravel 官方出品的 Redis 队列提供了一个可以通过代码进行配置、并且非常漂亮的仪表盘，并且能够轻松监控队列的任务吞吐量、执行时间以及任务失败情况等关键指标。</p>
+<p>队列执行者的所有配置项都存放在一个简单的配置文件中，所以团队可以通过版本控制进行协作维护。</p>
+<p>生产环境中，我们需要配置一个进程管理工具来监控 php artisan horizon 命令的执行，以便在其意外退出时自动重启。当服务器部署新代码时，需要终止当前 Horizon 主进程，然后通过进程管理工具来重启，从而使用最新的代码。</p>
+<p>使用 Artisan 命令 <code>horizon:terminate</code> 来正常停止系统中的 <code>Horizon</code> 主进程，此命令执行时，<code>Horizon</code> 当前执行中的任务会被正常完成，然后 Horizon 执行结束：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan horizon:terminate</span><br></pre></td></tr></table></figure>
+<p>Supervisor 配置<br>可以使用进程管理工具 Supervisor 来管理 horizon 进程，下面配置文件就已够用：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[program:horizon]</span><br><span class="line">process_name=%(program_name)</span><br><span class="line">command=php /home/forge/app.com/artisan horizon</span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">user=forge</span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile=/home/forge/app.com/horizon.log</span><br></pre></td></tr></table></figure>
+<p>注意Horizon仅仅支持redis, 不支持database等其他队列引擎;</p>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>配置说明:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">; 设置进程的名称，使用 supervisorctl 来管理进程时需要使用该进程名</span><br><span class="line">[program:foo] </span><br><span class="line">; 可以在 command 这里用 python 表达式传递不同的参数给每个进程</span><br><span class="line">command=python server.py --port=<span class="number">90</span>%(process_num)<span class="number">02</span>d</span><br><span class="line"><span class="built_in">directory</span>=/home/python/tornado_server ; 执行 command 之前，先切换到工作目录</span><br><span class="line">; 若 numprocs 不为<span class="number">1</span>，process_name 的表达式中一定要包含 process_num 来区分不同的进程</span><br><span class="line">numprocs=<span class="number">2</span>                   </span><br><span class="line">process_name=%(program_name)s_%(process_num)<span class="number">02</span>d; </span><br><span class="line">user=oxygen                 ; 使用 oxygen 用户来启动该进程</span><br><span class="line">autorestart=<span class="literal">true</span>            ; 程序崩溃时自动重启</span><br><span class="line">redirect_stderr=<span class="literal">true</span>        ; 重定向输出的日志</span><br><span class="line">stdout_logfile = /<span class="keyword">var</span>/log/supervisor/tornado_server.log</span><br><span class="line">loglevel=info</span><br></pre></td></tr></table></figure>
+
+<p>上面这个例子会启动两个进程，process_name 分别为 foo:foo_01 和 foo:foo_02。通过这样一种方式，就可以用一个 [program:x] 配置项，来启动一组非常类似的进程。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/3592/using-supervisor-to-manage-laravel-queue-processes">https://laravel-china.org/topics/3592/using-supervisor-to-manage-laravel-queue-processes</a><br><a target="_blank" rel="noopener" href="https://laravel-china.org/docs/laravel/5.5/horizon">https://laravel-china.org/docs/laravel/5.5/horizon</a><br><a target="_blank" rel="noopener" href="https://www.restran.net/2015/10/04/supervisord-tutorial/">https://www.restran.net/2015/10/04/supervisord-tutorial/</a><br><a target="_blank" rel="noopener" href="http://weidwonder.leanote.com/post/Untitled-55faa25638f4111167000067-6">http://weidwonder.leanote.com/post/Untitled-55faa25638f4111167000067-6</a><br><a target="_blank" rel="noopener" href="https://linuxize.com/post/how-to-install-pip-on-centos-7/">https://linuxize.com/post/how-to-install-pip-on-centos-7/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1053,84 +1186,6 @@
 <h4 id="第二步-页面显示"><a href="#第二步-页面显示" class="headerlink" title="第二步. 页面显示"></a>第二步. 页面显示</h4><p>在 『注册于』 区块下新增 『最后活跃』，因返回的值为 Carbon 实体，故我们可用 diffForHumans() 来输出用户友好的时间：</p>
 <p>resources/views/users/show.blade.php</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;h4&gt;&lt;strong&gt;注册于&lt;/strong&gt;&lt;/h4&gt;</span><br><span class="line">&lt;p&gt;&#123;&#123; <span class="variable">$user</span>-&gt;created_at-&gt;diffForHumans() &#125;&#125;&lt;/p&gt;</span><br><span class="line">&lt;hr&gt;</span><br><span class="line">&lt;h4&gt;&lt;strong&gt;最后活跃&lt;/strong&gt;&lt;/h4&gt;</span><br><span class="line">&lt;p title=<span class="string">&quot;&#123;&#123;  <span class="subst">$user</span>-&gt;last_actived_at &#125;&#125;&quot;</span>&gt;&#123;&#123; <span class="variable">$user</span>-&gt;last_actived_at-&gt;diffForHumans() &#125;&#125;&lt;/p&gt;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/30/%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%BA%BF%E7%A8%8B%E7%9A%84%E7%90%86%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/30/%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%BA%BF%E7%A8%8B%E7%9A%84%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">进程和线程的理解</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-03-30 10:18:16 / 修改时间：11:22:43" itemprop="dateCreated datePublished" datetime="2018-03-30T10:18:16+09:00">2018-03-30</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-倚楼听风雨，淡看江湖路
-</blockquote>
-
-<p>什么叫“多任务”呢？简单地说，就是操作系统可以同时运行多个任务。打个比方，你一边在用浏览器上网，一边在听MP3，一边在用Word赶作业，这就是多任务，至少同时有3个任务正在运行。还有很多任务悄悄地在后台同时运行着，只是桌面上没有显示而已。</p>
-<p>现在，多核CPU已经非常普及了，但是，即使过去的单核CPU，也可以执行多任务。由于CPU执行代码都是顺序执行的，那么，单核CPU是怎么执行多任务的呢？</p>
-<p>答案就是操作系统轮流让各个任务交替执行，任务1执行0.01秒，切换到任务2，任务2执行0.01秒，再切换到任务3，执行0.01秒……这样反复执行下去。表面上看，每个任务都是交替执行的，但是，由于CPU的执行速度实在是太快了，我们感觉就像所有任务都在同时执行一样。</p>
-<p>真正的并行执行多任务只能在多核CPU上实现，但是，由于任务数量远远多于CPU的核心数量，所以，操作系统也会自动把很多任务轮流调度到每个核心上执行。</p>
-<p>对于操作系统来说，一个任务就是一个进程（<code>Process</code>），比如打开一个浏览器就是启动一个浏览器进程，打开一个记事本就启动了一个记事本进程，打开两个记事本就启动了两个记事本进程，打开一个Word就启动了一个Word进程。</p>
-<p>有些进程还不止同时干一件事，比如Word，它可以同时进行打字、拼写检查、打印等事情。在一个进程内部，要同时干多件事，就需要同时运行多个“子任务”，我们把进程内的这些“子任务”称为线程（<code>Thread</code>）。</p>
-<p>由于每个进程至少要干一件事，所以，一个进程至少有一个线程。当然，像Word这种复杂的进程可以有多个线程，多个线程可以同时执行，多线程的执行方式和多进程是一样的，也是由操作系统在多个线程之间快速切换，让每个线程都短暂地交替运行，看起来就像同时执行一样。当然，真正地同时执行多线程需要多核CPU才可能实现。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/0014319272686365ec7ceaeca33428c914edf8f70cca383000">https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/0014319272686365ec7ceaeca33428c914edf8f70cca383000</a></p>
-</blockquote>
-
       
     </div>
 
