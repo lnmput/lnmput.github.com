@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">399</span>
+          <span class="site-state-item-count">401</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,258 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/nginx%E7%9A%84%E9%85%8D%E7%BD%AE%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%92%8C%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E4%BA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/14/nginx%E7%9A%84%E9%85%8D%E7%BD%AE%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%92%8C%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E4%BA%8C/" class="post-title-link" itemprop="url">nginx的配置虚拟主机负载均衡和反向代理二</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-14 15:38:35 / 修改时间：17:15:36" itemprop="dateCreated datePublished" datetime="2018-06-14T15:38:35+09:00">2018-06-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+山不厌高，海不厌深；周公吐哺，天下归心
+</blockquote>
+
+<h3 id="基于域名的虚拟主机"><a href="#基于域名的虚拟主机" class="headerlink" title="基于域名的虚拟主机"></a>基于域名的虚拟主机</h3><p>假设我们在本地开发有3个项目，分别在hosts里映射到本地的127.0.0.1上：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">127.0</span>.<span class="number">0.1</span> www.iyangyi.com iyangyi.com</span><br><span class="line"><span class="number">127.0</span>.<span class="number">0.1</span> api.iyangyi.com</span><br><span class="line"><span class="number">127.0</span>.<span class="number">0.1</span> admin.iyangyi.com</span><br></pre></td></tr></table></figure>
+<p>有这样3个项目，分别对应于web根目录下的3个文件夹，我们用域名对应文件夹名字，这样子好记：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/Users/yangyi/www/www.iyangyi.com/</span><br><span class="line">/Users/yangyi/www/api.iyangyi.com/</span><br><span class="line">/Users/yangyi/www/admin.iyangyi.com/</span><br></pre></td></tr></table></figure>
+<p>每个目录下都有一个index.php文件，都素简单的输入自己的域名。</p>
+<p>下面我们就来搭建这3个域名的虚拟主机，很显然，我们要新建3个server来完成。为了看起来简洁好看，我们使用require来包含外面的3个server在nginx.conf中，这样就清晰了很多。不会使得这个nginx.conf内容太多：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">main</span><br><span class="line">events   &#123;</span><br><span class="line">  ....</span><br><span class="line">&#125;</span><br><span class="line">http        &#123;</span><br><span class="line">  ....</span><br><span class="line">  <span class="keyword">include</span> vhost/www.iyangyi.conf;</span><br><span class="line">  <span class="keyword">include</span> vhost/api.iyangyi.conf;</span><br><span class="line">  <span class="keyword">include</span> vhost/admin.iyangyi.conf;</span><br><span class="line">  <span class="comment">#或者用 *.conf  包含</span></span><br><span class="line">  <span class="comment"># include vhost/*.conf</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>既然每一个conf都是一个server，前面已经学习了一个完整的server写的了。下面就开始：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># www.iyangyi.conf</span></span><br><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    server_name www.iyangyi.com iyangyi.com;</span><br><span class="line">    root /Users/yangyi/www/www.iyangyi.com/;</span><br><span class="line">    index index.php index.html index.htm;</span><br><span class="line">    access_log /usr/local/<span class="keyword">var</span>/log/nginx/www.iyangyi.access.log main;</span><br><span class="line">    error_log /usr/local/<span class="keyword">var</span>/log/nginx/www.iyangyi.<span class="built_in">error</span>.log <span class="built_in">error</span>;</span><br><span class="line">    location ~ \.php$ &#123;</span><br><span class="line">        fastcgi_pass   <span class="number">127.0</span>.<span class="number">0.1</span>:<span class="number">9000</span>; </span><br><span class="line">        fastcgi_index  index.php;</span><br><span class="line">        <span class="keyword">include</span>        fastcgi.conf;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># api.iyangyi.conf</span></span><br><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    server_name api.iyangyi.com;</span><br><span class="line">    root /Users/yangyi/www/api.iyangyi.com/;</span><br><span class="line">    index index.php index.html index.htm;</span><br><span class="line">    access_log /usr/local/<span class="keyword">var</span>/log/nginx/api.iyangyi.access.log main;</span><br><span class="line">    error_log /usr/local/<span class="keyword">var</span>/log/nginx/api.iyangyi.<span class="built_in">error</span>.log <span class="built_in">error</span>;</span><br><span class="line">    location ~ \.php$ &#123;</span><br><span class="line">        fastcgi_pass   <span class="number">127.0</span>.<span class="number">0.1</span>:<span class="number">9000</span>; </span><br><span class="line">        fastcgi_index  index.php;</span><br><span class="line">        <span class="keyword">include</span>        fastcgi.conf;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># admin.iyangyi.conf</span></span><br><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    server_name admin.iyangyi.com;</span><br><span class="line">    root /Users/yangyi/www/admin.iyangyi.com/;</span><br><span class="line">    index index.php index.html index.htm;</span><br><span class="line">    access_log /usr/local/<span class="keyword">var</span>/log/nginx/admin.iyangyi.access.log main;</span><br><span class="line">    error_log /usr/local/<span class="keyword">var</span>/log/nginx/admin.iyangyi.<span class="built_in">error</span>.log <span class="built_in">error</span>;</span><br><span class="line">    location ~ \.php$ &#123;</span><br><span class="line">        fastcgi_pass   <span class="number">127.0</span>.<span class="number">0.1</span>:<span class="number">9000</span>; </span><br><span class="line">        fastcgi_index  index.php;</span><br><span class="line">        <span class="keyword">include</span>        fastcgi.conf;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样3个很精简的虚拟域名就搭建好了。重启下nginx，然后打开浏览器访问一下这3个域名，就能看到对应的域名内容了。</p>
+<h3 id="反向代理"><a href="#反向代理" class="headerlink" title="反向代理"></a>反向代理</h3><h4 id="正向代理"><a href="#正向代理" class="headerlink" title="正向代理"></a>正向代理</h4><p>在说啥啥反向代理之前，先说下什么是代理或者正向代理。</p>
+<p>正向代理也就是代理，他的工作原理就像一个跳板，简单的说，我访问不了google.com，但是我能访问一个代理服务器A，A能访问google.com，于是我先连上代理服务器A，告诉他我需要google.com的内容，A就去取回来，然后返回给我。从网站的角度，只在代理服务器来取内容的时候有一次记录，有时候并不知道是用户的请求，也隐藏了用户的资料，这取决于代理告不告诉网站。</p>
+<p>结论就是，正向代理是一个位于客户端和原始服务器(origin server)之间的服务器。为了从原始服务器取得内容，客户端向代理发送一个请求并指定目标(原始服务器)，然后代理向原始服务器转交请求并将获得的内容返回给客户端。</p>
+<p>目前代理软件很多，浏览器上的代理就更多了。什么自由门啊，红杏等。</p>
+<h4 id="反向代理-1"><a href="#反向代理-1" class="headerlink" title="反向代理"></a>反向代理</h4><p>ok，说完正向代理，再来说啥是反向代理！</p>
+<p>举个例子，比如我想访问 <a target="_blank" rel="noopener" href="http://www.test.com/readme%EF%BC%8C%E4%BD%86www.test.com%E4%B8%8A%E5%B9%B6%E4%B8%8D%E5%AD%98%E5%9C%A8readme%E9%A1%B5%E9%9D%A2%EF%BC%8C%E4%BA%8E%E6%98%AF%E4%BB%96%E6%98%AF%E5%81%B7%E5%81%B7%E4%BB%8E%E5%8F%A6%E5%A4%96%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E5%8F%96%E5%9B%9E%E6%9D%A5%EF%BC%8C%E7%84%B6%E5%90%8E%E4%BD%9C%E4%B8%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%86%85%E5%AE%B9%E8%BF%94%E5%9B%9E%E7%94%A8%E6%88%B7%EF%BC%8C%E4%BD%86%E7%94%A8%E6%88%B7%E5%B9%B6%E4%B8%8D%E7%9F%A5%E6%83%85%E3%80%82%E8%BF%99%E9%87%8C%E6%89%80%E6%8F%90%E5%88%B0%E7%9A%84">http://www.test.com/readme，但www.test.com上并不存在readme页面，于是他是偷偷从另外一台服务器上取回来，然后作为自己的内容返回用户，但用户并不知情。这里所提到的</a> <a target="_blank" rel="noopener" href="http://www.test.com/">www.test.com</a> 这个域名对应的服务器就设置了反向代理功能。</p>
+<p>结论就是，反向代理正好相反，对于客户端而言它就像是原始服务器，并且客户端不需要进行任何特别的设置。客户端向反向代理的命名空间(name-space)中的内容发送普通请求，接着反向代理将判断向何处(原始服务器)转交请求，并将获得的内容返回给客户端，就像这些内容原本就是它自己的一样。</p>
+<p>嗯。正向代理和反向代理就基本清楚了，那我们就来用nginx来配置一个反向代理。</p>
+<p>nginx 使用反向代理，主要是使用location模块下的proxy_pass选项。</p>
+<p>我们直接实战吧！</p>
+<p>来个最简单的。当我访问 mac 上的nginx 的 centos.iyangyi.com 的内容时候, 就反向代理到虚拟机centos上的 apache 192.168.33.10 的index.html页面。</p>
+<p>192.168.33.10 中的html 是很简单的一句输出：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">centos apache2 index.html</span><br></pre></td></tr></table></figure>
+<p>在hosts里新加上这个域名。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#vi /etc/hosts </span></span><br><span class="line"><span class="number">127.0</span>.<span class="number">0.1</span> centos.iyangyi.com</span><br></pre></td></tr></table></figure>
+
+<p>在vhost目录中新建一个conf server</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#centos.iyangyi.conf</span></span><br><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    server_name centos.iyangyi.com;</span><br><span class="line">    access_log /usr/local/<span class="keyword">var</span>/log/nginx/centos.iyangyi.access.log main;</span><br><span class="line">    error_log /usr/local/<span class="keyword">var</span>/log/nginx/centos.iyangyi.<span class="built_in">error</span>.log <span class="built_in">error</span>;</span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http:<span class="comment">//192.168.33.10;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>重启下nginx:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nginx -s reload</span><br></pre></td></tr></table></figure>
+<p>打开浏览器，就可以看到页面输出了：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">centos apache2 index.html</span><br></pre></td></tr></table></figure>
+
+<h3 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h3><p>先简单说下负载均衡是干嘛的？举个例子：我们的小网站，刚开始就一台nginx服务器，后来，随着业务量增大，用户增多，一台服务器已经不够用了，我们就又多加了几台服务器。那么这几台服务器如何调度？如何均匀的提供访问？这就是负载均衡。</p>
+<p>负载均衡的好处是可以集群多台机器一起工作，并且对外的IP 和 域名是一样的，外界看起来就好像一台机器一样。</p>
+<p>nginx 也刚好提供了强大而又简单的负载均衡功能。</p>
+<p>在第一节中，我详细讲了nginx的负载均衡模块upstream，负载均衡呢，主要是用这个模块。</p>
+<h4 id="基于-weight-权重的负载"><a href="#基于-weight-权重的负载" class="headerlink" title="基于 weight 权重的负载"></a>基于 weight 权重的负载</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">upstream webservers&#123;</span><br><span class="line">    server <span class="number">192.168</span>.<span class="number">33.11</span> weight=<span class="number">10</span>;</span><br><span class="line">    server <span class="number">192.168</span>.<span class="number">33.12</span> weight=<span class="number">10</span>;</span><br><span class="line">    server <span class="number">192.168</span>.<span class="number">33.13</span> weight=<span class="number">10</span>;</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    server_name upstream.iyangyi.com;</span><br><span class="line">    access_log /usr/local/<span class="keyword">var</span>/log/nginx/upstream.iyangyi.access.log main;</span><br><span class="line">    error_log /usr/local/<span class="keyword">var</span>/log/nginx/upstream.iyangyi.<span class="built_in">error</span>.log <span class="built_in">error</span>;</span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http:<span class="comment">//webservers;</span></span><br><span class="line">        proxy_set_header  X-<span class="keyword">Real</span>-IP  <span class="variable">$remote_addr</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>重启nginx nginx -s reload，打开浏览器输入upstream.iyangyi.com，不断刷新下，就能看到变化显示web1,web2,web3。说明我们的负载均衡起作用了。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/nginx%E7%9A%84%E9%85%8D%E7%BD%AE%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%92%8C%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/14/nginx%E7%9A%84%E9%85%8D%E7%BD%AE%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%92%8C%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%80/" class="post-title-link" itemprop="url">nginx的配置虚拟主机负载均衡和反向代理一</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-14 15:38:28 / 修改时间：17:18:15" itemprop="dateCreated datePublished" datetime="2018-06-14T15:38:28+09:00">2018-06-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+尔曹身与名俱灭，不废江河万古流
+</blockquote>
+
+<h3 id="nginx启动和关闭"><a href="#nginx启动和关闭" class="headerlink" title="nginx启动和关闭"></a>nginx启动和关闭</h3><p>按照惯例，先说下各个平台的配置情况：</p>
+<h4 id="centos平台-源码安装的："><a href="#centos平台-源码安装的：" class="headerlink" title="centos平台,源码安装的："></a>centos平台,源码安装的：</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/nginx/nginx <span class="comment"># 启动</span></span><br><span class="line">/usr/local/nginx/nginx -s reload <span class="comment">#平滑重启</span></span><br><span class="line">/usr/local/nginx/nginx.conf <span class="comment">#配置文件</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="mac平台，我用brew安装的。"><a href="#mac平台，我用brew安装的。" class="headerlink" title="mac平台，我用brew安装的。"></a>mac平台，我用brew安装的。</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/bin/nginx <span class="comment"># 启动</span></span><br><span class="line">/usr/local/bin/nginx -s reload <span class="comment">#平滑重启</span></span><br><span class="line">/usr/local/etc/nginx/nginx.cnf <span class="comment">#配置文件</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="nginx-conf配置文件详解"><a href="#nginx-conf配置文件详解" class="headerlink" title="nginx.conf配置文件详解"></a>nginx.conf配置文件详解</h3><p>其实，对比，apache的配置文件，它的相对比较清晰和简单，之前觉得很难，现在沉下心来想想，其实很简单。大致的分块下，基本就分为以下几块：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">main</span><br><span class="line">events   &#123;</span><br><span class="line">  ....</span><br><span class="line">&#125;</span><br><span class="line">http        &#123;</span><br><span class="line">  ....</span><br><span class="line">  upstream myproject &#123;</span><br><span class="line">    .....</span><br><span class="line">  &#125;</span><br><span class="line">  server  &#123;</span><br><span class="line">    ....</span><br><span class="line">    location &#123;</span><br><span class="line">        ....</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  server  &#123;</span><br><span class="line">    ....</span><br><span class="line">    location &#123;</span><br><span class="line">        ....</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  ....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>nginx配置文件主要分为六个区域： main(全局设置)、events(nginx工作模式)、http(http设置)、 sever(主机设置)、location(URL匹配)、upstream(负载均衡服务器设置)。</p>
+<h3 id="main模块"><a href="#main模块" class="headerlink" title="main模块"></a>main模块</h3><p>下面时一个main区域，他是一个全局的设置：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">user nobody nobody;</span><br><span class="line">worker_processes <span class="number">2</span>;</span><br><span class="line">error_log  /usr/local/<span class="keyword">var</span>/log/nginx/<span class="built_in">error</span>.log  notice;</span><br><span class="line">pid        /usr/local/<span class="keyword">var</span>/run/nginx/nginx.pid;</span><br><span class="line">worker_rlimit_nofile <span class="number">1024</span>;</span><br></pre></td></tr></table></figure>
+<p><code>user</code> 来指定Nginx Worker进程运行用户以及用户组，默认由nobody账号运行。</p>
+<p><code>worker_processes</code>来指定了Nginx要开启的子进程数。每个Nginx进程平均耗费10M~12M内存。根据经验，一般指定1个进程就足够了，如果是多核CPU，建议指定和CPU的数量一样的进程数即可。我这里写2，那么就会开启2个子进程，总共3个进程。</p>
+<p><code>error_log</code>用来定义全局错误日志文件。日志输出级别有debug、info、notice、warn、error、crit可供选择，其中，debug输出日志最为最详细，而crit输出日志最少。</p>
+<p><code>pid</code>用来指定进程id的存储文件位置。</p>
+<p><code>worker_rlimit_nofile</code>用于指定一个nginx进程可以打开的最多文件描述符数目，这里是65535，需要使用命令“ulimit -n 65535”来设置。</p>
+<h3 id="events-模块"><a href="#events-模块" class="headerlink" title="events 模块"></a>events 模块</h3><p>events模块来用指定nginx的工作模式和工作模式及连接数上限，一般是这样：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">events &#123;</span><br><span class="line">    <span class="keyword">use</span> <span class="title">kqueue</span>; <span class="comment">#mac平台</span></span><br><span class="line">    worker_connections  <span class="number">1024</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>use</code>用来指定Nginx的工作模式。Nginx支持的工作模式有select、poll、kqueue、epoll、rtsig和/dev/poll。其中select和poll都是标准的工作模式，kqueue和epoll是高效的工作模式，不同的是epoll用在Linux平台上，而kqueue用在BSD系统中，因为Mac基于BSD,所以Mac也得用这个模式，对于Linux系统，epoll工作模式是首选。</p>
+<p><code>worker_connections</code>用于定义Nginx每个进程的最大连接数，即接收前端的最大请求数，默认是1024。最大客户端连接数由worker_processes和worker_connections决定，即<code>Max_clients=worker_processes*worker_connections</code>，在作为反向代理时，Max_clients变为：<code>Max_clients = worker_processes * worker_connections/4</code>。<br>进程的最大连接数受Linux系统进程的最大打开文件数限制，在执行操作系统命令<code>ulimit -n 65536</code>后<code>worker_connections</code>的设置才能生效。</p>
+<h3 id="http-模块"><a href="#http-模块" class="headerlink" title="http 模块"></a>http 模块</h3><p>http模块可以说是最核心的模块了，它负责HTTP服务器相关属性的配置，它里面的server和upstream子模块，至关重要，等到反向代理和负载均衡以及虚拟目录等会仔细说。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">http&#123;</span><br><span class="line">    <span class="keyword">include</span>       mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line">    log_format  main  <span class="string">&#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;</span></span><br><span class="line">                      <span class="string">&#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;</span></span><br><span class="line">                      <span class="string">&#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;</span>;</span><br><span class="line">    access_log  /usr/local/<span class="keyword">var</span>/log/nginx/access.log  main;</span><br><span class="line">    sendfile        on;</span><br><span class="line">    tcp_nopush      on;</span><br><span class="line">    tcp_nodelay     on;</span><br><span class="line">    keepalive_timeout  <span class="number">10</span>;</span><br><span class="line">    <span class="comment">#gzip  on;</span></span><br><span class="line">    upstream myproject &#123;</span><br><span class="line">        .....</span><br><span class="line">    &#125;</span><br><span class="line">    server &#123;</span><br><span class="line">        ....</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面详细介绍下这段代码中每个配置选项的含义。<br><code>include</code> 用来设定文件的mime类型,类型在配置文件目录下的<code>mime.type</code>文件定义，来告诉nginx来识别文件类型。</p>
+<p><code>default_type</code>设定了默认的类型为二进制流，也就是当文件类型未定义时使用这种方式，例如在没有配置asp 的locate 环境时，Nginx是不予解析的，此时，用浏览器访问asp文件就会出现下载了。</p>
+<p><code>log_format</code>用于设置日志的格式，和记录哪些参数，这里设置为main，刚好用于access_log来记录这种类型。</p>
+<p><code>main</code>的类型日志如下：也可以增删部分参数。</p>
+<p>127.0.0.1 - - [21/Apr/2015:18:09:54 +0800] “GET /index.php HTTP/1.1” 200 87151 “-“ “Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36”</p>
+<p><code>access_log</code> 用来纪录每次的访问日志的文件地址，后面的main是日志的格式样式，对应于log_format的main。</p>
+<p><code>sendfile</code>参数用于开启高效文件传输模式。将tcp_nopush和tcp_nodelay两个指令设置为on用于防止网络阻塞。</p>
+<p><code>keepalive_timeout</code>设置客户端连接保持活动的超时时间。在超过这个时间之后，服务器会关闭该连接。</p>
+<p>还有很多各种配置，以后等用到来再说。</p>
+<h3 id="server-模块"><a href="#server-模块" class="headerlink" title="server 模块"></a>server 模块</h3><p>sever 模块是http的子模块，它用来定一个虚拟主机，我们先讲最基本的配置，这些在后面再讲。</p>
+<p>我们看一下一个简单的server 是如何做的？</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        listen       <span class="number">8080</span>;</span><br><span class="line">        server_name  localhost <span class="number">192.168</span>.<span class="number">12.10</span> www.yangyi.com;</span><br><span class="line">        <span class="comment"># 全局定义，如果都是这一个目录，这样定义最简单。</span></span><br><span class="line">        root   /Users/yangyi/www;</span><br><span class="line">        index  index.php index.html index.htm; </span><br><span class="line">        charset utf-<span class="number">8</span>;</span><br><span class="line">        access_log  usr/local/<span class="keyword">var</span>/log/host.access.log  main;</span><br><span class="line">        aerror_log  usr/local/<span class="keyword">var</span>/log/host.<span class="built_in">error</span>.log  <span class="built_in">error</span>;</span><br><span class="line">        ....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>server</code>标志定义虚拟主机开始。<br><code>listen</code>用于指定虚拟主机的服务端口。<br><code>server_name</code>用来指定IP地址或者域名，多个域名之间用空格分开。<br><code>root</code> 表示在这整个server虚拟主机内，全部的root web根目录。注意要和locate {}下面定义的区分开来。<br><code>index</code> 全局定义访问的默认首页地址。注意要和locate {}下面定义的区分开来。<br><code>charset</code>用于设置网页的默认编码格式。<br><code>access_log</code>用来指定此虚拟主机的访问日志存放路径，最后的main用于指定访问日志的输出格式。</p>
+<h3 id="location-模块"><a href="#location-模块" class="headerlink" title="location 模块"></a>location 模块</h3><p>location模块是nginx中用的最多的，也是最重要的模块了，什么负载均衡啊、反向代理啊、虚拟域名啊都与它相关。慢慢来讲：</p>
+<p>location 根据它字面意思就知道是来定位的，定位URL，解析URL，所以，它也提供了强大的正则匹配功能，也支持条件判断匹配，用户可以通过location指令实现Nginx对动、静态网页进行过滤处理。像我们的php环境搭建就是用到了它。</p>
+<p>我们先来看这个，设定默认首页和虚拟机目录。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    root   /Users/yangyi/www;</span><br><span class="line">    index  index.php index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>location /</code>表示匹配访问根目录。</p>
+<p><code>root</code>指令用于指定访问根目录时，虚拟主机的web目录，这个目录可以是相对路径（相对路径是相对于nginx的安装目录）。也可以是绝对路径。</p>
+<p><code>index</code>用于设定我们只输入域名后访问的默认首页地址，有个先后顺序：index.php index.html index.htm，如果没有开启目录浏览权限，又找不到这些默认首页，就会报403错误。</p>
+<p>location 还有一种方式就是正则匹配，开启正则匹配这样：location <del>。后面加个</del>。</p>
+<p>下面这个例子是运用正则匹配来链接php。我们之前搭建环境也是这样做：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">location ~ \.php$ &#123;</span><br><span class="line">            root           /Users/yangyi/www;</span><br><span class="line">            fastcgi_pass   <span class="number">127.0</span>.<span class="number">0.1</span>:<span class="number">9000</span>;</span><br><span class="line">            fastcgi_index  index.php;</span><br><span class="line">            <span class="keyword">include</span>        fastcgi.conf;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>.php$ 熟悉正则的我们直到，这是匹配.php结尾的URL，用来解析php文件。里面的root也是一样，用来表示虚拟主机的根目录。<br>fast_pass链接的是php-fpm 的地址，之前我们也搭建过。其他几个参数我们以后再说。</p>
+<p>location 还有其他用法，等讲到实例的时候，再看吧。</p>
+<h3 id="upstream-模块"><a href="#upstream-模块" class="headerlink" title="upstream 模块"></a>upstream 模块</h3><p>upstream 模块负债负载均衡模块，通过一个简单的调度算法来实现客户端IP到后端服务器的负载均衡。我先学习怎么用，具体的使用实例以后再说。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">upstream iyangyi.com&#123;</span><br><span class="line">    ip_hash;</span><br><span class="line">    server <span class="number">192.168</span>.<span class="number">12.1</span>:<span class="number">80</span>;</span><br><span class="line">    server <span class="number">192.168</span>.<span class="number">12.2</span>:<span class="number">80</span> down;</span><br><span class="line">    server <span class="number">192.168</span>.<span class="number">12.3</span>:<span class="number">8080</span>  max_fails=<span class="number">3</span>  fail_timeout=<span class="number">20</span>s;</span><br><span class="line">    server <span class="number">192.168</span>.<span class="number">12.4</span>:<span class="number">8080</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上面的例子中，通过upstream指令指定了一个负载均衡器的名称iyangyi.com。这个名称可以任意指定，在后面需要的地方直接调用即可。</p>
+<p>里面是ip_hash这是其中的一种负载均衡调度算法，下面会着重介绍。紧接着就是各种服务器了。用server关键字表识，后面接ip。</p>
+<p>Nginx的负载均衡模块目前支持4种调度算法:</p>
+<ul>
+<li>weight 轮询（默认）。每个请求按时间顺序逐一分配到不同的后端服务器，如果后端某台服务器宕机，故障系统被自动剔除，使用户访问不受影响。weight。指定轮询权值，weight值越大，分配到的访问机率越高，主要用于后端每个服务器性能不均的情况下。</li>
+<li>ip_hash。每个请求按访问IP的hash结果分配，这样来自同一个IP的访客固定访问一个后端服务器，有效解决了动态网页存在的session共享问题。</li>
+<li>fair。比上面两个更加智能的负载均衡算法。此种算法可以依据页面大小和加载时间长短智能地进行负载均衡，也就是根据后端服务器的响应时间来分配请求，响应时间短的优先分配。Nginx本身是不支持fair的，如果需要使用这种调度算法，必须下载Nginx的upstream_fair模块。</li>
+<li>url_hash。按访问url的hash结果来分配请求，使每个url定向到同一个后端服务器，可以进一步提高后端缓存服务器的效率。Nginx本身是不支持url_hash的，如果需要使用这种调度算法，必须安装Nginx 的hash软件包。</li>
+</ul>
+<p>在HTTP Upstream模块中，可以通过server指令指定后端服务器的IP地址和端口，同时还可以设定每个后端服务器在负载均衡调度中的状态。常用的状态有：</p>
+<ul>
+<li>down，表示当前的server暂时不参与负载均衡。</li>
+<li>backup，预留的备份机器。当其他所有的非backup机器出现故障或者忙的时候，才会请求backup机器，因此这台机器的压力最轻。</li>
+<li>max_fails，允许请求失败的次数，默认为1。当超过最大次数时，返回proxy_next_upstream 模块定义的错误。</li>
+<li>fail_timeout，在经历了max_fails次失败后，暂停服务的时间。max_fails可以和fail_timeout一起使用。</li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.zybuluo.com/phper/note/89391">https://www.zybuluo.com/phper/note/89391</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1121,192 +1373,8 @@ Honesty is the best policy.
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/01/lavavel%E6%8B%92%E7%BB%9D%E8%BD%AF%E5%88%A0%E9%99%A4%E7%9A%84%E7%94%A8%E6%88%B7%E9%82%AE%E7%AE%B1%E5%86%8D%E6%AC%A1%E9%AA%8C%E8%AF%81/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/01/lavavel%E6%8B%92%E7%BB%9D%E8%BD%AF%E5%88%A0%E9%99%A4%E7%9A%84%E7%94%A8%E6%88%B7%E9%82%AE%E7%AE%B1%E5%86%8D%E6%AC%A1%E9%AA%8C%E8%AF%81/" class="post-title-link" itemprop="url">Lavavel拒绝软删除的用户邮箱再次验证</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-01 14:06:43 / 修改时间：15:14:06" itemprop="dateCreated datePublished" datetime="2018-06-01T14:06:43+09:00">2018-06-01</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-松下问童子，言师采药去。只在此山中，云深不知处。
-</blockquote>
-
-<p>When creating user authorization system with soft-deletable data we might encounter a problem: deleted user might try to register with same email address and gets an error that it is in use. What to do in order to prevent it? Here is a quite simple example of how it could be solved.</p>
-<p>First of all – by default Laravel migrations for users table have a unique index on email field. This needs to be modified – we need to have unique values on email and deleted_at fields at the same time. So let’s write our migration like this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">up</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Schema::create(<span class="string">&#x27;users&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$table</span>-&gt;increments(<span class="string">&#x27;id&#x27;</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;string(<span class="string">&#x27;name&#x27;</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;string(<span class="string">&#x27;email&#x27;</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;string(<span class="string">&#x27;password&#x27;</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;rememberToken();</span><br><span class="line">        <span class="variable">$table</span>-&gt;timestamps();</span><br><span class="line">        <span class="variable">$table</span>-&gt;softDeletes();</span><br><span class="line"></span><br><span class="line">        <span class="variable">$table</span>-&gt;unique([<span class="string">&#x27;email&#x27;</span>, <span class="string">&#x27;deleted_at&#x27;</span>]);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>As you can see, we have a unique index for email and deleted_at at the same time. It is called a composite index. From now on – it is impossible to have two entries that would have identical information in both fields as long as none of them are NULL (except for a situation where your deleted_at field is set to NULL. This is not a bug due the fact that unique allows multiple NULL values in a column: <a target="_blank" rel="noopener" href="http://dev.mysql.com/doc/refman/5.7/en/create-index.html">http://dev.mysql.com/doc/refman/5.7/en/create-index.html</a> – see comment below)</p>
-<blockquote>
-<p>A UNIQUE index creates a constraint such that all values in the index must be distinct. An error occurs if you try to add a new row with a key value that matches an existing row. For all engines, a UNIQUE index permits multiple NULL values for columns that can contain NULL. If you specify a prefix value for a column in a UNIQUE index, the column values must be unique within the prefix.</p>
-</blockquote>
-<p>Now, to match a case where our user might not be deleted yet and we don’t want him to register with same email again – we need to change email validation rule:</p>
-<p>Open our app/Http/Controllers/Auth/AuthController.php file (Request or other Controller where you have the validation rule) and change your email validation to this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;email&#x27;</span> =&gt; <span class="string">&#x27;required|email|max:255|unique:users,email,NULL,id,deleted_at,NULL&#x27;</span>,</span><br></pre></td></tr></table></figure>
-
-<p>You might need to modify table name, column name and etc. for your needs.</p>
-<p>And that’s it. Your user is able to register again with the same email as he did before and Laravel will make sure that the email is not within active users. Just don’t forget that when restoring it you need to check if there are no active users with identical email. This might not be the best solution for you, so we made a tiny list of other possible solutions. Feel free to choose any other if this doesn’t work for you or suggest us a new one!</p>
-<ul>
-<li>Make a second table where you would store deleted users email and set a random string in the original database. On restore just copy the email back and delete the dummy row.</li>
-<li>On user delete (using an observer or manually) prepend users email with a prefix: _deleted or something like that.</li>
-<li>… your suggestions?</li>
-</ul>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://laraveldaily.com/make-soft-deleted-user-email-available/">http://laraveldaily.com/make-soft-deleted-user-email-available/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/05/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/" class="post-title-link" itemprop="url">Laravel之开发测试和生产环境区分</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-05-31 11:48:11 / 修改时间：13:05:32" itemprop="dateCreated datePublished" datetime="2018-05-31T11:48:11+09:00">2018-05-31</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-不做动机揣测，少做价值判断
-</blockquote>
-
-<p>Laravel环境检测的方法是很容易的，因为大家都知道Laravel中使用了Dotenv来做文件配置，这就牵扯到了我们的都很熟悉的.env。</p>
-<p>比如一个典型的.env是:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=local</span><br><span class="line">APP_DEBUG=<span class="literal">true</span></span><br><span class="line">APP_KEY=base64:<span class="number">3</span>csTuw5O1me1PF4j9xErbUR+seyH1xdf6uRfvjuQ22Q=</span><br><span class="line">APP_URL=http:<span class="comment">//localhost</span></span><br><span class="line"></span><br><span class="line">DB_CONNECTION=mysql</span><br><span class="line">DB_HOST=<span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line">DB_PORT=<span class="number">3306</span></span><br><span class="line">DB_DATABASE=db_name</span><br><span class="line">DB_USERNAME=db_user</span><br><span class="line">DB_PASSWORD=db_pass</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
-<p>今天我的这篇分享主要介绍两种区分不同环境的方法。</p>
-<h3 id="不同环境维护自己的-env文件"><a href="#不同环境维护自己的-env文件" class="headerlink" title="不同环境维护自己的.env文件"></a>不同环境维护自己的.env文件</h3><p>这种办法也是Laravel默认的办法，也就是开发环境、测试环境和生产环境各自维护自己的.env文件，也就是说.env不要加到版本控制系统中，通过不同的配置可以做到环境的区分，比如:</p>
-<p>开发环境</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=dev</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
-<p>测试环境</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=staging</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
-<p>生产环境</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=production</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
-<p>这样，在我们的代码中即可以通过判断APP_ENV来判断是哪种环境。但是这种办法我个人是不太喜欢的，原因有以下几点:</p>
-<ul>
-<li>环境的判断过多的写到代码里面，维护起来很麻烦</li>
-<li>如果某次上线需要修改配置文件，则每次上线代码还需要到线上机器修改.env文件，部署起来很麻烦</li>
-</ul>
-<h3 id="不同环境加载自己的-env-文件"><a href="#不同环境加载自己的-env-文件" class="headerlink" title="不同环境加载自己的.env.文件"></a>不同环境加载自己的.env.文件</h3><p>这里面的.env.文件延伸开来就是.env.dev、.env.test和.env.prod，比如开发环境会自动加载.env.dev，依此类推，那么如果是这样的话，不同环境的机器又怎么知道加载哪个文件呢？其实这里面还是耍了点小聪明，别忘了我们有php.ini</p>
-<ul>
-<li>1.在php.ini中追加一行配置<br>当然开发、测试和生产环境中env所对应的值也需要不一样<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//开发环境</span></span><br><span class="line">env=dev</span><br><span class="line"><span class="comment">//测试环境</span></span><br><span class="line">env=staging</span><br><span class="line"><span class="comment">//生产环境</span></span><br><span class="line">env=production</span><br></pre></td></tr></table></figure></li>
-<li>2.加载不同的配置文件<br>在bootstrap/app.php文件中添加如下判断，在这里将通过获取php.ini中的env的值，然后从而加载不同的配置文件。<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//...省略</span></span><br><span class="line"><span class="variable">$env</span> = get_cfg_var(<span class="string">&#x27;env&#x27;</span>);</span><br><span class="line"><span class="variable">$env</span> = !<span class="keyword">empty</span>(<span class="variable">$env</span>) ? <span class="variable">$env</span> : <span class="string">&#x27;production&#x27;</span>;</span><br><span class="line"><span class="keyword">if</span>(!defined(<span class="string">&#x27;APP_MODE&#x27;</span>))&#123;</span><br><span class="line">    define(<span class="string">&#x27;APP_MODE&#x27;</span>, <span class="variable">$env</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$app</span>-&gt;loadEnvironmentFrom(<span class="string">&#x27;.env.&#x27;</span>.<span class="variable">$env</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> <span class="variable">$app</span>;</span><br></pre></td></tr></table></figure></li>
-<li>3.新建.env.dev、.env.staging和.env.production</li>
-</ul>
-<p>好，就到此为止了，当然虽然我非常喜欢第二种办法，但第二种毕竟需要对线上机器做一次大的改动，需要运维同学支持下。但是也需要具体情况具体来选择吧。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://xuwenzhi.com/2016/07/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E3%80%81%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/">http://xuwenzhi.com/2016/07/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E3%80%81%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/11/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/40/">40</a><a class="extend next" rel="next" href="/page/13/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/11/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/13/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>

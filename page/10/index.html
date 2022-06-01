@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">399</span>
+          <span class="site-state-item-count">401</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,184 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/25/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8eloquent%E4%B8%AD%E4%BD%BF%E7%94%A8appends/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/07/25/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8eloquent%E4%B8%AD%E4%BD%BF%E7%94%A8appends/" class="post-title-link" itemprop="url">为什么要在eloquent中使用appends</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-07-25 08:57:46 / 修改时间：10:06:57" itemprop="dateCreated datePublished" datetime="2018-07-25T08:57:46+09:00">2018-07-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+讲真话的最大好处就是：不必记得自己讲过什么。
+</blockquote>
+
+<p>Eloquent has a convenient feature called Accessors – you can define your own custom fields on top of existing in the database table. But then there’s an Eloquent property $appends – should we use it or not? And what’s the difference?</p>
+<h3 id="First-–-how-Accessors-work"><a href="#First-–-how-Accessors-work" class="headerlink" title="First – how Accessors work"></a>First – how Accessors work</h3><p>For those who don’t know or have forgotten: for example, if you have User model and fields first_name and last_name in the DB table, then you can create a function in app\User.php:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getFullNameAttribute</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;first_name . <span class="string">&#x27; &#x27;</span> . <span class="keyword">$this</span>-&gt;last_name;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Then you have access to property full_name (in the function name it’s CamelCase, and the property name is with underscoresd, for example like this:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ho User::find(<span class="number">1</span>)-&gt;full_name;</span><br></pre></td></tr></table></figure>
+<p>But here’s the thing – if you just return User object, it won’t contain full_name:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dd(User::find(<span class="number">1</span>)-&gt;toJSON());</span><br></pre></td></tr></table></figure>
+<p>The result would look something like this:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;id&quot;</span>:<span class="number">1</span>,</span><br><span class="line">  <span class="string">&quot;first_name&quot;</span>:<span class="string">&quot;Povilas&quot;</span>,</span><br><span class="line">  <span class="string">&quot;last_name&quot;</span>:<span class="string">&quot;Korop&quot;</span>,</span><br><span class="line">  <span class="string">&quot;email&quot;</span>:<span class="string">&quot;povilas@webcoderpro.com&quot;</span>,</span><br><span class="line">  <span class="string">&quot;created_at&quot;</span>:<span class="string">&quot;2015-06-19 08:16:58&quot;</span>,</span><br><span class="line">  <span class="string">&quot;updated_at&quot;</span>:<span class="string">&quot;2015-06-19 19:48:09&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="Here’s-where-appends-comes-in"><a href="#Here’s-where-appends-comes-in" class="headerlink" title="Here’s where $appends comes in"></a>Here’s where $appends comes in</h3><p>Now this is the trick – in your User model you can add $appends attribute and list the fields that would automatically be appended:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="variable">$appends</span> = [<span class="string">&#x27;full_name&#x27;</span>];</span><br></pre></td></tr></table></figure>
+<p>Now that attribute will be automatically added to the previous JSON:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;id&quot;</span>:<span class="number">1</span>,</span><br><span class="line">  <span class="string">&quot;first_name&quot;</span>:<span class="string">&quot;Povilas&quot;</span>,</span><br><span class="line">  <span class="string">&quot;last_name&quot;</span>:<span class="string">&quot;Korop&quot;</span>,</span><br><span class="line">  <span class="string">&quot;email&quot;</span>:<span class="string">&quot;povilas@webcoderpro.com&quot;</span>,</span><br><span class="line">  <span class="string">&quot;created_at&quot;</span>:<span class="string">&quot;2015-06-19 08:16:58&quot;</span>,</span><br><span class="line">  <span class="string">&quot;updated_at&quot;</span>:<span class="string">&quot;2015-06-19 19:48:09&quot;</span>,</span><br><span class="line">  <span class="string">&quot;full_name&quot;</span>:<span class="string">&quot;Povilas Korop&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laraveldaily.com/why-use-appends-with-accessors-in-eloquent/">https://laraveldaily.com/why-use-appends-with-accessors-in-eloquent/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/25/%E6%95%99%E4%BD%A0%E5%A6%82%E4%BD%95%E5%BF%AB%E9%80%9F%E6%9E%84%E5%BB%BAapi%E6%9F%A5%E8%AF%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/07/25/%E6%95%99%E4%BD%A0%E5%A6%82%E4%BD%95%E5%BF%AB%E9%80%9F%E6%9E%84%E5%BB%BAapi%E6%9F%A5%E8%AF%A2/" class="post-title-link" itemprop="url">教你如何快速构建API查询</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-07-25 08:35:47 / 修改时间：09:49:15" itemprop="dateCreated datePublished" datetime="2018-07-25T08:35:47+09:00">2018-07-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+很多东西如果不是怕别人捡去，我们一定会扔掉。
+</blockquote>
+
+<p>Laravel Query Builder is a package by Alex Vanderbist and the folks at Spatie, to quickly build Eloquent queries from API requests. This package makes creating complex API queries with Laravel incredibly simple. While you may have already heard of this package (or used it), I wanted to make sure everyone is aware of this one!</p>
+<p>I highly recommend you take Query Builder for a spin and read through the README to learn what it’s capable of doing. It makes creating API filters and other query-related tasks so easy, you might feel like you’re cheating.</p>
+<p>A few basic examples of what you can do include filtering an API request, including related models, incorporating it with existing queries, sorting an API request.</p>
+<h3 id="Basic-usage"><a href="#Basic-usage" class="headerlink" title="Basic usage"></a>Basic usage</h3><ul>
+<li><p>Filtering an API request: /users?filter[name]=John:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Spatie</span>\<span class="title">QueryBuilder</span>\<span class="title">QueryBuilder</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$users</span> = QueryBuilder::for(User::class)</span><br><span class="line">    -&gt;allowedFilters(<span class="string">&#x27;name&#x27;</span>)</span><br><span class="line">    -&gt;get();</span><br><span class="line"><span class="comment">// all `User`s that contain the string &quot;John&quot; in their name</span></span><br></pre></td></tr></table></figure></li>
+<li><p>Requesting relations from an API request: /users?include=posts:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$users</span> = QueryBuilder::for(User::class)</span><br><span class="line">    -&gt;allowedIncludes(<span class="string">&#x27;posts&#x27;</span>)</span><br><span class="line">    -&gt;get();</span><br><span class="line"><span class="comment">// all `User`s with their `posts` loaded</span></span><br></pre></td></tr></table></figure></li>
+<li><p>Works together nicely with existing queries:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = User::where(<span class="string">&#x27;active&#x27;</span>, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$user</span> = QueryBuilder::for(<span class="variable">$query</span>)</span><br><span class="line">    -&gt;allowedIncludes(<span class="string">&#x27;posts&#x27;</span>, <span class="string">&#x27;permissions&#x27;</span>)</span><br><span class="line">    -&gt;where(<span class="string">&#x27;score&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, <span class="number">42</span>) <span class="comment">// chain on any of Laravel&#x27;s query builder methods</span></span><br><span class="line">    -&gt;first();</span><br></pre></td></tr></table></figure></li>
+<li><p>Sorting an API request: /users?sort=name:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$users</span> = QueryBuilder::for(User::class)-&gt;get();</span><br><span class="line"><span class="comment">// all `User`s sorted by name</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h3><p>You can install the package via composer:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> spatie/laravel-query-builder</span><br></pre></td></tr></table></figure>
+<p>You can optionally publish the config file with:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan vendor:publish --provider=<span class="string">&quot;Spatie\QueryBuilder\QueryBuilderServiceProvider&quot;</span> --tag=<span class="string">&quot;config&quot;</span></span><br></pre></td></tr></table></figure>
+<p>This is the contents of the published config file:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> [</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * By default the package will use the `include`, `filter`, `sort` and `fields` query parameters.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Here you can customize those names.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="string">&#x27;parameters&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;include&#x27;</span> =&gt; <span class="string">&#x27;include&#x27;</span>,</span><br><span class="line"></span><br><span class="line">        <span class="string">&#x27;filter&#x27;</span> =&gt; <span class="string">&#x27;filter&#x27;</span>,</span><br><span class="line"></span><br><span class="line">        <span class="string">&#x27;sort&#x27;</span> =&gt; <span class="string">&#x27;sort&#x27;</span>,</span><br><span class="line"></span><br><span class="line">        <span class="string">&#x27;fields&#x27;</span> =&gt; <span class="string">&#x27;fields&#x27;</span>,</span><br><span class="line">    ],</span><br><span class="line"></span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-news.com/laravel-query-builder">https://laravel-news.com/laravel-query-builder</a><br><a target="_blank" rel="noopener" href="https://packagist.org/packages/spatie/laravel-query-builder">https://packagist.org/packages/spatie/laravel-query-builder</a><br><a target="_blank" rel="noopener" href="https://github.com/spatie/laravel-query-builder">https://github.com/spatie/laravel-query-builder</a><br><a target="_blank" rel="noopener" href="https://spatie.be/en/opensource/laravel">https://spatie.be/en/opensource/laravel</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -900,179 +1078,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/05/golang%E4%B8%AD%E4%B8%8B%E5%88%92%E7%BA%BF%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/07/05/golang%E4%B8%AD%E4%B8%8B%E5%88%92%E7%BA%BF%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">golang中下划线使用方法</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-07-05 11:46:29" itemprop="dateCreated datePublished" datetime="2018-07-05T11:46:29+09:00">2018-07-05</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:57:04" itemprop="dateModified" datetime="2021-09-10T13:57:04+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我想有一间书房，不负光阴，静享慢乐
-</blockquote>
-
-<h3 id="用在import"><a href="#用在import" class="headerlink" title="用在import"></a>用在import</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import (</span><br><span class="line">	<span class="string">&quot;database/sql&quot;</span></span><br><span class="line">    _<span class="string">&quot;github.com/go-sql-driver/mysql&quot;</span></span><br><span class="line">	<span class="string">&quot;log&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<p>引入包，会先调用包中的初始化函数，这种使用方式仅让导入的包做初始化，而不使用包中其他功能</p>
-<h3 id="用在返回值"><a href="#用在返回值" class="headerlink" title="用在返回值"></a>用在返回值</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> _,v := range Slice&#123;&#125;</span><br><span class="line"></span><br><span class="line">_,err := func()</span><br></pre></td></tr></table></figure>
-<p>表示忽略某个值。单函数有多个返回值，用来获取某个特定的值</p>
-<h3 id="用在变量"><a href="#用在变量" class="headerlink" title="用在变量"></a>用在变量</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">type T struct&#123;&#125;</span><br><span class="line"><span class="keyword">var</span> _ I = T&#123;&#125;</span><br><span class="line"></span><br><span class="line">其中 I为<span class="class"><span class="keyword">interface</span></span></span><br></pre></td></tr></table></figure>
-<p>上面用来判断 type T是否实现了I,用作类型断言，如果T没有实现借口I，则编译错误.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/309f55a152db">https://www.jianshu.com/p/309f55a152db</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/03/nginx%E7%9A%84empty-gif%E6%A8%A1%E5%9D%97/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/07/03/nginx%E7%9A%84empty-gif%E6%A8%A1%E5%9D%97/" class="post-title-link" itemprop="url">nginx的empty_gif模块</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-07-03 20:05:37" itemprop="dateCreated datePublished" datetime="2018-07-03T20:05:37+09:00">2018-07-03</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-07-05 12:55:30" itemprop="dateModified" datetime="2018-07-05T12:55:30+09:00">2018-07-05</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你对自由的理解是什么？说「不」的能力。
-</blockquote>
-
-<p>用过百度统计的都知道百度使用1x1的空白图片传递统计参数，自己做异步统计的兄弟是否使用静态文件来传递参数。为什么使用空白图片呢，而不是自己存放一张小图呢，nginx里面的空白图片是保存在内存中的，速度绝对比硬盘上读取的快. 看下如何使用empty_gif生成响应1x1的空白图片吧.</p>
-<p>或许哪天ttlsa自己要做统计，咱们也可以使用empty_gif来传递参数，说归说，肯定性还是比较小，能用第三方的统计就用第三方统计。</p>
-<h3 id="nginx配置"><a href="#nginx配置" class="headerlink" title="nginx配置"></a>nginx配置</h3><p>nginx的模块 ngx_http_empty_gif_module， 编译安装</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location = /_.gif &#123;</span><br><span class="line">    empty_gif;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>自定义配置</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       <span class="number">80</span>;</span><br><span class="line">    server_name  test.ttlsa.com;</span><br><span class="line">    access_log  /data/logs/nginx/test.ttlsa.com.access.log  main;</span><br><span class="line"></span><br><span class="line">    index index.html index.php index.html;</span><br><span class="line">    root /data/site/test.ttlsa.com;</span><br><span class="line"></span><br><span class="line">    location ~* /<span class="number">3145</span>/</span><br><span class="line">    &#123;</span><br><span class="line">        empty_gif;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="访问"><a href="#访问" class="headerlink" title="访问"></a>访问</h3><p>我们在访问的时候带上所要统计的参数就可以</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">test.ttlsa.com/<span class="number">3145</span>?time=hhh</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://nginx.org/en/docs/http/ngx_http_empty_gif_module.html">http://nginx.org/en/docs/http/ngx_http_empty_gif_module.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/9/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/40/">40</a><a class="extend next" rel="next" href="/page/11/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/9/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/11/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>
