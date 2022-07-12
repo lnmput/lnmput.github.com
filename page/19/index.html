@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">401</span>
+          <span class="site-state-item-count">402</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,97 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/31/%E4%BD%BF%E7%94%A8docker%E5%9C%A8centos%E4%B8%8B%E5%AE%89%E8%A3%85java%E7%8E%AF%E5%A2%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/31/%E4%BD%BF%E7%94%A8docker%E5%9C%A8centos%E4%B8%8B%E5%AE%89%E8%A3%85java%E7%8E%AF%E5%A2%83/" class="post-title-link" itemprop="url">使用docker在centos下安装java环境</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-31 18:01:05" itemprop="dateCreated datePublished" datetime="2018-01-31T18:01:05+09:00">2018-01-31</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:59:40" itemprop="dateModified" datetime="2018-03-27T21:59:40+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+既然庸庸碌碌也难逃一死，何不奋起一搏？
+</blockquote>
+
+<h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><ul>
+<li><p>docker安装</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo yum install docker-ce</span><br></pre></td></tr></table></figure></li>
+<li><p>主机安装并配置java环境, 要求使用解压版的jdk<br>配置环境变量, 修改<code>/etc/profile </code>加入以下内容,修改后 马上生效还需要运行 <code>source /etc/profile</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/usr/local/jdk1.<span class="number">8.0_161</span></span><br><span class="line">export PATH=<span class="variable">$JAVA_HOME</span>/bin:<span class="variable">$PATH</span></span><br><span class="line">export CLASSPATH=.:<span class="variable">$JAVA_HOME</span>/lib/dt.jar:<span class="variable">$JAVA_HOME</span>/lib/tools.jar</span><br></pre></td></tr></table></figure></li>
+<li><p>安装centos镜像</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull centos</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="安装过程"><a href="#安装过程" class="headerlink" title="安装过程"></a>安装过程</h3><p>创建的一个空的文件夹<code>build_jdk</code>, 并将我们的<code>jdk</code>目录拷贝到这个目录：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp -r jdk1.<span class="number">8.0_161</span> /root/build_jdk/</span><br></pre></td></tr></table></figure>
+<p>创建<code>Dockerfile</code>文件<br>需要将主机的jdk文件拷贝到镜像里, 并配置环境变量</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> centos:latest</span><br><span class="line">COPY jdk1.<span class="number">8.0_161</span> /usr/local/jdk1.<span class="number">8.0_161</span></span><br><span class="line">ENV JAVA_HOME=/usr/local/jdk1.<span class="number">8.0_161</span></span><br><span class="line">ENV PATH <span class="variable">$JAVA_HOME</span>/bin:<span class="variable">$PATH</span></span><br><span class="line">ENV CLASSPATH .:<span class="variable">$JAVA_HOME</span>/lib/dt.jar:<span class="variable">$JAVA_HOME</span>/lib/tools.jar</span><br><span class="line">CMD /usr/sbin/init</span><br></pre></td></tr></table></figure>
+<p>生成镜像<br>在Dockerfile文件的文件加下执行</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t centos:jdk .</span><br></pre></td></tr></table></figure>
+<p>注意后面的<code>.</code>代表当前目录<br>生成容器</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --privileged -d -p <span class="number">8080</span>:<span class="number">80</span> --name myjdk -v /home/demo:/<span class="keyword">var</span>/www/html centos:jdk</span><br></pre></td></tr></table></figure>
+<p>–privileged 参数，给容器加特权,否则交互式方式进入容器无法操作一些譬如修改内核、修改系统参数、甚至启动服务等<br>-d 在后台启动<br>-p 端口映射<br>-v 文件夹共享<br>–name 给容器起一个名称<br>镜像名:镜像标签<br>启动容器的时候执行的命令,  必须要执行<code>/usr/sbin/init</code>这个命令， </p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1093,90 +1184,6 @@ PHP在用户自定义函数中支持可变数量的参数列表。在 `PHP 5.6` 
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Redis::pipeline(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$pipe</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="number">1000</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">        <span class="variable">$pipe</span>-&gt;set(<span class="string">&quot;key:<span class="subst">$i</span>&quot;</span>, <span class="variable">$i</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
 
 <h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>关于phpredis和predis的区别, 请参考:<br><a href="/2017/09/28/Predis%E5%92%8CPhpredis%E7%9A%84%E5%8C%BA%E5%88%AB/">Predis和Phpredis的区别</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/16/ECMAScript6%E4%B8%AD%E5%89%A9%E4%BD%99%E5%8F%82%E6%95%B0%E7%9A%84%E7%94%A8%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/16/ECMAScript6%E4%B8%AD%E5%89%A9%E4%BD%99%E5%8F%82%E6%95%B0%E7%9A%84%E7%94%A8%E6%B3%95/" class="post-title-link" itemprop="url">ECMAScript6中剩余参数的用法</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-01-16 09:10:51 / 修改时间：10:19:26" itemprop="dateCreated datePublished" datetime="2018-01-16T09:10:51+09:00">2018-01-16</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-少年易老学难成，一寸光阴不可轻
-</blockquote>
-
-<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>如果函数的最后一个命名参数以<code>...</code>为前缀，则它将成为一个数组，其中从0（包括）到theArgs.length（排除）的元素由传递给函数的实际参数提供。</p>
-<h3 id="剩余参数和-arguments对象的区别"><a href="#剩余参数和-arguments对象的区别" class="headerlink" title="剩余参数和 arguments对象的区别"></a>剩余参数和 <code>arguments</code>对象的区别</h3><ul>
-<li>剩余参数只包含那些没有对应形参的实参，而 arguments 对象包含了传给函数的所有实参。</li>
-<li>arguments对象不是一个真正的数组，而剩余参数是真正的 Array实例，也就是说你能够在它上面直接使用所有的数组方法，比如 sort，map，forEach或pop。</li>
-<li>arguments对象还有一些附加的属性 （如callee属性）。</li>
-</ul>
-<h3 id="一般的求和函数"><a href="#一般的求和函数" class="headerlink" title="一般的求和函数"></a>一般的求和函数</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(<span class="built_in">arguments</span>).reduce(<span class="function">(<span class="params">sum, no</span>) =&gt;</span> sum + no, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="built_in">console</span>.log( sum(<span class="number">1</span>,<span class="number">3</span>,<span class="number">4</span>));</span><br></pre></td></tr></table></figure>
-
-<h3 id="使用剩余参数改写"><a href="#使用剩余参数改写" class="headerlink" title="使用剩余参数改写"></a>使用剩余参数改写</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params">...numbers</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> numbers.reduce(<span class="function">(<span class="params">prev, surr</span>) =&gt;</span> prev + surr, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log( sum(<span class="number">1</span>,<span class="number">3</span>,<span class="number">4</span>));</span><br></pre></td></tr></table></figure>
-
-<h3 id="其他用法"><a href="#其他用法" class="headerlink" title="其他用法"></a>其他用法</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> palyer = [<span class="string">&#x27;yangzie&#x27;</span>, <span class="string">&#x27;male&#x27;</span>, <span class="number">12</span>, <span class="number">13</span>, <span class="number">14</span>, <span class="number">15</span>];</span><br><span class="line"><span class="keyword">const</span> [name, sex, ...scores] = palyer;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(name);</span><br><span class="line"><span class="built_in">console</span>.log(sex);</span><br><span class="line"><span class="built_in">console</span>.log(scores);</span><br></pre></td></tr></table></figure>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">rate</span>(<span class="params">rate, ...numbers</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(rate, numbers);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">rate(<span class="number">0.98</span>, <span class="number">10</span>,<span class="number">20</span>,<span class="number">30</span>);</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/Rest_parameters">https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/Rest_parameters</a></p>
-</blockquote>
 
       
     </div>
