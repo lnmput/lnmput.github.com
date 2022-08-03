@@ -70,7 +70,7 @@
       <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
       <i class="logo-line"></i>
     </a>
-      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+      <p class="site-subtitle" itemprop="description">专注外贸独立站建设</p>
   </div>
 
   <div class="site-nav-right">
@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">402</span>
+          <span class="site-state-item-count">403</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,93 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/03/%E5%A6%82%E4%BD%95%E5%88%A9%E7%94%A8macro%E6%96%B9%E6%B3%95%E6%9D%A5%E6%89%A9%E5%B1%95laravel%E7%9A%84%E5%9F%BA%E7%A1%80%E7%B1%BB%E7%9A%84%E5%8A%9F%E8%83%BD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/03/%E5%A6%82%E4%BD%95%E5%88%A9%E7%94%A8macro%E6%96%B9%E6%B3%95%E6%9D%A5%E6%89%A9%E5%B1%95laravel%E7%9A%84%E5%9F%BA%E7%A1%80%E7%B1%BB%E7%9A%84%E5%8A%9F%E8%83%BD/" class="post-title-link" itemprop="url">如何利用macro方法来扩展Laravel的基础类的功能</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-05-03 15:17:45 / 修改时间：18:01:58" itemprop="dateCreated datePublished" datetime="2018-05-03T15:17:45+09:00">2018-05-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你只见到这么多人说他不好时，却看到他有出来说別人一句吗？
+</blockquote>
+
+<p>Laravel 5.2 provides some nice additions to the framework. One handy feature that I don’t see listed in the release notes is that Collection now is macroable.  Using it’s macro function you can easily extend Illuminate\Support\Collection with your own custom functions.</p>
+<p>Take a look at this piece of code to uppercase every string in a collection.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$uppercaseWords</span> = collect([<span class="string">&#x27;code&#x27;</span>, <span class="string">&#x27;ferengi&#x27;</span>])-&gt;map(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$word</span></span>)  </span>&#123;</span><br><span class="line">   <span class="keyword">return</span> strtoupper(<span class="variable">$word</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>That’s good code, but image you need to uppercase a lot of collections. Typing the same closure will get very tiresome. Let’s improve this with a macro.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Collection</span>;</span><br><span class="line"></span><br><span class="line">Collection::macro(<span class="string">&#x27;uppercase&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> collect(<span class="keyword">$this</span>-&gt;items)-&gt;map(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$word</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> strtoupper(<span class="variable">$word</span>);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>You could create a service provider to load up these macro’s. Now that the macro is defined let’s uppercase collections like there’s no tomorrow:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$uppercaseWords</span> = collect([<span class="string">&#x27;code&#x27;</span>, <span class="string">&#x27;ferengi&#x27;</span>])-&gt;uppercase();</span><br><span class="line"><span class="variable">$moreUppercaseWords</span> = collect([<span class="string">&#x27;love&#x27;</span>, <span class="string">&#x27;the&#x27;</span>, <span class="string">&#x27;facade&#x27;</span>])-&gt;uppercase();</span><br><span class="line"><span class="variable">$evenMoreUppercaseWords</span> = collect([<span class="string">&#x27;activerecord&#x27;</span>, <span class="string">&#x27;forever&#x27;</span>])-&gt;uppercase();</span><br></pre></td></tr></table></figure>
+
+<p>You could be thinking “Why should I use a macro? I can easily to this with a regular function.”. Consider this piece of code.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">uppercase</span>(<span class="params"><span class="variable">$collection</span></span>) </span>&#123;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$uppercaseWords</span> = uppercase(collect([<span class="string">&#x27;halo&#x27;</span>,<span class="string">&#x27;five&#x27;</span>]));</span><br></pre></td></tr></table></figure>
+
+<p>It works, but you have to encapsulate the collection with your function. The last executed function is put first, which is confusing. With macro’s you can still chain functions and greatly improve readability.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//lots of functions</span></span><br><span class="line">function4(function3(function2(function1(collect([<span class="string">&#x27;jack&#x27;</span>,<span class="string">&#x27;cheats&#x27;</span>])))));</span><br><span class="line"></span><br><span class="line"><span class="comment">//lots of macros</span></span><br><span class="line">collect([<span class="string">&#x27;i&#x27;</span>, <span class="string">&#x27;want&#x27;</span>, <span class="string">&#x27;to&#x27;</span>, <span class="string">&#x27;live&#x27;</span>, <span class="string">&#x27;in&#x27;</span>, <span class="string">&#x27;a&#x27;</span>, <span class="string">&#x27;desert&#x27;</span>])</span><br><span class="line">  -&gt;function1()</span><br><span class="line">  -&gt;function2()</span><br><span class="line">  -&gt;function3()</span><br><span class="line">  -&gt;function4();</span><br></pre></td></tr></table></figure>
+
+<p>Sure, the examples use in this post were a bit contrived, but I hope you see that collection macro’s can be very handy.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://murze.be/using-collection-macros-in-laravel">https://murze.be/using-collection-macros-in-laravel</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1035,183 +1122,6 @@ Still water run deep.
 </blockquote>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://www.oschina.net/translate/performant-reading-big-files-php">https://www.oschina.net/translate/performant-reading-big-files-php</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/16/laravel-eloquent%E5%BF%85%E5%A4%87%E7%9A%84%E5%AE%9E%E7%94%A8%E6%8A%80%E5%B7%A7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/16/laravel-eloquent%E5%BF%85%E5%A4%87%E7%9A%84%E5%AE%9E%E7%94%A8%E6%8A%80%E5%B7%A7/" class="post-title-link" itemprop="url">Laravel-Eloquent必备的实用技巧</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-16 13:36:24 / 修改时间：14:54:56" itemprop="dateCreated datePublished" datetime="2018-04-16T13:36:24+09:00">2018-04-16</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-No news is good news
-</blockquote>
-
-<p>Eloquent ORM seems like a simple mechanism, but under the hood, there’s a lot of semi-hidden functions and less-known ways to achieve more with it. In this article, I will show you a few tricks.</p>
-<h3 id="1-Increments-and-Decrements"><a href="#1-Increments-and-Decrements" class="headerlink" title="1. Increments and Decrements"></a>1. Increments and Decrements</h3><p>Instead of this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$article</span> = Article::find(<span class="variable">$article_id</span>);</span><br><span class="line"><span class="variable">$article</span>-&gt;read_count++;</span><br><span class="line"><span class="variable">$article</span>-&gt;save();</span><br></pre></td></tr></table></figure>
-<p>You can do this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$article</span> = Article::find(<span class="variable">$article_id</span>);</span><br><span class="line"><span class="variable">$article</span>-&gt;increment(<span class="string">&#x27;read_count&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>Also these will work:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Article::find(<span class="variable">$article_id</span>)-&gt;increment(<span class="string">&#x27;read_count&#x27;</span>);</span><br><span class="line">Article::find(<span class="variable">$article_id</span>)-&gt;increment(<span class="string">&#x27;read_count&#x27;</span>, <span class="number">10</span>); <span class="comment">// +10</span></span><br><span class="line">Product::find(<span class="variable">$produce_id</span>)-&gt;decrement(<span class="string">&#x27;stock&#x27;</span>); <span class="comment">// -1</span></span><br></pre></td></tr></table></figure>
-<h3 id="2-XorY-methods"><a href="#2-XorY-methods" class="headerlink" title="2. XorY methods"></a>2. XorY methods</h3><p>Eloquent has quite a few functions that combine two methods, like “please do X, otherwise do Y”.</p>
-<p>Example 1 – <code>findOrFail()</code>:</p>
-<p>Instead of:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$user</span> = User::find(<span class="variable">$id</span>);</span><br><span class="line"><span class="keyword">if</span> (!<span class="variable">$user</span>) &#123; abort (<span class="number">404</span>); &#125;</span><br></pre></td></tr></table></figure>
-<p>Do this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$user</span> = User::findOrFail(<span class="variable">$id</span>);</span><br></pre></td></tr></table></figure>
-<p>Example 2 – <code>firstOrCreate()</code>:</p>
-<p>Instead of:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$user</span> = User::where(<span class="string">&#x27;email&#x27;</span>, <span class="variable">$email</span>)-&gt;first();</span><br><span class="line"><span class="keyword">if</span> (!<span class="variable">$user</span>) &#123;</span><br><span class="line">  User::create([</span><br><span class="line">    <span class="string">&#x27;email&#x27;</span> =&gt; <span class="variable">$email</span></span><br><span class="line">  ]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Do just this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$user</span> = User::firstOrCreate([<span class="string">&#x27;email&#x27;</span> =&gt; <span class="variable">$email</span>]);</span><br></pre></td></tr></table></figure>
-<h3 id="3-Model-boot-method"><a href="#3-Model-boot-method" class="headerlink" title="3. Model boot() method"></a>3. Model boot() method</h3><p>There is a magical place called boot() in an Eloquent model where you can override default behavior:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">parent</span>::boot();</span><br><span class="line">        <span class="built_in">static</span>::updating(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$model</span></span>)</span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="comment">// do some logging</span></span><br><span class="line">            <span class="comment">// override some property like $model-&gt;something = transform($something);</span></span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Probably one of the most popular examples is setting some field value at the moment of creating the model object. Let’s say you want to generate UUID field at that moment.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="built_in">parent</span>::boot();</span><br><span class="line">  <span class="built_in">self</span>::creating(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$model</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$model</span>-&gt;uuid = (<span class="keyword">string</span>)Uuid::generate();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="4-Relationship-with-conditions-and-ordering"><a href="#4-Relationship-with-conditions-and-ordering" class="headerlink" title="4. Relationship with conditions and ordering"></a>4. Relationship with conditions and ordering</h3><p>This is a typical way to define relationship:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">users</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;hasMany(<span class="string">&#x27;App\User&#x27;</span>);    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>But did you know that at this point we can already add where or orderBy?<br>For example, if you want a specific relationship for some type of users, also ordered by email, you can do this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">approvedUsers</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;hasMany(<span class="string">&#x27;App\User&#x27;</span>)-&gt;where(<span class="string">&#x27;approved&#x27;</span>, <span class="number">1</span>)-&gt;orderBy(<span class="string">&#x27;email&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="5-Model-properties-timestamps-appends-etc"><a href="#5-Model-properties-timestamps-appends-etc" class="headerlink" title="5. Model properties: timestamps, appends etc."></a>5. Model properties: timestamps, appends etc.</h3><p>There are a few “parameters” of an Eloquent model, in the form of properties of that class. The most popular ones are probably these:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">extends</span> <span class="title">Model</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$table</span> = <span class="string">&#x27;users&#x27;</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$fillable</span> = [<span class="string">&#x27;email&#x27;</span>, <span class="string">&#x27;password&#x27;</span>]; <span class="comment">// which fields can be filled with User::create()</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$dates</span> = [<span class="string">&#x27;created_at&#x27;</span>, <span class="string">&#x27;deleted_at&#x27;</span>]; <span class="comment">// which fields will be Carbon-ized</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$appends</span> = [<span class="string">&#x27;field1&#x27;</span>, <span class="string">&#x27;field2&#x27;</span>]; <span class="comment">// additional values returned in JSON</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>But wait, there’s more:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="variable">$primaryKey</span> = <span class="string">&#x27;uuid&#x27;</span>; <span class="comment">// it doesn&#x27;t have to be &quot;id&quot;</span></span><br><span class="line"><span class="keyword">public</span> <span class="variable">$incrementing</span> = <span class="literal">false</span>; <span class="comment">// and it doesn&#x27;t even have to be auto-incrementing!</span></span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$perPage</span> = <span class="number">25</span>; <span class="comment">// Yes, you can override pagination count PER MODEL (default 15)</span></span><br><span class="line"><span class="keyword">const</span> CREATED_AT = <span class="string">&#x27;created_at&#x27;</span>;</span><br><span class="line"><span class="keyword">const</span> UPDATED_AT = <span class="string">&#x27;updated_at&#x27;</span>; <span class="comment">// Yes, even those names can be overridden</span></span><br><span class="line"><span class="keyword">public</span> <span class="variable">$timestamps</span> = <span class="literal">false</span>; <span class="comment">// or even not used at all</span></span><br></pre></td></tr></table></figure>
-<p>And there’s even more, I’ve listed the most interesting ones, for more please check out the code of default abstract Model class and check out all the traits used.</p>
-<h3 id="6-Find-multiple-entries"><a href="#6-Find-multiple-entries" class="headerlink" title="6. Find multiple entries"></a>6. Find multiple entries</h3><p>Everyone knows the <code>find()</code> method, right?</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$user</span> = User::find(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-<p>I’m quite surprised how few people know about that it can accept multiple IDs as an array:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$users</span> = User::find([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</span><br></pre></td></tr></table></figure>
-<h3 id="7-WhereX"><a href="#7-WhereX" class="headerlink" title="7. WhereX"></a>7. WhereX</h3><p>There’s an elegant way to turn this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$users</span> = User::where(<span class="string">&#x27;approved&#x27;</span>, <span class="number">1</span>)-&gt;get();</span><br></pre></td></tr></table></figure>
-<p>Into this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$users</span> = User::whereApproved(<span class="number">1</span>)-&gt;get(); </span><br></pre></td></tr></table></figure>
-<p>Yes, you can change the name of any field and append it as a suffix to “where” and it will work by magic.</p>
-<p>Also, there are some pre-defined methods in Eloquent, related to date/time:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">User::whereDate(<span class="string">&#x27;created_at&#x27;</span>, date(<span class="string">&#x27;Y-m-d&#x27;</span>));</span><br><span class="line">User::whereDay(<span class="string">&#x27;created_at&#x27;</span>, date(<span class="string">&#x27;d&#x27;</span>));</span><br><span class="line">User::whereMonth(<span class="string">&#x27;created_at&#x27;</span>, date(<span class="string">&#x27;m&#x27;</span>));</span><br><span class="line">User::whereYear(<span class="string">&#x27;created_at&#x27;</span>, date(<span class="string">&#x27;Y&#x27;</span>));</span><br></pre></td></tr></table></figure>
-<h3 id="8-Order-by-relationship"><a href="#8-Order-by-relationship" class="headerlink" title="8. Order by relationship"></a>8. Order by relationship</h3><p>A little more complicated “trick”. What if you have forum topics but want to order them by latest post? Pretty common requirement in forums with last updated topics on the top, right?</p>
-<p>First, describe a separate relationship for the latest post on the topic:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">latestPost</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;hasOne(\App\Post::class)-&gt;latest();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>And then, in our controller, we can do this “magic”:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$users</span> = Topic::with(<span class="string">&#x27;latestPost&#x27;</span>)-&gt;get()-&gt;sortByDesc(<span class="string">&#x27;latestPost.created_at&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<h3 id="9-Eloquent-when-–-no-more-if-else’s"><a href="#9-Eloquent-when-–-no-more-if-else’s" class="headerlink" title="9. Eloquent::when() – no more if-else’s"></a>9. Eloquent::when() – no more if-else’s</h3><p>Many of us write conditional queries with “<code>if-else</code>”, something like this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (request(<span class="string">&#x27;filter_by&#x27;</span>) == <span class="string">&#x27;likes&#x27;</span>) &#123;</span><br><span class="line">    <span class="variable">$query</span>-&gt;where(<span class="string">&#x27;likes&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, request(<span class="string">&#x27;likes_amount&#x27;</span>, <span class="number">0</span>));</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (request(<span class="string">&#x27;filter_by&#x27;</span>) == <span class="string">&#x27;date&#x27;</span>) &#123;</span><br><span class="line">    <span class="variable">$query</span>-&gt;orderBy(<span class="string">&#x27;created_at&#x27;</span>, request(<span class="string">&#x27;ordering_rule&#x27;</span>, <span class="string">&#x27;desc&#x27;</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>But there’s a better way – to use <code>when()</code>:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = Author::query();</span><br><span class="line"><span class="variable">$query</span>-&gt;when(request(<span class="string">&#x27;filter_by&#x27;</span>) == <span class="string">&#x27;likes&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$q</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$q</span>-&gt;where(<span class="string">&#x27;likes&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, request(<span class="string">&#x27;likes_amount&#x27;</span>, <span class="number">0</span>));</span><br><span class="line">&#125;);</span><br><span class="line"><span class="variable">$query</span>-&gt;when(request(<span class="string">&#x27;filter_by&#x27;</span>) == <span class="string">&#x27;date&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$q</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$q</span>-&gt;orderBy(<span class="string">&#x27;created_at&#x27;</span>, request(<span class="string">&#x27;ordering_rule&#x27;</span>, <span class="string">&#x27;desc&#x27;</span>));</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>It may not feel shorter or more elegant, but the most powerful is passing of the parameters:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = User::query();</span><br><span class="line"><span class="variable">$query</span>-&gt;when(request(<span class="string">&#x27;role&#x27;</span>, <span class="literal">false</span>), <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$q</span>, <span class="variable">$role</span></span>) </span>&#123; </span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$q</span>-&gt;where(<span class="string">&#x27;role_id&#x27;</span>, <span class="variable">$role</span>);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="variable">$authors</span> = <span class="variable">$query</span>-&gt;get();</span><br></pre></td></tr></table></figure>
-<h3 id="10-BelongsTo-Default-Models"><a href="#10-BelongsTo-Default-Models" class="headerlink" title="10. BelongsTo Default Models"></a>10. BelongsTo Default Models</h3><p>Let’s say you have Post belonging to Author and then Blade code:</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123; $post-&gt;author-&gt;name &#125;&#125;</span><br></pre></td></tr></table></figure>
-<p>But what if the author is deleted, or isn’t set for some reason? You will get an error, something like “property of non-object”.</p>
-<p>Of course, you can prevent it like this:</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123; $post-&gt;author-&gt;name ?? &#x27;&#x27; &#125;&#125;</span><br></pre></td></tr></table></figure>
-<p>But you can do it on Eloquent relationship level:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">author</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;belongsTo(<span class="string">&#x27;App\Author&#x27;</span>)-&gt;withDefault();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>In this example, the <code>author()</code> relation will return an empty App\Author model if no author is attached to the post.</p>
-<p>Furthermore, we can assign default property values to that default model.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">author</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;belongsTo(<span class="string">&#x27;App\Author&#x27;</span>)-&gt;withDefault([</span><br><span class="line">        <span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;Guest Author&#x27;</span></span><br><span class="line">    ]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="11-Order-by-Mutator"><a href="#11-Order-by-Mutator" class="headerlink" title="11. Order by Mutator"></a>11. Order by Mutator</h3><p>Imagine you have this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getFullNameAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;attributes[<span class="string">&#x27;first_name&#x27;</span>] . <span class="string">&#x27; &#x27;</span> . <span class="keyword">$this</span>-&gt;attributes[<span class="string">&#x27;last_name&#x27;</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Now, you want to order by that full_name? This won’t work:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$clients</span> = Client::orderBy(<span class="string">&#x27;full_name&#x27;</span>)-&gt;get(); <span class="comment">// doesn&#x27;t work</span></span><br></pre></td></tr></table></figure>
-<p>The solution is quite simple. We need to order the results after we get them.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$clients = Client::get()-&gt;sortBy(&#x27;full_name&#x27;); // works!</span><br></pre></td></tr></table></figure>
-<p>Notice that the function name is different – it’s not orderBy, it’s sortBy.</p>
-<h3 id="12-Default-ordering-in-global-scope"><a href="#12-Default-ordering-in-global-scope" class="headerlink" title="12. Default ordering in global scope"></a>12. Default ordering in global scope</h3><p>What if you want to have <code>User::all()</code> always be ordered by name field? You can assign a global scope. Let’s go back to the <code>boot()</code> method, which we mentioned already above.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">parent</span>::boot();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Order by name ASC</span></span><br><span class="line">    <span class="built_in">static</span>::addGlobalScope(<span class="string">&#x27;order&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Builder <span class="variable">$builder</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$builder</span>-&gt;orderBy(<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;asc&#x27;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Read more about Query Scopes here.</p>
-<h3 id="13-Raw-query-methods"><a href="#13-Raw-query-methods" class="headerlink" title="13. Raw query methods"></a>13. Raw query methods</h3><p>Sometimes we need to add raw queries to our Eloquent statements. Luckily, there are functions for that.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// whereRaw</span></span><br><span class="line"><span class="variable">$orders</span> = DB::table(<span class="string">&#x27;orders&#x27;</span>)</span><br><span class="line">    -&gt;whereRaw(<span class="string">&#x27;price &gt; IF(state = &quot;TX&quot;, ?, 100)&#x27;</span>, [<span class="number">200</span>])</span><br><span class="line">    -&gt;get();</span><br><span class="line"></span><br><span class="line"><span class="comment">// havingRaw</span></span><br><span class="line">Product::groupBy(<span class="string">&#x27;category_id&#x27;</span>)-&gt;havingRaw(<span class="string">&#x27;COUNT(*) &gt; 1&#x27;</span>)-&gt;get();</span><br><span class="line"></span><br><span class="line"><span class="comment">// orderByRaw</span></span><br><span class="line">User::where(<span class="string">&#x27;created_at&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, <span class="string">&#x27;2016-01-01&#x27;</span>)</span><br><span class="line">  -&gt;orderByRaw(<span class="string">&#x27;(updated_at - created_at) desc&#x27;</span>)</span><br><span class="line">  -&gt;get();</span><br></pre></td></tr></table></figure>
-<h3 id="14-Replicate-make-a-copy-of-a-row"><a href="#14-Replicate-make-a-copy-of-a-row" class="headerlink" title="14. Replicate: make a copy of a row"></a>14. Replicate: make a copy of a row</h3><p>Short one. Without deep explanations, here’s the best way to make a copy of database entry:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$task</span> = Tasks::find(<span class="number">1</span>);</span><br><span class="line"><span class="variable">$newTask</span> = <span class="variable">$task</span>-&gt;replicate();</span><br><span class="line"><span class="variable">$newTask</span>-&gt;save();</span><br></pre></td></tr></table></figure>
-<h3 id="15-Chunk-method-for-big-tables"><a href="#15-Chunk-method-for-big-tables" class="headerlink" title="15. Chunk() method for big tables"></a>15. Chunk() method for big tables</h3><p>Not exactly Eloquent related, it’s more about Collection, but still powerful – to process bigger datasets, you can chunk them into pieces.</p>
-<p>Instead of:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$users</span> = User::all();</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$users</span> <span class="keyword">as</span> <span class="variable">$user</span>) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">You can <span class="keyword">do</span>:</span><br><span class="line"></span><br><span class="line">User::chunk(<span class="number">100</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$users</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$users</span> <span class="keyword">as</span> <span class="variable">$user</span>) &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<h3 id="16-Create-additional-things-when-creating-a-model"><a href="#16-Create-additional-things-when-creating-a-model" class="headerlink" title="16. Create additional things when creating a model"></a>16. Create additional things when creating a model</h3><p>We all know this Artisan command:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan make:model Company</span><br></pre></td></tr></table></figure>
-<p>But did you know there are three useful flags to generate related files to the model?</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan make:model Company -mcr</span><br></pre></td></tr></table></figure>
-<ul>
-<li>-m will create a migration file</li>
-<li>-c will create a controller</li>
-<li>-r will indicate that controller should be resourceful</li>
-</ul>
-<h3 id="17-Override-updated-at-when-saving"><a href="#17-Override-updated-at-when-saving" class="headerlink" title="17. Override updated_at when saving"></a>17. Override updated_at when saving</h3><p>Did you know that <code>-&gt;save()</code> method can accept parameters? As a result, we can tell it to “ignore” updated_at default functionality to be filled with current timestamp. See this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$product</span> = Product::find(<span class="variable">$id</span>);</span><br><span class="line"><span class="variable">$product</span>-&gt;updated_at = <span class="string">&#x27;2019-01-01 10:00:00&#x27;</span>;</span><br><span class="line"><span class="variable">$product</span>-&gt;save([<span class="string">&#x27;timestamps&#x27;</span> =&gt; <span class="literal">false</span>]);</span><br></pre></td></tr></table></figure>
-<p>Here we’re overriding default updated_at with our pre-defined one.</p>
-<h3 id="18-What-is-the-result-of-an-update"><a href="#18-What-is-the-result-of-an-update" class="headerlink" title="18. What is the result of an update()?"></a>18. What is the result of an update()?</h3><p>Have you ever wondered what this code actually returns?</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$result</span> = <span class="variable">$products</span>-&gt;whereNull(<span class="string">&#x27;category_id&#x27;</span>)-&gt;update([<span class="string">&#x27;category_id&#x27;</span> =&gt; <span class="number">2</span>]);</span><br></pre></td></tr></table></figure>
-<p>I mean, the update is performed in the database, but what would that $result contain?</p>
-<p>The answer is affected rows. So if you need to check how many rows were affected, you don’t need to call anything else – <code>update()</code> method will return this number for you.</p>
-<h3 id="19-Transform-brackets-into-an-Eloquent-query"><a href="#19-Transform-brackets-into-an-Eloquent-query" class="headerlink" title="19. Transform brackets into an Eloquent query"></a>19. Transform brackets into an Eloquent query</h3><p>What if you have and-or mix in your SQL query, like this:</p>
-<p>… WHERE (gender = ‘Male’ and age &gt;= 18) or (gender = ‘Female’ and age &gt;= 65)<br>How to translate it into Eloquent? This is the wrong way:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$q</span>-&gt;where(<span class="string">&#x27;gender&#x27;</span>, <span class="string">&#x27;Male&#x27;</span>);</span><br><span class="line"><span class="variable">$q</span>-&gt;orWhere(<span class="string">&#x27;age&#x27;</span>, <span class="string">&#x27;&gt;=&#x27;</span>, <span class="number">18</span>);</span><br><span class="line"><span class="variable">$q</span>-&gt;where(<span class="string">&#x27;gender&#x27;</span>, <span class="string">&#x27;Female&#x27;</span>);</span><br><span class="line"><span class="variable">$q</span>-&gt;orWhere(<span class="string">&#x27;age&#x27;</span>, <span class="string">&#x27;&gt;=&#x27;</span>, <span class="number">65</span>);</span><br></pre></td></tr></table></figure>
-<p>The order will be incorrect. The right way is a little more complicated, using closure functions as sub-queries:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$q</span>-&gt;where(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$query</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$query</span>-&gt;where(<span class="string">&#x27;gender&#x27;</span>, <span class="string">&#x27;Male&#x27;</span>)</span><br><span class="line">        -&gt;where(<span class="string">&#x27;age&#x27;</span>, <span class="string">&#x27;&gt;=&#x27;</span>, <span class="number">18</span>);</span><br><span class="line">&#125;)-&gt;orWhere(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$query</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$query</span>-&gt;where(<span class="string">&#x27;gender&#x27;</span>, <span class="string">&#x27;Female&#x27;</span>)</span><br><span class="line">        -&gt;where(<span class="string">&#x27;age&#x27;</span>, <span class="string">&#x27;&gt;=&#x27;</span>, <span class="number">65</span>); </span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-<h3 id="20-orWhere-with-multiple-parameters"><a href="#20-orWhere-with-multiple-parameters" class="headerlink" title="20. orWhere with multiple parameters"></a>20. orWhere with multiple parameters</h3><p>Finally, you can pass an array of parameters to <code>orWhere()</code>.<br>“Usual” way:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$q</span>-&gt;where(<span class="string">&#x27;a&#x27;</span>, <span class="number">1</span>);</span><br><span class="line"><span class="variable">$q</span>-&gt;orWhere(<span class="string">&#x27;b&#x27;</span>, <span class="number">2</span>);</span><br><span class="line"><span class="variable">$q</span>-&gt;orWhere(<span class="string">&#x27;c&#x27;</span>, <span class="number">3</span>);</span><br></pre></td></tr></table></figure>
-<p>You can do it like this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$q</span>-&gt;where(<span class="string">&#x27;a&#x27;</span>, <span class="number">1</span>);</span><br><span class="line"><span class="variable">$q</span>-&gt;orWhere([<span class="string">&#x27;b&#x27;</span> =&gt; <span class="number">2</span>, <span class="string">&#x27;c&#x27;</span> =&gt; <span class="number">3</span>]);</span><br></pre></td></tr></table></figure>
-<p>I’m sure there are even more hidden gems, but I hope at least a few of the ones above were new to you.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-news.com/eloquent-tips-tricks">https://laravel-news.com/eloquent-tips-tricks</a></p>
 </blockquote>
 
       

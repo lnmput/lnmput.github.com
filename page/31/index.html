@@ -70,7 +70,7 @@
       <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
       <i class="logo-line"></i>
     </a>
-      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+      <p class="site-subtitle" itemprop="description">专注外贸独立站建设</p>
   </div>
 
   <div class="site-nav-right">
@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">402</span>
+          <span class="site-state-item-count">403</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,92 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/06/13/php%E4%B8%AD-POST%E5%92%8Cphp-input%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/06/13/php%E4%B8%AD-POST%E5%92%8Cphp-input%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">php中$_POST和php://input的区别</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-06-13 14:45:11" itemprop="dateCreated datePublished" datetime="2017-06-13T14:45:11+09:00">2017-06-13</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-04-02 10:10:56" itemprop="dateModified" datetime="2018-04-02T10:10:56+09:00">2018-04-02</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你考95分是因为你的实力只有95分。我考一百分是因为这个卷子只有100分。
+</blockquote>
+
+<h3 id="POST"><a href="#POST" class="headerlink" title="$_POST"></a>$_POST</h3><p><code>$_POST</code> 是获取表单 <code>POST</code> 过来数据（body部分）的最常用方法，上传的文件信息使用 <code>$_FILES</code> 获取。</p>
+<h3 id="php-input"><a href="#php-input" class="headerlink" title="php://input"></a>php://input</h3><p>可以读取没有处理过的POST数据。<br>相较于$HTTP_RAW_POST_DATA而言，它给内存带来的压力较小，并且不需要特殊的php.ini设置。<br>php://input不能用于enctype=multipart/form-data</p>
+<p>由于 php://input 只是数据流，我们可以使用 <code>file_get_contents()</code> 函数去获取它的内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$post_data</span> = file_get_contents(<span class="string">&#x27;php://input&#x27;</span>);</span><br><span class="line">print_r(<span class="variable">$post_data</span>);</span><br></pre></td></tr></table></figure>
+<p>获取到的内容和 <code>$HTTP_RAW_POST_DATA</code> 是一样的。</p>
+<h3 id="原始数据"><a href="#原始数据" class="headerlink" title="原始数据"></a>原始数据</h3><p>当浏览器从表单发送 POST 请求的时候，默认的 media type 是 “application/x-www-form-urlencoded”，意思就是字段名和值都编码了，每个 key-value 对使用 ‘&amp;’ 字符分隔开，key 和 value 使用 ‘=’ 分开，并且 key 和 value 中的空格都会被替换成 + ，其他特殊字符都会被使用 urlencode 方式进行编码。<br>比如下面的 key-value 对：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name: Jonathan Doe</span><br><span class="line">age: <span class="number">23</span></span><br><span class="line">formula: a + b == <span class="number">13</span>%!</span><br></pre></td></tr></table></figure>
+<p>会被编码下面的原始数据：<br><code>name=Jonathan+Doe&amp;age=23&amp;formula=a+%2B+b+%3D%3D+13%25%21</code><br>PHP 会解析这些原始的 POST 数据，并且格式化成数组，填充到 $_POST 中：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Array</span></span><br><span class="line">(</span><br><span class="line">    [name] =&gt; Jonathan Doe</span><br><span class="line">    [age] =&gt; <span class="number">23</span></span><br><span class="line">    [formula] =&gt; a + b == <span class="number">13</span>%!</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>很多时候，接收到不是网页 POST 过来的数据，而是可能通过其他方式 POST 过来的 “text/xml” 格式的数据，这些内容无法解析成 $_POST 数组，这个时候我们就需要原始的 POST 数据进行处理。</p>
+<h3 id="重要"><a href="#重要" class="headerlink" title="重要"></a>重要</h3><p>PHP 7 已经取消了 $HTTP_RAW_POST_DATA，请用 php://input 代替。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -876,95 +962,6 @@ Elasticsearch把每条数据叫做Document，然后提交到Index中。
 <p>结果: <code>a</code></p>
 <h3 id="re-findall"><a href="#re-findall" class="headerlink" title="re.findall"></a>re.findall</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">line = <span class="string">&#x27;&lt;a&gt;&lt;b&gt;&lt;c&gt;&#x27;</span></span><br><span class="line">reg = <span class="string">&quot;&lt;(\w)&gt;&quot;</span></span><br><span class="line">res = re.findall(reg, line)</span><br><span class="line"><span class="keyword">if</span> res:</span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure>
 <p>结果: <code>[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</code></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/05/09/Laravel%E4%B8%AD%E7%9A%84%E6%A8%A1%E5%9E%8B%E4%BA%8B%E4%BB%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/05/09/Laravel%E4%B8%AD%E7%9A%84%E6%A8%A1%E5%9E%8B%E4%BA%8B%E4%BB%B6/" class="post-title-link" itemprop="url">Laravel中的模型事件</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-05-09 15:59:46" itemprop="dateCreated datePublished" datetime="2017-05-09T15:59:46+09:00">2017-05-09</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:18:58" itemprop="dateModified" datetime="2018-03-27T22:18:58+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-人生本无意义，唯有寻趣。
-</blockquote>
-### 一个简单的例子
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Event::listen(<span class="string">&#x27;eloquent.created: App\User&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">Log::info(<span class="string">&#x27;haha&#x27;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">&#x27;hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">\App\User::forceCreate([</span><br><span class="line"><span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;yangzie&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;email&#x27;</span> =&gt; <span class="string">&#x27;yang11@qq.ttt&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;password&#x27;</span> =&gt;bcrypt(str_random(<span class="number">6</span>))</span><br><span class="line">    ]);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-### 比较规整的写法
-
-<ul>
-<li><p>在Providers\EventServiceProvider.php 添加:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="variable">$listen</span> = [</span><br><span class="line">	<span class="string">&#x27;App\Events\UserCreated&#x27;</span> =&gt; [</span><br><span class="line">	<span class="string">&#x27;App\Listeners\NotifyAdminUserCreated&#x27;</span>,</span><br><span class="line">	],</span><br><span class="line">];</span><br></pre></td></tr></table></figure></li>
-<li><p>执行命令:<br>会生成两个文件<br>Events/UserCreated.php<br>Listeners/NotifyAdminUserCreated.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan event:generate</span><br></pre></td></tr></table></figure></li>
-</ul>
-<ul>
-<li>在User 模型中:<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Events</span>\<span class="title">UserCreated</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$events</span> = [</span><br><span class="line">	<span class="string">&#x27;created&#x27;</span> =&gt; UserCreated::class</span><br><span class="line">];</span><br></pre></td></tr></table></figure></li>
-<li>在监听文件中<br>app\Listeners\NotifyAdminUserCreated.php<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params">UserCreated <span class="variable">$event</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="variable">$post</span> = <span class="variable">$event</span>-&gt;post;</span><br><span class="line">	\Log::info(<span class="variable">$post</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li>在事件文件中:<br>app\Events\UserCreated.php<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="variable">$post</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$post</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">$this</span>-&gt;post = <span class="variable">$post</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="Observer写法-推荐"><a href="#Observer写法-推荐" class="headerlink" title="Observer写法(推荐)"></a>Observer写法(推荐)</h3><p><a target="_blank" rel="noopener" href="https://laravel-china.org/articles/6657/model-events-and-observer-in-laravel">https://laravel-china.org/articles/6657/model-events-and-observer-in-laravel</a></p>
 
       
     </div>

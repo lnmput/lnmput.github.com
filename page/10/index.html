@@ -70,7 +70,7 @@
       <h1 class="site-title">杨子鳄鱼 ● 外贸自建站</h1>
       <i class="logo-line"></i>
     </a>
-      <p class="site-subtitle" itemprop="description">十年外贸建站经验，专注外贸独立站建设</p>
+      <p class="site-subtitle" itemprop="description">专注外贸独立站建设</p>
   </div>
 
   <div class="site-nav-right">
@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">402</span>
+          <span class="site-state-item-count">403</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,97 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/27/websocket%E7%9A%84%E8%87%AA%E5%8A%A8%E9%87%8D%E8%BF%9E%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/07/27/websocket%E7%9A%84%E8%87%AA%E5%8A%A8%E9%87%8D%E8%BF%9E%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">websocket的自动重连实现</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-07-27 13:59:54" itemprop="dateCreated datePublished" datetime="2018-07-27T13:59:54+09:00">2018-07-27</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 14:04:31" itemprop="dateModified" datetime="2021-09-10T14:04:31+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+小巷 又弯又长 没有门 没有窗 我拿把旧钥匙 敲着厚厚的墙 —— 顾城《小巷》 
+</blockquote>
+
+<p>在websocket实例化的时候，我们会绑定一些事件：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ws = <span class="keyword">new</span> WebSocket(url);</span><br><span class="line">ws.onclose = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">//something</span></span><br><span class="line">&#125;;</span><br><span class="line">ws.onerror = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">//something</span></span><br><span class="line">&#125;;</span><br><span class="line">        </span><br><span class="line">ws.onopen = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="comment">//something</span></span><br><span class="line">&#125;;</span><br><span class="line">ws.onmessage = <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>&#123;</span><br><span class="line">   <span class="comment">//something</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果希望websocket连接一直保持，我们会在close或者error上绑定重新连接方法。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ws.onclose = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    reconnect();</span><br><span class="line">&#125;;</span><br><span class="line">ws.onerror = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    reconnect();</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这样一般正常情况下失去连接时，触发onclose方法，我们就能执行重连了。</p>
+<h3 id="stackoverflow上的一种做法"><a href="#stackoverflow上的一种做法" class="headerlink" title="stackoverflow上的一种做法"></a>stackoverflow上的一种做法</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">connect</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> ws = <span class="keyword">new</span> WebSocket(<span class="string">&#x27;ws://localhost:8080&#x27;</span>);</span><br><span class="line">  ws.onopen = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// subscribe to some channels</span></span><br><span class="line">    ws.send(<span class="built_in">JSON</span>.stringify(&#123;</span><br><span class="line">        <span class="comment">//.... some message the I must send when I connect ....</span></span><br><span class="line">    &#125;));</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  ws.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;Message:&#x27;</span>, e.data);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  ws.onclose = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;Socket is closed. Reconnect will be attempted in 1 second.&#x27;</span>, e.reason);</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      connect();</span><br><span class="line">    &#125;, <span class="number">1000</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  ws.onerror = <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.error(<span class="string">&#x27;Socket encountered error: &#x27;</span>, err.message, <span class="string">&#x27;Closing socket&#x27;</span>);</span><br><span class="line">    ws.close();</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">connect();</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用第三方包-reconnecting-websocket"><a href="#使用第三方包-reconnecting-websocket" class="headerlink" title="使用第三方包 reconnecting-websocket"></a>使用第三方包 reconnecting-websocket</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ws = <span class="keyword">new</span> ReconnectingWebSocket(<span class="string">&#x27;ws://....&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>一些选项</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> socket = <span class="keyword">new</span> ReconnectingWebSocket(url, <span class="literal">null</span>, &#123;<span class="attr">debug</span>: <span class="literal">true</span>, <span class="attr">reconnectInterval</span>: <span class="number">3000</span>&#125;);</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> socket = <span class="keyword">new</span> ReconnectingWebSocket(url);</span><br><span class="line">socket.debug = <span class="literal">true</span>;</span><br><span class="line">socket.timeoutInterval = <span class="number">5400</span>;</span><br></pre></td></tr></table></figure>
+
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/22431751/websocket-how-to-automatically-reconnect-after-it-dies">https://stackoverflow.com/questions/22431751/websocket-how-to-automatically-reconnect-after-it-dies</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/dfde99d46ef4">https://www.jianshu.com/p/dfde99d46ef4</a><br><a target="_blank" rel="noopener" href="https://github.com/joewalnes/reconnecting-websocket">https://github.com/joewalnes/reconnecting-websocket</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -989,93 +1080,6 @@
 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/07/08/shell%E4%B8%AD%E7%9A%84%E7%89%B9%E6%AE%8A%E5%8F%98%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/07/08/shell%E4%B8%AD%E7%9A%84%E7%89%B9%E6%AE%8A%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">shell中的特殊变量</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-07-08 12:17:27 / 修改时间：13:42:37" itemprop="dateCreated datePublished" datetime="2018-07-08T12:17:27+09:00">2018-07-08</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-兄弟，这世上就一种病，你永远也治不了，那就是穷病
-</blockquote>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 当前进程ID</span></span><br><span class="line"><span class="keyword">echo</span> $$</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 当前脚本文件名</span></span><br><span class="line"><span class="keyword">echo</span> $<span class="number">0</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 传递给脚本或函数的参数,n 是一个数字，表示第几个参数。例如，第一个参数是$1，第二个参数是$2。</span></span><br><span class="line"><span class="keyword">echo</span> $<span class="number">1</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 传递给脚本或函数的参数个数</span></span><br><span class="line"><span class="keyword">echo</span> $<span class="comment">#</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 传递给脚本或函数的所有参数</span></span><br><span class="line"><span class="keyword">echo</span> $*</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 传递给脚本或函数的所有参数。被双引号(&quot; &quot;)包含时，与 $* 稍有不同</span></span><br><span class="line"><span class="keyword">echo</span> $@		</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># $*和S@的差别</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#!/bin/sh</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;\$*=$*&quot;</span></span><br><span class="line"><span class="keyword">echo</span> --------------------------</span><br><span class="line"><span class="keyword">for</span> n in <span class="string">&quot;$*&quot;</span>;<span class="keyword">do</span> <span class="keyword">echo</span> <span class="variable">$n</span>;done</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;\$@=$@&quot;</span></span><br><span class="line"><span class="keyword">echo</span> --------------------------</span><br><span class="line"><span class="keyword">for</span> n in <span class="string">&quot;$@&quot;</span>;<span class="keyword">do</span> <span class="keyword">echo</span> <span class="variable">$n</span>;done</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$*=<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> asdf <span class="variable">$asdfasdf</span></span><br><span class="line">--------------------------</span><br><span class="line"><span class="number">1</span> <span class="number">2</span> <span class="number">3</span> asdf <span class="variable">$asdfasdf</span></span><br><span class="line"></span><br><span class="line">$@=<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> asdf <span class="variable">$asdfasdf</span></span><br><span class="line">--------------------------</span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line">asdf <span class="variable">$asdfasdf</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>从上面结果可以看到：<br><code>$*</code>将所有位置参数当做一个字符串输出；<br><code>$@</code>将每个位置参数当做独立的元素处理，带空格的参数也当做一个整体。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://xstarcd.github.io/wiki/shell/shell_special_variables.html">http://xstarcd.github.io/wiki/shell/shell_special_variables.html</a></p>
 </blockquote>
 
       
