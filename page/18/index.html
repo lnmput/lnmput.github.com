@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">403</span>
+          <span class="site-state-item-count">406</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,254 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/16/mysql%E7%9A%84with-rollup%E7%9A%84%E7%94%A8%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/16/mysql%E7%9A%84with-rollup%E7%9A%84%E7%94%A8%E6%B3%95/" class="post-title-link" itemprop="url">mysql的with-rollup的用法</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-16 09:44:52" itemprop="dateCreated datePublished" datetime="2018-03-16T09:44:52+09:00">2018-03-16</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:55:47" itemprop="dateModified" datetime="2018-03-27T21:55:47+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+世人谓我恋长安，其实只恋长安某。
+</blockquote>
+今天在做按照商品的SPU批量采购的时候, 遇到了一个问题, 就是安装SPU`groupBy`后计算的`sum`值仅仅只是每个SPU下的产品数量之和, 这可以满足在每个列表中的正常显示,但是现在需要在页面的顶部显示一个全部的SPU下的产品数量, 因为数据是分页的, 就很难计算了.起初我的代码是这样的:
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = WaitingForPurchase::query()</span><br><span class="line">        -&gt;selectRaw(<span class="string">&#x27;id, site_id, ps_type_id, ps_shop_id, ps_product_id, order_product_id, shop_product_id, sum(qty) as qty&#x27;</span>)</span><br><span class="line">        -&gt;where([<span class="string">&#x27;ps_type_id&#x27;</span> =&gt; <span class="variable">$type_id</span>, <span class="string">&#x27;ps_shop_id&#x27;</span> =&gt; <span class="variable">$shop_id</span>])</span><br><span class="line">        -&gt;groupBy(<span class="string">&#x27;shop_product_id&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>在GOOGLE了一番以后, 才知道<code>mysql</code>竟然还有这样的用法</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = WaitingForPurchase::query()</span><br><span class="line">        -&gt;selectRaw(<span class="string">&#x27;id, site_id, ps_type_id, ps_shop_id, ps_product_id, order_product_id, shop_product_id, sum(qty) as qty&#x27;</span>)</span><br><span class="line">        -&gt;where([<span class="string">&#x27;ps_type_id&#x27;</span> =&gt; <span class="variable">$type_id</span>, <span class="string">&#x27;ps_shop_id&#x27;</span> =&gt; <span class="variable">$shop_id</span>])</span><br><span class="line">        -&gt;groupBy(DB::raw(<span class="string">&#x27;shop_product_id WITH ROLLUP&#x27;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>这样得到的结果就是在我们的查询结果中会多出一条数据,用来显示额外的统计信息.<br>在使用Laravel框架的情况下, 我们还可以这样统计:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = WaitingForPurchase::query()</span><br><span class="line">        -&gt;selectRaw(<span class="string">&#x27;id, site_id, ps_type_id, ps_shop_id, ps_product_id, order_product_id, shop_product_id, sum(qty) as qty&#x27;</span>)</span><br><span class="line">        -&gt;where([<span class="string">&#x27;ps_type_id&#x27;</span> =&gt; <span class="variable">$type_id</span>, <span class="string">&#x27;ps_shop_id&#x27;</span> =&gt; <span class="variable">$shop_id</span>]);</span><br><span class="line"></span><br><span class="line">    WaitingForPurchase::setFilters(<span class="variable">$query</span>, <span class="variable">$conditions</span>);</span><br><span class="line"></span><br><span class="line">    <span class="variable">$sum</span> = <span class="variable">$query</span>-&gt;sum(<span class="string">&#x27;qty&#x27;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="variable">$query</span>-&gt;groupBy(<span class="string">&#x27;shop_product_id&#x27;</span>)</span><br><span class="line">        -&gt;orderByDesc(<span class="string">&#x27;qty&#x27;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="variable">$items</span> = <span class="variable">$query</span>-&gt;paginate(<span class="number">20</span>);</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/08/Laravel%E7%9A%84%E8%B7%AF%E7%94%B1%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/08/Laravel%E7%9A%84%E8%B7%AF%E7%94%B1%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4/" class="post-title-link" itemprop="url">Laravel的路由命名空间</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-08 17:29:07" itemprop="dateCreated datePublished" datetime="2018-03-08T17:29:07+09:00">2018-03-08</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:16:49" itemprop="dateModified" datetime="2018-03-27T22:16:49+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+...
+</blockquote>
+
+<h3 id="一般用法"><a href="#一般用法" class="headerlink" title="一般用法"></a>一般用法</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Route::namespace(<span class="string">&#x27;Admin&#x27;</span>)-&gt;group(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 在 &quot;App\Http\Controllers\Admin&quot; 命名空间下的控制器</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="进阶用法"><a href="#进阶用法" class="headerlink" title="进阶用法"></a>进阶用法</h3><p>如果我们的类不在<code>App\Http\Controllers</code>下, 要使用<code>namespace</code>, 就要修改一些东西<br>修改文件<code>App\Providers\RouteServiceProvider</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RouteServiceProvider</span> <span class="keyword">extends</span> <span class="title">ServiceProvider</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * This namespace is applied to your controller routes.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * In addition, it is set as the URL generator&#x27;s root namespace.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> string</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$namespace</span> = <span class="string">&#x27;App\Http\Controllers&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$apiNamespace</span> = <span class="string">&#x27;App\Http&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    ......</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">mapApiRoutes</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Route::prefix(<span class="string">&#x27;api&#x27;</span>)</span><br><span class="line">             -&gt;middleware(<span class="string">&#x27;api&#x27;</span>)</span><br><span class="line">             -&gt;namespace(<span class="keyword">$this</span>-&gt;apiNamespace)</span><br><span class="line">             -&gt;group(base_path(<span class="string">&#x27;routes/api.php&#x27;</span>));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Route::namespace(<span class="string">&#x27;Api&#x27;</span>)-&gt;group(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        </span><br><span class="line">    Route::post(<span class="string">&#x27;/order/update&#x27;</span>, <span class="string">&#x27;Order@receive&#x27;</span>)-&gt;name(<span class="string">&#x27;api.order.receive&#x27;</span>);</span><br><span class="line">    Route::post(<span class="string">&#x27;/order/delete&#x27;</span>, <span class="string">&#x27;Order@delete&#x27;</span>)-&gt;name(<span class="string">&#x27;api.order.delete&#x27;</span>);</span><br><span class="line"></span><br><span class="line">    Route::get(<span class="string">&#x27;/fetch-waybill&#x27;</span>, <span class="string">&#x27;FetchWaybill@getNotFetchTask&#x27;</span>)-&gt;name(<span class="string">&#x27;api.fetch-waybill.get&#x27;</span>);</span><br><span class="line">    Route::post(<span class="string">&#x27;fetch-waybill/callback&#x27;</span>, <span class="string">&#x27;FetchWaybill@callback&#x27;</span>)-&gt;name(<span class="string">&#x27;api.fetch-waybill.callback&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/08/Laravel%E4%BD%BF%E7%94%A8markdown%E8%AF%A6%E7%BB%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/08/Laravel%E4%BD%BF%E7%94%A8markdown%E8%AF%A6%E7%BB%86/" class="post-title-link" itemprop="url">Laravel使用markdown详细</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-08 16:40:30" itemprop="dateCreated datePublished" datetime="2018-03-08T16:40:30+09:00">2018-03-08</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:18:46" itemprop="dateModified" datetime="2018-03-27T22:18:46+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+可我咋觉得你躺在这
+我李云龙的半条命
+也埋在这儿了……
+</blockquote>
+
+<h3 id="使用SimpleMDE编辑器"><a href="#使用SimpleMDE编辑器" class="headerlink" title="使用SimpleMDE编辑器"></a>使用SimpleMDE编辑器</h3><h4 id="页面上引入css和js文件"><a href="#页面上引入css和js文件" class="headerlink" title="页面上引入css和js文件"></a>页面上引入css和js文件</h4><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">textarea</span> <span class="attr">name</span>=<span class="string">&quot;profile&quot;</span> <span class="attr">placeholder</span>=<span class="string">&quot;这里请介绍你的专栏内容, 写作计划, 更新进度, 答疑情况等内容&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">textarea</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> simplemde = <span class="keyword">new</span> SimpleMDE(&#123;</span><br><span class="line">    <span class="attr">spellChecker</span>: <span class="literal">false</span>,</span><br><span class="line">    <span class="attr">autosave</span>: &#123;</span><br><span class="line">        <span class="attr">enabled</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">delay</span>: <span class="number">5000</span>,</span><br><span class="line">        <span class="attr">unique_id</span>: <span class="string">&quot;article_content&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">forceSync</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">toolbar</span>: [</span><br><span class="line">        <span class="string">&quot;bold&quot;</span>, <span class="string">&quot;italic&quot;</span>, <span class="string">&quot;heading&quot;</span>, <span class="string">&quot;|&quot;</span>, <span class="string">&quot;quote&quot;</span>, <span class="string">&quot;code&quot;</span>, <span class="string">&quot;table&quot;</span>,</span><br><span class="line">        <span class="string">&quot;horizontal-rule&quot;</span>, <span class="string">&quot;unordered-list&quot;</span>, <span class="string">&quot;ordered-list&quot;</span>, <span class="string">&quot;|&quot;</span>,</span><br><span class="line">        <span class="string">&quot;link&quot;</span>, <span class="string">&quot;image&quot;</span>, <span class="string">&quot;|&quot;</span>, <span class="string">&quot;side-by-side&quot;</span>, <span class="string">&#x27;fullscreen&#x27;</span>, <span class="string">&quot;|&quot;</span>,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">name</span>: <span class="string">&quot;guide&quot;</span>,</span><br><span class="line">            <span class="attr">action</span>: <span class="function"><span class="keyword">function</span> <span class="title">customFunction</span>(<span class="params">editor</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">var</span> win = <span class="built_in">window</span>.open(<span class="string">&#x27;https://github.com/riku/Markdown-Syntax-CN/blob/master/syntax.md&#x27;</span>, <span class="string">&#x27;_blank&#x27;</span>);</span><br><span class="line">                <span class="keyword">if</span> (win) &#123;</span><br><span class="line">                    <span class="comment">//Browser has allowed it to be opened</span></span><br><span class="line">                    win.focus();</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">//Browser has blocked it</span></span><br><span class="line">                    alert(<span class="string">&#x27;Please allow popups for this website&#x27;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">className</span>: <span class="string">&quot;fa fa-info-circle&quot;</span>,</span><br><span class="line">            <span class="attr">title</span>: <span class="string">&quot;Markdown 语法！&quot;</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">name</span>: <span class="string">&quot;publish&quot;</span>,</span><br><span class="line">            <span class="attr">action</span>: <span class="function"><span class="keyword">function</span> <span class="title">customFunction</span>(<span class="params">editor</span>) </span>&#123;</span><br><span class="line">                $(<span class="string">&#x27;.submit-btn&#x27;</span>).click();</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">className</span>: <span class="string">&quot;fa fa-paper-plane&quot;</span>,</span><br><span class="line">            <span class="attr">title</span>: <span class="string">&quot;发布文章&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="页面输出解析markdown"><a href="#页面输出解析markdown" class="headerlink" title="页面输出解析markdown"></a>页面输出解析markdown</h3><h4 id="安装扩展包"><a href="#安装扩展包" class="headerlink" title="安装扩展包"></a>安装扩展包</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> erusev/parsedown</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$Parsedown</span> = <span class="keyword">new</span> Parsedown();</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$Parsedown</span>-&gt;text(<span class="string">&#x27;Hello _Parsedown_!&#x27;</span>); <span class="comment"># prints: &lt;p&gt;Hello &lt;em&gt;Parsedown&lt;/em&gt;!&lt;/p&gt;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://simplemde.com/">https://simplemde.com/</a><br><a target="_blank" rel="noopener" href="https://packagist.org/packages/erusev/parsedown">https://packagist.org/packages/erusev/parsedown</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -839,237 +1087,6 @@ There are a ton of helper methods in Laravel that make development more efficien
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://laravel-news.com/5-laravel-helpers-make-life-easier">https://laravel-news.com/5-laravel-helpers-make-life-easier</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/02/23/node%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%8A%A5%E9%94%99error-code-ELIFECYCLE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/02/23/node%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%8A%A5%E9%94%99error-code-ELIFECYCLE/" class="post-title-link" itemprop="url">node开发环境报错error-code-ELIFECYCLE</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-02-23 10:34:50" itemprop="dateCreated datePublished" datetime="2018-02-23T10:34:50+09:00">2018-02-23</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 21:57:47" itemprop="dateModified" datetime="2018-03-27T21:57:47+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-别说东南西北，请说左右好么
-</blockquote>
-
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>项目开发环境报了错，报错信息如下：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">npm ERR! code ELIFECYCLE</span><br><span class="line">npm ERR! errno <span class="number">2</span></span><br><span class="line">npm ERR! @ development: <span class="string">`cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js`</span></span><br><span class="line">npm ERR! Exit status <span class="number">2</span></span><br><span class="line">npm ERR!</span><br><span class="line">npm ERR! Failed at the @ development script.</span><br><span class="line">npm ERR! This is probably not a problem <span class="keyword">with</span> npm. There is likely additional logging output above.</span><br><span class="line"></span><br><span class="line">npm ERR! A complete log <span class="keyword">of</span> <span class="built_in">this</span> run can be found <span class="keyword">in</span>:</span><br><span class="line">npm ERR!     C:\Users\Administrator\AppData\Roaming\npm-cache\_logs\<span class="number">2018</span>-<span class="number">02</span>-23T02_05_24_275Z-debug.log</span><br><span class="line">npm ERR! code ELIFECYCLE</span><br><span class="line">npm ERR! errno <span class="number">2</span></span><br><span class="line">npm ERR! @ dev: <span class="string">`npm run development`</span></span><br><span class="line">npm ERR! Exit status <span class="number">2</span></span><br><span class="line">npm ERR!</span><br><span class="line">npm ERR! Failed at the @ dev script.</span><br><span class="line">npm ERR! This is probably not a problem <span class="keyword">with</span> npm. There is likely additional logging output above.</span><br><span class="line"></span><br><span class="line">npm ERR! A complete log <span class="keyword">of</span> <span class="built_in">this</span> run can be found <span class="keyword">in</span>:</span><br><span class="line">npm ERR!     C:\Users\Administrator\AppData\Roaming\npm-cache\_logs\<span class="number">2018</span>-<span class="number">02</span>-23T02_05_24_301Z-debug.log</span><br></pre></td></tr></table></figure>
-
-<h3 id="解法一"><a href="#解法一" class="headerlink" title="解法一"></a>解法一</h3><p>把 <code>node_modules</code> 目录删除<br>执行命令</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm cache clear --force  </span><br><span class="line">npm install -g npm  </span><br></pre></td></tr></table></figure>
-<h3 id="解法二"><a href="#解法二" class="headerlink" title="解法二"></a>解法二</h3><p>查看 <code>node_modules</code> 目录的权限是否存在问题</p>
-<h3 id="解法三"><a href="#解法三" class="headerlink" title="解法三"></a>解法三</h3><p>检查是否有异常端口占用</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/02/23/%E6%96%B0%E5%B9%B4%E7%9A%84%E7%AC%AC%E4%B8%80%E5%A4%A9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/02/23/%E6%96%B0%E5%B9%B4%E7%9A%84%E7%AC%AC%E4%B8%80%E5%A4%A9/" class="post-title-link" itemprop="url">新年的第一天</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-02-23 09:21:46 / 修改时间：10:43:30" itemprop="dateCreated datePublished" datetime="2018-02-23T09:21:46+09:00">2018-02-23</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-努力, 奋斗
-</blockquote>
-新年第一天, 带病上班, 感冒加口腔溃疡, 难受的很.想起前天晚上看到的那篇文章, 就想发发感慨, 长大了好多事儿就觉得自己无能为力, 除了写代码, 也没有其他赚钱维生的技能, 在家里的这几天,翻看以前的旧照片, 能看到父母一点一点的变老,我们几个孩子都已经长大, 相继结婚生子, 可父母仍旧每天不辞辛劳的在外奔波, 想为他们做点儿啥, 却发现自己真的是... 没钱, 工作忙, 不敢请假, 房租, 房贷, 各种花销都让我望而却步, 一次次打消带父母出去玩的念头, 或者是让父母停下来, 找点儿轻松一点儿活儿来做, 但是, 哎....
-   
-<h3 id="如果亲人健在的时候，有什么都给他们吧。"><a href="#如果亲人健在的时候，有什么都给他们吧。" class="headerlink" title="如果亲人健在的时候，有什么都给他们吧。"></a>如果亲人健在的时候，有什么都给他们吧。</h3><p>分享柳岩的一个故事, 她说：我爸上个月身体状况不太好，然后是在医院度过70岁生日，但是我很高兴自豪的是，我有足够的经济能力，给他最好的医疗条件。她说：总是有人说要送什么祝福，最大的祝福，就是希望父母健健康康的，因为这样才能给我们机会，实现我们小时候的诺言，我要给你们买大房子，我要带你们周游世界。</p>
-<h3 id="时间不会等你，父母衰老的速度不会等你。"><a href="#时间不会等你，父母衰老的速度不会等你。" class="headerlink" title="时间不会等你，父母衰老的速度不会等你。"></a>时间不会等你，父母衰老的速度不会等你。</h3><p>一个人真正的成熟是什么？就是时间推着你往前走，你发现自己忽然在迎来客往里，变成了越来越重要的那一个人。而你，也慢慢接受着这一切，并约定俗成。中年人，是没有资格说“不”的，哪怕你私心觉得这是你的权利。上有老，下有小，是每个中年人不得不面临的。中年危机不是某个时代的焦虑，而是属于每个人的焦虑。中年人的焦虑，与生俱来，而你消失的那一刻，你已经进入了老年，那是人生的另一个阶段。中年，是一种责任，你再瘦弱也要扛起来，什么疲于奔命，如果能通过你疲于奔命，改变家族的命运，请认真努力。</p>
-<h3 id="越长大越明白，什么都可以等，但爱亲人这件事，真的等不了。"><a href="#越长大越明白，什么都可以等，但爱亲人这件事，真的等不了。" class="headerlink" title="越长大越明白，什么都可以等，但爱亲人这件事，真的等不了。"></a>越长大越明白，什么都可以等，但爱亲人这件事，真的等不了。</h3><p>李健写自己的父亲生病的时候，当时我泪如雨下。“我把当时仅有的几万块钱全拿出来了，我意识到，有些时候钱是多么重要。随后他的病情每况愈下，生命的最后阶段，我送他回哈尔滨。火车上，他已经很虚弱了，每次去洗手间都要我搀扶或者背着他，我一宿没怎么睡觉。记得当我背着他时，他说了句，原谅爸爸。那一瞬间，我强忍住了泪水。他太客气了，竟然对自己从小背到大的儿子客气，而我只是背了他几次而已。”你看，亲情有时真的是一瞬间的。你说你长大后，我就可以给你住大房子。你说你长大后，我就可以带你吃所有你喜欢的。你说你放心，你想去哪儿都可以，我有能力。请！现在！就做！一刻不停。</p>
-<h3 id="加油-好好待父母，也好好待父母爱的自己"><a href="#加油-好好待父母，也好好待父母爱的自己" class="headerlink" title="加油,好好待父母，也好好待父母爱的自己"></a>加油,好好待父母，也好好待父母爱的自己</h3><p>子欲养而亲不待。我从前是不太敏感这样的话，觉得父母健在，并未到达需要我们告别前匆匆完成的时刻。而这些年，看到一个个越来越熟悉的人经历着离别，好像一切又离自己慢慢近了。对于我们这些中年人来说，尤其是最大的骄傲，莫过于：爸妈，你们想吃什么尽管买吧，我有钱；爸妈，我有大房子，你有空来住吧；爸妈，你们别担心，万一生病了，我有足够的钱给你们治病。因为是你们的儿女，因为你们是我们的亲人。今生一见，来世不知道是否还能遇见，所以，珍惜以及相爱，毕竟匆匆而过。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/02/12/Larave%E7%9A%84%E8%A1%A8%E5%8D%95%E9%AA%8C%E8%AF%81/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/02/12/Larave%E7%9A%84%E8%A1%A8%E5%8D%95%E9%AA%8C%E8%AF%81/" class="post-title-link" itemprop="url">Larave的表单验证</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-02-12 16:08:16" itemprop="dateCreated datePublished" datetime="2018-02-12T16:08:16+09:00">2018-02-12</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:19:36" itemprop="dateModified" datetime="2018-03-27T22:19:36+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-今天完了就要回家过年了...
-</blockquote>
-
-<h3 id="同时验证两个字段唯一"><a href="#同时验证两个字段唯一" class="headerlink" title="同时验证两个字段唯一"></a>同时验证两个字段唯一</h3><p>控制器</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;validate(<span class="variable">$request</span>, SiteMail::rules());</span><br></pre></td></tr></table></figure>
-<p> 模型<br> <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">rules</span>(<span class="params"><span class="variable">$request</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> [</span><br><span class="line">        <span class="string">&#x27;site_id&#x27;</span> =&gt; <span class="string">&#x27;required|integer&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;subject&#x27;</span> =&gt; <span class="string">&#x27;required|max:256&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;type&#x27;</span>    =&gt;  Rule::unique(<span class="string">&#x27;site_mails&#x27;</span>)-&gt;where(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$query</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$query</span>-&gt;where(<span class="string">&#x27;site_id&#x27;</span>, request(<span class="string">&#x27;site_id&#x27;</span>));</span><br><span class="line">        &#125;),</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 
       
     </div>

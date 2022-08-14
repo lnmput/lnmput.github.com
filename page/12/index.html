@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">403</span>
+          <span class="site-state-item-count">406</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,271 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/22/alpine%E7%AE%80%E4%BB%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/22/alpine%E7%AE%80%E4%BB%8B/" class="post-title-link" itemprop="url">Alpine简介</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-22 14:00:27 / 修改时间：15:10:57" itemprop="dateCreated datePublished" datetime="2018-06-22T14:00:27+09:00">2018-06-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+让未来到来，让过去过去。
+</blockquote>
+
+<p>Alpine 操作系统是一个面向安全的轻型 Linux 发行版。它不同于通常 Linux 发行版，Alpine 采用了 musl libc 和 busybox 以减小系统的体积和运行时资源消耗，但功能上比 busybox 又完善的多，因此得到开源社区越来越多的青睐。在保持瘦身的同时，Alpine 还提供了自己的包管理工具 apk，可以通过 <a target="_blank" rel="noopener" href="https://pkgs.alpinelinux.org/packages">https://pkgs.alpinelinux.org/packages</a> 网站上查询包信息，也可以直接通过 apk 命令直接查询和安装各种软件。</p>
+<p>Alpine 由非商业组织维护的，支持广泛场景的 Linux发行版，它特别为资深/重度Linux用户而优化，关注安全，性能和资源效能。Alpine 镜像可以适用于更多常用场景，并且是一个优秀的可以适用于生产的基础系统/环境。</p>
+<p>Alpine Docker 镜像也继承了 Alpine Linux 发行版的这些优势。相比于其他 Docker 镜像，它的容量非常小，仅仅只有 5 MB 左右（对比 Ubuntu 系列镜像接近 200 MB），且拥有非常友好的包管理机制。官方镜像来自 docker-alpine 项目。</p>
+<p>目前 Docker 官方已开始推荐使用 Alpine 替代之前的 Ubuntu 做为基础镜像环境。这样会带来多个好处。包括镜像下载速度加快，镜像安全性提高，主机之间的切换更方便，占用更少磁盘空间等。</p>
+<h3 id="Docker下的运行"><a href="#Docker下的运行" class="headerlink" title="Docker下的运行"></a>Docker下的运行</h3><p>官方 Alpine 镜像的文档：<a target="_blank" rel="noopener" href="http://gliderlabs.viewdocs.io/docker-alpine/">http://gliderlabs.viewdocs.io/docker-alpine/</a></p>
+<p>可以使用Docker Toolbox，创建一台Docker虚拟主机，在该主机的Docker环境下运行alpine的 Docker容器。该容器就是一个Alpine Linux系统，</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker pull alpine</span><br><span class="line"></span><br><span class="line">docker run -it --name myalpine alpine</span><br></pre></td></tr></table></figure>
+
+<h3 id="作为Docker容器的基础镜像"><a href="#作为Docker容器的基础镜像" class="headerlink" title="作为Docker容器的基础镜像"></a>作为Docker容器的基础镜像</h3><p>以Alpine为基础镜像，创建一个MySQL容器，镜像大小只有36.5MB，<br>同样的方式使用Ubuntu系统作为基础镜像，镜像大小有184MB，<br>Dockerfile文件的内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> alpine:<span class="number">3.6</span></span><br><span class="line">RUN apk add --no-cache mysql-client</span><br><span class="line">ENTRYPOINT [<span class="string">&quot;mysql&quot;</span>]</span><br></pre></td></tr></table></figure>
+<p>创建一个test/mysqlclient:1.0镜像</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t test/mysqlclient:<span class="number">1.0</span> .</span><br></pre></td></tr></table></figure>
+
+<h3 id="Alpine的配置和使用"><a href="#Alpine的配置和使用" class="headerlink" title="Alpine的配置和使用"></a>Alpine的配置和使用</h3><h4 id="网络相关文件"><a href="#网络相关文件" class="headerlink" title="网络相关文件"></a>网络相关文件</h4><p>主机名文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/hostname    </span><br></pre></td></tr></table></figure>
+<p>主机IP和域名映射文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/hosts    </span><br></pre></td></tr></table></figure>
+<p>安装nginx</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apk add --update nginx   </span><br></pre></td></tr></table></figure>
+<p>安装openssh-server服务器</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apk add openssh-server</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h3 id="相关资源"><a href="#相关资源" class="headerlink" title="相关资源"></a>相关资源</h3><ul>
+<li>Alpine 官网：<a target="_blank" rel="noopener" href="http://alpinelinux.org/">http://alpinelinux.org/</a></li>
+<li>Alpine 官方仓库：<a target="_blank" rel="noopener" href="https://github.com/alpinelinux">https://github.com/alpinelinux</a></li>
+<li>Alpine 官方镜像：<a target="_blank" rel="noopener" href="https://hub.docker.com/_/alpine/">https://hub.docker.com/_/alpine/</a></li>
+<li>Alpine 官方镜像仓库：<a target="_blank" rel="noopener" href="https://github.com/gliderlabs/docker-alpine">https://github.com/gliderlabs/docker-alpine</a></li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/CSDN_duomaomao/article/details/76152416">https://blog.csdn.net/CSDN_duomaomao/article/details/76152416</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/21/nginx%E4%B8%8Ephp-fpm%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/21/nginx%E4%B8%8Ephp-fpm%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="post-title-link" itemprop="url">nginx与php-fpm的负载均衡</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-21 11:01:18 / 修改时间：12:46:02" itemprop="dateCreated datePublished" datetime="2018-06-21T11:01:18+09:00">2018-06-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你不必跑在任何人后边。
+</blockquote>
+
+<p>Nginx反向代理负载均衡架构图(三台服务器为例)</p>
+<p><img src="/images/jiagou.jpg"></p>
+<h3 id="Nginx负载均衡-图示-192-168-1-1-80服务器配置"><a href="#Nginx负载均衡-图示-192-168-1-1-80服务器配置" class="headerlink" title="Nginx负载均衡(图示:192.168.1.1:80服务器配置)"></a>Nginx负载均衡(图示:192.168.1.1:80服务器配置)</h3><p>upstream示例配置</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">upstream icontact_pool &#123;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.1</span>:<span class="number">9000</span>    weight=<span class="number">5</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.2</span>:<span class="number">9000</span>    weight=<span class="number">3</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.3</span>:<span class="number">9000</span>    weight=<span class="number">2</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h3 id="ngxin虚拟主机负载均衡配置"><a href="#ngxin虚拟主机负载均衡配置" class="headerlink" title="ngxin虚拟主机负载均衡配置"></a>ngxin虚拟主机负载均衡配置</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">server &#123;  </span><br><span class="line">    listen  <span class="number">192.168</span>.<span class="number">1.1</span>:<span class="number">80</span>;  </span><br><span class="line">    server_name <span class="number">192.168</span>.<span class="number">1.1</span>;  </span><br><span class="line">  </span><br><span class="line">    access_log  /<span class="keyword">var</span>/log/nginx/balance/loadbalance.access.log;    </span><br><span class="line">    error_log   /<span class="keyword">var</span>/log/nginx/balance/loadbalance.<span class="built_in">error</span>.log;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">#允许列目录  </span></span><br><span class="line">    location / &#123;  </span><br><span class="line">        root    /balance/;  </span><br><span class="line">        autoindex   on;  </span><br><span class="line">        autoindex_exact_size    off;  </span><br><span class="line">        autoindex_localtime on;  </span><br><span class="line">        allow allow;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">#proxy the php scripts to fpm_pool_upstream  </span></span><br><span class="line">    location ~ \.php$ &#123;  </span><br><span class="line">        root    /balance;  </span><br><span class="line">        <span class="keyword">include</span> /etc/nginx/fastcgi_params;  </span><br><span class="line">        <span class="comment">#将webserver接收的客户端请求通过fastcgi负载均衡到php5-fpm的池  </span></span><br><span class="line">        fastcgi_pass    icontact_pool;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h3 id="负载均衡服务器处理php请求"><a href="#负载均衡服务器处理php请求" class="headerlink" title="负载均衡服务器处理php请求"></a>负载均衡服务器处理php请求</h3><p>192.168.1.1:9000、192.168.1.2:9000、192.168.1.3:9000为后端的三台负载均衡服务器监听的fpm地址和端口号，负载均衡服务器通过fastcgi将http请求和上下文参数发送给这个fpm池，然后fpm负责解析php程序</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/wzy_1988/article/details/8230562">https://blog.csdn.net/wzy_1988/article/details/8230562</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/21/%E5%88%86%E5%BC%80%E9%83%A8%E7%BD%B2nginx%E5%92%8Cphp-fpm%E5%AE%9E%E4%BE%8B%E6%B5%8B%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/21/%E5%88%86%E5%BC%80%E9%83%A8%E7%BD%B2nginx%E5%92%8Cphp-fpm%E5%AE%9E%E4%BE%8B%E6%B5%8B%E8%AF%95/" class="post-title-link" itemprop="url">分开部署nginx和php-fpm实例测试</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-21 09:47:46 / 修改时间：11:00:29" itemprop="dateCreated datePublished" datetime="2018-06-21T09:47:46+09:00">2018-06-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+生活总是有很多出人意料的事情，比如，你以为我要举个例子。
+</blockquote>
+
+
+<h3 id="php-fpm"><a href="#php-fpm" class="headerlink" title="php-fpm"></a>php-fpm</h3><ul>
+<li>IP : 47.104.245.210</li>
+<li>部署了php-fpm，并成功开启9000端口的访问权限</li>
+<li>部署了相关业务代码（/app/www/pandora_php_v1）</li>
+</ul>
+<h3 id="nginx"><a href="#nginx" class="headerlink" title="nginx"></a>nginx</h3><ul>
+<li>IP : 47.104.89.216</li>
+<li>部署了nginx</li>
+<li>配置文件<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    <span class="comment">#listen 443 ssl http2;</span></span><br><span class="line">    server_name api2019.dazhi.com;</span><br><span class="line">    root <span class="string">&quot;/app/www/pandora_php_v1/public&quot;</span>; <span class="comment"># 这里的目录是php-fpm服务器的代码目录</span></span><br><span class="line"></span><br><span class="line">    index index.html index.htm index.php;</span><br><span class="line"></span><br><span class="line">    charset utf-<span class="number">8</span>;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        try_files <span class="variable">$uri</span> <span class="variable">$uri</span>/ /index.php?<span class="variable">$query_string</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    location = /favicon.ico &#123; access_log off; log_not_found off; &#125;</span><br><span class="line">    location = /robots.txt  &#123; access_log off; log_not_found off; &#125;</span><br><span class="line"></span><br><span class="line">    access_log off;</span><br><span class="line">    error_log  /<span class="keyword">var</span>/log/nginx/api2019.dazhifund.com.log <span class="built_in">error</span>;</span><br><span class="line"></span><br><span class="line">    sendfile off;</span><br><span class="line"></span><br><span class="line">    client_max_body_size <span class="number">100</span>m;</span><br><span class="line"></span><br><span class="line">    location ~ \.php$ &#123;</span><br><span class="line">        fastcgi_split_path_info ^(.+\.php)(/.+)$;</span><br><span class="line">        fastcgi_pass <span class="number">47.104</span>.<span class="number">245.210</span>:<span class="number">9000</span>;  <span class="comment"># php-fpm环境的地址</span></span><br><span class="line">        fastcgi_index index.php;</span><br><span class="line">        <span class="keyword">include</span> fastcgi_params;</span><br><span class="line">        fastcgi_param SCRIPT_FILENAME <span class="variable">$document</span>_root<span class="variable">$fastcgi_script_name</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        fastcgi_intercept_errors off;</span><br><span class="line">        fastcgi_buffer_size <span class="number">16</span>k;</span><br><span class="line">        fastcgi_buffers <span class="number">4</span> <span class="number">16</span>k;</span><br><span class="line">        fastcgi_connect_timeout <span class="number">300</span>;</span><br><span class="line">        fastcgi_send_timeout <span class="number">300</span>;</span><br><span class="line">        fastcgi_read_timeout <span class="number">300</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    location ~ /\.ht &#123;</span><br><span class="line">        deny all;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li>检查端口是否可以访问： telnet 47.104.245.210 9000</li>
+<li>重启nginx, nginx -s reload</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1017,414 +1282,6 @@ Honesty is the best policy.
 <p>Which will result the read operation from Client 1 to give unexpected results since the value was altered in the middle, that’s when a transaction makes sense.</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://divinglaravel.com/redis/before-the-dive">https://divinglaravel.com/redis/before-the-dive</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/07/laravel%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9E%84%E5%BB%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/07/laravel%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9E%84%E5%BB%BA/" class="post-title-link" itemprop="url">Laravel异常处理构建</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-07 19:46:59 / 修改时间：21:01:01" itemprop="dateCreated datePublished" datetime="2018-06-07T19:46:59+09:00">2018-06-07</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-现在努力的你，未来的事情谁说得清楚呢？
-但你不努力，未来是怎样大概都知道了。
-</blockquote>
-
-<p>Exceptions are a very important method for controlling the execution flow of an application. When an application request diverges from the happy path, it’s often important that you halt execution immediately and take another course of action.</p>
-<p>Dealing with problems in an API is especially important. The response from the API is the user interface and so you need to ensure you give a detailed and descriptive explanation of what went wrong.</p>
-<p>This includes the HTTP Status code, and error code that is linked to your documentation, as well as a human readable description of what went wrong.</p>
-<p>In today’s tutorial I’m going to show you how I structure my Laravel API applications to use Exceptions. This structure will make it very easy to return detailed and descriptive error responses from your API, as well as make testing your code a lot easier.</p>
-<p>After a brief hiatus I’m returning to writing about Laravel. After writing about PHP week after week for a long time I was really burned out and needed to take a break.</p>
-<p>However, over the last couple of months I’ve been doing some of my best work focusing on Laravel API applications. This has given me a renewed focus with lots of new ideas and techniques I want to share with you.</p>
-<p>Instead of starting a new project I’m just going to reboot the existing Cribbb series. All of the code from the previous tutorials can still be found within the Git history.</p>
-<h3 id="Understanding-HTTP-Status-Codes"><a href="#Understanding-HTTP-Status-Codes" class="headerlink" title="Understanding HTTP Status Codes"></a>Understanding HTTP Status Codes</h3><p>The first important thing to understand when building an API is that the Internet is built upon standards and protocols. Your API is an “interface” into your application and so it is very important that you adhere to these standards.</p>
-<p>When a web service returns a response from a request, it should include a Status Code. The Status Code describes the response, whether the request was successful or if an error has occurred.</p>
-<p>For example, when a request is successful, your API should return a Status Code of 200, when the client makes a bad request, you should return a Status Code of 400, and if there is an internal server error, you should return a Status Code of 500.</p>
-<p>By sticking to these Status Codes and using them under the correct conditions, we can make our API easier to consume for third-party developers and applications.</p>
-<p>If you are unfamiliar with the standard HTTP Status Codes I would recommend bookmarking the Wikipedia page and referring to it often. You will find you only ever really use a small handful of the status codes, but it is a good idea to be familiar with them.</p>
-<h3 id="How-this-Exception-foundation-will-work"><a href="#How-this-Exception-foundation-will-work" class="headerlink" title="How this Exception foundation will work"></a>How this Exception foundation will work</h3><p>Whenever we return a response from the API it must use one of the standard HTTP status codes. We must also use the correct status code to describe what happened.</p>
-<p>Using the incorrect status code is a really bad thing to do because you are giving the consumer of the API bad information. For example, if you return a 200 Status Code instead of a 400 Status Code, the consumer won’t know they are making an invalid request.</p>
-<p>Therefore, we should be able to categorise anything that could possible go wrong in the application as one of the standard HTTP Status Codes.</p>
-<p>For example, if the client requests a resource that doesn’t exist we should return a 404 Not Found response.</p>
-<p>To trigger this response from our code, we can throw a matching NotFoundException Exception.</p>
-<p>To do this we can create base Exception classes for each HTTP status code.</p>
-<p>Next, in our application code we can create specific Exceptions that extend the base HTTP Exceptions to provide a more granular understanding of what went wrong. For example, we might have a UserNotFound Exception that extends the NotFoundException base Exception class.</p>
-<p>This means under an exceptional circumstance we can throw a specific Exception for that problem and let it bubble up to the surface.</p>
-<p>The application will automatically return the correct HTTP response from the base Exception class.</p>
-<p>Finally we also need a way of providing a descriptive explanation of what went wrong. We can achieve this by defining error messages that will be injected when the exception class is thrown.</p>
-<p>Hopefully that makes sense. But even if it doesn’t, continue reading as I think it will all fall into place as we look at some code.</p>
-<h3 id="Creating-the-Errors-configuration-file"><a href="#Creating-the-Errors-configuration-file" class="headerlink" title="Creating the Errors configuration file"></a>Creating the Errors configuration file</h3><p>It’s very important that you provide your API responses with a descriptive explanation of what went wrong.</p>
-<p>If you don’t provide details of exactly what went wrong the consumers of your API are going to struggle to fix the issue.</p>
-<p>To keep all of the possible error responses in one place I’m going to create an errors.php configuration file under the config directory.</p>
-<p>This will mean we have all of the possible errors in one place which will make creating documentation a lot easier.</p>
-<p>It should also make it easy to provide language translations for the errors too, rather than trying to dig through the code to find every single error!</p>
-<p>To begin with I’ve created some errors for a couple of the standard HTTP error responses:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> [</span><br><span class="line"></span><br><span class="line"><span class="comment">/*  </span></span><br><span class="line"><span class="comment">|—————————————————————————————————————  </span></span><br><span class="line"><span class="comment">| Default Errors  </span></span><br><span class="line"><span class="comment">|—————————————————————————————————————  </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;bad_request&#x27;</span> =&gt; [  </span><br><span class="line"><span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;The server cannot or will not process the request due to something that is perceived to be a client error.&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;detail&#x27;</span> =&gt; <span class="string">&#x27;Your request had an error. Please try again.&#x27;</span>  </span><br><span class="line">],</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;forbidden&#x27;</span> =&gt; [  </span><br><span class="line"><span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;The request was a valid request, but the server is refusing to respond to it.&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;detail&#x27;</span> =&gt; <span class="string">&#x27;Your request was valid, but you are not authorised to perform that action.&#x27;</span>  </span><br><span class="line">],</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;not_found&#x27;</span> =&gt; [  </span><br><span class="line"><span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;The requested resource could not be found but may be available again in the future. Subsequent requests by the client are permissible.&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;detail&#x27;</span> =&gt; <span class="string">&#x27;The resource you were looking for was not found.&#x27;</span>  </span><br><span class="line">],</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;precondition_failed&#x27;</span> =&gt; [  </span><br><span class="line"><span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;The server does not meet one of the preconditions that the requester put on the request.&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;detail&#x27;</span> =&gt; <span class="string">&#x27;Your request did not satisfy the required preconditions.&#x27;</span>  </span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">];  </span><br></pre></td></tr></table></figure>
-<p>As the application is developed I can add to this list. It’s also often a good idea to provide a link to the relevant documentation page. At some point in the future I can simply add this into each error.</p>
-<h3 id="Creating-the-abstract-Exception"><a href="#Creating-the-abstract-Exception" class="headerlink" title="Creating the abstract Exception"></a>Creating the abstract Exception</h3><p>Next I want to create an abstract Exception class that all of my application specific exceptions will extend from.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">namespace</span> <span class="title">Cribbb</span>\<span class="title">Exceptions</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Exception</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">CribbbException</span> <span class="keyword">extends</span> <span class="title">Exception</span>  </span></span><br><span class="line"><span class="class"></span>&#123;  </span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$id</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$status</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$title</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$detail</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> <span class="doctag">@string</span> $message  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> void  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$message</span></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">	<span class="built_in">parent</span>::__construct(<span class="variable">$message</span>);  </span><br><span class="line">&#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>This will make it easy to catch all of the application specific exceptions and provides a clean separation from the other potential exceptions that may be thrown during the application’s execution.</p>
-<p>For each exception I will provide an id, status, title and detail.</p>
-<p>This is to stay close to the JSON API specification.</p>
-<p>I will also provide a getStatus method</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Get the status  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> int  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getStatus</span>(<span class="params"></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">	<span class="keyword">return</span> (<span class="keyword">int</span>) <span class="keyword">$this</span>-&gt;status;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>The JSON API specification states that the status code should be a string. I’m casting it as an int in this method so I can provide the correct response code to Laravel.</p>
-<p>I will also provide a toArray() method to return the Exception as an array. This is just for convenience:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Return the Exception as an array  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> array  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">toArray</span>(<span class="params"></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line"><span class="keyword">return</span> [  </span><br><span class="line">	<span class="string">&#x27;id&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;id,  </span><br><span class="line">	<span class="string">&#x27;status&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;status,  </span><br><span class="line">	<span class="string">&#x27;title&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;title,  </span><br><span class="line">	<span class="string">&#x27;detail&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;detail  </span><br><span class="line">	];  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>Finally I need to get the title and detail for each specific error from the errors.php file.</p>
-<p>To do this I will accept the exception id when a new Exception is instantiated.</p>
-<p>I will then use this id to get the title and detail from the errors.php file.</p>
-<p>So throwing an Exception will look like this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">throw</span> <span class="keyword">new</span> UserNotFound(<span class="string">&#x27;user_not_found&#x27;</span>);  </span><br></pre></td></tr></table></figure>
-
-<p>However, I will also want to provide specific details of the Exception under certain circumstances.</p>
-<p>For example I might want to provide the user’s id in the exception detail.</p>
-<p>To do this I will allow the exception to accept an arbitrary number of arguments:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">throw</span> <span class="keyword">new</span> UserNotFound(<span class="string">&#x27;user_not_found&#x27;</span>, <span class="variable">$id</span>);  </span><br></pre></td></tr></table></figure>
-
-<p>To set up the Exception with the correct message I will use the following method:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Build the Exception  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> array $args  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">build</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$args</span></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">	<span class="keyword">$this</span>-&gt;id = array_shift(<span class="variable">$args</span>);</span><br><span class="line"></span><br><span class="line">	<span class="variable">$error</span> = config(sprintf(<span class="string">&#x27;errors.%s&#x27;</span>, <span class="keyword">$this</span>-&gt;id));</span><br><span class="line"></span><br><span class="line">	<span class="keyword">$this</span>-&gt;title = <span class="variable">$error</span>[<span class="string">&#x27;title&#x27;</span>];  </span><br><span class="line">	<span class="keyword">$this</span>-&gt;detail = vsprintf(<span class="variable">$error</span>[<span class="string">&#x27;detail&#x27;</span>], <span class="variable">$args</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">$this</span>-&gt;detail;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>In this method I first pop off the first argument as this will be the id.</p>
-<p>Next I get the title and detail from the errors.php configuration file using the id.</p>
-<p>Next I vsprintf the remaining arguments into the detail string if they have been passed into the exception.</p>
-<p>Finally I can return the detail to be used as the default Exception message.</p>
-<h3 id="Creating-the-base-Exceptions"><a href="#Creating-the-base-Exceptions" class="headerlink" title="Creating the base Exceptions"></a>Creating the base Exceptions</h3><p>With the abstract Exception in place I can now create the base Exceptions.</p>
-<p>For example, here is the NotFoundException</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">namespace</span> <span class="title">Cribbb</span>\<span class="title">Exceptions</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NotFoundException</span> <span class="keyword">extends</span> <span class="title">CribbbException</span>  </span></span><br><span class="line"><span class="class"></span>&#123;  </span><br><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> string  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$status</span> = <span class="string">&#x27;404’;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">/**  </span></span><br><span class="line"><span class="string">* @return void  </span></span><br><span class="line"><span class="string">*/  </span></span><br><span class="line"><span class="string">public function __construct()  </span></span><br><span class="line"><span class="string">&#123;  </span></span><br><span class="line"><span class="string">$message = $this-&gt;build(func_get_args());</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">parent::__construct($message);  </span></span><br><span class="line"><span class="string">&#125;  </span></span><br><span class="line"><span class="string">&#125;  </span></span><br></pre></td></tr></table></figure>
-<p>Each base foundation Exception simply needs to provide the status code and a call to the __construct() method that will call the build() method and pass the message to the parent.</p>
-<p>You can now create these simple Exception classes to represent each HTTP status code your application will be using.</p>
-<p>If you need to add a new HTTP status code response, it’s very easy to just create a new child class.</p>
-<h3 id="Creating-the-application-Exceptions"><a href="#Creating-the-application-Exceptions" class="headerlink" title="Creating the application Exceptions"></a>Creating the application Exceptions</h3><p>Finally we can use these base HTTP Exceptions within our application code to provide more specific Exceptions.</p>
-<p>For example you might have a UserNotFound Exception:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">namespace</span> <span class="title">Cribbb</span>\<span class="title">Users</span>\<span class="title">Exceptions</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Cribbb</span>\<span class="title">Exceptions</span>\<span class="title">NotFoundException</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserNotFound</span> <span class="keyword">extends</span> <span class="title">NotFoundException</span>  </span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>Now whenever you attempt to find a user, but the user is not found you can throw this Exception.</p>
-<p>The Exception will bubble up to the surface and the correct HTTP Response will be automatically returned with an appropriate error message.</p>
-<p>This means if an Exception is throw, you can just let it go, you don’t have to catch it because the consumer needs to be informed that the user was not found.</p>
-<p>And in your tests you can assert a UserNotFound exception was thrown, rather than just a generic NotFound exception. This means you can write tests where you are confident the test is failing for the correct reason. This makes reading your tests very easy to understand.</p>
-<h3 id="Dealing-with-Exceptions-and-returning-the-correct-response"><a href="#Dealing-with-Exceptions-and-returning-the-correct-response" class="headerlink" title="Dealing with Exceptions and returning the correct response"></a>Dealing with Exceptions and returning the correct response</h3><p>Laravel allows you to handle Exceptions and return a response in the Handler.php file under the Exceptions namespace.</p>
-<p>The first thing I’m going to do is to add the base CribbbException class to the $dontReport array.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* A list of the exception types that should not be reported  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@var</span> array  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$dontReport</span> = [  </span><br><span class="line">	HttpException::class,  </span><br><span class="line">	CribbbException::class  </span><br><span class="line">];  </span><br></pre></td></tr></table></figure>
-
-<p>I don’t need to be told that an application specific Exception has been thrown because this is to be expected. By extending from the base CribbbException class we’ve made it very easy to capture all of the application specific exceptions.</p>
-<p>Next I’m going to update the render() method to only render the Exception if we’ve got the app.debug config setting to true, otherwise we can deal with the Exception in the handle() method:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Render an exception into an HTTP response  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> Request $request  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> Exception $e  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> Response  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Exception</span> <span class="variable">$e</span></span>)  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (config(<span class="string">&#x27;app.debug&#x27;</span>)) &#123;  </span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">parent</span>::render(<span class="variable">$request</span>, <span class="variable">$e</span>);  </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;handle(<span class="variable">$request</span>, <span class="variable">$e</span>);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>And finally we can convert the Exception into a JsonResponse in the handle() method:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**  </span></span><br><span class="line"><span class="comment">* Convert the Exception into a JSON HTTP Response  </span></span><br><span class="line"><span class="comment">*  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> Request $request  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> Exception $e  </span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> JSONResponse  </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Exception</span> <span class="variable">$e</span></span>) </span>&#123;  </span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$e</span> <span class="keyword">instanceOf</span> CribbbException) &#123;  </span><br><span class="line"><span class="variable">$data</span> = <span class="variable">$e</span>-&gt;toArray();  </span><br><span class="line"><span class="variable">$status</span> = <span class="variable">$e</span>-&gt;getStatus();  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$e</span> <span class="keyword">instanceOf</span> NotFoundHttpException) &#123;  </span><br><span class="line"><span class="variable">$data</span> = array_merge([  </span><br><span class="line"><span class="string">&#x27;id&#x27;</span> =&gt; <span class="string">&#x27;not_found&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;status&#x27;</span> =&gt; <span class="string">&#x27;404&#x27;</span>  </span><br><span class="line">], config(<span class="string">&#x27;errors.not_found&#x27;</span>));</span><br><span class="line"></span><br><span class="line"><span class="variable">$status</span> = <span class="number">404</span>;  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$e</span> <span class="keyword">instanceOf</span> MethodNotAllowedHttpException) &#123;  </span><br><span class="line"><span class="variable">$data</span> = array_merge([  </span><br><span class="line"><span class="string">&#x27;id&#x27;</span> =&gt; <span class="string">&#x27;method_not_allowed&#x27;</span>,  </span><br><span class="line"><span class="string">&#x27;status&#x27;</span> =&gt; <span class="string">&#x27;405&#x27;</span>  </span><br><span class="line">], config(<span class="string">&#x27;errors.method_not_allowed&#x27;</span>));</span><br><span class="line"></span><br><span class="line"><span class="variable">$status</span> = <span class="number">405</span>;  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> response()-&gt;json(<span class="variable">$data</span>, <span class="variable">$status</span>);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>For the CribbbException classes we can simply call the toArray() method to return the Exception into an array as well as the getStatus() method to return the HTTP Status Code.</p>
-<p>We can also deal with any other Exception classes in this method. As you can see I’m catching the NotFoundHttpException and MethodNotAllowedHttpException Exceptions in this example so I can return the correct response.</p>
-<p>Finally we can return a JsonResponse by using the json() method on the response() helper function method with the $data and $status included.</p>
-<h3 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h3><p>Exceptions are a very important aspect of application development and they are an excellent tool in controlling the execution flow of the application.</p>
-<p>Under exceptional circumstances you need to halt the application and return an error rather than continuing on with execution. Exceptions make this very easy to achieve.</p>
-<p>It’s important that an API always returns the correct HTTP status code. The API is the interface to your application and so it is very important that you follow the recognised standards and protocols.</p>
-<p>You also need to return a human readable error message as well as provide up-to-date documentation of the problem and how it can be resolved.</p>
-<p>In today’s tutorial we’ve created a foundation for using Exceptions in the application by creating base classes for each HTTP status code.</p>
-<p>Whenever a problem arrises in the application we have no reason not to return the specific HTTP status code for that problem.</p>
-<p>We’ve also put in place an easy way to list detailed error messages for every possible thing that could go wrong.</p>
-<p>This will be easy to keep up-to-date because it’s all in one place.</p>
-<p>And finally we’ve created an easy way to use Exceptions in the application. By extending these base Exceptions with application specific exceptions we can create a very granular layer of Exceptions within our application code.</p>
-<p>This make it very easy to write tests where you can assert that the correct Exception is being thrown under the specific circumstances.</p>
-<p>And it also make it really easy to deal with exceptions because 9 times out of 10 you can just let the exception bubble up to the surface.</p>
-<p>When the exception reaches the surface, the correct HTTP status code and error message will automatically be returned to the client.</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/04/nginx%E4%BD%BF%E7%94%A8lua-redis%E9%99%90%E5%88%B6ip%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/04/nginx%E4%BD%BF%E7%94%A8lua-redis%E9%99%90%E5%88%B6ip%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87/" class="post-title-link" itemprop="url">Nginx使用Lua+Redis限制IP的访问频率</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-04 09:23:22 / 修改时间：10:29:37" itemprop="dateCreated datePublished" datetime="2018-06-04T09:23:22+09:00">2018-06-04</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-不登高山，不知天之高也；不临深溪，不知地之厚也。
-</blockquote>
-
-<h3 id="添加访问控制的Lua脚本"><a href="#添加访问控制的Lua脚本" class="headerlink" title="添加访问控制的Lua脚本"></a>添加访问控制的Lua脚本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@hbase31 ~]<span class="comment"># vim /usr/local/openresty/nginx/conf/lua/access.lua</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> ip_block_time=<span class="number">300</span> <span class="comment">--封禁IP时间（秒）</span></span><br><span class="line"><span class="keyword">local</span> ip_time_out=<span class="number">30</span>    <span class="comment">--指定ip访问频率时间段（秒）</span></span><br><span class="line"><span class="keyword">local</span> ip_max_count=<span class="number">20</span> <span class="comment">--指定ip访问频率计数最大值（秒）</span></span><br><span class="line"><span class="keyword">local</span> BUSINESS = ngx.var.business <span class="comment">--nginx的location中定义的业务标识符</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--连接redis</span></span><br><span class="line"><span class="keyword">local</span> redis = <span class="built_in">require</span> <span class="string">&quot;resty.redis&quot;</span>  </span><br><span class="line"><span class="keyword">local</span> conn = redis:new()  </span><br><span class="line">ok, err = conn:connect(<span class="string">&quot;192.168.1.30&quot;</span>, <span class="number">6379</span>)  </span><br><span class="line">conn:set_timeout(<span class="number">2000</span>) <span class="comment">--超时时间2秒</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--如果连接失败，跳转到脚本结尾</span></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">goto</span> FLAG</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--查询ip是否被禁止访问，如果存在则返回403错误代码</span></span><br><span class="line">is_block, err = conn:get(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr)  </span><br><span class="line"><span class="keyword">if</span> is_block == <span class="string">&#x27;1&#x27;</span> <span class="keyword">then</span></span><br><span class="line">    ngx.<span class="built_in">exit</span>(<span class="number">403</span>)</span><br><span class="line">    <span class="keyword">goto</span> FLAG</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--查询redis中保存的ip的计数器</span></span><br><span class="line">ip_count, err = conn:get(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr)</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> ip_count == ngx.null <span class="keyword">then</span> <span class="comment">--如果不存在，则将该IP存入redis，并将计数器设置为1、该KEY的超时时间为ip_time_out</span></span><br><span class="line">    res, err = conn:set(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, <span class="number">1</span>)</span><br><span class="line">    res, err = conn:expire(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, ip_time_out)</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    ip_count = ip_count + <span class="number">1</span> <span class="comment">--存在则将单位时间内的访问次数加1</span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">if</span> ip_count &gt;= ip_max_count <span class="keyword">then</span> <span class="comment">--如果超过单位时间限制的访问次数，则添加限制访问标识，限制时间为ip_block_time</span></span><br><span class="line">        res, err = conn:set(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr, <span class="number">1</span>)</span><br><span class="line">        res, err = conn:expire(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr, ip_block_time)</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        res, err = conn:set(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr,ip_count)</span><br><span class="line">        res, err = conn:expire(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, ip_time_out)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 结束标记</span></span><br><span class="line">::FLAG::</span><br><span class="line"><span class="keyword">local</span> ok, err = conn:<span class="built_in">close</span>()</span><br></pre></td></tr></table></figure>
-<p>这个脚本的目的很简单：一个IP如果在30秒内其访问次数达到20次则表明该IP访问频率太快了，因此将该IP封禁5分钟。同时由于计数的KEY在Redis中的超时时间设置成了30秒，所以如果两次访问间隔时间大于30秒将会重新开始计数</p>
-<h3 id="在Nginx需要限速的location中引用上述脚本"><a href="#在Nginx需要限速的location中引用上述脚本" class="headerlink" title="在Nginx需要限速的location中引用上述脚本"></a>在Nginx需要限速的location中引用上述脚本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">location /user/ &#123;</span><br><span class="line">    set <span class="variable">$business</span> <span class="string">&quot;USER&quot;</span>;</span><br><span class="line">    access_by_lua_file /usr/local/openresty/nginx/conf/lua/access.lua;</span><br><span class="line">        proxy_redirect off;</span><br><span class="line">        proxy_set_header        Host <span class="variable">$host</span>;</span><br><span class="line">        proxy_set_header        X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        proxy_set_header        X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        proxy_pass http:<span class="comment">//user_224/user/;</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>注：对于有大量静态资源文件（如：js、css、图片等）的前端页面可以设置只有指定格式的请求才进行访问限速，示例代码如下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">location /h5 &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$request_uri</span> ~ .*\.(html|htm|jsp|json)) &#123;</span><br><span class="line">            set <span class="variable">$business</span> <span class="string">&quot;H5&quot;</span>;</span><br><span class="line">            access_by_lua_file /usr/local/openresty/nginx/conf/lua/access.lua;</span><br><span class="line">        &#125;</span><br><span class="line">        proxy_redirect off;</span><br><span class="line">        proxy_set_header        Host <span class="variable">$host</span>;</span><br><span class="line">        proxy_set_header        X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        proxy_set_header        X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        proxy_pass http:<span class="comment">//h5_224/h5;</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://juejin.im/entry/5a45a9b8f265da431f4b62d5">https://juejin.im/entry/5a45a9b8f265da431f4b62d5</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/02/laravel%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/02/laravel%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/" class="post-title-link" itemprop="url">laravel最佳实践</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-02 14:42:00 / 修改时间：15:57:20" itemprop="dateCreated datePublished" datetime="2018-06-02T14:42:00+09:00">2018-06-02</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-着意闻时不肯香，香在无心处。
-</blockquote>
-
-<h3 id="Single-responsibility-principle"><a href="#Single-responsibility-principle" class="headerlink" title="Single responsibility principle"></a>Single responsibility principle</h3><p>A class and a method should have only one responsibility.</p>
-<p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getFullNameAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (auth()-&gt;user() &amp;&amp; auth()-&gt;user()-&gt;hasRole(<span class="string">&#x27;client&#x27;</span>) &amp;&amp; auth()-&gt;user()-&gt;isVerified()) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;Mr. &#x27;</span> . <span class="keyword">$this</span>-&gt;first_name . <span class="string">&#x27; &#x27;</span> . <span class="keyword">$this</span>-&gt;middle_name . <span class="string">&#x27; &#x27;</span> <span class="keyword">$this</span>-&gt;last_name;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;first_name[<span class="number">0</span>] . <span class="string">&#x27;. &#x27;</span> . <span class="keyword">$this</span>-&gt;last_name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getFullNameAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;isVerifiedClient() ? <span class="keyword">$this</span>-&gt;getFullNameLong() : <span class="keyword">$this</span>-&gt;getFullNameShort();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">isVerfiedClient</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> auth()-&gt;user() &amp;&amp; auth()-&gt;user()-&gt;hasRole(<span class="string">&#x27;client&#x27;</span>) &amp;&amp; auth()-&gt;user()-&gt;isVerified();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getFullNameLong</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;Mr. &#x27;</span> . <span class="keyword">$this</span>-&gt;first_name . <span class="string">&#x27; &#x27;</span> . <span class="keyword">$this</span>-&gt;middle_name . <span class="string">&#x27; &#x27;</span> . <span class="keyword">$this</span>-&gt;last_name;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getFullNameShort</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;first_name[<span class="number">0</span>] . <span class="string">&#x27;. &#x27;</span> . <span class="keyword">$this</span>-&gt;last_name;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Fat-models-skinny-controllers"><a href="#Fat-models-skinny-controllers" class="headerlink" title="Fat models, skinny controllers"></a>Fat models, skinny controllers</h3><p>Put all DB related logic into Eloquent models or into Repository classes if you’re using Query Builder or raw SQL queries.</p>
-<p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$clients</span> = Client::verified()</span><br><span class="line">        -&gt;with([<span class="string">&#x27;orders&#x27;</span> =&gt; <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$q</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$q</span>-&gt;where(<span class="string">&#x27;created_at&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, Carbon::today()-&gt;subWeek());</span><br><span class="line">        &#125;])</span><br><span class="line">        -&gt;get();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">&#x27;index&#x27;</span>, [<span class="string">&#x27;clients&#x27;</span> =&gt; <span class="variable">$clients</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">&#x27;index&#x27;</span>, [<span class="string">&#x27;clients&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;client-&gt;getWithNewOrders()]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">Class</span> <span class="title">Client</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getWithNewOrders</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;verified()</span><br><span class="line">            -&gt;with([<span class="string">&#x27;orders&#x27;</span> =&gt; <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$q</span></span>) </span>&#123;</span><br><span class="line">                <span class="variable">$q</span>-&gt;where(<span class="string">&#x27;created_at&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, Carbon::today()-&gt;subWeek());</span><br><span class="line">            &#125;])</span><br><span class="line">            -&gt;get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Validation"><a href="#Validation" class="headerlink" title="Validation"></a>Validation</h3><p>Move validation from controllers to Request classes.</p>
-<p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">store</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$request</span>-&gt;validate([</span><br><span class="line">        <span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;required|unique:posts|max:255&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;body&#x27;</span> =&gt; <span class="string">&#x27;required&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;publish_at&#x27;</span> =&gt; <span class="string">&#x27;nullable|date&#x27;</span>,</span><br><span class="line">    ]);</span><br><span class="line"></span><br><span class="line">    ....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">store</span>(<span class="params">PostRequest <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;    </span><br><span class="line">    ....</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PostRequest</span> <span class="keyword">extends</span> <span class="title">Request</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">rules</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> [</span><br><span class="line">            <span class="string">&#x27;title&#x27;</span> =&gt; <span class="string">&#x27;required|unique:posts|max:255&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;body&#x27;</span> =&gt; <span class="string">&#x27;required&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;publish_at&#x27;</span> =&gt; <span class="string">&#x27;nullable|date&#x27;</span>,</span><br><span class="line">        ];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Business-logic-should-be-in-service-class"><a href="#Business-logic-should-be-in-service-class" class="headerlink" title="Business logic should be in service class"></a>Business logic should be in service class</h3><p>A controller must have only one responsibility, so move business logic from controllers to service classes.</p>
-<p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">store</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$request</span>-&gt;hasFile(<span class="string">&#x27;image&#x27;</span>)) &#123;</span><br><span class="line">        <span class="variable">$request</span>-&gt;file(<span class="string">&#x27;image&#x27;</span>)-&gt;move(public_path(<span class="string">&#x27;images&#x27;</span>) . <span class="string">&#x27;temp&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">store</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;articleService-&gt;handleUploadedImage(<span class="variable">$request</span>-&gt;file(<span class="string">&#x27;image&#x27;</span>));</span><br><span class="line"></span><br><span class="line">    ....</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ArticleService</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handleUploadedImage</span>(<span class="params"><span class="variable">$image</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!is_null(<span class="variable">$image</span>)) &#123;</span><br><span class="line">            <span class="variable">$image</span>-&gt;move(public_path(<span class="string">&#x27;images&#x27;</span>) . <span class="string">&#x27;temp&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Don’t-repeat-yourself-DRY"><a href="#Don’t-repeat-yourself-DRY" class="headerlink" title="Don’t repeat yourself (DRY)"></a>Don’t repeat yourself (DRY)</h3><p>Reuse code when you can. SRP is helping you to avoid duplication. Also, reuse Blade templates, use Eloquent scopes etc.</p>
-<p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getActive</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;where(<span class="string">&#x27;verified&#x27;</span>, <span class="number">1</span>)-&gt;whereNotNull(<span class="string">&#x27;deleted_at&#x27;</span>)-&gt;get();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getArticles</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;whereHas(<span class="string">&#x27;user&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$q</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$q</span>-&gt;where(<span class="string">&#x27;verified&#x27;</span>, <span class="number">1</span>)-&gt;whereNotNull(<span class="string">&#x27;deleted_at&#x27;</span>);</span><br><span class="line">        &#125;)-&gt;get();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">scopeActive</span>(<span class="params"><span class="variable">$q</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$q</span>-&gt;where(<span class="string">&#x27;verified&#x27;</span>, <span class="number">1</span>)-&gt;whereNotNull(<span class="string">&#x27;deleted_at&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getActive</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;active()-&gt;get();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getArticles</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;whereHas(<span class="string">&#x27;user&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$q</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$q</span>-&gt;active();</span><br><span class="line">        &#125;)-&gt;get();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Prefer-to-use-Eloquent-over-using-Query-Builder-and-raw-SQL-queries-Prefer-collections-over-arrays"><a href="#Prefer-to-use-Eloquent-over-using-Query-Builder-and-raw-SQL-queries-Prefer-collections-over-arrays" class="headerlink" title="Prefer to use Eloquent over using Query Builder and raw SQL queries. Prefer collections over arrays"></a>Prefer to use Eloquent over using Query Builder and raw SQL queries. Prefer collections over arrays</h3><p>Eloquent allows you to write readable and maintainable code. Also, Eloquent has great built-in tools like soft deletes, events, scopes etc.</p>
-<p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">SELECT *</span><br><span class="line"><span class="keyword">FROM</span> `articles`</span><br><span class="line">WHERE EXISTS (SELECT *</span><br><span class="line">              <span class="keyword">FROM</span> `users`</span><br><span class="line">              WHERE `articles`.`user_id` = `users`.`id`</span><br><span class="line">              <span class="keyword">AND</span> EXISTS (SELECT *</span><br><span class="line">                          <span class="keyword">FROM</span> `profiles`</span><br><span class="line">                          WHERE `profiles`.`user_id` = `users`.`id`) </span><br><span class="line">              <span class="keyword">AND</span> `users`.`deleted_at` IS <span class="literal">NULL</span>)</span><br><span class="line"><span class="keyword">AND</span> `verified` = <span class="string">&#x27;1&#x27;</span></span><br><span class="line"><span class="keyword">AND</span> `active` = <span class="string">&#x27;1&#x27;</span></span><br><span class="line">ORDER BY `created_at` DESC</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Article::has(<span class="string">&#x27;user.profile&#x27;</span>)-&gt;verified()-&gt;latest()-&gt;get();</span><br></pre></td></tr></table></figure>
-
-<h3 id="Mass-assignment"><a href="#Mass-assignment" class="headerlink" title="Mass assignment"></a>Mass assignment</h3><p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$article</span> = <span class="keyword">new</span> Article;</span><br><span class="line"><span class="variable">$article</span>-&gt;title = <span class="variable">$request</span>-&gt;title;</span><br><span class="line"><span class="variable">$article</span>-&gt;content = <span class="variable">$request</span>-&gt;content;</span><br><span class="line"><span class="variable">$article</span>-&gt;verified = <span class="variable">$request</span>-&gt;verified;</span><br><span class="line"><span class="comment">// Add category to article</span></span><br><span class="line"><span class="variable">$article</span>-&gt;category_id = <span class="variable">$category</span>-&gt;id;</span><br><span class="line"><span class="variable">$article</span>-&gt;save();</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$category</span>-&gt;article()-&gt;create(<span class="variable">$request</span>-&gt;all());</span><br></pre></td></tr></table></figure>
-
-<h3 id="Do-not-execute-queries-in-Blade-templates-and-use-eager-loading-N-1-problem"><a href="#Do-not-execute-queries-in-Blade-templates-and-use-eager-loading-N-1-problem" class="headerlink" title="Do not execute queries in Blade templates and use eager loading (N + 1 problem)"></a>Do not execute queries in Blade templates and use eager loading (N + 1 problem)</h3><p>Bad (for 100 users, 101 DB queries will be executed):</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@<span class="keyword">foreach</span> (User::all() <span class="keyword">as</span> <span class="variable">$user</span>)</span><br><span class="line">    &#123;&#123; <span class="variable">$user</span>-&gt;profile-&gt;name &#125;&#125;</span><br><span class="line">@<span class="keyword">endforeach</span></span><br></pre></td></tr></table></figure>
-<p>Good (for 100 users, 2 DB queries will be executed):</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$users</span> = User::with(<span class="string">&#x27;profile&#x27;</span>)-&gt;get();</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">@<span class="keyword">foreach</span> (<span class="variable">$users</span> <span class="keyword">as</span> <span class="variable">$user</span>)</span><br><span class="line">    &#123;&#123; <span class="variable">$user</span>-&gt;profile-&gt;name &#125;&#125;</span><br><span class="line">@<span class="keyword">endforeach</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="Comment-your-code-but-prefer-descriptive-method-and-variable-names-over-comments"><a href="#Comment-your-code-but-prefer-descriptive-method-and-variable-names-over-comments" class="headerlink" title="Comment your code, but prefer descriptive method and variable names over comments"></a>Comment your code, but prefer descriptive method and variable names over comments</h3><p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (count((<span class="keyword">array</span>) <span class="variable">$builder</span>-&gt;getQuery()-&gt;joins) &gt; <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-<p>Better:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Determine if there are any joins.</span></span><br><span class="line"><span class="keyword">if</span> (count((<span class="keyword">array</span>) <span class="variable">$builder</span>-&gt;getQuery()-&gt;joins) &gt; <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;hasJoins())</span><br></pre></td></tr></table></figure>
-
-<h3 id="Do-not-put-JS-and-CSS-in-Blade-templates-and-do-not-put-any-HTML-in-PHP-classes"><a href="#Do-not-put-JS-and-CSS-in-Blade-templates-and-do-not-put-any-HTML-in-PHP-classes" class="headerlink" title="Do not put JS and CSS in Blade templates and do not put any HTML in PHP classes"></a>Do not put JS and CSS in Blade templates and do not put any HTML in PHP classes</h3><p>Bad:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> article = <span class="string">`&#123;&#123; json_encode($article) &#125;&#125;`</span>;</span><br></pre></td></tr></table></figure>
-<p>Better:</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">id</span>=<span class="string">&quot;article&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&#123;&#123; json_encode($article) &#125;&#125;&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>Or</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">class</span>=<span class="string">&quot;js-fav-article&quot;</span> <span class="attr">data-article</span>=<span class="string">&quot;&#123;&#123; json_encode($article) &#125;&#125;&quot;</span>&gt;</span>&#123;&#123; $article-&gt;name &#125;&#125;<span class="tag">&lt;<span class="name">button</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>In a Javascript file:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> article = $(<span class="string">&#x27;#article&#x27;</span>).val();</span><br><span class="line">The best way is to use specialized PHP to JS package to transfer the data.</span><br></pre></td></tr></table></figure>
-
-<h3 id="Use-config-and-language-files-constants-instead-of-text-in-the-code"><a href="#Use-config-and-language-files-constants-instead-of-text-in-the-code" class="headerlink" title="Use config and language files, constants instead of text in the code"></a>Use config and language files, constants instead of text in the code</h3><p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">isNormal</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$article</span>-&gt;type === <span class="string">&#x27;normal&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> back()-&gt;with(<span class="string">&#x27;message&#x27;</span>, <span class="string">&#x27;Your article has been added!&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">isNormal</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$article</span>-&gt;type === Article::TYPE_NORMAL;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> back()-&gt;with(<span class="string">&#x27;message&#x27;</span>, __(<span class="string">&#x27;app.article_added&#x27;</span>));</span><br></pre></td></tr></table></figure>
-
-<h3 id="Use-shorter-and-more-readable-syntax-where-possible"><a href="#Use-shorter-and-more-readable-syntax-where-possible" class="headerlink" title="Use shorter and more readable syntax where possible"></a>Use shorter and more readable syntax where possible</h3><p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$request</span>-&gt;session()-&gt;get(<span class="string">&#x27;cart&#x27;</span>);</span><br><span class="line"><span class="variable">$request</span>-&gt;input(<span class="string">&#x27;name&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">session(<span class="string">&#x27;cart&#x27;</span>);</span><br><span class="line"><span class="variable">$request</span>-&gt;name;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Use-IoC-container-or-facades-instead-of-new-Class"><a href="#Use-IoC-container-or-facades-instead-of-new-Class" class="headerlink" title="Use IoC container or facades instead of new Class"></a>Use IoC container or facades instead of new Class</h3><p>new Class syntax creates tight coupling between classes and complicates testing. Use IoC container or facades instead.</p>
-<p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$user</span> = <span class="keyword">new</span> User;</span><br><span class="line"><span class="variable">$user</span>-&gt;create(<span class="variable">$request</span>-&gt;all());</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params">User <span class="variable">$user</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;user = <span class="variable">$user</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">$this</span>-&gt;user-&gt;create(<span class="variable">$request</span>-&gt;all());</span><br></pre></td></tr></table></figure>
-
-<h3 id="Do-not-get-data-from-the-env-file-directly"><a href="#Do-not-get-data-from-the-env-file-directly" class="headerlink" title="Do not get data from the .env file directly"></a>Do not get data from the .env file directly</h3><p>Pass the data to config files instead and then use the config() helper function to use the data in an application.</p>
-<p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$apiKey</span> = env(<span class="string">&#x27;API_KEY&#x27;</span>);</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// config/api.php</span></span><br><span class="line"><span class="string">&#x27;key&#x27;</span> =&gt; env(<span class="string">&#x27;API_KEY&#x27;</span>),</span><br><span class="line"></span><br><span class="line"><span class="comment">// Use the data</span></span><br><span class="line"><span class="variable">$apiKey</span> = config(<span class="string">&#x27;api.key&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="Store-dates-in-the-standard-format-Use-accessors-and-mutators-to-modify-date-format"><a href="#Store-dates-in-the-standard-format-Use-accessors-and-mutators-to-modify-date-format" class="headerlink" title="Store dates in the standard format. Use accessors and mutators to modify date format"></a>Store dates in the standard format. Use accessors and mutators to modify date format</h3><p>Bad:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123; Carbon::createFromFormat(<span class="string">&#x27;Y-d-m H-i&#x27;</span>, <span class="variable">$object</span>-&gt;ordered_at)-&gt;toDateString() &#125;&#125;</span><br><span class="line">&#123;&#123; Carbon::createFromFormat(<span class="string">&#x27;Y-d-m H-i&#x27;</span>, <span class="variable">$object</span>-&gt;ordered_at)-&gt;format(<span class="string">&#x27;m-d&#x27;</span>) &#125;&#125;</span><br></pre></td></tr></table></figure>
-<p>Good:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Model</span></span><br><span class="line"><span class="keyword">protected</span> <span class="variable">$dates</span> = [<span class="string">&#x27;ordered_at&#x27;</span>, <span class="string">&#x27;created_at&#x27;</span>, <span class="string">&#x27;updated_at&#x27;</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getMonthDayAttribute</span>(<span class="params"><span class="variable">$date</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$date</span>-&gt;format(<span class="string">&#x27;m-d&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// View</span></span><br><span class="line">&#123;&#123; <span class="variable">$object</span>-&gt;ordered_at-&gt;toDateString() &#125;&#125;</span><br><span class="line">&#123;&#123; <span class="variable">$object</span>-&gt;ordered_at-&gt;monthDay &#125;&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="Other-good-practices"><a href="#Other-good-practices" class="headerlink" title="Other good practices"></a>Other good practices</h3><p>Never put any logic in routes files.</p>
-<p>Minimize usage of vanilla PHP in Blade templates.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/alexeymezenin/laravel-best-practices">https://github.com/alexeymezenin/laravel-best-practices</a><br><a target="_blank" rel="noopener" href="https://laravel-china.org/articles/12762/eighteen-best-practices-of-laravel">https://laravel-china.org/articles/12762/eighteen-best-practices-of-laravel</a></p>
 </blockquote>
 
       

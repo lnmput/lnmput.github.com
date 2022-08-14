@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">403</span>
+          <span class="site-state-item-count">406</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,301 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/10/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/09/10/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5/" class="post-title-link" itemprop="url">Mysql数据库主从同步</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-09-10 09:16:55" itemprop="dateCreated datePublished" datetime="2017-09-10T09:16:55+09:00">2017-09-10</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2022-03-14 23:36:58" itemprop="dateModified" datetime="2022-03-14T23:36:58+09:00">2022-03-14</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我临睡前想做件大事改变世界激动得睡不着第二天早上连早起都做不到
+</blockquote>
+
+<h3 id="主从复制的原理"><a href="#主从复制的原理" class="headerlink" title="主从复制的原理"></a>主从复制的原理</h3><p>分为同步复制和异步复制，实际复制架构中大部分为异步复制。 复制的基本过程如下：<br>1).Slave上面的IO进程连接上Master，并请求从指定日志文件的指定位置（或者从最开始的日志）之后的日志内容；<br>2).Master接收到来自Slave的IO进程的请求后，通过负责复制的IO进程根据请求信息读取制定日志指定位置之后的日志信息，返回给Slave<br>的IO进程。返回信息中除了日志所包含的信息之外，还包括本次返回的信息已经到Master端的bin-log文件的名称以及bin-log的位置；<br>3).Slave的IO进程接收到信息后，将接收到的日志内容依次添加到Slave端的relay-log文件的最末端，并将读取到的Master端的<br>bin-log的文件名和位置记录到master-info文件中，以便在下一次读取的时候能够清楚的告诉Master“我需要从某个bin-log的哪个位置开始往后的日志内容，请发给我”；<br>4).Slave的Sql进程检测到relay-log中新增加了内容后，会马上解析relay-log的内容成为在Master端真实执行时候的那些可执行的内容，并在自身执行。</p>
+<h3 id="环境描述"><a href="#环境描述" class="headerlink" title="环境描述"></a>环境描述</h3><ul>
+<li>OS：CentOS</li>
+<li>主服务器master：192.168.11.120</li>
+<li>从服务器slave：192.168.11.139</li>
+</ul>
+<h3 id="mysql主服务器配置-master"><a href="#mysql主服务器配置-master" class="headerlink" title="mysql主服务器配置(master)"></a>mysql主服务器配置(master)</h3><p>master服务器配置:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/my.cnf</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[mysqld]</span><br><span class="line">server-id=120</span><br><span class="line">log-bin=/var/lib/mysql/mysql-bin # 启用二进制日志</span><br><span class="line">binlog-do-db=jasontest #指定数据库，如果不指定就是全部数据库</span><br><span class="line">#binlog-ignore-db = mysql,information_schema #忽略写入binlog的库</span><br></pre></td></tr></table></figure>
+<p>重启服务器：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service mysqld  restart #systemctl restart mysqld.service --- centos7.x重启mysql</span><br></pre></td></tr></table></figure>
+<p>在主服务器上建立帐户并授权slave：<br>创建slave帐号，密码123456</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; GRANT REPLICATION SLAVE ON *.* to &#x27;slave&#x27;@&#x27;192.168.11.%&#x27; identified by &#x27;123456&#x27; WITH GRANT OPTION;</span><br></pre></td></tr></table></figure>
+
+<p>更新数据库权限</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt;flush privileges;</span><br></pre></td></tr></table></figure>
+
+<p>查询master的状态：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show master status;</span><br></pre></td></tr></table></figure>
+
+<p>显示结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slave status</span><br></pre></td></tr></table></figure>
+
+<p>注：执行完这个步骤后不要再操作主数据库了，防止主数据库状态值变化</p>
+<h3 id="mysql从服务器配置-slave"><a href="#mysql从服务器配置-slave" class="headerlink" title="mysql从服务器配置(slave)"></a>mysql从服务器配置(slave)</h3><p>slave服务器配置:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/my.cnf</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[mysqld]</span><br><span class="line">server-id=139</span><br><span class="line">log-bin=/var/lib/mysql/mysql-bin # 启用二进制日志</span><br><span class="line">binlog-do-db=jasontest #指定数据库，如果不指定就是全部数据库</span><br></pre></td></tr></table></figure>
+<p>重启服务器：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service mysqld  restart #systemctl restart mysqld.service --- centos7.x重启mysql</span><br></pre></td></tr></table></figure>
+<p>设置同步源：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; CHANGE MASTER TO MASTER_HOST=&#x27;192.168.11.120&#x27;, #主服务器master的ip</span><br><span class="line">    MASTER_USER=&#x27;slave&#x27;,</span><br><span class="line">    MASTER_PASSWORD=&#x27;123456&#x27;,</span><br><span class="line">    MASTER_LOG_FILE=&#x27;mysql-bin.000022&#x27;,  #对应show master status中File</span><br><span class="line">    MASTER_LOG_POS=245;                     #对应show master status中Position</span><br></pre></td></tr></table></figure>
+
+<p>启用同步：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt;start slave</span><br></pre></td></tr></table></figure>
+
+<p>停止同步：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt;stop slave</span><br></pre></td></tr></table></figure>
+
+<p>检查从服务器状态：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; SHOW SLAVE STATUS\G;</span><br></pre></td></tr></table></figure>
+
+<p>注意：<code>Slave_IO_Running</code>及<code>Slave_SQL_Running</code>进程必须正常运行，即YES状态，否则说明同步失败</p>
+<p>下面介绍几个比较关键的参数，全面的说明可阅读参考手册。</p>
+<p>Slave_IO_Running: IO线程是否正常运行<br>Slave_SQL_Running: SQL线程是否正常运行<br>Master_Log_File: IO线程正在读取的主服务器日志文件<br>Read_Master_Log_Pos: IO线程正在读取的主服务器日志文件的位置<br>Relay_Log_File: SQL线程正在读取和执行的本地日志文件<br>Relay_Log_Pos: SQL线程正在读取和执行的本地日志文件的位置<br>Relay_Master_Log_File: SQL线程正在重演的事件所在的主服务器日志文件<br>Exec_Master_Log_Pos: SQL线程正在重演的事件在主服务器日志文件中的位置<br>Seconds_Behind_Master:如果网络没有明显的延迟，该参数标志着SQL线程的事件重演速度。如果该值较大且不断递增，调整innodb_flush_log_at_trx_commit会有比较明显的效果，但是可能会在MySQL进程崩溃时丢失数据。<br>mysql数据库同步验证</p>
+<p>主从数据库设置工作已经完成，可以在master新建数据库和表，插入和修改数据，查看slave是否获得同步，测试一下是否成功。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://jasonhzy.github.io/2016/02/05/master-slave/">https://jasonhzy.github.io/2016/02/05/master-slave/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/07/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/09/07/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">依赖注入设计模式</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-09-07 14:02:47" itemprop="dateCreated datePublished" datetime="2017-09-07T14:02:47+09:00">2017-09-07</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-04-25 10:38:33" itemprop="dateModified" datetime="2018-04-25T10:38:33+09:00">2018-04-25</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+这个妹妹我曾见过的。
+</blockquote>
+不是我自身的，却是我需要的，都是我所依赖的。一切需要外部提供的，都是需要进行依赖注入的。
+
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 汽车 需要 run， 就必须需要 轮胎 roll</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Luntai</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">roll</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;轮胎滚&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Car</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$luntai</span> = <span class="keyword">new</span> Luntai();</span><br><span class="line">        <span class="variable">$luntai</span>-&gt;roll();</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;汽车跑起来了&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这种 在一个类里实例化另外一个类，耦合程度太高，改写:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 汽车 需要 run， 就必须需要 轮胎 roll</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Luntai</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">roll</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;轮胎滚&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Car</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$luntai</span>;</span><br><span class="line">    <span class="comment">// 在这里将 实例化后的 轮胎 类传递进来</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$luntai</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;luntai = <span class="variable">$luntai</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;luntai-&gt;roll();</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;汽车跑起来了&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">(<span class="keyword">new</span> Car(<span class="keyword">new</span> Luntai()))-&gt;run();</span><br></pre></td></tr></table></figure>
+<h3 id="控制反转和依赖注入的关系"><a href="#控制反转和依赖注入的关系" class="headerlink" title="控制反转和依赖注入的关系"></a>控制反转和依赖注入的关系</h3><p>有时候我们会把控制反转和依赖注入等同，但实际上它们有着本质上的不同。<br>控制反转是一种思想<br>依赖注入是一种设计模式<br>IoC框架使用依赖注入作为实现控制反转的方式，但是控制反转还有其他的实现方式，所以不能将控制反转和依赖注入等同。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/30/%E7%AE%80%E5%8D%95%E8%AF%B4%E8%AF%B4PHP%E7%B1%BB%E6%96%B9%E6%B3%95%E7%9A%84%E9%93%BE%E5%BC%8F%E8%B0%83%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/08/30/%E7%AE%80%E5%8D%95%E8%AF%B4%E8%AF%B4PHP%E7%B1%BB%E6%96%B9%E6%B3%95%E7%9A%84%E9%93%BE%E5%BC%8F%E8%B0%83%E7%94%A8/" class="post-title-link" itemprop="url">简单说说PHP类方法的链式调用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-08-30 11:41:11" itemprop="dateCreated datePublished" datetime="2017-08-30T11:41:11+09:00">2017-08-30</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:06:43" itemprop="dateModified" datetime="2018-03-27T22:06:43+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+是谁来自山川湖海，却囿于昼夜、厨房与爱。
+</blockquote>
+### 举个例子
+如果你使用过PHP的框架，你应该使用过此类代码：
+如在laravel框架中：
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DB::table(<span class="string">&#x27;xx&#x27;</span>)-&gt;select(<span class="string">&#x27;xxxx&#x27;</span>)-&gt;where(<span class="string">&#x27;xxxx&#x27;</span>,<span class="string">&#x27;=&#x27;</span>,<span class="string">&#x27;xx&#x27;</span>)-&gt;orderBy(<span class="string">&#x27;xx&#x27;</span>,<span class="string">&#x27;desc&#x27;</span>)-&gt;get();</span><br></pre></td></tr></table></figure>
+在CI(codeigniter)框架中：
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$res</span> =<span class="keyword">$this</span>-&gt;db-&gt;from(<span class="string">&#x27;blogs&#x27;</span>)-&gt;select(<span class="string">&#x27;*&#x27;</span>)-&gt;join(<span class="string">&#x27;comments&#x27;</span>, <span class="string">&#x27;comments.id = blogs.id&#x27;</span>)-&gt;get();</span><br></pre></td></tr></table></figure>
+### 创建链式方法
+如果我们有这么一个类：
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="variable">$var</span> = <span class="keyword">array</span>();</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">$this</span>-&gt;var[<span class="string">&#x27;name&#x27;</span>] = <span class="variable">$name</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setYear</span>(<span class="params"><span class="variable">$year</span></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">$this</span>-&gt;var[<span class="string">&#x27;year&#x27;</span>] = <span class="variable">$year</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getVar</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">return</span>  <span class="keyword">$this</span>-&gt;var;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$test</span> = <span class="keyword">new</span> test();</span><br></pre></td></tr></table></figure>
+那么只需要在相应的方法后添加 return $this，就可以了。
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="variable">$var</span> = <span class="keyword">array</span>();</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">$this</span>-&gt;var[<span class="string">&#x27;name&#x27;</span>] = <span class="variable">$name</span>;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">$this</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setYear</span>(<span class="params"><span class="variable">$year</span></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">$this</span>-&gt;var[<span class="string">&#x27;year&#x27;</span>] = <span class="variable">$year</span>;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">$this</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getVar</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">return</span>  <span class="keyword">$this</span>-&gt;var;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+调用时：
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$test</span> = <span class="keyword">new</span> test();</span><br><span class="line">var_dump(<span class="variable">$test</span>-&gt;setName(<span class="string">&#x27;fc&#x27;</span>)-&gt;setYear(<span class="string">&#x27;23&#x27;</span>)-&gt;getVar());</span><br></pre></td></tr></table></figure>
+这种技术虽然不会让你的PHP代码在本质上发生变化（如性能），但可使你的代码看起来更整洁，并且更容易维护。
+
+<h3 id="静态方法-static-如何处理"><a href="#静态方法-static-如何处理" class="headerlink" title="静态方法(static)如何处理"></a>静态方法(static)如何处理</h3><p>要让静态方法也能使用链式调用，只需要加入 return new self</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">test2</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="built_in">static</span>  <span class="variable">$var</span> = <span class="keyword">array</span>();</span><br><span class="line">	<span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="built_in">self</span>::<span class="variable">$var</span>[<span class="string">&#x27;name&#x27;</span>] = <span class="variable">$name</span>;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">self</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">getVar</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">self</span>::<span class="variable">$var</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://fc-lamp.blog.163.com/blog/static/1745666872013106111248929/">http://fc-lamp.blog.163.com/blog/static/1745666872013106111248929/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -792,250 +1087,6 @@
 如：你今天10点钟打开了百度，访问了它的三个页面；11点钟又打开了百度，访问了它的两个页面，则PV数+5，VV数+2.是指页面的浏览次数，VV是指你访问网站的次数。
 > https://www.zhihu.com/question/20448467
 
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/22/http%E7%9A%84%E9%95%BF%E8%BF%9E%E6%8E%A5%E5%92%8C%E7%9F%AD%E8%BF%9E%E6%8E%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/08/22/http%E7%9A%84%E9%95%BF%E8%BF%9E%E6%8E%A5%E5%92%8C%E7%9F%AD%E8%BF%9E%E6%8E%A5/" class="post-title-link" itemprop="url">http的长连接和短连接</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-08-22 10:24:02" itemprop="dateCreated datePublished" datetime="2017-08-22T10:24:02+09:00">2017-08-22</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:21:30" itemprop="dateModified" datetime="2018-03-27T22:21:30+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-it's my turn to fuck you
-</blockquote>
-### TTP协议与TCP/IP协议的关系
-HTTP的长连接和短连接本质上是TCP长连接和短连接。HTTP属于应用层协议，在传输层使用TCP协议，在网络层使用IP协议。IP协议主要解决网络路由和寻址问题，TCP协议主要解决如何在IP层之上可靠的传递数据包，使在网络上的另一端收到发端发出的所有包，并且顺序与发出顺序一致。TCP有可靠，面向连接的特点。
-
-<h3 id="如何理解HTTP协议是无状态的"><a href="#如何理解HTTP协议是无状态的" class="headerlink" title="如何理解HTTP协议是无状态的"></a>如何理解HTTP协议是无状态的</h3><p>HTTP协议是无状态的，指的是协议对于事务处理没有记忆能力，服务器不知道客户端是什么状态。也就是说，打开一个服务器上的网页和你之前打开这个服务器上的网页之间没有任何联系。HTTP是一个无状态的面向连接的协议，无状态不代表HTTP不能保持TCP连接，更不能代表HTTP使用的是UDP协议（无连接）。</p>
-<h3 id="什么是长连接、短连接"><a href="#什么是长连接、短连接" class="headerlink" title="什么是长连接、短连接"></a>什么是长连接、短连接</h3><p>在HTTP/1.0中，默认使用的是短连接。也就是说，浏览器和服务器每进行一次HTTP操作，就建立一次连接，但任务结束就中断连接。如果客户端浏览器访问的某个HTML或其他类型的 Web页中包含有其他的Web资源，如JavaScript文件、图像文件、CSS文件等；当浏览器每遇到这样一个Web资源，就会建立一个HTTP会话。</p>
-<p>但从 HTTP/1.1起，默认使用长连接，用以保持连接特性。使用长连接的HTTP协议，会在响应头有加入这行代码：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Connection:keep-alive</span><br></pre></td></tr></table></figure>
-<p>在使用长连接的情况下，当一个网页打开完成后，客户端和服务器之间用于传输HTTP数据的 TCP连接不会关闭，如果客户端再次访问这个服务器上的网页，会继续使用这一条已经建立的连接。Keep-Alive不会永久保持连接，它有一个保持时间，可以在不同的服务器软件（如Apache）中设定这个时间。实现长连接要客户端和服务端都支持长连接。<br>HTTP协议的长连接和短连接，实质上是TCP协议的长连接和短连接。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// nginx设置</span></span><br><span class="line">http &#123;</span><br><span class="line">    keepalive_timeout  <span class="number">120</span>s <span class="number">120</span>s;</span><br><span class="line">    keepalive_requests <span class="number">10000</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="长连接和短连接的优点和缺点"><a href="#长连接和短连接的优点和缺点" class="headerlink" title="长连接和短连接的优点和缺点"></a>长连接和短连接的优点和缺点</h3><p>长连接可以省去较多的TCP建立和关闭的操作，减少浪费，节约时间。对于频繁请求资源的客户来说，较适用长连接。不过这里存在一个问题，存活功能的探测周期太长，还有就是它只是探测TCP连接的存活，属于比较斯文的做法，遇到恶意的连接时，保活功能就不够使了。在长连接的应用场景下，client端一般不会主动关闭它们之间的连接，Client与server之间的连接如果一直不关闭的话，会存在一个问题，随着客户端连接越来越多，server早晚有扛不住的时候，这时候server端需要采取一些策略，如关闭一些长时间没有读写事件发生的连接，这样可 以避免一些恶意连接导致server端服务受损；如果条件再允许就可以以客户端机器为颗粒度，限制每个客户端的最大长连接数，这样可以完全避免某个蛋疼的客户端连累后端服务。</p>
-<p>短连接对于服务器来说管理较为简单，存在的连接都是有用的连接，不需要额外的控制手段。但如果客户请求频繁，将在TCP的建立和关闭操作上浪费时间和带宽。</p>
-<p>长连接和短连接的产生在于client和server采取的关闭策略，具体的应用场景采用具体的策略，没有十全十美的选择，只有合适的选择。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.cnblogs.com/0201zcr/p/4694945.html">http://www.cnblogs.com/0201zcr/p/4694945.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/21/%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6%E7%9A%84%E6%9B%BF%E4%BB%A3%E8%AF%AD%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/08/21/%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6%E7%9A%84%E6%9B%BF%E4%BB%A3%E8%AF%AD%E6%B3%95/" class="post-title-link" itemprop="url">流程控制的替代语法</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-08-21 14:58:36" itemprop="dateCreated datePublished" datetime="2017-08-21T14:58:36+09:00">2017-08-21</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2022-03-14 23:37:57" itemprop="dateModified" datetime="2022-03-14T23:37:57+09:00">2022-03-14</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-当你厌恶你身边的人，你表达厌恶最好的方式不是和他们争吵，而是自己勤快点儿，加把劲离开他们。那样，他们就永远从你的生活中消失，和死了差不多。
-</blockquote>
-
-<h3 id="if语句的替代语法"><a href="#if语句的替代语法" class="headerlink" title="if语句的替代语法"></a>if语句的替代语法</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">if</span> (<span class="variable">$a</span> == <span class="number">5</span>): <span class="meta">?&gt;</span></span><br><span class="line">  &lt;div&gt;等于<span class="number">5</span>&lt;/div&gt;</span><br><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">elseif</span> (<span class="variable">$a</span> == <span class="number">6</span>): <span class="meta">?&gt;</span></span><br><span class="line">  &lt;div&gt;等于<span class="number">5</span>&lt;/div&gt;</span><br><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">else</span>: <span class="meta">?&gt;</span></span><br><span class="line">  &lt;div&gt;不是<span class="number">5</span>就是<span class="number">6</span>&lt;/div&gt;</span><br><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">endif</span>; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="while替代语法"><a href="#while替代语法" class="headerlink" title="while替代语法"></a>while替代语法</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">while</span> (expr): <span class="meta">?&gt;</span></span><br><span class="line">  &lt;li&gt;循环点什么&lt;/li&gt;</span><br><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">endwhile</span>; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="for替代语法："><a href="#for替代语法：" class="headerlink" title="for替代语法："></a>for替代语法：</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">for</span> (expr1; expr2; expr3): <span class="meta">?&gt;</span></span><br><span class="line">  &lt;li&gt;循环点什么&lt;/li&gt;</span><br><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">endfor</span>; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">### foreach替代语法</span></span><br><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">foreach</span> (expr1): <span class="meta">?&gt;</span></span><br><span class="line">  &lt;li&gt;循环点什么&lt;/li&gt;</span><br><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">endforeach</span>; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="switch替代语法"><a href="#switch替代语法" class="headerlink" title="switch替代语法"></a>switch替代语法</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">switch</span> (<span class="variable">$i</span>):</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;i equals 0&quot;</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;i equals 1&quot;</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;i equals 2&quot;</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;i is not equal to 0, 1 or 2&quot;</span>;</span><br><span class="line"><span class="keyword">endswitch</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/21/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1jquery%E7%9A%84ajax%E8%AF%B7%E6%B1%82%E9%94%99%E8%AF%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/08/21/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1jquery%E7%9A%84ajax%E8%AF%B7%E6%B1%82%E9%94%99%E8%AF%AF/" class="post-title-link" itemprop="url">记录一次jQuery的ajax请求错误</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-08-21 11:26:59" itemprop="dateCreated datePublished" datetime="2017-08-21T11:26:59+09:00">2017-08-21</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-11-20 11:02:47" itemprop="dateModified" datetime="2021-11-20T11:02:47+09:00">2021-11-20</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-天地不仁，以万物为刍狗
-</blockquote>
-
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>一向用的很好的chrome采集插件今天突然不工作了, 通过chrome的控制台查看, 原来的ajax 的post请求都变成了get,我靠, 看了一下代码没有改过啊</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">    <span class="attr">type</span>:<span class="string">&quot;POST&quot;</span>,</span><br><span class="line">    <span class="attr">url</span>:infoUrl,</span><br><span class="line">    <span class="attr">data</span>:data,</span><br><span class="line">    <span class="attr">datatype</span>: <span class="string">&quot;json&quot;</span>,</span><br><span class="line">    <span class="attr">contentType</span>: <span class="string">&quot;application/x-www-form-urlencoded; charset=utf-8&quot;</span>,</span><br><span class="line">    <span class="attr">beforeSend</span>:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        $(<span class="string">&quot;#submit-info&quot;</span>).html(<span class="string">&quot;loading&quot;</span>);</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">success</span>:<span class="function"><span class="keyword">function</span>(<span class="params">data</span>)</span>&#123;</span><br><span class="line">        chrome.storage.local.set(&#123;<span class="string">&#x27;return_product_id&#x27;</span>: data.data.id&#125;);</span><br><span class="line">        $(<span class="string">&quot;#return_product_id&quot;</span>).text(data.data.id);</span><br><span class="line">        alert(<span class="string">&#x27;产品创建成功, 可以开始上传图片了&#x27;</span>);</span><br><span class="line">        $(<span class="string">&quot;#image-container&quot;</span>).css(<span class="string">&quot;display&quot;</span>,<span class="string">&quot;block&quot;</span>);</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">complete</span>: <span class="function"><span class="keyword">function</span>(<span class="params">XMLHttpRequest, textStatus</span>)</span>&#123;</span><br><span class="line">        $(<span class="string">&quot;#submit-info&quot;</span>).html(<span class="string">&quot;提交信息&quot;</span>);</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">error</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">&#x27;error&#x27;</span>);</span><br><span class="line">        alert(<span class="string">&#x27;产品创建失败, 请联系开发者...&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>依然是post啊, 怎么发出去的请求就变成了get, 各种谷歌, 始终没有找到合适的解决办法…</p>
-<h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><p>最近网站从原来的http升级为现在的https, 而我的请求还是原来的http, 所以就发生了这样的错误.</p>
 
       
     </div>

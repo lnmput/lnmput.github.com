@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">403</span>
+          <span class="site-state-item-count">406</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,257 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/03/mysql%E4%B8%AD%E7%9A%84%E5%85%B1%E4%BA%AB%E9%94%81%E5%92%8C%E6%82%B2%E8%A7%82%E9%94%81%E4%BB%A5%E5%8F%8A%E5%85%B1%E4%BA%AB%E9%94%81%E5%92%8C%E6%8E%92%E4%BB%96%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/08/03/mysql%E4%B8%AD%E7%9A%84%E5%85%B1%E4%BA%AB%E9%94%81%E5%92%8C%E6%82%B2%E8%A7%82%E9%94%81%E4%BB%A5%E5%8F%8A%E5%85%B1%E4%BA%AB%E9%94%81%E5%92%8C%E6%8E%92%E4%BB%96%E9%94%81/" class="post-title-link" itemprop="url">mysql中的共享锁和悲观锁以及共享锁和排他锁</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-08-03 21:25:36" itemprop="dateCreated datePublished" datetime="2017-08-03T21:25:36+09:00">2017-08-03</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-05-02 11:51:32" itemprop="dateModified" datetime="2018-05-02T11:51:32+09:00">2018-05-02</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+这段情，曾夏了夏天，后来却也冬了冬天
+</blockquote>
+
+<h3 id="悲观锁"><a href="#悲观锁" class="headerlink" title="悲观锁"></a>悲观锁</h3><p>操作前假设一切操作都可能发现并发冲突，所以采取悲观态度。通过加锁，屏蔽一切可能违反数据完整性的操作<br>比方</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> <span class="keyword">table</span> <span class="keyword">for</span> update;  <span class="comment">--就是表锁</span></span><br><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> <span class="keyword">table</span> <span class="keyword">where</span> x <span class="operator">=</span> <span class="number">1</span> <span class="keyword">for</span> update; <span class="comment">--就是行锁</span></span><br></pre></td></tr></table></figure>
+<p>当使用<code>for update</code>后，其它会话还是可以执行select操作，但无法执行<code>select xx for update</code>操作，只有当前会话<code>commit</code>后，其它for update操作才会被执行。</p>
+<p>for update仅适用于InnoDB，且必须在事务块(BEGIN/COMMIT)中才能生效</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> test <span class="keyword">FOR</span> UPDATE;</span><br><span class="line">SLEEP(<span class="number">20</span>);</span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="乐观锁"><a href="#乐观锁" class="headerlink" title="乐观锁"></a>乐观锁</h3><p>假定操作很少发生冲突，一般对于读多写少的情况。只在提交操作时检查是否违反数据完整性, 乐观锁不能解决脏读的问题。<br>可以通过版本号是否比上个版本号或者时间戳来实现， 也或者检查通过检查某个字段来实现；<br>对于冲突检测后的处理，需要业务逻辑去处理。</p>
+<h3 id="排它锁"><a href="#排它锁" class="headerlink" title="排它锁"></a>排它锁</h3><p>当数据对象被加上排它锁时，其他的事务不能对它读取和修改。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> test <span class="keyword">FOR</span> UPDATE;</span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="共享锁"><a href="#共享锁" class="headerlink" title="共享锁"></a>共享锁</h3><p>加了共享锁的数据对象可以被其他事务读取，但不能修改。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> city <span class="keyword">where</span> id <span class="operator">=</span> &quot;1&quot;  lock <span class="keyword">in</span> share mode; </span><br></pre></td></tr></table></figure>
+
+
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/03/mysql%E9%94%99%E8%AF%AFDuplicate-entry-4294967295-for-key-PRIMARY/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/08/03/mysql%E9%94%99%E8%AF%AFDuplicate-entry-4294967295-for-key-PRIMARY/" class="post-title-link" itemprop="url">mysql错误Duplicate_entry_4294967295_for_key_PRIMARY</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-08-03 17:07:26" itemprop="dateCreated datePublished" datetime="2017-08-03T17:07:26+09:00">2017-08-03</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:57:15" itemprop="dateModified" datetime="2018-03-27T21:57:15+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+吃了就睡或长成猪的
+</blockquote>
+### 错误
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mySQL auto increment problem: Duplicate entry &#x27;4294967295&#x27; for key 1</span><br></pre></td></tr></table></figure>
+
+<h3 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h3><p>I had the same problem with the exact same number. My problem was that I had the field on int(10) when I changed it to bigint(20) it solved my problem.</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/03/%E4%BD%BF%E7%94%A8DomCrawler%E6%89%B9%E9%87%8F%E6%9C%AC%E5%9C%B0%E5%8C%96%E6%B7%98%E5%AE%9D%E5%A4%A9%E7%8C%AB%E8%AF%A6%E6%83%85%E5%9B%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/08/03/%E4%BD%BF%E7%94%A8DomCrawler%E6%89%B9%E9%87%8F%E6%9C%AC%E5%9C%B0%E5%8C%96%E6%B7%98%E5%AE%9D%E5%A4%A9%E7%8C%AB%E8%AF%A6%E6%83%85%E5%9B%BE/" class="post-title-link" itemprop="url">使用DomCrawler批量本地化淘宝天猫详情图</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-08-03 10:21:43" itemprop="dateCreated datePublished" datetime="2017-08-03T10:21:43+09:00">2017-08-03</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:35:41" itemprop="dateModified" datetime="2018-03-27T22:35:41+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你没有变强是因为你一直很舒服。
+</blockquote>
+### 安装
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> symfony/dom-crawler</span><br></pre></td></tr></table></figure>
+### 代码片段
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// october cms</span></span><br><span class="line"><span class="variable">$crawler</span> = <span class="keyword">new</span> Crawler(<span class="variable">$content</span>);</span><br><span class="line"><span class="variable">$crawler</span>-&gt;filter(<span class="string">&#x27;img&#x27;</span>)-&gt;each(<span class="function"><span class="keyword">function</span> (<span class="params">Crawler <span class="variable">$node</span></span>) <span class="keyword">use</span>(<span class="params"><span class="variable">$pid</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$sourceSrc</span> = explode(<span class="string">&#x27;?&#x27;</span>,<span class="variable">$node</span>-&gt;attr(<span class="string">&#x27;src&#x27;</span>))[<span class="number">0</span>];</span><br><span class="line">    <span class="variable">$sourceSrc</span> = str_replace(<span class="string">&#x27;https&#x27;</span>, <span class="string">&#x27;http&#x27;</span>, <span class="variable">$sourceSrc</span>);</span><br><span class="line">    <span class="keyword">if</span> (!starts_with(<span class="variable">$sourceSrc</span>, <span class="string">&#x27;http&#x27;</span>)) &#123;</span><br><span class="line">        <span class="variable">$sourceSrc</span> = <span class="string">&quot;http:&quot;</span>.<span class="variable">$sourceSrc</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="variable">$imageManager</span> = <span class="keyword">new</span> ImageManager([<span class="string">&#x27;driver&#x27;</span> =&gt; <span class="string">&#x27;gd&#x27;</span>]);</span><br><span class="line">    <span class="variable">$temPath</span> = storage_path() . <span class="string">&#x27;/temp/&#x27;</span> .time().basename(<span class="variable">$sourceSrc</span>);</span><br><span class="line">    <span class="variable">$imageManager</span>-&gt;make(<span class="variable">$sourceSrc</span>)-&gt;save(<span class="variable">$temPath</span>);</span><br><span class="line">    <span class="variable">$attachment_type</span> = <span class="string">&#x27;Jason\Ccmall\Models\Product&#x27;</span>;</span><br><span class="line">    <span class="variable">$productImage</span> = <span class="keyword">new</span> File();</span><br><span class="line">    <span class="variable">$productImage</span>-&gt;data = <span class="variable">$temPath</span>;</span><br><span class="line">    <span class="variable">$productImage</span>-&gt;field = <span class="string">&#x27;content&#x27;</span>;</span><br><span class="line">    <span class="variable">$productImage</span>-&gt;attachment_id = <span class="variable">$pid</span>;</span><br><span class="line">    <span class="variable">$productImage</span>-&gt;attachment_type = <span class="variable">$attachment_type</span>;</span><br><span class="line">    <span class="variable">$productImage</span>-&gt;save();</span><br><span class="line">    <span class="variable">$node</span>-&gt;getNode(<span class="number">0</span>)-&gt;setAttribute(<span class="string">&#x27;src&#x27;</span>, <span class="variable">$productImage</span>-&gt;path);</span><br><span class="line">    @unlink(<span class="variable">$temPath</span>);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="variable">$html</span> = <span class="variable">$crawler</span>-&gt;html();</span><br><span class="line">Product::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="variable">$pid</span>)-&gt;update([</span><br><span class="line">    <span class="string">&#x27;content&#x27;</span> =&gt; <span class="variable">$html</span></span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+### 实例一
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">DomCrawler</span>\<span class="title">Crawler</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$html</span> = &lt;&lt;&lt;<span class="string">&#x27;HTML&#x27;</span></span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">        &lt;p <span class="class"><span class="keyword">class</span>=&quot;<span class="title">message</span>&quot;&gt;<span class="title">Hello</span> <span class="title">World</span>!&lt;/<span class="title">p</span>&gt;</span></span><br><span class="line"><span class="class">        &lt;<span class="title">p</span>&gt;<span class="title">Hello</span> <span class="title">Crawler</span>!&lt;/<span class="title">p</span>&gt;</span></span><br><span class="line"><span class="class">    &lt;/<span class="title">body</span>&gt;</span></span><br><span class="line"><span class="class">&lt;/<span class="title">html</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">HTML</span>;</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">$<span class="title">crawler</span> = <span class="title">new</span> <span class="title">Crawler</span>($<span class="title">html</span>);</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">foreach</span> ($<span class="title">crawler</span> <span class="title">as</span> $<span class="title">domElement</span>) </span>&#123;</span><br><span class="line">    var_dump(<span class="variable">$domElement</span>-&gt;nodeName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="实例二"><a href="#实例二" class="headerlink" title="实例二"></a>实例二</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$crawler</span> = <span class="keyword">new</span> Crawler(<span class="string">&#x27;&lt;html&gt;&lt;body /&gt;&lt;/html&gt;&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$crawler</span>-&gt;addHtmlContent(<span class="string">&#x27;&lt;html&gt;&lt;body /&gt;&lt;/html&gt;&#x27;</span>);</span><br><span class="line"><span class="variable">$crawler</span>-&gt;addXmlContent(<span class="string">&#x27;&lt;root&gt;&lt;node /&gt;&lt;/root&gt;&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$crawler</span>-&gt;addContent(<span class="string">&#x27;&lt;html&gt;&lt;body /&gt;&lt;/html&gt;&#x27;</span>);</span><br><span class="line"><span class="variable">$crawler</span>-&gt;addContent(<span class="string">&#x27;&lt;root&gt;&lt;node /&gt;&lt;/root&gt;&#x27;</span>, <span class="string">&#x27;text/xml&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$crawler</span>-&gt;add(<span class="string">&#x27;&lt;html&gt;&lt;body /&gt;&lt;/html&gt;&#x27;</span>);</span><br><span class="line"><span class="variable">$crawler</span>-&gt;add(<span class="string">&#x27;&lt;root&gt;&lt;node /&gt;&lt;/root&gt;&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="实例三"><a href="#实例三" class="headerlink" title="实例三"></a>实例三</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$imagesCrawler</span> = <span class="variable">$crawler</span>-&gt;selectImage(<span class="string">&#x27;Kitten&#x27;</span>);</span><br><span class="line"><span class="variable">$image</span> = <span class="variable">$imagesCrawler</span>-&gt;image();</span><br><span class="line"></span><br><span class="line"><span class="comment">// or do this all at once</span></span><br><span class="line"><span class="variable">$image</span> = <span class="variable">$crawler</span>-&gt;selectImage(<span class="string">&#x27;Kitten&#x27;</span>)-&gt;image();</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://symfony.com/doc/current/components/dom_crawler.html">https://symfony.com/doc/current/components/dom_crawler.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -781,263 +1032,6 @@
 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/community/article/382852">https://cloud.tencent.com/community/article/382852</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/26/php%E7%9A%84trim%E6%97%A0%E6%B3%95%E5%8E%BB%E6%8E%89%E7%A9%BA%E6%A0%BC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/07/26/php%E7%9A%84trim%E6%97%A0%E6%B3%95%E5%8E%BB%E6%8E%89%E7%A9%BA%E6%A0%BC/" class="post-title-link" itemprop="url">php的trim无法去掉空格</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-07-26 10:35:52" itemprop="dateCreated datePublished" datetime="2017-07-26T10:35:52+09:00">2017-07-26</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:30:37" itemprop="dateModified" datetime="2018-03-27T22:30:37+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-多少次我们无醉不欢 
-咒骂人生太短 唏嘘相见恨晚
-</blockquote>
-### 问题解决
-在PHP开发过程中，使用`trim`想去掉空格，不成功；
-打印出来字符串，后面确实带有空格，在控制台又显示有`&nbsp;`（此处所指的nbsp是实体，而不是nbsp四个字符）
-后来改用`str_replace`来去掉空格，依然失败；
-到底是什么原因，于是刚开始想到了是不是全角和半角的空格问题；试着换成全角的空格，依然失败；
-后来又使用escape尝试输出，发现是xa0，于是就想`trim($converted, “xa0”)`，无果
-在php手册的trim函数下评论中发现：
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trim(<span class="variable">$otmp</span>, chr(<span class="number">0xc2</span>) . chr(<span class="number">0xa0</span>))</span><br></pre></td></tr></table></figure>
-使用后，成功去掉空格；另外，str_replace也可使用：
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$otmp</span> = str_replace(chr(<span class="number">0xc2</span>) . chr(<span class="number">0xa0</span>), <span class="string">&#x27;&#x27;</span>, <span class="variable">$otmp</span>);</span><br></pre></td></tr></table></figure>
-效果一样，成功解决~~~
-ps:此空格产生的原因是，我在获取到html代码之后strip_tags去掉所有标签，而产生了一些实体空格
-
-<h3 id="html实体"><a href="#html实体" class="headerlink" title="html实体"></a>html实体</h3><p>在 HTML 中，某些字符是预留的。<br>在 HTML 中不能使用小于号（&lt;）和大于号（&gt;），这是因为浏览器会误认为它们是标签。<br>如果希望正确地显示预留字符，我们必须在 HTML 源代码中使用字符实体（character entities）。<br>字符实体类似这样：&amp;entity_name;或者&amp;#entity_number;<br>如需显示小于号，我们必须这样写： <code>&amp;lt;</code>  或  <code>&amp;#60;</code><br>提示：使用实体名而不是数字的好处是，名称易于记忆。不过坏处是，浏览器也许并不支持所有实体名称（对实体数字的支持却很好）。<br>不间断空格（non-breaking space）<br>HTML 中的常用字符实体是不间断空格( <code>&amp;nbsp;</code> )。<br>浏览器总是会截短 HTML 页面中的空格。如果您在文本中写 10 个空格，在显示该页面之前，浏览器会删除它们中的 9 个。如需在页面中增加空格的数量，您需要使用 <code>&amp;nbsp;</code> 字符实体。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/25/%E4%BD%BF%E7%94%A8swoole%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/07/25/%E4%BD%BF%E7%94%A8swoole%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/" class="post-title-link" itemprop="url">使用swoole异步发送邮件</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-07-25 14:42:39" itemprop="dateCreated datePublished" datetime="2017-07-25T14:42:39+09:00">2017-07-25</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:36:14" itemprop="dateModified" datetime="2018-03-27T22:36:14+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-父母在时，人生尚有来处。
-父母去时，人生只剩归途。
-</blockquote>
-### 安装swoole
-pecl 安装:
-`pecl install swoole`
-
-<p>看命令行提示，如果它提示说没有写php.ini，则自己手动在PHP.ini后面加上：<br><code>extension = &quot;swoole.so&quot;</code></p>
-<h3 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Server</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$serv</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv = <span class="keyword">new</span> swoole_server(<span class="string">&quot;0.0.0.0&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;set(<span class="keyword">array</span>(</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,   <span class="comment">//一般设置为服务器CPU数的1-4倍</span></span><br><span class="line">            <span class="string">&#x27;daemonize&#x27;</span> =&gt; <span class="number">1</span>,  <span class="comment">//以守护进程执行</span></span><br><span class="line">            <span class="string">&#x27;max_request&#x27;</span> =&gt; <span class="number">10000</span>,</span><br><span class="line">            <span class="string">&#x27;dispatch_mode&#x27;</span> =&gt; <span class="number">2</span>,</span><br><span class="line">            <span class="string">&#x27;task_worker_num&#x27;</span> =&gt; <span class="number">8</span>,  <span class="comment">//task进程的数量</span></span><br><span class="line">            <span class="string">&quot;task_ipc_mode &quot;</span> =&gt; <span class="number">3</span> ,  <span class="comment">//使用消息队列通信，并设置为争抢模式</span></span><br><span class="line">            <span class="comment">//&quot;log_file&quot; =&gt; &quot;log/taskqueueu.log&quot; ,//日志</span></span><br><span class="line">        ));</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, <span class="keyword">array</span>(<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>));</span><br><span class="line">        <span class="comment">// bind callback</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;on(<span class="string">&#x27;Task&#x27;</span>, <span class="keyword">array</span>(<span class="keyword">$this</span>, <span class="string">&#x27;onTask&#x27;</span>));</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;on(<span class="string">&#x27;Finish&#x27;</span>, <span class="keyword">array</span>(<span class="keyword">$this</span>, <span class="string">&#x27;onFinish&#x27;</span>));</span><br><span class="line">        <span class="keyword">$this</span>-&gt;serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"> swoole_server <span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$from_id</span>, <span class="variable">$data</span> </span>) </span>&#123;</span><br><span class="line">        <span class="comment">//echo &quot;Get Message From Client &#123;$fd&#125;:&#123;$data&#125;n&quot;;</span></span><br><span class="line">        <span class="comment">// send a task to task worker.</span></span><br><span class="line">        <span class="variable">$serv</span>-&gt;task( <span class="variable">$data</span> );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onTask</span>(<span class="params"><span class="variable">$serv</span>,<span class="variable">$task_id</span>,<span class="variable">$from_id</span>, <span class="variable">$data</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$array</span> = json_decode( <span class="variable">$data</span> , <span class="literal">true</span> );</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$array</span>[<span class="string">&#x27;url&#x27;</span>]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;httpGet( <span class="variable">$array</span>[<span class="string">&#x27;url&#x27;</span>] , <span class="variable">$array</span>[<span class="string">&#x27;param&#x27;</span>]  );</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onFinish</span>(<span class="params"><span class="variable">$serv</span>,<span class="variable">$task_id</span>, <span class="variable">$data</span></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//echo &quot;Task &#123;$task_id&#125; finishn&quot;;</span></span><br><span class="line">        <span class="comment">//echo &quot;Result: &#123;$data&#125;n&quot;;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">httpGet</span>(<span class="params"><span class="variable">$url</span>,<span class="variable">$data</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$data</span>) &#123;</span><br><span class="line">            <span class="variable">$url</span> .=<span class="string">&#x27;?&#x27;</span>.http_build_query(<span class="variable">$data</span>) ;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$curlObj</span> = curl_init();    <span class="comment">//初始化curl，</span></span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_URL, <span class="variable">$url</span>);   <span class="comment">//设置网址</span></span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);  <span class="comment">//将curl_exec的结果返回</span></span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_SSL_VERIFYPEER, <span class="literal">FALSE</span>);</span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_SSL_VERIFYHOST, <span class="literal">FALSE</span>);</span><br><span class="line">        curl_setopt(<span class="variable">$curlObj</span>, CURLOPT_HEADER, <span class="number">0</span>);         <span class="comment">//是否输出返回头信息</span></span><br><span class="line">        <span class="variable">$response</span> = curl_exec(<span class="variable">$curlObj</span>);   <span class="comment">//执行</span></span><br><span class="line">        curl_close(<span class="variable">$curlObj</span>);          <span class="comment">//关闭会话</span></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$response</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$server</span> = <span class="keyword">new</span> Server();</span><br></pre></td></tr></table></figure>
-<h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Client</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$client</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;client = <span class="keyword">new</span> swoole_client(SWOOLE_SOCK_TCP);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">connect</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>( !<span class="keyword">$this</span>-&gt;client-&gt;connect(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span> , <span class="number">1</span>) ) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;Connect Error&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$data</span> = <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">&quot;url&quot;</span> =&gt;  <span class="string">&quot;http://192.168.10.19/send_mail&quot;</span> ,</span><br><span class="line">            <span class="string">&quot;param&quot;</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">                <span class="string">&quot;username&quot;</span>=&gt;<span class="string">&#x27;test&#x27;</span>,</span><br><span class="line">                <span class="string">&quot;password&quot;</span> =&gt; <span class="string">&#x27;test&#x27;</span></span><br><span class="line">            )</span><br><span class="line">        );</span><br><span class="line">        <span class="variable">$json_data</span> = json_encode(<span class="variable">$data</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;client-&gt;send( <span class="variable">$json_data</span> );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$client</span> = <span class="keyword">new</span> Client();</span><br><span class="line"><span class="variable">$client</span>-&gt;connect();</span><br></pre></td></tr></table></figure>
-<h3 id="查看与关闭"><a href="#查看与关闭" class="headerlink" title="查看与关闭"></a>查看与关闭</h3><p>swoole好像没有很便捷的关闭方式。所以只能直接通过关闭进程来关闭。<br>查看命令：<br><code>ps -ef | grep php</code></p>
-<p>结束单个进程：<br><code>kill -9 &#123;进程号&#125;</code></p>
-<p>结束所有进程的命令：<br><code>killall -9 php</code></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/07/24/PHP-cURL%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%A8%A1%E6%8B%9F%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/07/24/PHP-cURL%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%A8%A1%E6%8B%9F%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82/" class="post-title-link" itemprop="url">PHP-cURL多线程模拟并发请求</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-07-24 19:58:49" itemprop="dateCreated datePublished" datetime="2017-07-24T19:58:49+09:00">2017-07-24</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-25 10:41:33" itemprop="dateModified" datetime="2018-04-25T10:41:33+09:00">2018-04-25</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-钱是买不到幸福的, 因为他本身就是幸福
-</blockquote>
-
-<h3 id="PHP-cURL所有函数列表："><a href="#PHP-cURL所有函数列表：" class="headerlink" title="PHP cURL所有函数列表："></a>PHP cURL所有函数列表：</h3><p><a target="_blank" rel="noopener" href="http://php.net/manual/zh/ref.curl.php]http://php.net/manual/zh/ref.curl.php">http://php.net/manual/zh/ref.curl.php]http://php.net/manual/zh/ref.curl.php</a></p>
-<p>以下是PHP中cURL多线程相关函数：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">curl_multi_add_handle — 向curl批处理会话中添加单独的curl句柄</span><br><span class="line">curl_multi_close — 关闭一组cURL句柄</span><br><span class="line">curl_multi_exec — 运行当前 cURL 句柄的子连接</span><br><span class="line">curl_multi_getcontent — 如果设置了CURLOPT_RETURNTRANSFER，则返回获取的输出的文本流</span><br><span class="line">curl_multi_info_read — 获取当前解析的cURL的相关传输信息</span><br><span class="line">curl_multi_init — 返回一个新cURL批处理句柄</span><br><span class="line">curl_multi_remove_handle — 移除curl批处理句柄资源中的某个句柄资源</span><br><span class="line">curl_multi_select — 等待所有cURL批处理中的活动连接</span><br><span class="line">curl_multi_setopt — 为 cURL 并行处理设置一个选项</span><br><span class="line">curl_multi_strerror — <span class="keyword">Return</span> <span class="keyword">string</span> describing <span class="built_in">error</span> code</span><br></pre></td></tr></table></figure>
-<p>一般来说，想到要用这些函数时，目的显然应该是要同时请求多个URL，而不是一个一个依次请求，否则不如自己循环去调curl_exec好了。</p>
-<p>步骤总结如下：</p>
-<p>1、调用curl_multi_init，初始化一个批处理handle<br>2、循环调用 curl_multi_add_handle，往1中的批处理handle 添加curl_init来的子handle<br>3、持续调用 curl_multi_exec，直到所有子handle执行完毕。<br>4、根据需要循环调用 curl_multi_getcontent 获取结果<br>5、调用 curl_multi_remove_handle，并为每个字handle调用curl_close<br>6、调用 curl_multi_close</p>
-<p>以下是一个通过并发请求抓取网页的demo：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$urls</span> = <span class="keyword">array</span>(</span><br><span class="line">    <span class="string">&#x27;https://979137.com/&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;http://www.sina.com.cn/&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;http://www.sohu.com/&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;http://www.163.com/&#x27;</span></span><br><span class="line">);   </span><br><span class="line"><span class="comment">//1、初始化一个批处理handle</span></span><br><span class="line"><span class="variable">$mh</span> = curl_multi_init();</span><br><span class="line"> </span><br><span class="line"><span class="comment">//2、往批处理handle 添加curl_init来的子handle</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$urls</span> <span class="keyword">as</span> <span class="variable">$i</span> =&gt; <span class="variable">$url</span>) &#123;   </span><br><span class="line">    <span class="variable">$conn</span>[<span class="variable">$i</span>] = curl_init(<span class="variable">$url</span>);   </span><br><span class="line">    curl_setopt(<span class="variable">$conn</span>[<span class="variable">$i</span>], CURLOPT_HEADER, <span class="number">0</span>);   </span><br><span class="line">    curl_setopt(<span class="variable">$conn</span>[<span class="variable">$i</span>], CURLOPT_CONNECTTIMEOUT, <span class="number">60</span>);   </span><br><span class="line">    curl_setopt(<span class="variable">$conn</span>[<span class="variable">$i</span>], CURLOPT_RETURNTRANSFER, <span class="literal">true</span>);  </span><br><span class="line">    curl_multi_add_handle(<span class="variable">$mh</span>, <span class="variable">$conn</span>[<span class="variable">$i</span>]);   </span><br><span class="line">&#125;   </span><br><span class="line"></span><br><span class="line"><span class="comment">//3、并发执行，直到全部结束。</span></span><br><span class="line"><span class="keyword">do</span> &#123;   </span><br><span class="line">    curl_multi_exec(<span class="variable">$mh</span>, <span class="variable">$active</span>);   </span><br><span class="line">&#125; <span class="keyword">while</span> (<span class="variable">$active</span>);   </span><br><span class="line"> </span><br><span class="line"><span class="comment">//4、获取结果</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$urls</span> <span class="keyword">as</span> <span class="variable">$i</span> =&gt; <span class="variable">$url</span>) &#123;   </span><br><span class="line">    <span class="variable">$data</span> = curl_multi_getcontent(<span class="variable">$conn</span>[<span class="variable">$i</span>]);</span><br><span class="line">    <span class="keyword">echo</span> (<span class="variable">$data</span>);</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&#x27;&lt;hr /&gt;&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//5、移除子handle，并close子handle</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$urls</span> <span class="keyword">as</span> <span class="variable">$i</span> =&gt; <span class="variable">$url</span>) &#123;   </span><br><span class="line">  curl_multi_remove_handle(<span class="variable">$mh</span>,<span class="variable">$conn</span>[<span class="variable">$i</span>]);   </span><br><span class="line">  curl_close(<span class="variable">$conn</span>[<span class="variable">$i</span>]);   </span><br><span class="line">&#125;   </span><br><span class="line"> </span><br><span class="line"><span class="comment">//6、关闭批处理handle</span></span><br><span class="line">curl_multi_close(<span class="variable">$mh</span>);  </span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://979137.com/archives/133.html">https://979137.com/archives/133.html</a></p>
 </blockquote>
 
       

@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">403</span>
+          <span class="site-state-item-count">406</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,273 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/04/17/golang%E6%8E%A7%E5%88%B6%E5%8D%8F%E7%A8%8B%E6%95%B0%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/04/17/golang%E6%8E%A7%E5%88%B6%E5%8D%8F%E7%A8%8B%E6%95%B0%E9%87%8F/" class="post-title-link" itemprop="url">golang控制协程数量</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-04-17 11:25:38 / 修改时间：11:46:28" itemprop="dateCreated datePublished" datetime="2022-04-17T11:25:38+09:00">2022-04-17</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+人活一生，值得爱的东西很多，不要因为一个不满意，就灰心
+</blockquote>
+
+<h3 id="DEMO1"><a href="#DEMO1" class="headerlink" title="DEMO1"></a>DEMO1</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> _,v := <span class="keyword">range</span> Uins&#123;</span><br><span class="line">    <span class="comment">// Query the corresponding user information for each UIN</span></span><br><span class="line">    <span class="keyword">go</span> getUserInfo(v)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="DEMO2"><a href="#DEMO2" class="headerlink" title="DEMO2"></a>DEMO2</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">(a)</span></span>&#123;</span><br><span class="line">  <span class="comment">// Create an empty structure channel with size 512</span></span><br><span class="line">  channel := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;,<span class="number">512</span>)</span><br><span class="line">  / / create a sync. WaitGroup</span><br><span class="line">  <span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">  <span class="comment">// Wg is the length of Uins</span></span><br><span class="line">  wg.Add(<span class="built_in">len</span>(Uins))</span><br><span class="line">  for_,v:= <span class="keyword">range</span> Uins&#123;</span><br><span class="line">      channel &lt;- <span class="keyword">struct</span>&#123;&#125; &#123;&#125;<span class="comment">// Pass WG as a parameter to the coroutine</span></span><br><span class="line">      <span class="keyword">go</span> getUserInfo(v,channel,&amp;wg)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// block until wg is 0</span></span><br><span class="line">  wg.Wait()</span><br><span class="line">  <span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getUserInfo</span><span class="params">(v <span class="keyword">int</span>,channel <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;,wg *sync.WaitGroup)</span></span>&#123;</span><br><span class="line">    <span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">(a)</span></span> &#123;</span><br><span class="line">    	<span class="comment">// Wargaming is reduced by 1 before return</span></span><br><span class="line">        wg.Done()</span><br><span class="line">		&lt;-channel</span><br><span class="line">	&#125;()</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    业务逻辑  </span></span><br><span class="line"><span class="comment">    **/</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="DEMO3"><a href="#DEMO3" class="headerlink" title="DEMO3"></a>DEMO3</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;sync&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	count := <span class="number">10</span></span><br><span class="line">	sum := <span class="number">100</span></span><br><span class="line">	wg := sync.WaitGroup&#123;&#125;</span><br><span class="line"></span><br><span class="line">	c := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;, count)</span><br><span class="line">	<span class="keyword">defer</span> <span class="built_in">close</span>(c)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;sum;i++&#123;</span><br><span class="line">		wg.Add(<span class="number">1</span>)</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(j <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">			<span class="keyword">defer</span> wg.Done()</span><br><span class="line">			c &lt;- <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">			fmt.Println(j)</span><br><span class="line">		&#125;(i)</span><br><span class="line">		&lt;- c</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="DEMO4"><a href="#DEMO4" class="headerlink" title="DEMO4"></a>DEMO4</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;math/rand&quot;</span></span><br><span class="line">	<span class="string">&quot;sync&quot;</span></span><br><span class="line">	<span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	maxnum := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;, <span class="number">5</span>)</span><br><span class="line">	setPool(maxnum)</span><br><span class="line"></span><br><span class="line">	wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">	wg.Add(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			wg.Wait()</span><br><span class="line">			fmt.Println(<span class="string">&quot;=======发放5个任务=========&quot;</span>)</span><br><span class="line">			setPool(maxnum)</span><br><span class="line">			wg.Add(<span class="number">5</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		&lt;-maxnum</span><br><span class="line">		 <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		 	<span class="keyword">defer</span> wg.Done()</span><br><span class="line">		 	myJob()</span><br><span class="line">		 &#125;()</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setPool</span><span class="params">(ch <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">5</span>; i++ &#123;</span><br><span class="line">		ch &lt;- <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">myJob</span><span class="params">()</span></span> &#123;</span><br><span class="line">	time.Sleep(time.Second * <span class="number">3</span>)</span><br><span class="line">	fmt.Println(rand.Intn(<span class="number">100</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/04/11/laravel-limit-chunk-collection/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/04/11/laravel-limit-chunk-collection/" class="post-title-link" itemprop="url">laravel-limit-chunk-collection</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-04-11 18:34:06 / 修改时间：18:44:53" itemprop="dateCreated datePublished" datetime="2022-04-11T18:34:06+09:00">2022-04-11</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Home is behind, world ahead.
+</blockquote>
+
+<p>Laravel comes up with an excellent Eloquent ORM. There are lot of cool things in Eloquent, one of which is chunk method.</p>
+<p>Usually when you need to process large data, lets say you want to update users table and assign a coupon code based on 3rd party APIs.</p>
+<p>What you can do is :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">User::get()-&gt;each(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>Doing this is good but if you have thousands of users, loading them all up at once to do the coupon saving process. That’s going to take consume a hige memory at a time and maybe the server will be exusted because so much data is stored in memory for processing at a time.</p>
+<p>The chunk method helps these kind of implementations. Chunking records means taking a batch of records by a limit, process those, take the next batch processing those and so on… The idea is you are taking a subset of data to process at a time instead of entire data loaded into memory.</p>
+<p>The chunk method will retrieve a “chunk” of Eloquent models, feeding them to a given Closure for processing. Using the chunk method will conserve memory when working with large result sets.</p>
+<p>Lets do the same but with chunk this time :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$recodsPerBatch</span> = <span class="number">50</span>;</span><br><span class="line"></span><br><span class="line">User::chunk(<span class="variable">$recodsPerBatch</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>Now, as you can probably guess this will take 50 user records at a time to process, once those are completed it will take next 50 untill all records are procesed by chunk closure.</p>
+<ul>
+<li>The main problem Limit with Chunk :</li>
+</ul>
+<p>Let’s apply limit to the above example :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$recodsPerBatch</span> = <span class="number">50</span>;</span><br><span class="line"></span><br><span class="line">User::limit(<span class="number">100</span>)-&gt;chunk(<span class="variable">$recodsPerBatch</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>If you would think laravel will chunk 50 records in 2 batches are we are limiting the total records to 100, oops not really.</p>
+<p>Laravel will do series of queries like below to chunk the records :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">select * <span class="keyword">from</span> `users` limit <span class="number">50</span> offset <span class="number">0</span></span><br><span class="line">select * <span class="keyword">from</span> `users` limit <span class="number">50</span> offset <span class="number">50</span></span><br><span class="line">select * <span class="keyword">from</span> `users` limit <span class="number">50</span> offset <span class="number">100</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>The chunk method ignores any previous eloquent method which applies limit. It can be limit and offset OR take and skip…</p>
+<p>This becomes a problem for which lot of people had raised an issue on laravel’s github repo. But Laravel’s core dev team mentioned this is the expected behaviour and rightfully so.. Chunk itself is using limit to convert entire collection in batches.</p>
+<ul>
+<li>And…. Here it is.. The Solution you were waiting for :</li>
+</ul>
+<p>Laravel has a chunk variation called chunkById. Let’s use the first example and implement chunkById now :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$recodsPerBatch</span> = <span class="number">50</span>;</span><br><span class="line"></span><br><span class="line">User::chunkById(<span class="variable">$recodsPerBatch</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>The main and only fundamental difference between chunk and chunkById is how it structures the query.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">select * <span class="keyword">from</span> `users` where `id` &gt; <span class="number">0</span> order by `id` asc limit <span class="number">50</span></span><br><span class="line">select * <span class="keyword">from</span> `users` where `id` &gt; <span class="number">0</span> <span class="keyword">and</span> `id` &gt; <span class="number">50</span> order by `id` asc limit <span class="number">50</span></span><br><span class="line">select * <span class="keyword">from</span> `users` where `id` &gt; <span class="number">0</span> <span class="keyword">and</span> `id` &gt; <span class="number">50</span> <span class="keyword">and</span> `id` &gt; <span class="number">100</span> order by `id` asc limit <span class="number">50</span></span><br><span class="line">select * <span class="keyword">from</span> `users` where `id` &gt; <span class="number">0</span> <span class="keyword">and</span> `id` &gt; <span class="number">50</span> <span class="keyword">and</span> `id` &gt; <span class="number">100</span> <span class="keyword">and</span> `id` &gt; <span class="number">150</span> order by `id` asc limit <span class="number">50</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>If you observer in the queries done by chunkById :</p>
+<ul>
+<li>It’s adding an order by clause to the id column (By the way you can specify the column as 3rd argument to chunkById method if itis not id)</li>
+<li>It adds where id &gt; x each time it processes the next batch</li>
+<li>There is no offset used and id column is used conceptually as an offset.</li>
+</ul>
+<p>This gives you an advantage that you can add your offset in the query using id column as a limit just like chunkById is doing internallu.</p>
+<p>Let’s limit the chunk in our example with 100 records to chunk :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$recodsPerBatch</span> = <span class="number">50</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$limit</span> = <span class="number">100</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$maxId</span> = User::orderBy(<span class="string">&#x27;id&#x27;</span>, <span class="string">&#x27;asc&#x27;</span>)-&gt;offset(<span class="variable">$limit</span>)-&gt;limit(<span class="number">1</span>)-&gt;select(<span class="string">&#x27;id&#x27;</span>)-&gt;first()-&gt;id;</span><br><span class="line"></span><br><span class="line">User::where(<span class="string">&#x27;id&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="variable">$maxId</span>)-&gt;chunkById(<span class="variable">$recodsPerBatch</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>What we did was, even if we can not use limit directly, we got an id which falls just above the limit we want. Used that to add a where clause of <code>where(&#39;id&#39;, &#39;&lt;&#39;, $maxId)</code>.</p>
+<p>This will then chunk the 100 results, with 2 batches of 50 records in each batch. Cool, isn’t it!</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://techsemicolon.github.io/blog/2019/02/12/laravel-limiting-chunk-collection/">https://techsemicolon.github.io/blog/2019/02/12/laravel-limiting-chunk-collection/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/04/11/shell%E8%84%9A%E6%9C%AC%E6%97%A0%E6%B3%95%E8%AF%BB%E5%8F%96%E6%9C%80%E5%90%8E%E4%B8%80%E8%A1%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/04/11/shell%E8%84%9A%E6%9C%AC%E6%97%A0%E6%B3%95%E8%AF%BB%E5%8F%96%E6%9C%80%E5%90%8E%E4%B8%80%E8%A1%8C/" class="post-title-link" itemprop="url">shell脚本无法读取最后一行</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-04-11 15:29:13 / 修改时间：15:38:28" itemprop="dateCreated datePublished" datetime="2022-04-11T15:29:13+09:00">2022-04-11</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+不要到处宣扬自己的内心，
+
+<p>这世上不止你一个人有故事。</p>
+</blockquote>
+
+
+<h3 id="while-read-line无法读取最后一行"><a href="#while-read-line无法读取最后一行" class="headerlink" title="while read line无法读取最后一行"></a>while read line无法读取最后一行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="built_in">read</span> line</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">    data=`...line...`</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;data&#125;</span>&quot;</span> &gt;&gt; <span class="variable">$2</span>.txt</span><br><span class="line"></span><br><span class="line"><span class="keyword">done</span> &lt; <span class="variable">$1</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><p>因为我的目标文件是在windows下创建然后传到服务器上的，这样在利用<code>while read line</code>读取文件时，如果文件最后一行之后没有换行符\n，则read读取最后一行时遇到文件结束符EOF时循环即终止。上面代码中，虽然此时$line内存有最后一行的内容，但程序已经没有机会再处理此行内容，因此导致了最后一行无法读取。</p>
+<h3 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p>修改while循环，增加 <code>[[ -n $&#123;line&#125; ]]</code>，这样当文件没有到最后一行时不会测试<code>-n $line</code>，当遇到文件结束（最后一行）时，仍然可以通过测试$line是否有内容来进行继续处理。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!bin/bash</span></span><br><span class="line"><span class="keyword">while</span> <span class="built_in">read</span> line || [[ -n <span class="variable">$&#123;line&#125;</span> ]]</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">    data=`...line...`</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;data&#125;</span>&quot;</span> &gt;&gt; <span class="variable">$2</span>.txt</span><br><span class="line"><span class="keyword">done</span> &lt; <span class="variable">$1</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p>通过分析原因可知，本质原因是因为文件格式不是unix导致的，可以直接通过设置文件格式来处理，该方式则脚本代码不需改动。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># 在服务器上vim编辑目标文件</span></span><br><span class="line">vim target_file</span><br><span class="line"> </span><br><span class="line"><span class="comment"># 然后执行如下指令，用于查看当前文件是dos格式还是unix格式</span></span><br><span class="line">:<span class="built_in">set</span> ff?</span><br><span class="line"> </span><br><span class="line"><span class="comment"># 强制切换为unix格式，然后保存即可</span></span><br><span class="line">:<span class="built_in">set</span> ff=unix</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -872,265 +1139,6 @@
 <p>切片概念是只包含左边元素不包含右边元素</p>
 <p>最难理解的是切片的容量，我们可以把容量当做成总长度减去左指针走过的元素值，比如：</p>
 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">s[:<span class="number">0</span>] ——&gt; <span class="built_in">cap</span> = <span class="number">6</span> - <span class="number">0</span> =<span class="number">6</span>；</span><br><span class="line"></span><br><span class="line">s[<span class="number">2</span>:] ——&gt; <span class="built_in">cap</span> = <span class="number">6</span> - <span class="number">2</span> = <span class="number">4</span>。</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/24/golang%E7%89%88%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%E5%88%97/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/10/24/golang%E7%89%88%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%E5%88%97/" class="post-title-link" itemprop="url">golang版斐波那契数列</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2021-10-24 22:45:16" itemprop="dateCreated datePublished" datetime="2021-10-24T22:45:16+09:00">2021-10-24</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-10-25 16:08:51" itemprop="dateModified" datetime="2021-10-25T16:08:51+09:00">2021-10-25</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我们终此一生，就是要摆脱他人的期待，找到真正的的自己
-</blockquote>
-
-<h3 id="简单版"><a href="#简单版" class="headerlink" title="简单版"></a>简单版</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">go</span> loading(time.Millisecond * <span class="number">100</span>)</span><br><span class="line">	fmt.Println(<span class="string">&quot;\n&quot;</span>, fib(<span class="number">45</span>))</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fib</span><span class="params">(x <span class="keyword">int</span>)</span> <span class="title">int</span></span>  &#123;</span><br><span class="line">	<span class="keyword">if</span> x &lt; <span class="number">2</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> x</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> fib(x<span class="number">-2</span>) + fib(x<span class="number">-1</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">loading</span><span class="params">(delay time.Duration)</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="keyword">for</span> _,r := <span class="keyword">range</span> <span class="string">`-\|/`</span> &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;\r%c&quot;</span>, r)</span><br><span class="line">			time.Sleep(delay)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="并发版"><a href="#并发版" class="headerlink" title="并发版"></a>并发版</h3><p>使用无缓冲通道实现</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fibonacci</span><span class="params">(n <span class="keyword">int</span>, c <span class="keyword">chan</span> <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	x, y := <span class="number">0</span>, <span class="number">1</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">		c &lt;- x</span><br><span class="line">		x, y = y, x+y</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">close</span>(c)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	c := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">60</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">go</span> fibonacci(<span class="built_in">cap</span>(c), c)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> c &#123;</span><br><span class="line">		fmt.Println(i)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/24/Golang%E5%8D%95%E4%BB%BB%E5%8A%A1%E7%89%88%E7%88%AC%E8%99%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/10/24/Golang%E5%8D%95%E4%BB%BB%E5%8A%A1%E7%89%88%E7%88%AC%E8%99%AB/" class="post-title-link" itemprop="url">Golang单任务版爬虫</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2021-10-24 17:50:13" itemprop="dateCreated datePublished" datetime="2021-10-24T17:50:13+09:00">2021-10-24</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-10-25 16:10:04" itemprop="dateModified" datetime="2021-10-25T16:10:04+09:00">2021-10-25</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你的善良，必须带点锋芒，否则等于零。
-</blockquote>
-
-<h3 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h3><img style="margin-left: 0;" src="/images/gospider.png">
-
-<h3 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h3><h4 id="main-go"><a href="#main-go" class="headerlink" title="main.go"></a>main.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;test/engine&quot;</span></span><br><span class="line">  <span class="string">&quot;test/parser&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">  url := <span class="string">&quot;http://www.zhenai.com/zhenghun&quot;</span></span><br><span class="line"></span><br><span class="line">  engine.Run(engine.Request&#123;</span><br><span class="line">	Url:url,</span><br><span class="line">	ParserFunc:parser.ParseCityList,</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="types-go"><a href="#types-go" class="headerlink" title="types.go"></a>types.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> engine</span><br><span class="line"></span><br><span class="line"><span class="comment">//解析后返回的结果</span></span><br><span class="line"><span class="keyword">type</span> ParseResult <span class="keyword">struct</span> &#123;</span><br><span class="line">	Requests []Request</span><br><span class="line">	Items    []<span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Request <span class="keyword">struct</span> &#123;</span><br><span class="line">	Url        <span class="keyword">string</span>                   <span class="comment">//解析出来的URL</span></span><br><span class="line">	ParserFunc <span class="function"><span class="keyword">func</span><span class="params">([]<span class="keyword">byte</span>)</span> <span class="title">ParseResult</span> //处理这个<span class="title">URL</span>所需要的函数</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NilParser</span><span class="params">([] <span class="keyword">byte</span>)</span> <span class="title">ParseResult</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> ParseResult&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="engine-go"><a href="#engine-go" class="headerlink" title="engine.go"></a>engine.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> engine</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;log&quot;</span></span><br><span class="line">	<span class="string">&quot;test/fetcher&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Run</span><span class="params">(seeds ...Request)</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> requests []Request</span><br><span class="line">	<span class="keyword">for</span> _, r := <span class="keyword">range</span> seeds &#123;</span><br><span class="line">		requests = <span class="built_in">append</span>(requests, r)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> <span class="built_in">len</span>(requests) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		r := requests[<span class="number">0</span>]</span><br><span class="line">		requests = requests[<span class="number">1</span>:]</span><br><span class="line">		log.Printf(<span class="string">&quot;Fetching %s&quot;</span>,r.Url)</span><br><span class="line">		body, err := fetcher.Fetch(r.Url)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Printf(<span class="string">&quot;Fetcher: error fetching url %s %v&quot;</span>, r.Url, err)</span><br><span class="line">			<span class="keyword">continue</span></span><br><span class="line">		&#125;</span><br><span class="line">		parseResult := r.ParserFunc(body)</span><br><span class="line">		requests = <span class="built_in">append</span>(requests, parseResult.Requests...)</span><br><span class="line">		<span class="keyword">for</span> _,item:=<span class="keyword">range</span> parseResult.Items&#123;</span><br><span class="line">			log.Printf(<span class="string">&quot;Got item %v&quot;</span>,item)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="fetcher-go"><a href="#fetcher-go" class="headerlink" title="fetcher.go"></a>fetcher.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> fetcher</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;bufio&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;golang.org/x/net/html/charset&quot;</span></span><br><span class="line">	<span class="string">&quot;golang.org/x/text/encoding&quot;</span></span><br><span class="line">	<span class="string">&quot;golang.org/x/text/encoding/unicode&quot;</span></span><br><span class="line">	<span class="string">&quot;golang.org/x/text/transform&quot;</span></span><br><span class="line">	<span class="string">&quot;io/ioutil&quot;</span></span><br><span class="line">	<span class="string">&quot;log&quot;</span></span><br><span class="line">	<span class="string">&quot;net/http&quot;</span></span><br><span class="line">	<span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">fetcher：根据url获取对应的数据</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Fetch</span><span class="params">(url <span class="keyword">string</span>)</span> <span class="params">([] <span class="keyword">byte</span>, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	   resp, err := http.Get(url)</span></span><br><span class="line"><span class="comment">	   if err != nil &#123;</span></span><br><span class="line"><span class="comment">	       return nil, err</span></span><br><span class="line"><span class="comment">	   &#125;</span></span><br><span class="line"><span class="comment">	*/</span></span><br><span class="line"></span><br><span class="line">	newUrl := strings.Replace(url, <span class="string">&quot;http://&quot;</span>, <span class="string">&quot;https://&quot;</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">	request, _:=http.NewRequest(http.MethodGet,newUrl,<span class="literal">nil</span>)</span><br><span class="line">	request.Header.Add(<span class="string">&quot;User-Agent&quot;</span>,<span class="string">&quot;Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 1 分钟有效cookie</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	cookie := <span class="string">&quot;ec=efexs2yx-1635059763651-4354f6812c7ee-1160473905; FSSBBIl1UgzbN7NO=50VBKV5hc0utxjqurAbThL2oOHItIEhFghdO1gdWyFhazAg7AKjmWBYnVMsPSVDRiSAKC1Xi7Q2JXDaDrAzn2ZA; sid=WoTVURTyXnfFuyrLjyvP; _exid=SOFFj%2B9FuKQsSSQgAHQq1wFmbHHxiumUgMg4agh6CvCmn1kBX5i%2FP3FzOUtJH99IXis2NS1cc7PdW1UAoVTmSA%3D%3D; _efmdata=7d%2FA9aWpDcKzs29MsTO%2BMHTqjG75uCjz%2BbNOD2sXTBvXMYfHCfSN3NSqzEYUGO5tguKli8YS2L9O%2BK0VpRv%2BFuWqAGZg0j5PpOcDcQTauuM%3D; FSSBBIl1UgzbN7NP=53UVQdDmToH3qqqmZ7Uve0qwxpoCJMOOrBMPxhuW8HW8qPf4rKCR6C4GFdQb8y3yKH_bypWGA3JltlGZ0vedtR6ADPk5sn5aPIY7hB6efB0Wb097cXT1oSxo9LEwwzKsCBODguMmpY6uu3ArHiNpf9jssSGUNPokhuA9tR2Yz7SzJj4GdbBbGGjXP0Ud_TqzsxWtedn9P7LbXq_bZhEMMoR3i74qQ8_iTxWxJ0mTxcp1b3_0PrIoM1wqhWiwJ9256Nlqw4AU5x7UvW4f_TW0cBtBBCkP9L3ud_3O1cKMFZEOaAJ0_a2UKSM70P0s87RA8G&quot;</span></span><br><span class="line">	request.Header.Add(<span class="string">&quot;cookie&quot;</span>, cookie)</span><br><span class="line"></span><br><span class="line">	resp,_:=http.DefaultClient.Do(request)</span><br><span class="line">	<span class="keyword">defer</span> resp.Body.Close()</span><br><span class="line">	<span class="keyword">if</span> resp.StatusCode != http.StatusOK &#123;</span><br><span class="line">		fmt.Println(<span class="string">&quot;resp:&quot;</span>,resp)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">&quot;error:status code:%d&quot;</span>, resp.StatusCode)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//如果页面传来的不是utf8，我们需要转为utf8格式</span></span><br><span class="line">	bodyReader := bufio.NewReader(resp.Body)</span><br><span class="line">	e := determineEncoding(bodyReader)</span><br><span class="line">	utf8Reader := transform.NewReader(bodyReader, e.NewDecoder())</span><br><span class="line">	<span class="keyword">return</span> ioutil.ReadAll(utf8Reader)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">determineEncoding</span><span class="params">(r *bufio.Reader)</span> <span class="title">encoding</span>.<span class="title">Encoding</span></span> &#123;</span><br><span class="line">	bytes, err := r.Peek(<span class="number">1024</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Printf(<span class="string">&quot;Ftcher error:%v&quot;</span>, err)</span><br><span class="line">		<span class="keyword">return</span> unicode.UTF8</span><br><span class="line">	&#125;</span><br><span class="line">	e, _, _ := charset.DetermineEncoding(bytes, <span class="string">&quot;&quot;</span>)</span><br><span class="line">	<span class="keyword">return</span> e</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="citylistparser-go"><a href="#citylistparser-go" class="headerlink" title="citylistparser.go"></a>citylistparser.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> parser</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;regexp&quot;</span></span><br><span class="line">	<span class="string">&quot;test/engine&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">const</span> cityListRe = <span class="string">`&lt;a href=&quot;(http://www.zhenai.com/zhenghun/[0-9a-z]+)&quot; [^&gt;]*&gt;([^&lt;]+)&lt;/a&gt;`</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//解析城市信息</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ParseCityList</span><span class="params">(contents []<span class="keyword">byte</span>)</span> <span class="title">engine</span>.<span class="title">ParseResult</span></span> &#123;</span><br><span class="line">	re := regexp.MustCompile(cityListRe)</span><br><span class="line">	all := re.FindAllSubmatch(contents, <span class="number">-1</span>)</span><br><span class="line">	result := engine.ParseResult&#123;&#125;</span><br><span class="line">	</span><br><span class="line">	i := <span class="number">0</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> _, c := <span class="keyword">range</span> all &#123;</span><br><span class="line">		result.Items = <span class="built_in">append</span>(result.Items, <span class="keyword">string</span>(c[<span class="number">2</span>])) <span class="comment">//城市名字</span></span><br><span class="line">		result.Requests = <span class="built_in">append</span>(result.Requests, engine.Request&#123;</span><br><span class="line">			Url:        <span class="keyword">string</span>(c[<span class="number">1</span>]),</span><br><span class="line">			ParserFunc: ParseCity,</span><br><span class="line">		&#125;)</span><br><span class="line"></span><br><span class="line">		i++</span><br><span class="line">		<span class="keyword">if</span> i == <span class="number">2</span> &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="cityparser-go"><a href="#cityparser-go" class="headerlink" title="cityparser.go"></a>cityparser.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> parser</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;regexp&quot;</span></span><br><span class="line">	<span class="string">&quot;test/engine&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> cityRe = <span class="string">`&lt;a href=&quot;(http://album.zhenai.com/u/[0-9]+)&quot;[^&gt;]*&gt;([^&lt;]+)&lt;/a&gt;`</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//解析信息</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ParseCity</span><span class="params">(contents []<span class="keyword">byte</span>)</span> <span class="title">engine</span>.<span class="title">ParseResult</span></span> &#123;</span><br><span class="line">	re := regexp.MustCompile(cityRe)</span><br><span class="line">	all := re.FindAllSubmatch(contents, <span class="number">-1</span>)</span><br><span class="line">	result := engine.ParseResult&#123;&#125;</span><br><span class="line">	<span class="keyword">for</span> _, c := <span class="keyword">range</span> all &#123;</span><br><span class="line">		fmt.Println(<span class="string">&quot;用户url：&quot;</span>, <span class="keyword">string</span>(c[<span class="number">1</span>]))</span><br><span class="line">		result.Items = <span class="built_in">append</span>(result.Items, <span class="string">&quot;User:&quot;</span>+<span class="keyword">string</span>(c[<span class="number">2</span>])) <span class="comment">//用户名字</span></span><br><span class="line">		name := <span class="keyword">string</span>(c[<span class="number">2</span>])</span><br><span class="line">		result.Requests = <span class="built_in">append</span>(result.Requests, engine.Request&#123;</span><br><span class="line">			Url: <span class="keyword">string</span>(c[<span class="number">1</span>]),</span><br><span class="line">			ParserFunc: <span class="function"><span class="keyword">func</span><span class="params">(c []<span class="keyword">byte</span>)</span> <span class="title">engine</span>.<span class="title">ParseResult</span></span> &#123;</span><br><span class="line">				<span class="keyword">return</span> ParseProfile(c, name)</span><br><span class="line">			&#125;,</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="profileparser-go"><a href="#profileparser-go" class="headerlink" title="profileparser.go"></a>profileparser.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> parser</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;github.com/bitly/go-simplejson&quot;</span></span><br><span class="line">	<span class="string">&quot;log&quot;</span></span><br><span class="line">	<span class="string">&quot;regexp&quot;</span></span><br><span class="line">	<span class="string">&quot;test/engine&quot;</span></span><br><span class="line">	<span class="string">&quot;test/model&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> re = regexp.MustCompile(<span class="string">`&lt;script&gt;window.__INITIAL_STATE__=(.+);\(function`</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ParseProfile</span><span class="params">(contents []<span class="keyword">byte</span>, name <span class="keyword">string</span>)</span> <span class="title">engine</span>.<span class="title">ParseResult</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">&quot;-------------------&quot;</span>)</span><br><span class="line">	match := re.FindSubmatch(contents)</span><br><span class="line">	result := engine.ParseResult&#123;&#125;</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(match) &gt;= <span class="number">2</span> &#123;</span><br><span class="line">		json := match[<span class="number">1</span>]</span><br><span class="line">		<span class="comment">//fmt.Printf(&quot;json : %s\n&quot;,json)</span></span><br><span class="line">		profile := parseJson(json)</span><br><span class="line">		profile.Name = name</span><br><span class="line">		<span class="comment">//fmt.Println(profile)</span></span><br><span class="line">		result.Items = <span class="built_in">append</span>(result.Items, profile)</span><br><span class="line">		fmt.Println(result)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//解析json数据</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">parseJson</span><span class="params">(json []<span class="keyword">byte</span>)</span> <span class="title">model</span>.<span class="title">Profile</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	res, err := simplejson.NewJson(json)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">&quot;解析json失败。。&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	infos, err := res.Get(<span class="string">&quot;objectInfo&quot;</span>).Get(<span class="string">&quot;basicInfo&quot;</span>).Array()</span><br><span class="line">	<span class="comment">//infos是一个切片，里面的类型是interface&#123;&#125;</span></span><br><span class="line">	<span class="comment">//fmt.Printf(&quot;infos:%v,  %T\n&quot;, infos, infos) //infos:[离异 47岁 射手座(11.22-12.21) 157cm 55kg 工作地:阿坝汶川 月收入:3-5千 教育/科研 大学本科],  []interface &#123;&#125;</span></span><br><span class="line">	<span class="keyword">var</span> profile model.Profile</span><br><span class="line">	<span class="comment">//所以我们遍历这个切片，里面使用断言来判断类型</span></span><br><span class="line">	<span class="keyword">for</span> k, v := <span class="keyword">range</span> infos &#123;</span><br><span class="line">		<span class="comment">//fmt.Printf(&quot;k:%v,%T\n&quot;, k, k)</span></span><br><span class="line">		<span class="comment">//fmt.Printf(&quot;v:%v,%T\n&quot;, v, v)</span></span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		    &quot;basicInfo&quot;:[</span></span><br><span class="line"><span class="comment">		       &quot;未婚&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;25岁&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;魔羯座(12.22-01.19)&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;152cm&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;42kg&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;工作地:阿坝茂县&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;月收入:3-5千&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;医生&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;大专&quot;</span></span><br><span class="line"><span class="comment">		   ],</span></span><br><span class="line"><span class="comment">		*/</span></span><br><span class="line">		<span class="keyword">if</span> e, ok := v.(<span class="keyword">string</span>); ok &#123;</span><br><span class="line">			<span class="keyword">switch</span> k &#123;</span><br><span class="line">			<span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">				profile.Marriage = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">				<span class="comment">//年龄:47岁，我们可以设置int类型，所以可以通过另一个json字段来获取</span></span><br><span class="line">				profile.Age = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">				profile.Xingzuo = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">				profile.Height = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">				profile.Weight = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">6</span>:</span><br><span class="line">				profile.Income = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">7</span>:</span><br><span class="line">				profile.Occupation = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">8</span>:</span><br><span class="line">				profile.Education = e</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> profile</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="user-go"><a href="#user-go" class="headerlink" title="user.go"></a>user.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment">//珍爱网用户对象模型</span></span><br><span class="line"><span class="keyword">type</span> Profile <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name       <span class="keyword">string</span> <span class="comment">//姓名</span></span><br><span class="line">	Marriage   <span class="keyword">string</span> <span class="comment">//婚况</span></span><br><span class="line">	Age        <span class="keyword">string</span> <span class="comment">//年龄</span></span><br><span class="line">	Gender     <span class="keyword">string</span> <span class="comment">//性别</span></span><br><span class="line">	Height     <span class="keyword">string</span> <span class="comment">//身高</span></span><br><span class="line">	Weight     <span class="keyword">string</span> <span class="comment">//体重</span></span><br><span class="line">	Income     <span class="keyword">string</span> <span class="comment">//收入</span></span><br><span class="line">	Education  <span class="keyword">string</span> <span class="comment">//教育</span></span><br><span class="line">	Occupation <span class="keyword">string</span> <span class="comment">//职业</span></span><br><span class="line">	Hukou      <span class="keyword">string</span> <span class="comment">//籍贯户口</span></span><br><span class="line">	Xingzuo    <span class="keyword">string</span> <span class="comment">//星座</span></span><br><span class="line">	House      <span class="keyword">string</span> <span class="comment">//房子</span></span><br><span class="line">	Car        <span class="keyword">string</span> <span class="comment">//车</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/19/golang%E4%B8%AD%E7%9A%84string%E5%92%8Cbyte%E7%90%86%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/10/19/golang%E4%B8%AD%E7%9A%84string%E5%92%8Cbyte%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">golang中的string和byte理解</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2021-10-19 22:23:53 / 修改时间：22:37:24" itemprop="dateCreated datePublished" datetime="2021-10-19T22:23:53+09:00">2021-10-19</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-有些鸟儿是注定不会被关在牢笼里的，它们的每一片羽毛都闪耀着自由的光辉
-</blockquote>
-
-<p>Go语言中有两种可以储存一串字符的类型，分别是字符串<code>string</code>和<code>byte</code>类型数组<code>[]byte</code>，但是他们直接并不能直接使用等于号赋值，也不能单纯的转换，而是要通过切片来进行转换。</p>
-<h3 id="string转换成-byte"><a href="#string转换成-byte" class="headerlink" title="string转换成[]byte"></a>string转换成[]byte</h3><p>可以直接使用<code>[]byte(str)</code>强制转换。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> str <span class="keyword">string</span> = <span class="string">&quot;test&quot;</span></span><br><span class="line">    <span class="keyword">var</span> data []<span class="keyword">byte</span> = []<span class="keyword">byte</span>(str)</span><br><span class="line"></span><br><span class="line">    fmt.Println(<span class="string">&quot;string: &quot;</span>, str)	<span class="comment">// string: test</span></span><br><span class="line">    fmt.Println(<span class="string">&quot;[]byte: &quot;</span>, data)	<span class="comment">// []byte: [116 101 115 116]</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>可以看到<code>[]byte</code>输出的结果正是<code>string</code>的各个字符对应的<code>ASCII</code>码。<br>或者</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">String2Bytes</span><span class="params">(s <span class="keyword">string</span>)</span> []<span class="title">byte</span></span> &#123;</span><br><span class="line">    sh := (*reflect.StringHeader)(unsafe.Pointer(&amp;s))</span><br><span class="line">    bh := reflect.SliceHeader&#123;</span><br><span class="line">        Data: sh.Data,</span><br><span class="line">        Len:  sh.Len,</span><br><span class="line">        Cap:  sh.Len,</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> *(*[]<span class="keyword">byte</span>)(unsafe.Pointer(&amp;bh))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="byte转换成string"><a href="#byte转换成string" class="headerlink" title="[]byte转换成string"></a>[]byte转换成string</h3><p>要将<code>byte</code>数组转换成<code>string</code>不能直接转换，而需要将<code>[]byte</code>的切片转换。即使用<code>string(数组名[:])</code>进行转换。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> data [<span class="number">5</span>]<span class="keyword">byte</span></span><br><span class="line">	data[<span class="number">0</span>] = <span class="string">&#x27;T&#x27;</span></span><br><span class="line">	data[<span class="number">1</span>] = <span class="string">&#x27;E&#x27;</span></span><br><span class="line">	data[<span class="number">2</span>] = <span class="string">&#x27;S&#x27;</span></span><br><span class="line">	data[<span class="number">3</span>] = <span class="string">&#x27;T&#x27;</span></span><br><span class="line">	<span class="keyword">var</span> str <span class="keyword">string</span> = <span class="keyword">string</span>(data[:])</span><br><span class="line">	fmt.Println(<span class="string">&quot;[]byte: &quot;</span>, data)	<span class="comment">// []byte: [84 69 83 84 0]</span></span><br><span class="line">	fmt.Println(<span class="string">&quot;string: &quot;</span>, str)	<span class="comment">// string: TEST</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// []byte to string</span></span><br><span class="line">s2 := <span class="keyword">string</span>(b)</span><br></pre></td></tr></table></figure>
-<p>再或者</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Bytes2String</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> *(*<span class="keyword">string</span>)(unsafe.Pointer(&amp;b))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="二者区别"><a href="#二者区别" class="headerlink" title="二者区别"></a>二者区别</h3><p>对于[]byte与string而言，两者之间最大的区别就是string的值不能改变。这该如何理解呢？下面通过两个例子来说明。</p>
-<p>对于[]byte来说，以下操作是可行的：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">b := []<span class="keyword">byte</span>(<span class="string">&quot;Hello Gopher!&quot;</span>)</span><br><span class="line">b [<span class="number">1</span>] = <span class="string">&#x27;T&#x27;</span></span><br></pre></td></tr></table></figure>
-<p>string，修改操作是被禁止的：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">&quot;Hello Gopher!&quot;</span></span><br><span class="line">s[<span class="number">1</span>] = <span class="string">&#x27;T&#x27;</span></span><br></pre></td></tr></table></figure>
-<p>而string能支持这样的操作：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">&quot;Hello Gopher!&quot;</span></span><br><span class="line">s = <span class="string">&quot;Tello Gopher!&quot;</span></span><br></pre></td></tr></table></figure>
-<p>字符串的值不能被更改，但可以被替换。</p>
-
       
     </div>
 
