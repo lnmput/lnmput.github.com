@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">406</span>
+          <span class="site-state-item-count">408</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,189 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/11/10/laravel%E5%BC%80%E5%8F%91facebook%E7%99%BB%E5%BD%95%E5%8A%9F%E8%83%BD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/11/10/laravel%E5%BC%80%E5%8F%91facebook%E7%99%BB%E5%BD%95%E5%8A%9F%E8%83%BD/" class="post-title-link" itemprop="url">Laravel开发facebook登录功能</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-11-10 23:02:20" itemprop="dateCreated datePublished" datetime="2018-11-10T23:02:20+09:00">2018-11-10</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-11-16 22:25:19" itemprop="dateModified" datetime="2018-11-16T22:25:19+09:00">2018-11-16</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+若教眼底无离恨，不信人间有白头。
+</blockquote>
+
+<h3 id="Step-1-Install-Socialite-Package"><a href="#Step-1-Install-Socialite-Package" class="headerlink" title="Step 1: Install Socialite Package"></a>Step 1: Install Socialite Package</h3><p>In first step we will install Socialite Package that provide fb api to connect with facebook. So, first open your terminal and run bellow command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> laravel/socialite</span><br></pre></td></tr></table></figure>
+<p>After install above package we should add providers and aliases in config file, Now open <code>config/app.php</code> file and add service provider and alias.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;providers&#x27;</span> =&gt; [</span><br><span class="line">	....</span><br><span class="line">	Laravel\Socialite\SocialiteServiceProvider::class,</span><br><span class="line">],</span><br><span class="line"><span class="string">&#x27;aliases&#x27;</span> =&gt; [</span><br><span class="line">	....</span><br><span class="line">	<span class="string">&#x27;Socialite&#x27;</span> =&gt; Laravel\Socialite\Facades\Socialite::class,</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
+<h3 id="Step-2-Create-Facebook-App"><a href="#Step-2-Create-Facebook-App" class="headerlink" title="Step 2: Create Facebook App"></a>Step 2: Create Facebook App</h3><p>In this step we need facebook app id and secret that way we can get information of other user. so if you don’t have facebook app account then you can create from here : <a target="_blank" rel="noopener" href="https://developers.facebook.com/apps">https://developers.facebook.com/apps</a> and after create account you can copy client id and secret.<br>Now you have to set app id, secret and call back url in config file so open config/services.php and .env file then set id and secret this way:<br><code>config/services.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> [</span><br><span class="line">	....</span><br><span class="line">    <span class="string">&#x27;facebook&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;client_id&#x27;</span> =&gt; env(<span class="string">&#x27;FACEBOOK_CLIENT_ID&#x27;</span>),</span><br><span class="line">        <span class="string">&#x27;client_secret&#x27;</span> =&gt; env(<span class="string">&#x27;FACEBOOK_CLIENT_SECRET&#x27;</span>),</span><br><span class="line">        <span class="string">&#x27;redirect&#x27;</span> =&gt; env(<span class="string">&#x27;FACEBOOK_CALLBACK_URL&#x27;</span>),</span><br><span class="line">    ],</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p><code>.env</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FACEBOOK_CLIENT_ID=xxxxxxxxx</span><br><span class="line">FACEBOOK_CLIENT_SECRET=xxxxxxx</span><br><span class="line">FACEBOOK_CALLBACK_URL=http:<span class="comment">//localhost:8000/auth/facebook/callback</span></span><br></pre></td></tr></table></figure>
+<h3 id="Step-3-Create-Migration-and-Model"><a href="#Step-3-Create-Migration-and-Model" class="headerlink" title="Step 3: Create Migration and Model"></a>Step 3: Create Migration and Model</h3><p>In this step first we have to create migration for add facebook_id in your user table. so let’s create new migration and bellow column this way:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">Schema</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Schema</span>\<span class="title">Blueprint</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Migrations</span>\<span class="title">Migration</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AddNewColunmUsersTable</span> <span class="keyword">extends</span> <span class="title">Migration</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Run the migrations.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">up</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Schema::table(<span class="string">&quot;users&quot;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$table</span>-&gt;string(<span class="string">&#x27;facebook_id&#x27;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Reverse the migrations.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">down</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Schema::table(<span class="string">&quot;users&quot;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$table</span>-&gt;dropColumn(<span class="string">&#x27;facebook_id&#x27;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Now add addNew() in User model, that method will check if facebook id already exists then it will return object and if not exists then create new user and return user object. so open user model and put bellow code:<br><code>app/User.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Notifications</span>\<span class="title">Notifiable</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Auth</span>\<span class="title">User</span> <span class="title">as</span> <span class="title">Authenticatable</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">extends</span> <span class="title">Authenticatable</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">use</span> <span class="title">Notifiable</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The attributes that are mass assignable.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$fillable</span> = [</span><br><span class="line">        <span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;email&#x27;</span>, <span class="string">&#x27;password&#x27;</span>, <span class="string">&#x27;facebook_id&#x27;</span></span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The attributes that should be hidden for arrays.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$hidden</span> = [</span><br><span class="line">        <span class="string">&#x27;password&#x27;</span>, <span class="string">&#x27;remember_token&#x27;</span>,</span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">addNew</span>(<span class="params"><span class="variable">$input</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$check</span> = <span class="built_in">static</span>::where(<span class="string">&#x27;facebook_id&#x27;</span>,<span class="variable">$input</span>[<span class="string">&#x27;facebook_id&#x27;</span>])-&gt;first();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(is_null(<span class="variable">$check</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">static</span>::create(<span class="variable">$input</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$check</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Step-4-Create-New-Routes"><a href="#Step-4-Create-New-Routes" class="headerlink" title="Step 4: Create New Routes"></a>Step 4: Create New Routes</h3><p>In this step we need to create routes for facebook login, so you need to add following route on bellow file.<br><code>routes/web.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;facebook&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">&#x27;facebook&#x27;</span>);</span><br><span class="line">&#125;);</span><br><span class="line">Route::get(<span class="string">&#x27;auth/facebook&#x27;</span>, <span class="string">&#x27;Auth\FacebookController@redirectToFacebook&#x27;</span>);</span><br><span class="line">Route::get(<span class="string">&#x27;auth/facebook/callback&#x27;</span>, <span class="string">&#x27;Auth\FacebookController@handleFacebookCallback&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-5-Create-New-FacebookController"><a href="#Step-5-Create-New-FacebookController" class="headerlink" title="Step 5: Create New FacebookController"></a>Step 5: Create New FacebookController</h3><p>we need to add new controller and method of facebook auth that method will handle facebook callback url and etc, first put bellow code on your FacebookController.php file.<br><code>app/Http/Controllers/Auth/FacebookController.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>\<span class="title">Auth</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">User</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>\<span class="title">Controller</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Socialite</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Exception</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Auth</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FacebookController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Create a new controller instance.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">redirectToFacebook</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Socialite::driver(<span class="string">&#x27;facebook&#x27;</span>)-&gt;redirect();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Create a new controller instance.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handleFacebookCallback</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="variable">$user</span> = Socialite::driver(<span class="string">&#x27;facebook&#x27;</span>)-&gt;user();</span><br><span class="line">            <span class="variable">$create</span>[<span class="string">&#x27;name&#x27;</span>] = <span class="variable">$user</span>-&gt;getName();</span><br><span class="line">            <span class="variable">$create</span>[<span class="string">&#x27;email&#x27;</span>] = <span class="variable">$user</span>-&gt;getEmail();</span><br><span class="line">            <span class="variable">$create</span>[<span class="string">&#x27;facebook_id&#x27;</span>] = <span class="variable">$user</span>-&gt;getId();</span><br><span class="line"></span><br><span class="line">            <span class="variable">$userModel</span> = <span class="keyword">new</span> User;</span><br><span class="line">            <span class="variable">$createdUser</span> = <span class="variable">$userModel</span>-&gt;addNew(<span class="variable">$create</span>);</span><br><span class="line">            Auth::loginUsingId(<span class="variable">$createdUser</span>-&gt;id);</span><br><span class="line">            <span class="keyword">return</span> redirect()-&gt;route(<span class="string">&#x27;home&#x27;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (<span class="built_in">Exception</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> redirect(<span class="string">&#x27;auth/facebook&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-6-Create-Blade-File"><a href="#Step-6-Create-Blade-File" class="headerlink" title="Step 6: Create Blade File"></a>Step 6: Create Blade File</h3><p>Ok, now at last we need to add blade view so first create new file facebook.blade.php file and put bellow code:<br><code>resources/views/facebook.blade.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@<span class="keyword">extends</span>(<span class="string">&#x27;layouts.app&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@section(<span class="string">&#x27;content&#x27;</span>)</span><br><span class="line">&lt;div <span class="class"><span class="keyword">class</span>=&quot;<span class="title">container</span>&quot;&gt;</span></span><br><span class="line"><span class="class">  &lt;<span class="title">div</span> <span class="title">class</span>=&quot;<span class="title">row</span>&quot;&gt;</span></span><br><span class="line"><span class="class">        &lt;<span class="title">div</span> <span class="title">class</span>=&quot;<span class="title">col</span>-<span class="title">md</span>-12 <span class="title">row</span>-<span class="title">block</span>&quot;&gt;</span></span><br><span class="line"><span class="class">            &lt;<span class="title">a</span> <span class="title">href</span>=&quot;</span>&#123;&#123; url(<span class="string">&#x27;auth/facebook&#x27;</span>) &#125;&#125;<span class="string">&quot; class=&quot;</span>btn btn-lg btn-primary btn-block<span class="string">&quot;&gt;</span></span><br><span class="line"><span class="string">                &lt;strong&gt;Login With Facebook&lt;/strong&gt;</span></span><br><span class="line"><span class="string">            &lt;/a&gt;     </span></span><br><span class="line"><span class="string">        &lt;/div&gt;</span></span><br><span class="line"><span class="string">    &lt;/div&gt;</span></span><br><span class="line"><span class="string">&lt;/div&gt;</span></span><br><span class="line"><span class="string">@endsection</span></span><br></pre></td></tr></table></figure>
+<p>Ok, now you are ready to use open your browser and check here : URL + ‘/facebook’.</p>
+<p>I hope it can help you…..</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://itsolutionstuff.com/post/laravel-56-login-with-facebook-with-socialiteexample.html">https://itsolutionstuff.com/post/laravel-56-login-with-facebook-with-socialiteexample.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/09/08/laravel%E4%B8%ADeloquent%E4%BA%8B%E4%BB%B6%E4%B8%AD%E7%9A%84updated%E5%92%8Csaved%E5%8E%9F%E4%BE%86%E4%B8%8D%E4%B8%80%E6%A8%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/09/08/laravel%E4%B8%ADeloquent%E4%BA%8B%E4%BB%B6%E4%B8%AD%E7%9A%84updated%E5%92%8Csaved%E5%8E%9F%E4%BE%86%E4%B8%8D%E4%B8%80%E6%A8%A3/" class="post-title-link" itemprop="url">Laravel中Eloquent事件中的Updated和Saved原來不一樣</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-09-08 14:44:20 / 修改时间：22:44:34" itemprop="dateCreated datePublished" datetime="2018-09-08T14:44:20+09:00">2018-09-08</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+受任于败军之际，奉命于危难之间，尔来二十有一年矣。
+</blockquote>
+
+<p>當一個新模型初次被儲存，將會觸發 creating 以及 created 事件。如果一個模型已經存在於資料庫而且呼叫了 save 方法，將會觸發 updating 和 updated 事件。然而，在這兩個狀況下，都將會觸發 saving 和 saved 事件。</p>
+<p>Laravel 在資料更新的時候會觸發兩個事件：updated 和 saved。單從官方文件的說明，saved 看起來像是一個方便開發者統一管理新增/更新動作的事件，讓重複的程式碼可以不用被寫在兩個地方（created 和 updated），但是其實 saved 和 updated 的觸發時機是不一樣的。</p>
+<p>接來看一下 Laravel eloquent 的原始碼。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 495 行</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$options</span> = []</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;exists) &#123;</span><br><span class="line">        <span class="variable">$saved</span> = <span class="keyword">$this</span>-&gt;isDirty() ?</span><br><span class="line">                    <span class="keyword">$this</span>-&gt;performUpdate(<span class="variable">$query</span>) : <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$saved</span>) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;finishSave(<span class="variable">$options</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$saved</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 552 行</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">finishSave</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$options</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;fireModelEvent(<span class="string">&#x27;saved&#x27;</span>, <span class="literal">false</span>);</span><br><span class="line">    <span class="keyword">$this</span>-&gt;syncOriginal();</span><br><span class="line">    <span class="keyword">if</span> (Arr::get(<span class="variable">$options</span>, <span class="string">&#x27;touch&#x27;</span>, <span class="literal">true</span>)) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;touchOwners();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 569 行</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">performUpdate</span>(<span class="params">Builder <span class="variable">$query</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="variable">$dirty</span> = <span class="keyword">$this</span>-&gt;getDirty();</span><br><span class="line">    <span class="keyword">if</span> (count(<span class="variable">$dirty</span>) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;setKeysForSaveQuery(<span class="variable">$query</span>)-&gt;update(<span class="variable">$dirty</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;fireModelEvent(<span class="string">&#x27;updated&#x27;</span>, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>應該盡量使用 updated 而不是 saved 來判斷資料是否更新<br>可以看到在觸發 updated 之前會先做一次 getDirty() 的檢查，其實就是在檢查這次更新的資料是不是真的有改動資料的值；相反的，saved 不管值有沒有改動都會觸發。如果沒注意到這個差別的話，這在實務上其實會造成一些問題。</p>
+<p>例如，我們通常會把資料的結果快取起來，以減少對資料庫的查詢次數。因此當資料有變動的時候，就會需要把對應的快取刪除。為了避免有漏刪的部分，會把刪除快取的動作綁定在 eloquent 事件中。認清 updated 和 saved 之後，就會知道這個動作應該是要綁在 updated；若是綁在 saved 上，就會造成多餘的快取動作，增加機器的成本。當快取數量一多，又有用到類似 redis scan 這種較耗時的功能來找出需要刪除的快取時，對於機器的效能影響更大。</p>
+<p>使用 updated 也仍會可能有漏網之魚</p>
+<p>但是，要注意的是，即使使用了 updated 也不能說完全避免這件事的發生。這時候又要再看一次 Larvel eloquent 的原始碼了。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 3093 行</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getDirty</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$dirty</span> = [];</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="keyword">$this</span>-&gt;attributes <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$value</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (! array_key_exists(<span class="variable">$key</span>, <span class="keyword">$this</span>-&gt;original)) &#123;</span><br><span class="line">            <span class="variable">$dirty</span>[<span class="variable">$key</span>] = <span class="variable">$value</span>;</span><br><span class="line">        &#125; <span class="keyword">elseif</span> (<span class="variable">$value</span> !== <span class="keyword">$this</span>-&gt;original[<span class="variable">$key</span>] &amp;&amp;</span><br><span class="line">                             ! <span class="keyword">$this</span>-&gt;originalIsNumericallyEquivalent(<span class="variable">$key</span>)) &#123;</span><br><span class="line">            <span class="variable">$dirty</span>[<span class="variable">$key</span>] = <span class="variable">$value</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$dirty</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以發現 Laravel 判斷值有沒有改動的比較依據來自於，我們一開始 select 出來的欄位，跟這次要變動的欄位。意思就是，如果我們只 select 了 A 欄位出來，但是更新的是 B 欄位時，即使更動後 B 欄位的值跟更動之前一模一樣，Laravel 仍會把此視為資料的值有所改動。</p>
+<p>不過這仍在可以接受的範圍之內。畢竟每個更新之前，若要為了拿到所有欄位而又再多查詢一次資料庫，可能會是一件更浪費資源的事情。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@lynnlin827/laravel-eloquent-%E4%BA%8B%E4%BB%B6%E4%B8%AD%E7%9A%84-updated-%E5%92%8C-saved-%E5%8E%9F%E4%BE%86%E4%B8%8D%E4%B8%80%E6%A8%A3-caa8ef0ddbc">https://medium.com/@lynnlin827/laravel-eloquent-%E4%BA%8B%E4%BB%B6%E4%B8%AD%E7%9A%84-updated-%E5%92%8C-saved-%E5%8E%9F%E4%BE%86%E4%B8%8D%E4%B8%80%E6%A8%A3-caa8ef0ddbc</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -960,190 +1143,6 @@ Hope is a good thing and maybe the best of things. And no good thing ever dies.
 <h3 id="客户端重连机制"><a href="#客户端重连机制" class="headerlink" title="客户端重连机制"></a>客户端重连机制</h3><p>客户端重连机制又可以理解为一种保活机制，你也可以跟服务端的心跳检测在一起理解为双向心跳。即我们有一种需求是，如何能保证客户端和服务端的连接一直是有效的，不断开的。</p>
 <p>其实很简单，对客户端而言，只要触发error或者close再或者连接失败，就主动重连server，这便是我们的目的。</p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> ws;<span class="comment">//websocket实例</span></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> lockReconnect = <span class="literal">false</span>;<span class="comment">//避免重复连接</span></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> wsUrl = <span class="string">&#x27;ws://127.0.0.1:9501&#x27;</span>;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="function"><span class="keyword">function</span> <span class="title">createWebSocket</span>(<span class="params">url</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">try</span> &#123;</span></span><br><span class="line"><span class="javascript">        ws = <span class="keyword">new</span> WebSocket(url);</span></span><br><span class="line"><span class="javascript">        initEventHandle();</span></span><br><span class="line"><span class="javascript">    &#125; <span class="keyword">catch</span> (e) &#123;</span></span><br><span class="line"><span class="javascript">        reconnect(url);</span></span><br><span class="line"><span class="javascript">    &#125;</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="function"><span class="keyword">function</span> <span class="title">initEventHandle</span>(<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">    ws.onclose = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        reconnect(wsUrl);</span></span><br><span class="line"><span class="javascript">    &#125;;</span></span><br><span class="line"><span class="javascript">    ws.onerror = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        reconnect(wsUrl);</span></span><br><span class="line"><span class="javascript">    &#125;;</span></span><br><span class="line"><span class="javascript">    ws.onopen = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="comment">//心跳检测重置</span></span></span><br><span class="line"><span class="javascript">        heartCheck.reset().start();</span></span><br><span class="line"><span class="javascript">    &#125;;</span></span><br><span class="line"><span class="javascript">    ws.onmessage = <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="comment">//如果获取到消息，心跳检测重置</span></span></span><br><span class="line"><span class="javascript">        <span class="comment">//拿到任何消息都说明当前连接是正常的</span></span></span><br><span class="line"><span class="javascript">        heartCheck.reset().start();</span></span><br><span class="line"><span class="javascript">    &#125;</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="function"><span class="keyword">function</span> <span class="title">reconnect</span>(<span class="params">url</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">if</span>(lockReconnect) <span class="keyword">return</span>;</span></span><br><span class="line"><span class="javascript">    lockReconnect = <span class="literal">true</span>;</span></span><br><span class="line"><span class="javascript">    <span class="comment">//没连接上会一直重连，设置延迟避免请求过多</span></span></span><br><span class="line"><span class="javascript">    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        createWebSocket(url);</span></span><br><span class="line"><span class="javascript">        lockReconnect = <span class="literal">false</span>;</span></span><br><span class="line"><span class="javascript">    &#125;, <span class="number">2000</span>);</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"><span class="comment">//心跳检测</span></span></span><br><span class="line"><span class="javascript"><span class="keyword">var</span> heartCheck = &#123;</span></span><br><span class="line"><span class="javascript">    <span class="attr">timeout</span>: <span class="number">60000</span>,<span class="comment">//60秒</span></span></span><br><span class="line"><span class="javascript">    <span class="attr">timeoutObj</span>: <span class="literal">null</span>,</span></span><br><span class="line"><span class="javascript">    <span class="attr">serverTimeoutObj</span>: <span class="literal">null</span>,</span></span><br><span class="line"><span class="javascript">    <span class="attr">reset</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">clearTimeout</span>(<span class="built_in">this</span>.timeoutObj);</span></span><br><span class="line"><span class="javascript">        <span class="built_in">clearTimeout</span>(<span class="built_in">this</span>.serverTimeoutObj);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">return</span> <span class="built_in">this</span>;</span></span><br><span class="line"><span class="javascript">    &#125;,</span></span><br><span class="line"><span class="javascript">    <span class="attr">start</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> self = <span class="built_in">this</span>;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">this</span>.timeoutObj = <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">            <span class="comment">//这里发送一个心跳，后端收到后，返回一个心跳消息，</span></span></span><br><span class="line"><span class="javascript">            <span class="comment">//onmessage拿到返回的心跳就说明连接正常</span></span></span><br><span class="line"><span class="javascript">            ws.send(<span class="string">&quot;&quot;</span>);</span></span><br><span class="line"><span class="javascript">            self.serverTimeoutObj = <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;<span class="comment">//如果超过一定时间还没重置，说明后端主动断开了</span></span></span><br><span class="line"><span class="javascript">                ws.close();<span class="comment">//如果onclose会执行reconnect，我们执行ws.close()就行了.如果直接执行reconnect 会触发onclose导致重连两次</span></span></span><br><span class="line"><span class="javascript">            &#125;, self.timeout);</span></span><br><span class="line"><span class="javascript">        &#125;, <span class="built_in">this</span>.timeout);</span></span><br><span class="line"><span class="javascript">    &#125;</span></span><br><span class="line"><span class="javascript">&#125;</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript">createWebSocket(wsUrl);</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/07/api%E7%9A%84%E9%98%B2%E9%87%8D%E6%94%BE%E6%9C%BA%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/08/07/api%E7%9A%84%E9%98%B2%E9%87%8D%E6%94%BE%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">API的防重放机制</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-08-07 20:47:39 / 修改时间：21:57:58" itemprop="dateCreated datePublished" datetime="2018-08-07T20:47:39+09:00">2018-08-07</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-从不说硬话； 从不做软事
-</blockquote>
-
-<p>我们在设计接口的时候，最怕一个接口被用户截取用于重放攻击。重放攻击是什么呢？就是把你的请求原封不动地再发送一次，两次…n次，一般正常的请求都会通过验证进入到正常逻辑中，如果这个正常逻辑是插入数据库操作，那么一旦插入数据库的语句写的不好，就有可能出现多条重复的数据。一旦是比较慢的查询操作，就可能导致数据库堵住等情况。</p>
-<h3 id="timestamp-nonce"><a href="#timestamp-nonce" class="headerlink" title="timestamp+nonce"></a>timestamp+nonce</h3><p>我们常用的防止重放的机制是使用<code>timestamp</code>和<code>nonce</code>来做的重放机制。</p>
-<p>timestamp用来表示请求的当前时间戳，这个时间戳当然要和服务器时间戳进行校正过的。我们预期正常请求带的<code>timestamp</code>参数会是不同的（预期是正常的人每秒至多只会做一个操作）。每个请求带的时间戳不能和当前时间超过一定规定的时间。比如60s。这样，这个请求即使被截取了，你也只能在60s内进行重放攻击。过期失效。</p>
-<p>但是这样也是不够的，还有给攻击者60s的时间。所以我们就需要使用一个<code>nonce</code>，随机数。</p>
-<p>nonce是由客户端根据足够随机的情况生成的，比如 md5(timestamp+rand(0, 1000)); 它就有一个要求，正常情况下，在短时间内（比如60s）连续生成两个相同nonce的情况几乎为0。</p>
-<h3 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h3><p>服务端第一次在接收到这个<code>nonce</code>的时候做下面行为：</p>
-<ul>
-<li>去redis中查找是否有<code>key</code>为<code>nonce:&#123;nonce&#125;</code>的string</li>
-<li>如果没有，则创建这个<code>key</code>，把这个<code>key</code>失效的时间和验证<code>timestamp</code>失效的时间一致，比如是60s。</li>
-<li>如果有，说明这个key在60s内已经被使用了，那么这个请求就可以判断为重放请求。</li>
-</ul>
-<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>那么比如，下面这个请求：<br><code>http://a.com?uid=123&amp;timestamp=1480556543&amp;nonce=43f34f33&amp;sign=80b886d71449cb33355d017893720666</code><br>这个请求中国的uid是我们真正需要传递的有意义的参数<br><code>timestamp</code>，<code>nonce</code>，<code>sign</code>都是为了签名和防重放使用。<br><code>timestamp</code>是发送接口的时间，<code>nonce</code>是随机串，<code>sign</code>是对uid，timestamp,nonce(对于一些rest风格的api，我建议也把url放入sign签名)。签名的方法可以是md5({秘要}key1=val1&amp;key2=val2&amp;key3=val3…)<br>服务端接到这个请求：</p>
-<ul>
-<li>先验证sign签名是否合理，证明请求参数没有被中途篡改</li>
-<li>再验证timestamp是否过期，证明请求是在最近60s被发出的</li>
-<li>最后验证nonce是否已经有了，证明这个请求不是60s内的重放请求</li>
-</ul>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yjf512/p/6590890.html">https://www.cnblogs.com/yjf512/p/6590890.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/03/laravel%E4%B8%ADenv%E5%87%BD%E6%95%B0%E7%9A%84%E5%9D%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/08/03/laravel%E4%B8%ADenv%E5%87%BD%E6%95%B0%E7%9A%84%E5%9D%91/" class="post-title-link" itemprop="url">Laravel中env函数的坑</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-08-03 13:50:22 / 修改时间：15:06:03" itemprop="dateCreated datePublished" datetime="2018-08-03T13:50:22+09:00">2018-08-03</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-不自量力的还手 直至死方休
-</blockquote>
-
-<p>最近项目中遇到了一个问题， 问题出在env函数上，在Middleware中读取环境变量时取到的竟然是null</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dump(env(<span class="string">&#x27;APP_ENV&#x27;</span>) === <span class="literal">null</span>); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-<p>查看env 的代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">env</span>(<span class="params"><span class="variable">$key</span>, <span class="variable">$default</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$value</span> = getenv(<span class="variable">$key</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$value</span> === <span class="literal">false</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> value(<span class="variable">$default</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 此处省略部分代码</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>可以发现，实际上调用的就是php自带的<code>getenv</code>函数，如果取不到值，那必定是某段执行putenv或者操作<code>$_ENV</code>全局变量的代码没有执行，而且这些环境变量设置操作一定是在初始化的时候进行的<br>如果对Laravel的Kernel执行顺序比较了解的话，应该知道，在Kernel启动阶段会首先执行一组bootstrappers</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Illuminate/Foundation/Http/Kernel.php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Kernel</span> <span class="keyword">implements</span> <span class="title">KernelContract</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The bootstrap classes for the application.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$bootstrappers</span> = [</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\DetectEnvironment&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\LoadConfiguration&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\ConfigureLogging&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\HandleExceptions&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\RegisterFacades&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\RegisterProviders&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Illuminate\Foundation\Bootstrap\BootProviders&#x27;</span>,</span><br><span class="line">    ];</span><br></pre></td></tr></table></figure>
-<p>其中一个bootstrapper名为DetectEnvironment，而它的嫌疑是最大的，检查这个类</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Illuminate/Foundation/Bootstrap/DetectEnvironment.php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DetectEnvironment</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Bootstrap the given application.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  \Illuminate\Contracts\Foundation\Application  $app</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">bootstrap</span>(<span class="params">Application <span class="variable">$app</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (! <span class="variable">$app</span>-&gt;configurationIsCached()) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;checkForSpecificEnvironmentFile(<span class="variable">$app</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                (<span class="keyword">new</span> Dotenv(<span class="variable">$app</span>-&gt;environmentPath(), <span class="variable">$app</span>-&gt;environmentFile()))-&gt;load();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InvalidPathException <span class="variable">$e</span>) &#123;</span><br><span class="line">                <span class="comment">//</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在代码中，我们并没有发现任何执行putenv或者操作<code>$_ENV</code>全局变量的地方，实际上在整个Laravel的框架代码里也没有发现蛛丝马迹，那么这些环境变量是如何保存进来的呢？<br>如果Laravel框架里没有执行这些代码，我们应该可以推测是框架使用的第三方组件做了这些事情<br>而事实也确实如此，可以看到在DetectEnvironment类的bootstrap方法里实例化了一个Dotenv类的对象，而Dotenv\Loader正是执行了读取.env文件，执行putenv的操作。<br>那么env获取不到值只能说明Dotenv的实例化并没有执行</p>
-<p>再仔细看一下DetectEnvironment类，在实例化Dotenv前，先进行了一个 if 判断</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (! <span class="variable">$app</span>-&gt;configurationIsCached())</span><br></pre></td></tr></table></figure>
-
-<p>而这个方法的作用就是判断 <code>bootstrap/cache/config.php</code> 缓存文件是否存在，如果文件存在则不会执行Dotenv的实例化操作，也就不会往<code>$_ENV</code>里存数据，自然env函数是取不到值的</p>
-<p><code>bootstrap/cache/config.php</code>是执行下面的命令生成的</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan config:cache</span><br></pre></td></tr></table></figure>
-<p>清除使用命令</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan config:clear</span><br></pre></td></tr></table></figure>
-<p>那么，真相大白了，之前在开发时并没有出现问题，是因为没有执行 config:cache 命令，而项目上线后为了优化访问速度，生成了缓存文件，导致env取值失败</p>
-<p>如果使用了config:cache，env函数只能在config目录下的配置文件的php里使用，不可以在其他地方使用。</p>
-<p>一个非常简单的办法就是将</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env(<span class="string">&#x27;APP_ENV&#x27;</span>)</span><br></pre></td></tr></table></figure>
-<p>改为</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config(<span class="string">&#x27;app.env&#x27;</span>)</span><br></pre></td></tr></table></figure>
-<p>config函数会优先读取 bootstrap/cache/config.php 中缓存的配置，如果没有缓存文件，则会直接读取 config 目录下的所有配置文件</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/83f9cd407751">https://www.jianshu.com/p/83f9cd407751</a></p>
-</blockquote>
-
       
     </div>
 

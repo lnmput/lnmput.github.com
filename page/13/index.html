@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">406</span>
+          <span class="site-state-item-count">408</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,243 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/14/laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">laravel中使用redis基本命令</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-14 14:37:25 / 修改时间：15:56:46" itemprop="dateCreated datePublished" datetime="2018-06-14T14:37:25+09:00">2018-06-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+The wealth of the mind is the only wealth.
+</blockquote>
+
+<p>Let’s store our product sales in a key:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">1000</span>)</span><br><span class="line">Redis::set(<span class="string">&#x27;product:1:count&#x27;</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>Now to read it we use:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::get(<span class="string">&#x27;product:1:sales&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Incrementing-and-Decrementing-counters"><a href="#Incrementing-and-Decrementing-counters" class="headerlink" title="Incrementing and Decrementing counters"></a>Incrementing and Decrementing counters</h3><p>A new purchase was made, let’s increment the sales:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis::incrby(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">100</span>)</span><br><span class="line"></span><br><span class="line">Redis::incr(<span class="string">&#x27;product:1:count&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>Here we increment the sales key by 100, and increment the count key by 1.</p>
+<p>We can also decrement in the same way:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis::decrby(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">100</span>)</span><br><span class="line"></span><br><span class="line">Redis::decr(<span class="string">&#x27;product:1:count&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>But when it comes to dealing with floating point numbers we need to use a special command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis::incrbyfloat(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">15.5</span>)</span><br><span class="line"></span><br><span class="line">Redis::incrbyfloat(<span class="string">&#x27;product:1:sales&#x27;</span>, - <span class="number">30.2</span>)</span><br></pre></td></tr></table></figure>
+<p>There’s no decrbyfloat command, but we can pass a negative value to the incrbyfloat command to have the same effect.</p>
+<blockquote>
+<p>The incrby, incr, decrby, decr, and incrbyfloat return the value after the operation as a response</p>
+</blockquote>
+<h3 id="Retrieve-and-update"><a href="#Retrieve-and-update" class="headerlink" title="Retrieve and update"></a>Retrieve and update</h3><p>Now we want to read the latest sales number and reset the counters to zero, maybe we do that at the end of each day:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$value</span> = Redis::getset(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>Here $value will hold the 1000 value, if we read the value of that key after this operation it’ll be 0.</p>
+<h3 id="Keys-Expiration"><a href="#Keys-Expiration" class="headerlink" title="Keys Expiration"></a>Keys Expiration</h3><p>Let’s say we want to send a notification to the owner when inventory is low, but we only want to send that notification once every 1 hour instead of sending it every time a new purchase is made, so maybe we set a flag once and only send the notification when that flag doesn’t exist:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;EX&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
+<p>Now this key will expire after 3600 seconds (1 hour), we can check if the key exists before attempting to set it and send the notification:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(Redis::get(<span class="string">&#x27;user:1:notified&#x27;</span>))&#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Redis::set(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;EX&#x27;</span>, <span class="number">3600</span>);</span><br><span class="line"></span><br><span class="line">Notifications::send();</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Notice: There’s no guarantee that the value of user:1:notified won’t change between the get and set operations, we’ll discuss atomic command groups later, but this example is enough for you to understand how every individual command works.</p>
+</blockquote>
+<p>We can set the expiration of a key in milliseconds as well using:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">1</span>, <span class="string">&#x27;PX&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
+<p>And you may also use the expire command and provide the timeout in seconds:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::expire(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
+<p>Or in milliseconds:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::pexpire(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="number">3600</span>);</span><br></pre></td></tr></table></figure>
+<p>And if you want the keys to expire at a specific time you can use expireat and provide a Unix timestamp:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::expireat(<span class="string">&#x27;user:1:notified&#x27;</span>, <span class="string">&#x27;1495469730&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>Is there a way I can check when a key should expire?<br>You can use the ttl command (Time To Live), which will return the number of seconds remaining until the key expires.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::ttl(<span class="string">&#x27;user:1:notified&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>That command may return -2 if the key doesn’t exist, or -1 if the key has no expiration set.</p>
+<p>You can also use the pttl command to get the TTL in milliseconds.</p>
+<p>What if I want to cancel expiration?</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::persist(<span class="string">&#x27;user:1:notified&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>This will remove the expiration from your key, it’ll return 1 if OK or 0 if key doesn’t exist or originally had no expiration set.</p>
+<h3 id="Keys-Existence"><a href="#Keys-Existence" class="headerlink" title="Keys Existence"></a>Keys Existence</h3><p>Let’s say there’s only 1 laracon ticket available and we need to close purchasing once that ticket is sold, we can do:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;ticket:sold&#x27;</span>, <span class="variable">$user</span>-&gt;id, <span class="string">&#x27;NX&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>This will only set the key if it doesn’t exist, the next script that tries to set the key wll receive null as a response from Redis which means that the key wasn’t set.</p>
+<p>You can also instruct Redis to set the key only if it exists:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::set(<span class="string">&#x27;ticket:sold&#x27;</span>, <span class="variable">$user</span>-&gt;id, <span class="string">&#x27;XX&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>If you want to simply check if a key exists, you can use the exists command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::exists(<span class="string">&#x27;ticket:sold&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Reading-multiple-keys-in-one-go"><a href="#Reading-multiple-keys-in-one-go" class="headerlink" title="Reading multiple keys in one go"></a>Reading multiple keys in one go</h3><p>Sometimes you might need to read multiple keys in one go, you can do this:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::mget(<span class="string">&#x27;product:1:sales&#x27;</span>, <span class="string">&#x27;product:2:sales&#x27;</span>, <span class="string">&#x27;non_existing_key&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>The response of this command is an array with the same size of the given keys, if a key doesn’t exist its value is going to be null.</p>
+<p>As we discussed before, Redis executes individual command atomically, that means nothing can change the value of any in the keys once the operation started, so it’s guaranteed that the values returned are not altered in between reading the value of the first key and the last key.</p>
+<blockquote>
+<p>Using mget is better that firing multiple get commands to reduce the RTT (round trip time), which is the time each individual command takes to travel from client to the server and then carry the response back to the client. More on that later.</p>
+</blockquote>
+<h3 id="Deleting-Keys"><a href="#Deleting-Keys" class="headerlink" title="Deleting Keys"></a>Deleting Keys</h3><p>You can also delete multiple keys at once using the del command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::del(<span class="string">&#x27;previous:sales&#x27;</span>, <span class="string">&#x27;previous:return&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Renaming-Keys"><a href="#Renaming-Keys" class="headerlink" title="Renaming Keys"></a>Renaming Keys</h3><p>You can rename a key using the rename command:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::rename(<span class="string">&#x27;current:sales&#x27;</span>, <span class="string">&#x27;previous:sales&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>An error is returned if the original key doesn’t exist, and it overrides the second key if it already exists.</p>
+<p>Renaming keys is usually a fast operation unless a key with the desired name exists, in that case Redis will try to delete that existing key first before renaming this one, deleting a key that holds a very big value might be a bit slow.</p>
+<p>So I have to check first if the second key exists to prevent overriding?<br>Yeah you can use exists to check if the second key exists… OR:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redis::renamenx(<span class="string">&#x27;current:sales&#x27;</span>, <span class="string">&#x27;previous:sales&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>This will check first if the second key exists, if yes it just returns 0 without doing anything, so it only renames the key if the second key does not exist.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://divinglaravel.com/redis/redis-commands">https://divinglaravel.com/redis/redis-commands</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/14/%E5%9C%A8laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/14/%E5%9C%A8laravel%E4%B8%AD%E4%BD%BF%E7%94%A8redis/" class="post-title-link" itemprop="url">在laravel中使用redis</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-14 14:31:18 / 修改时间：15:57:18" itemprop="dateCreated datePublished" datetime="2018-06-14T14:31:18+09:00">2018-06-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Honesty is the best policy.
+</blockquote>
+
+<p>Redis is a storage server that persists your data in memory which makes read &amp; write operations very fast, you can also configure it to store the data on disk occasionally, replicate to secondary nodes, and automatically split the data across multiple nodes.</p>
+<p>That said, you might want to use Redis when fast access to your data is necessary (caching, live analytics, queue system, etc…), however you’ll need another data storage for when the data is too large to fit in memory or you don’t really need to have fast access, so a combination of Redis &amp; another relational or non-relational database gives you the power to build large scale applications where you can efficiently store large data but also provide a way to read portions of the data very fast.</p>
+<h3 id="Use-Case"><a href="#Use-Case" class="headerlink" title="Use Case"></a>Use Case</h3><p>Think of a cloud-based Point Of Sale application for restaurants, as owner it’s extremely important to be able to monitor different statistics related to sales, inventory, performance of different branches, and many other metrics. Let’s focus on one particular metric which is Product Sales, as a developer you want to build a dashboard where the restaurant owner can see live updates on what products have more sales throughout the day.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">select SUM(order_products.price), products.name</span><br><span class="line"><span class="keyword">from</span> order_products</span><br><span class="line">join products on order_products.product_id = products.id</span><br><span class="line">where DATE(order_products.created_at) = CURDATE()</span><br><span class="line">where order_products.status = <span class="string">&quot;done&quot;</span></span><br></pre></td></tr></table></figure>
+<p>The sql query above will bring you a list with the sales each product made throughout the day, but it’s a relatively heavy query to run when the restaurant serves thousands of orders every day, simply put you can’t run this query in a live-updates dashboard that pulls for updates every 60 seconds or something, it’d be cool if you can cache the product sales every time an order is served and be able to read from the cache, something like:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Event::listen(<span class="string">&#x27;newOrder&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$order</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$order</span>-&gt;products-&gt;each(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$product</span></span>)</span>&#123;</span><br><span class="line">        SomeStorage::increment(<span class="string">&quot;product:<span class="subst">&#123;$product-&gt;id&#125;</span>:sales:2017-05-22&quot;</span>, <span class="variable">$product</span>-&gt;sales);</span><br><span class="line">    );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>So now on every new order we’ll increment the sales for each product, and we can simply read these numbers later like:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sales</span> = Product::all()-&gt;map(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$product</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> SomeStorage::get(<span class="string">&quot;product:<span class="subst">&#123;$product-&gt;id&#125;</span>:sales:2017-05-22&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>Replace SomeStorage with Redis and now you have today’s product sales living in your server’s memory, and it’s super fast to read from memory, so you don’t have to run that large query every time you need to update the analytics numbers in the live dashboard.</p>
+<h3 id="Another-Use-Case"><a href="#Another-Use-Case" class="headerlink" title="Another Use Case"></a>Another Use Case</h3><p>Now you want to know the number of unique visitors opening your website every day, we might store it in SQL having a table with user_id &amp; date fields, and later on we can just run a query like:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select COUNT(Distinct user_id) <span class="keyword">as</span> count <span class="keyword">from</span> unique_visits where date = <span class="string">&quot;2017-05-22&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>So we just have to add a record in that database table every time a user visits the site. But still on a high traffic website adding this extra DB interaction might not be the best idea, wouldn’t it be cool if we can just do:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SomeStorage::addUnique(<span class="string">&#x27;unique_visits:2017-05-22&#x27;</span>, <span class="variable">$user</span>-&gt;id);</span><br></pre></td></tr></table></figure>
+<p>And later on we can do:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SomeStorage::count(<span class="string">&#x27;unique_visits:2017-05-22&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>Storing this in memory is fast and reading the stored numbers from memory is super fast, that’s exactly what we need, so I hope by now you got a feel on when using Redis might be a good idea. And by the way the method names used in the above examples don’t exist in redis, I’m just trying to give you a feel about what you can achieve.</p>
+<h3 id="The-Atomic-nature-of-redis-operations"><a href="#The-Atomic-nature-of-redis-operations" class="headerlink" title="The Atomic nature of redis operations"></a>The Atomic nature of redis operations</h3><p>Individual commands in Redis are guaranteed to be atomic, that means nothing will change while executing a command, for example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$monthSales</span> = Redis::getSet(<span class="string">&#x27;monthSales&#x27;</span>, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+
+<p>This command gets the value of the monthSales key and then sets it to zero, it’s guaranteed that no other client can change the value or maybe rename the key between the get and set operations, that’s due to the single threaded nature of Redis in which a single system process serves all clients at the same time but can only perform 1 operation at a time, it’s similar to how you can listen to multiple client alterations on the project at the same time but can only work on 1 alteration at a given moment.</p>
+<p>There’s also a way to guarantee the atomicity of a group of commands using transactions, more on that later, but briefly let’s say you have 2 clients:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Client <span class="number">1</span> wants to increment the value</span><br><span class="line">Client <span class="number">1</span> wants to read that value</span><br><span class="line">Client <span class="number">2</span> wants to increment the value</span><br></pre></td></tr></table></figure>
+
+<p>These commands might run in the following order:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Client <span class="number">1</span>: Increment value</span><br><span class="line">Client <span class="number">2</span>: Increment value</span><br><span class="line">Client <span class="number">1</span>: read value</span><br></pre></td></tr></table></figure>
+
+<p>Which will result the read operation from Client 1 to give unexpected results since the value was altered in the middle, that’s when a transaction makes sense.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://divinglaravel.com/redis/before-the-dive">https://divinglaravel.com/redis/before-the-dive</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1039,182 +1276,6 @@
 <p>好了，就这么多。感谢阅读。</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://phpcasts.org/posts/modern-backend-developer-in-2018">https://phpcasts.org/posts/modern-backend-developer-in-2018</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/30/%E5%A6%82%E4%BD%95%E6%9B%B4%E5%A5%BD%E7%9A%84%E7%BB%84%E7%BB%87%E4%BD%A0%E7%9A%84laravel%E6%A8%A1%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/05/30/%E5%A6%82%E4%BD%95%E6%9B%B4%E5%A5%BD%E7%9A%84%E7%BB%84%E7%BB%87%E4%BD%A0%E7%9A%84laravel%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">如何更好的组织你的Laravel模型</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-05-30 16:40:55 / 修改时间：17:58:31" itemprop="dateCreated datePublished" datetime="2018-05-30T16:40:55+09:00">2018-05-30</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-做你害怕做的事情。
-</blockquote>
-我经常发现自己希望在Laravel应用程序中获得更多关于模型的结构。
-
-<p>默认情况下，模型位于 App 命名空间内，如果你正在处理大型应用程序，这可能会变得非常难以理解。所以我决定在 App\Models 命名空间内组织我的模型。</p>
-<h3 id="更新用户模型"><a href="#更新用户模型" class="headerlink" title="更新用户模型"></a>更新用户模型</h3><p>要做到这一点，你需要做的第一件事就是将 User 模型移动到 app/Models 目录并相应地更新命名空间。</p>
-<p>这要求你更新引用 App\User 类的所有文件。</p>
-<p>第一个是 config/auth.php：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;providers&#x27;</span> =&gt; [</span><br><span class="line">    <span class="string">&#x27;users&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;driver&#x27;</span> =&gt; <span class="string">&#x27;eloquent&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;model&#x27;</span> =&gt; App\Models\User::class, <span class="comment">// 修改这里</span></span><br><span class="line">    ],</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
-<p>第二个是 config/services.php 文件：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;stripe&#x27;</span> =&gt; [</span><br><span class="line">    <span class="string">&#x27;model&#x27;</span> =&gt; App\Models\User::class, <span class="comment">// 修改这里</span></span><br><span class="line">    <span class="string">&#x27;key&#x27;</span> =&gt; env(<span class="string">&#x27;STRIPE_KEY&#x27;</span>),</span><br><span class="line">    <span class="string">&#x27;secret&#x27;</span> =&gt; env(<span class="string">&#x27;STRIPE_SECRET&#x27;</span>),</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
-<p>最后，修改 database/factories/UserFactory.php 文件：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$factory</span>-&gt;define(App\Models\User::class, <span class="function"><span class="keyword">function</span> (<span class="params">Faker <span class="variable">$faker</span></span>) </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="生成模型"><a href="#生成模型" class="headerlink" title="生成模型"></a>生成模型</h3><p>现在我们已经改变了 User 模型的命名空间，但是如何生成新的模型。正如我们所知，默认情况下它们将被放置在 App 命名空间下。</p>
-<p>为了解决这个问题，我们可以扩展默认的 ModelMakeCommand ：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Console</span>\<span class="title">Commands</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Console</span>\<span class="title">ModelMakeCommand</span> <span class="title">as</span> <span class="title">Command</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ModelMakeCommand</span> <span class="keyword">extends</span> <span class="title">Command</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Get the default namespace for the class.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  string  $rootNamespace</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> string</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">getDefaultNamespace</span>(<span class="params"><span class="variable">$rootNamespace</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;<span class="subst">&#123;$rootNamespace&#125;</span>\Models&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>并通过将以下内容添加到 AppServiceProvider 中来覆盖服务容器中的现有绑定：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Providers</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">ServiceProvider</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Console</span>\<span class="title">Commands</span>\<span class="title">ModelMakeCommand</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppServiceProvider</span> <span class="keyword">extends</span> <span class="title">ServiceProvider</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Bootstrap any application services.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register any application services.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">register</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;app-&gt;extend(<span class="string">&#x27;command.model.make&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$command</span>, <span class="variable">$app</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> ModelMakeCommand(<span class="variable">$app</span>[<span class="string">&#x27;files&#x27;</span>]);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>以上就是需要修改的。现在我们可以继续生成模型，就像我们在我们的终端中使用的一样：<code>php artisan make:model Order</code>，它们将位于 <code>App\Models</code> 命名空间中。</p>
-<p>希望你能使用它！</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://phpcasts.org/posts/how-to-organize-your-laravel-models">https://phpcasts.org/posts/how-to-organize-your-laravel-models</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/29/php%E5%A4%9A%E5%8F%82%E6%95%B0%E6%96%B9%E6%B3%95%E7%9A%84%E9%87%8D%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/05/29/php%E5%A4%9A%E5%8F%82%E6%95%B0%E6%96%B9%E6%B3%95%E7%9A%84%E9%87%8D%E6%9E%84/" class="post-title-link" itemprop="url">PHP多参数方法的重构</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-05-29 22:32:41 / 修改时间：23:37:36" itemprop="dateCreated datePublished" datetime="2018-05-29T22:32:41+09:00">2018-05-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-说用心没有用的人，以为光有钱就有用了么。
-</blockquote>
-
-<p>假设我们要完成一个保存文章的功能，如果采用函数编程的方式，大概会是下面这个样子：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">saveArticle</span>(<span class="params"><span class="variable">$title</span>, <span class="variable">$content</span>, <span class="variable">$categoryId</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>每个参数代表一个属性，但带来一个问题，参数列表会变得很长。此时采用对象编程的技术会是个好方法：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$content</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$categoryId</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在这里，原来的方法参数都转换为以对象的属性方式存在，从而大大降低了方法的参数数量。多数时候这个方法是不错的，不过并不是所有的参数都适合以对象属性的方式存在，区分的原则是，看这些参数是属于对象的内在属性还是外在特征，如果不加区分的统统转换为对象属性，这会让对象本身失去意义。</p>
-<p>举个例子，比如说我们的Article对象还有一个名为find的方法，使用它时可能会涉及limit, offset, order等参数：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$content</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$categoryId</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$limit</span> = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$offset</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$order</span> = <span class="string">&#x27;created DESC&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">find</span>(<span class="params"><span class="variable">$categoryId</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如上所示，一旦我们把limit，offset，order等参数转换为对象的属性，这个对象本身就变得不伦不类了，因为虽然title，content，categoryId可以算作是对象的内在属性，而limit，offset，order却不是，顶多也只能算作是外部特征，不加区分的结果基本是噩梦的开始。所以，还是老老实实的把外在特征放到方法的参数里好些（更严格的说，find方法应该是一个static类型的方法，不过文本就是一个简单的说明，不必细究）：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$content</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$categoryId</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">find</span>(<span class="params"><span class="variable">$categoryId</span>, <span class="variable">$limit</span> = <span class="number">10</span>, <span class="variable">$offset</span> = <span class="number">0</span>, <span class="variable">$order</span> = <span class="string">&#x27;created DESC&#x27;</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>可惜如此一来又出现了文章开头所说的问题，find方法的参数太多了，缺乏可读性，所以还得重构：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$content</span>;</span><br><span class="line">    <span class="keyword">var</span> <span class="variable">$categoryId</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">save</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">find</span>(<span class="params"><span class="variable">$categoryId</span>, <span class="variable">$options</span> = <span class="keyword">array</span>(<span class="params"></span>)</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$default</span> = <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">&#x27;limit&#x27;</span> =&gt; <span class="number">10</span>,</span><br><span class="line">            <span class="string">&#x27;offset&#x27;</span> =&gt; <span class="number">0</span>,</span><br><span class="line">            <span class="string">&#x27;order&#x27;</span> =&gt; <span class="string">&#x27;created DESC&#x27;</span></span><br><span class="line">        );</span><br><span class="line"></span><br><span class="line">        <span class="variable">$options</span> = array_merge(<span class="variable">$default</span>, (<span class="keyword">array</span>)<span class="variable">$options</span>);</span><br><span class="line"></span><br><span class="line">         <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>看上去还不错，调用时可以使用类似下面的方法：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$article</span>-&gt;find(<span class="number">123</span>, <span class="keyword">array</span>(<span class="string">&#x27;limit&#x27;</span> =&gt; <span class="number">20</span>));</span><br></pre></td></tr></table></figure>
-<p>简单的说，就是用数组方式的参数，来模拟一种类似关键字参数的效果，采用这种方式的话，可以通过数组的键名来描述参数的作用，从而增加代码的可读性。类似这样的重构方法在CakePHP等项目里被大量使用，仔细体会，以后再写代码的时候就可以本能的写出高可读性的代码来。</p>
-<p>补充：相对array_merge来说，使用$options += $default;也是不错的选择。另外，如果options的逻辑很复杂的话，也可以不用数组的方式，转而使用一个专门的对象来封装逻辑操作。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.awaimai.com/869.html">https://www.awaimai.com/869.html</a></p>
 </blockquote>
 
       

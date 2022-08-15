@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">406</span>
+          <span class="site-state-item-count">408</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,166 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/09/laravel%E5%AE%9E%E7%8E%B0%E7%94%A8%E6%88%B7%E7%9A%84%E7%A6%81%E6%AD%A2%E7%99%BB%E9%99%86%E5%92%8C%E7%A6%81%E6%AD%A2%E6%B3%A8%E5%86%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/09/laravel%E5%AE%9E%E7%8E%B0%E7%94%A8%E6%88%B7%E7%9A%84%E7%A6%81%E6%AD%A2%E7%99%BB%E9%99%86%E5%92%8C%E7%A6%81%E6%AD%A2%E6%B3%A8%E5%86%8C/" class="post-title-link" itemprop="url">laravel实现用户的禁止登陆和禁止注册</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-09 22:11:29" itemprop="dateCreated datePublished" datetime="2018-01-09T22:11:29+09:00">2018-01-09</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:17:11" itemprop="dateModified" datetime="2018-03-27T22:17:11+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你跑得慢，听到的是骂声，你跑得快，听到的就是风声。
+</blockquote>
+
+<h3 id="禁止登录"><a href="#禁止登录" class="headerlink" title="禁止登录"></a>禁止登录</h3><p>app\Http\Controllers\Auth\LoginController.php<br>users表增加一个status字段，并重写两个方法</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">attemptLogin</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="variable">$request</span>-&gt;merge([</span><br><span class="line">    <span class="string">&#x27;status&#x27;</span> =&gt; <span class="literal">true</span></span><br><span class="line">  ]);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;guard()-&gt;attempt(</span><br><span class="line">    <span class="keyword">$this</span>-&gt;credentials(<span class="variable">$request</span>), <span class="variable">$request</span>-&gt;filled(<span class="string">&#x27;remember&#x27;</span>)</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">credentials</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">return</span> <span class="variable">$request</span>-&gt;only(<span class="keyword">$this</span>-&gt;username(), <span class="string">&#x27;password&#x27;</span>, <span class="string">&#x27;status&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="禁止注册"><a href="#禁止注册" class="headerlink" title="禁止注册"></a>禁止注册</h3><p>app\Http\Controllers\Auth\RegisterController.php<br>修改前：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">$this</span>-&gt;middleware(<span class="string">&#x27;guest&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>修改后：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">$this</span>-&gt;middleware(<span class="string">&#x27;auth&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/09/json%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BE%8E%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/09/json%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BE%8E%E5%8C%96/" class="post-title-link" itemprop="url">json字符串美化</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-09 18:29:49" itemprop="dateCreated datePublished" datetime="2018-01-09T18:29:49+09:00">2018-01-09</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:19:50" itemprop="dateModified" datetime="2018-03-27T22:19:50+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你多学一样本事，就少说一句求人的话
+</blockquote>
+如果我们需要向我们的用用户展示一段`json`数据, 直接展示效果就会非常差,需要做一点点改变
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&quot;button&quot;</span>).click(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> url = $(<span class="string">&quot;input&quot;</span>).val();</span><br><span class="line">    <span class="built_in">console</span>.log(url);</span><br><span class="line">    axios.post(<span class="string">&#x27;/api/E1WWrhcuN0xm&#x27;</span>, &#123;</span><br><span class="line">        <span class="attr">url</span> : url</span><br><span class="line">    &#125;)</span><br><span class="line">        .then(<span class="function"><span class="keyword">function</span> (<span class="params">response</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (response.data) &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(response.data);</span><br><span class="line">                $(<span class="string">&quot;pre&quot;</span>).html(<span class="built_in">JSON</span>.stringify(response.data, <span class="literal">null</span>, <span class="number">2</span>)).parent().removeClass(<span class="string">&#x27;hidden&#x27;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">        .catch(<span class="function"><span class="keyword">function</span> (<span class="params">error</span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(error);</span><br><span class="line">        &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -876,196 +1036,6 @@ number_format() 函数格式化以后的数字不再是数字, 而是字符串
 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://lindell.me/JsBarcode/">http://lindell.me/JsBarcode/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/12/05/laravel%E5%9C%A8%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8%E9%94%99%E8%AF%AF%E6%97%B6%E5%A6%82%E4%BD%95%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6%E9%80%9A%E7%9F%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/12/05/laravel%E5%9C%A8%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8%E9%94%99%E8%AF%AF%E6%97%B6%E5%A6%82%E4%BD%95%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6%E9%80%9A%E7%9F%A5/" class="post-title-link" itemprop="url">laravel在发生异常错误时如何发送邮件通知</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-12-05 18:01:36" itemprop="dateCreated datePublished" datetime="2017-12-05T18:01:36+09:00">2017-12-05</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:17:19" itemprop="dateModified" datetime="2018-03-27T22:17:19+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-知识太多了就容易装B，知识太少就容易犯浑，像我这样不多不少刚刚好，想装B就装B，想犯浑就犯浑。
-</blockquote>
-我们建了一个新的laravel项目并部署到了生产服务器,一切都工作正常，直到一个客户因为我们的bug遇到了一个问题,随即用户离开了我们的程序, 在我们发现这个bug之前,同样的问题发生在了越来越多的客户身上.随后你修复了bug, 所有的都恢复到了正常.但是如果你能在bug发生时得到邮件通知并很快修复他,在laravel中, 这个很容易实现;
-在laravel项目中, 所有的异常都是`App\Exceptions\Handler` 这个类处理的,这个类包含了两个方法:`report`和`render`. 现在我们只关心`report`这个方法. 这个类使用日志记录异常或者是发送异常到一些其他的服务像Bugsna或者Sentry. 默认情况下, `report`这个方法只是简单的传递异常到基类中,进而被写到日志里.然而,我们也可以发送邮件给开发者关于这些异常.
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Report or log an exception.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * This is a great spot to send exceptions to Emails.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  \Exception  $exception</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">report</span>(<span class="params"><span class="built_in">Exception</span> <span class="variable">$exception</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;shouldReport(<span class="variable">$exception</span>)) &#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;sendEmail(<span class="variable">$exception</span>); <span class="comment">// sends an email</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">parent</span>::report(<span class="variable">$exception</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Sends an email to the developer about the exception.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  \Exception  $exception</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sendEmail</span>(<span class="params"><span class="built_in">Exception</span> <span class="variable">$exception</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// sending email</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-Here we are using shouldReport method to ignore exceptions which are listed in the $dontReport property of the exception handler.
-
-<p>Each type of email sent by the application is represented as a “mailable” class in Laravel. So, we need to create our mailable class using the make:mail command:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ php artisan make:mail ExceptionOccured</span><br></pre></td></tr></table></figure>
-
-<p>This will create a class ExceptionOccured in the app/Mail directory.</p>
-<p>Merely sending the mail will not solve the problem. We need the full stack trace of the exception. And for that, we can use the Symfony’s Debug component.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sendEmail</span>(<span class="params"><span class="built_in">Exception</span> <span class="variable">$exception</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="variable">$e</span> = FlattenException::create(<span class="variable">$exception</span>);</span><br><span class="line"></span><br><span class="line">        <span class="variable">$handler</span> = <span class="keyword">new</span> SymfonyExceptionHandler();</span><br><span class="line"></span><br><span class="line">        <span class="variable">$html</span> = <span class="variable">$handler</span>-&gt;getHtml(<span class="variable">$e</span>);</span><br><span class="line"></span><br><span class="line">        Mail::to(<span class="string">&#x27;developer@gmail.com&#x27;</span>)-&gt;send(<span class="keyword">new</span> ExceptionOccured(<span class="variable">$html</span>));</span><br><span class="line">    &#125; <span class="keyword">catch</span> (<span class="built_in">Exception</span> <span class="variable">$ex</span>) &#123;</span><br><span class="line">        dd(<span class="variable">$ex</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Make sure you add the following code at the top of the file:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">se Mail;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Debug</span>\<span class="title">Exception</span>\<span class="title">FlattenException</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Debug</span>\<span class="title">ExceptionHandler</span> <span class="title">as</span> <span class="title">SymfonyExceptionHandler</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Mail</span>\<span class="title">ExceptionOccured</span>;</span><br></pre></td></tr></table></figure>
-
-<p>Note—We have used the try block to avoid the infinite loop if the mail command fails.</p>
-<p>Then, in your ExceptionOccured mailer class:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Mail</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Bus</span>\<span class="title">Queueable</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Mail</span>\<span class="title">Mailable</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Queue</span>\<span class="title">SerializesModels</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Contracts</span>\<span class="title">Queue</span>\<span class="title">ShouldQueue</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExceptionOccured</span> <span class="keyword">extends</span> <span class="title">Mailable</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">use</span> <span class="title">Queueable</span>, <span class="title">SerializesModels</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The body of the message.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> string</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$content</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Create a new message instance.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$content</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;content = <span class="variable">$content</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Build the message.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> $this</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">build</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;view(<span class="string">&#x27;emails.exception&#x27;</span>)</span><br><span class="line">                    -&gt;with(<span class="string">&#x27;content&#x27;</span>, <span class="keyword">$this</span>-&gt;content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Add the following code in your emails.exception view file:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;!! <span class="variable">$content</span> !!&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Now, whenever an exception is thrown in your application, you will receive an email with full stack trace. Cool!</p>
-<p>I have created a Laravel package named squareboat/sneaker(<a target="_blank" rel="noopener" href="https://packagist.org/packages/squareboat/sneaker">https://packagist.org/packages/squareboat/sneaker</a>) to do all this cumbersome work for you so you can concentrate on solving the bug.</p>
-<p>Some of the features of the sneaker are:<br>– On/off emailing using .env file.<br>– Customizing the email body.<br>– Ignoring the exception generated by bots.</p>
-<p>and more to come.</p>
-<p>If you want the complete source code for this(<a target="_blank" rel="noopener" href="https://github.com/akaamitgupta/laravel-error-emailer-demo">https://github.com/akaamitgupta/laravel-error-emailer-demo</a>), I’m more than happy to share it and you can find the source code on Github</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-news.com/email-on-error-exceptions">https://laravel-news.com/email-on-error-exceptions</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/12/01/%E5%87%A0%E6%9D%A1%E5%BE%88%E6%9C%89%E7%94%A8%E7%9A%84git%E5%91%BD%E4%BB%A4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/12/01/%E5%87%A0%E6%9D%A1%E5%BE%88%E6%9C%89%E7%94%A8%E7%9A%84git%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">几条很有用的git命令</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-12-01 10:46:26" itemprop="dateCreated datePublished" datetime="2017-12-01T10:46:26+09:00">2017-12-01</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-24 14:49:36" itemprop="dateModified" datetime="2018-04-24T14:49:36+09:00">2018-04-24</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-上帝让好孩子成为好孩子，本身就是对好孩子的最佳奖赏
-</blockquote>
-
-<h4 id="导出最后一次提交修改过的文件"><a href="#导出最后一次提交修改过的文件" class="headerlink" title="导出最后一次提交修改过的文件"></a>导出最后一次提交修改过的文件</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git archive -o ../updated.zip HEAD $(git diff --name-only HEAD^)</span><br></pre></td></tr></table></figure>
-
-<h4 id="导出两次提交之间修改过的文件"><a href="#导出两次提交之间修改过的文件" class="headerlink" title="导出两次提交之间修改过的文件"></a>导出两次提交之间修改过的文件</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git archive -o ../latest.zip NEW_COMMIT_ID_HERE $(git diff --name-only OLD_COMMIT_ID_HERE NEW_COMMIT_ID_HERE)</span><br></pre></td></tr></table></figure>
-
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git archive -o ../latest.zip <span class="number">4</span>c1ed49e9be1223d6c22e65fa6fc10e5fbe46441 $(git diff --name-only <span class="number">192</span>f0de1dda8b194c8d75c1bd6c6cab3154de1ad <span class="number">4</span>c1ed49e9be1223d6c22e65fa6fc10e5fbe46441)</span><br></pre></td></tr></table></figure>
-
-<h4 id="克隆一个特定的远程分支"><a href="#克隆一个特定的远程分支" class="headerlink" title="克隆一个特定的远程分支"></a>克隆一个特定的远程分支</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git init </span><br><span class="line">git remote add -t BRANCH_NAME_HERE -f origin REMOTE_REPO_URL_PATH_HERE </span><br><span class="line">git checkout BRANCH_NAME_HERE</span><br></pre></td></tr></table></figure>
-
-<h4 id="启动一个无历史的新分支"><a href="#启动一个无历史的新分支" class="headerlink" title="启动一个无历史的新分支"></a>启动一个无历史的新分支</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout --orphan NEW_BRANCH_NAME_HERE</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.cnblogs.com/lhb25/p/10-useful-advanced-git-commands.html">http://www.cnblogs.com/lhb25/p/10-useful-advanced-git-commands.html</a></p>
 </blockquote>
 
       

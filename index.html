@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">406</span>
+          <span class="site-state-item-count">408</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,202 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/15/Go-Programming-I-Pointers-in-Golang/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/15/Go-Programming-I-Pointers-in-Golang/" class="post-title-link" itemprop="url">Go-Programming-I-Pointers-in-Golang</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-08-15 11:19:11 / 修改时间：11:29:44" itemprop="dateCreated datePublished" datetime="2022-08-15T11:19:11+09:00">2022-08-15</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Bond。James Bond。
+</blockquote>
+
+<p>A pointer is a special type that is used to reference a value. Understanding it better can help you write advanced code in Go.</p>
+<h3 id="Variables"><a href="#Variables" class="headerlink" title="Variables"></a>Variables</h3><p>Computer memory can be thought of as a sequence of boxes, placed one after another in a line. Each box is labeled with a unique number, which increments sequentially. The unique location number is called a memory address.</p>
+<img style="margin-left: 0;" src="/images/golangpointer001.png">
+
+<p>A variable is just a convenient, alphanumeric nickname for a piece of memory location assigned by the compiler. When you declare variables, you are given a memory location to use from the free memory available.</p>
+<img style="margin-left: 0;" src="/images/golangpointer002.png">
+
+<h3 id="Pointers"><a href="#Pointers" class="headerlink" title="Pointers"></a>Pointers</h3><p>A pointer value is the address of a variable. A pointer is thus the location at which a value is stored. With a pointer, we can read or update the value of a variable indirectly, without using or even knowing the variable’s name, if indeed it has a name.</p>
+<p>In the following example,</p>
+<ul>
+<li>The statement &amp;x yields a pointer to an integer variable.</li>
+<li>y := &amp;x We say y points to x, or y contains the address of x.</li>
+<li>The expression <code>*y</code> yields the value of that integer variable, which is 9 here.</li>
+</ul>
+<img style="margin-left: 0;" src="/images/golangpointer003.png">
+
+<h3 id="Why-is-pointer-useful"><a href="#Why-is-pointer-useful" class="headerlink" title="Why is pointer useful?"></a>Why is pointer useful?</h3><blockquote>
+<p>“Pointers are used for efficiency because everything in Go is passed by value so they let us pass an address where data is held instead of passing the data’s value, to avoid unintentionally changing data, and so we can access an actual value in another function and not just a copy of it when we want to mutate it.”</p>
+</blockquote>
+<h3 id="Pointers-Example"><a href="#Pointers-Example" class="headerlink" title="Pointers Example"></a>Pointers Example</h3><p>A copy of the value is sent to a function as an argument in pass-by-value. Any changes in the function will only impact the function’s variable; it will not update the original value outside of the function scope.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name <span class="keyword">string</span></span><br><span class="line">	Age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">String</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> fmt.Sprintf(<span class="string">&quot;User[Name: %s, Age: %d]&quot;</span>, u.Name, u.Age)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// value receiver</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">SetAge</span><span class="params">(age <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	u.Age = age</span><br><span class="line">	fmt.Println(u)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	u := User&#123;</span><br><span class="line">		Name: <span class="string">&quot;John&quot;</span>,</span><br><span class="line">		Age:  <span class="number">25</span>,</span><br><span class="line">	&#125;</span><br><span class="line">	u.SetAge(<span class="number">30</span>)</span><br><span class="line">	fmt.Println(u)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Result:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User[Name: John, Age: <span class="number">30</span>]</span><br><span class="line">User[Name: John, Age: <span class="number">25</span>]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Pass-by-pointer"><a href="#Pass-by-pointer" class="headerlink" title="Pass by pointer"></a>Pass by pointer</h3><p>In Go, everything is passed-by-value. We use pointers when we want to pass by reference and set the original value.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name <span class="keyword">string</span></span><br><span class="line">	Age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">String</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> fmt.Sprintf(<span class="string">&quot;User[Name: %s, Age: %d]&quot;</span>, u.Name, u.Age)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// value receiver</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u *User)</span> <span class="title">SetAge</span><span class="params">(age <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	u.Age = age</span><br><span class="line">	fmt.Println(u)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	u := User&#123;</span><br><span class="line">		Name: <span class="string">&quot;John&quot;</span>,</span><br><span class="line">		Age:  <span class="number">25</span>,</span><br><span class="line">	&#125;</span><br><span class="line">	u.SetAge(<span class="number">30</span>)</span><br><span class="line">	fmt.Println(u)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Result:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User[Name: John, Age: 30]</span><br><span class="line">User[Name: John, Age: 30]</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/15/Timeout-Context-In-Go/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/15/Timeout-Context-In-Go/" class="post-title-link" itemprop="url">Timeout-Context-In-Go</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-08-15 00:44:51 / 修改时间：00:54:18" itemprop="dateCreated datePublished" datetime="2022-08-15T00:44:51+09:00">2022-08-15</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Go ahead ， make my day.
+</blockquote>
+
+<p>In concurrent programming with Golang, the context package is a powerful tool to manage operations like timeouts, cancelation, deadlines, etc.</p>
+<p>Among these operations, context with timeout is mainly used when we want to make an external request, such as a network request or a database request. I will show you how to use it to timeout a goroutine in this post.</p>
+<p>Let’s first see a simple example.</p>
+<img style="margin-left: 0;" src="/images/gotimeout.jpeg">
+
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;context&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// Channel used to receive the result from doSomething function</span></span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Create a context with a timeout of 5 seconds</span></span><br><span class="line">	ctxTimeout, cancel := context.WithTimeout(context.Background(), time.Second*<span class="number">3</span>)</span><br><span class="line">	<span class="keyword">defer</span> cancel()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Start the doSomething function</span></span><br><span class="line">	<span class="keyword">go</span> doSomething(ctxTimeout, ch)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">select</span> &#123;</span><br><span class="line">	<span class="keyword">case</span> &lt;-ctxTimeout.Done():</span><br><span class="line">		fmt.Printf(<span class="string">&quot;Context cancelled: %v\n&quot;</span>, ctxTimeout.Err())</span><br><span class="line">	<span class="keyword">case</span> result := &lt;-ch:</span><br><span class="line">		fmt.Printf(<span class="string">&quot;Received: %s\n&quot;</span>, result)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">doSomething</span><span class="params">(ctx context.Context, ch <span class="keyword">chan</span> <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">&quot;doSomething Sleeping...&quot;</span>)</span><br><span class="line">	time.Sleep(time.Second * <span class="number">5</span>)</span><br><span class="line">	fmt.Println(<span class="string">&quot;doSomething Wake up...&quot;</span>)</span><br><span class="line">	ch &lt;- <span class="string">&quot;Did Something&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Okay, what are we doing here?</p>
+<h3 id="1-Timeout-Context"><a href="#1-Timeout-Context" class="headerlink" title="1. Timeout Context"></a>1. Timeout Context</h3><p>Creating a timeout context is very easy. We use the function WithTimeout from the context package.</p>
+<p>The following example defines a timeout context that will be canceled after 3 seconds.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ctxTimeout, cancel := context.WithTimeout(context.Background(), time.Second*<span class="number">3</span>)</span><br><span class="line"><span class="keyword">defer</span> cancel()</span><br></pre></td></tr></table></figure>
+
+<p>Here, the WithTimeout takes a parent context and a duration parameter and returns a child context with a deadline set to the specified duration.</p>
+<p>The parent context is returned by function Background. It is a non-nil, empty Context and is typically used by the main function as the top-level Context for incoming requests.</p>
+<h3 id="2-Long-Waiting-Function"><a href="#2-Long-Waiting-Function" class="headerlink" title="2. Long Waiting Function"></a>2. Long Waiting Function</h3><p>We define a function that will execute in a separate goroutine. It will send the result to a predefined channel when finished.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">doSomething</span><span class="params">(ctx context.Context, ch <span class="keyword">chan</span> <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">&quot;doSomething Sleeping...&quot;</span>)</span><br><span class="line">	time.Sleep(time.Second * <span class="number">5</span>)</span><br><span class="line">	fmt.Println(<span class="string">&quot;doSomething Wake up...&quot;</span>)</span><br><span class="line">	ch &lt;- <span class="string">&quot;Did Something&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The following is the predefined buffered channel.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>, <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p>How to execute this function? It’s easy!</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> doSomething(ctxTimeout, ch)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-Waiting-Orchestration"><a href="#3-Waiting-Orchestration" class="headerlink" title="3. Waiting Orchestration"></a>3. Waiting Orchestration</h3><p>We wait for the result from the predefined result or from the timeout context channel in the main function.</p>
+<p>The context will automatically signal to the <code>ctxTimeout.Done</code> channel if the timeout is reached. Otherwise, we will receive the result from the ch channel.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> &#123;</span><br><span class="line">	<span class="keyword">case</span> &lt;-ctxTimeout.Done():</span><br><span class="line">		fmt.Printf(<span class="string">&quot;Context cancelled: %v\n&quot;</span>, ctxTimeout.Err())</span><br><span class="line">	<span class="keyword">case</span> result := &lt;-ch:</span><br><span class="line">		fmt.Printf(<span class="string">&quot;Received: %s\n&quot;</span>, result)</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="User-Cases"><a href="#User-Cases" class="headerlink" title="User Cases"></a>User Cases</h3><p>To better understand the context, let’s look at some real-world use cases.</p>
+<h4 id="Mongo"><a href="#Mongo" class="headerlink" title="Mongo"></a>Mongo</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">opts := options.Client()</span><br><span class="line">client, _ := mongo.Connect(context.TODO(), opts)</span><br><span class="line">ctx, cancel := context.WithTimeout(context.Background(), <span class="number">10</span>*time.Second)</span><br><span class="line"><span class="keyword">defer</span> cancel()</span><br><span class="line"></span><br><span class="line">client.Database(<span class="string">&quot;db&quot;</span>).Collection(<span class="string">&quot;collection&quot;</span>).InsertOne(ctx, bson.M&#123;<span class="string">&quot;x&quot;</span>: <span class="number">1</span>&#125;)</span><br></pre></td></tr></table></figure>
+
+<h4 id="http-Get-timeout-per-request"><a href="#http-Get-timeout-per-request" class="headerlink" title="http.Get() timeout per request"></a>http.Get() timeout per request</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ctx, cancel := context.WithTimeout(context.Background(), time.Microsecond*<span class="number">200</span>)</span><br><span class="line"><span class="keyword">defer</span> cancel()</span><br><span class="line"></span><br><span class="line">req, err := http.NewRequestWithContext(ctx, http.MethodGet, <span class="string">&quot;https://google.com&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line"><span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">	log.Fatalf(<span class="string">&quot;Error: %v&quot;</span>, err)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line">resp, err := http.DefaultClient.Do(req)</span><br><span class="line"><span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">	log.Fatalf(<span class="string">&quot;Error: %v&quot;</span>, err)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line">fmt.Println(resp.StatusCode)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://medium.com/geekculture/timeout-context-in-go-e88af0abd08d">https://medium.com/geekculture/timeout-context-in-go-e88af0abd08d</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -965,169 +1161,6 @@ If you have no critics, you will likely have no success.
 <p><a target="_blank" rel="noopener" href="https://hiroto-k.hatenablog.com/entry/2018/03/28/213000">https://hiroto-k.hatenablog.com/entry/2018/03/28/213000</a></p>
 </blockquote>
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/04/17/%E4%BD%BF%E7%94%A8channel%E6%A8%A1%E6%8B%9F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/04/17/%E4%BD%BF%E7%94%A8channel%E6%A8%A1%E6%8B%9F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">使用channel模拟锁的实现</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-04-17 15:19:24 / 修改时间：15:40:36" itemprop="dateCreated datePublished" datetime="2022-04-17T15:19:24+09:00">2022-04-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-看人好处 记人长处 帮人难处
-</blockquote>
-
-<h3 id="线程安全问题"><a href="#线程安全问题" class="headerlink" title="线程安全问题"></a>线程安全问题</h3><p>假设我要要计算一个用户的积分，为了能够尽快算出用户所有的积分数，我们开启了协程</p>
-<p>main.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;fmt&quot;</span></span><br><span class="line">  <span class="string">&quot;sync&quot;</span></span><br><span class="line">  <span class="string">&quot;test/user&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">  newuser:= user.User&#123;</span><br><span class="line">    Point: <span class="number">1</span>,</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">  wg.Add(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Add()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Minus()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  wg.Wait()</span><br><span class="line"></span><br><span class="line">  point := newuser.Get()</span><br><span class="line"></span><br><span class="line">  fmt.Println(point)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>user/user.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> user</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">  Point <span class="keyword">int64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Point ++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Point --</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> user.Point</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果计算的用户积分每次都不一样，正常情况下应该是 1</p>
-<h3 id="加锁处理"><a href="#加锁处理" class="headerlink" title="加锁处理"></a>加锁处理</h3><p>user/user.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> user</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;sync&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">  Point <span class="keyword">int64</span></span><br><span class="line">  lock sync.Mutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.lock.Unlock()</span><br><span class="line">  user.Point ++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.lock.Unlock()</span><br><span class="line">  user.Point --</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> user.Point</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="使用channel模拟锁"><a href="#使用channel模拟锁" class="headerlink" title="使用channel模拟锁"></a>使用channel模拟锁</h3><p>nain.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;fmt&quot;</span></span><br><span class="line">  <span class="string">&quot;sync&quot;</span></span><br><span class="line">  <span class="string">&quot;test/user&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">  newuser:= user.User&#123;</span><br><span class="line">    Point: <span class="number">1</span>,</span><br><span class="line">    Lock: user.NewMutex(),</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">  wg.Add(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Add()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Minus()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  wg.Wait()</span><br><span class="line"></span><br><span class="line">  point := newuser.Get()</span><br><span class="line"></span><br><span class="line">  fmt.Println(point)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>user/user.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> user</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Mutex <span class="keyword">struct</span> &#123;</span><br><span class="line">  ch <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewMutex</span><span class="params">()</span> *<span class="title">Mutex</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> &amp;Mutex&#123;ch: <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;, <span class="number">1</span>)&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Mutex)</span> <span class="title">Lock</span><span class="params">()</span></span> &#123;</span><br><span class="line">  this.ch &lt;- <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Mutex)</span> <span class="title">UnLock</span><span class="params">()</span></span> &#123;</span><br><span class="line">  <span class="keyword">select</span> &#123;</span><br><span class="line">  <span class="keyword">case</span> &lt;-this.ch:</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    <span class="built_in">panic</span>(<span class="string">&quot;unlock error&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">  Point <span class="keyword">int64</span></span><br><span class="line">  Lock *Mutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.Lock.UnLock()</span><br><span class="line">  user.Point ++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.Lock.UnLock()</span><br><span class="line">  user.Point --</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> user.Point</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/04/17/golang%E4%BD%BF%E7%94%A8channel%E5%A4%84%E7%90%86%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/04/17/golang%E4%BD%BF%E7%94%A8channel%E5%A4%84%E7%90%86%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8/" class="post-title-link" itemprop="url">golang使用channel处理线程安全</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-04-17 14:17:23 / 修改时间：15:16:22" itemprop="dateCreated datePublished" datetime="2022-04-17T14:17:23+09:00">2022-04-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-山脚人多,我们山顶见
-</blockquote>
-
-<h3 id="线程安全问题"><a href="#线程安全问题" class="headerlink" title="线程安全问题"></a>线程安全问题</h3><p>假设我要要计算一个用户的积分，为了能够尽快算出用户所有的积分数，我们开启了协程</p>
-<p>main.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;fmt&quot;</span></span><br><span class="line">  <span class="string">&quot;sync&quot;</span></span><br><span class="line">  <span class="string">&quot;test/user&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">  newuser:= user.User&#123;</span><br><span class="line">    Point: <span class="number">1</span>,</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">  wg.Add(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Add()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Minus()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  wg.Wait()</span><br><span class="line"></span><br><span class="line">  point := newuser.Get()</span><br><span class="line"></span><br><span class="line">  fmt.Println(point)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>user/user.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> user</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">  Point <span class="keyword">int64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Point ++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Point --</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> user.Point</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果计算的用户积分每次都不一样，正常情况下应该是 1</p>
-<h3 id="加锁处理"><a href="#加锁处理" class="headerlink" title="加锁处理"></a>加锁处理</h3><p>user/user.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> user</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;sync&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">  Point <span class="keyword">int64</span></span><br><span class="line">  lock sync.Mutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.lock.Unlock()</span><br><span class="line">  user.Point ++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.lock.Unlock()</span><br><span class="line">  user.Point --</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> user.Point</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="channel处理"><a href="#channel处理" class="headerlink" title="channel处理"></a>channel处理</h3><p>man.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;fmt&quot;</span></span><br><span class="line">  <span class="string">&quot;sync&quot;</span></span><br><span class="line">  <span class="string">&quot;test/user&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">  newuser:= user.NewUser()</span><br><span class="line"></span><br><span class="line">  wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">  wg.Add(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">        newuser.Add()</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Minus()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  wg.Wait()</span><br><span class="line"></span><br><span class="line">  point := newuser.Get()</span><br><span class="line"></span><br><span class="line">  fmt.Println(point)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>user/user.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> user</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> opera <span class="function"><span class="keyword">func</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">  Point <span class="keyword">int64</span></span><br><span class="line">  ch <span class="keyword">chan</span> opera</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewUser</span><span class="params">()</span> *<span class="title">User</span></span> &#123;</span><br><span class="line">  ch := <span class="built_in">make</span>(<span class="keyword">chan</span> opera)</span><br><span class="line">  user := &amp;User&#123;</span><br><span class="line">    Point: <span class="number">1</span>,</span><br><span class="line">      ch: ch,</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> user.Watch()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> user</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Watch</span><span class="params">()</span></span> &#123;</span><br><span class="line">  <span class="keyword">for</span> fn := <span class="keyword">range</span> user.ch &#123;</span><br><span class="line">    fn()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Point ++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.ch &lt;- user.add</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Point --</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.ch &lt;- user.minus</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> user.Point</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
       
     </div>
 
