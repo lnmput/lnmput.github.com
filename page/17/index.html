@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">408</span>
+          <span class="site-state-item-count">410</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,235 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/30/laravel%E4%BD%BF%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95%E7%94%A8%E6%88%B7%E7%9A%84%E6%9C%80%E5%90%8E%E7%99%BB%E5%BD%95%E6%97%B6%E9%97%B4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/30/laravel%E4%BD%BF%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95%E7%94%A8%E6%88%B7%E7%9A%84%E6%9C%80%E5%90%8E%E7%99%BB%E5%BD%95%E6%97%B6%E9%97%B4/" class="post-title-link" itemprop="url">Laravel使用中间件记录用户的最后登录时间</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-03-30 18:51:32 / 修改时间：20:26:26" itemprop="dateCreated datePublished" datetime="2018-03-30T18:51:32+09:00">2018-03-30</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+六出飞花入户时, 坐看青竹变琼枝
+</blockquote>
+
+<p>在 Web 应用中，很多时候应用的效率瓶颈会出现在『数据库系统』中，所以作为一个合格的 Web 开发工程师，我们要严格控制好我们的数据库开销。之前我们已经对一些不需要频繁修改的数据做了缓存，如『活跃用户』数据和『资源推荐』数据，以此减少数据库读取的压力。然而，在数据库中操作中，『写入』对数据库造成的压力，要远比『读取』压力高得多。</p>
+<p>想要准确地跟踪用户的最后活跃时间，就必须在用户每一次请求服务器时都做记录，我们使用的主数据是 MySQL，也就是说每当用户访问一个页面，我们都将 MySQL 数据库里的 users 表写入数据。当我们有很多用户频繁访问站点时，这将会是数据库的一笔巨大开销。</p>
+<p>我们可以使用 Redis 来记录用户的访问时间，Redis 运行在机器的内存上，读写效率都极快。不过为了保证数据的完整性，我们需要定期将 Redis 数据同步到数据库中，否则一旦 Redis 出问题或者执行了 Redis 清理操作，用户的『最后活跃时间』将会丢失。</p>
+<p>基本思路如下：</p>
+<ul>
+<li>记录 - 通过中间件过滤用户所有请求，记录用户访问时间到 Redis 按日期区分的哈希表；</li>
+<li>同步 - 新建命令，计划任务每天运行一次此命令，将昨日哈希表里的数据同步到数据库中，并删除；</li>
+<li>读取 - 优先读取当日哈希表里 Redis 里的数据，无数据则使用数据库中的值。</li>
+</ul>
+<h3 id="记录时间"><a href="#记录时间" class="headerlink" title="记录时间"></a>记录时间</h3><p>Laravel 中间件提供了一种方便的机制来过滤进入应用的 HTTP 请求。例如，Laravel 内置了一个中间件来验证用户的身份认证。如果用户没有通过身份认证，中间件会将用户重定向到登录界面。但是，如果用户被认证，中间件将允许该请求进一步进入该应用。这就是我们在控制器的构造方法中使用 auth 中间件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;middleware(<span class="string">&#x27;auth&#x27;</span>, [<span class="string">&#x27;except&#x27;</span> =&gt; [<span class="string">&#x27;index&#x27;</span>, <span class="string">&#x27;show&#x27;</span>]]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当然，除了身份认证以外，中间件还可以用来执行各种任务。例如：<code>CORS</code>中间件可以负责为所有离开应用的响应添加合适的头部信息；日志中间件可以记录所有传入应用的请求。Laravel 自带了一些中间件，包括身份验证、CSRF 保护等。所有这些中间件都位于 <code>app/Http/Middleware</code> 目录中。</p>
+<p>Laravel 的中间件从执行时机上分『前置中间件』和『后置中间件』，前置中间件是应用初始化完成以后立刻执行，此时控制器路由还未分配、控制器还未执行、视图还未渲染。后置中间件是即将离开应用的响应，此时控制器已将渲染好的视图返回，我们可以在后置中间件里修改响应。两者的区别在于书写方式的不同：</p>
+<ul>
+<li>前置中间件：<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Middleware</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeforeMiddleware</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 这是前置中间件，在还未进入 $next 之前调用</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$next</span>(<span class="variable">$request</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>后置中间件：<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Middleware</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AfterMiddleware</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$response</span> = <span class="variable">$next</span>(<span class="variable">$request</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 这是后置中间件，$next 已经执行完毕并返回响应 $response，</span></span><br><span class="line">        <span class="comment">// 我们可以在此处对响应进行修改。</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$response</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意他们的区别在于 $next($request) 的执行位置，而非类的命名或者其他。</p>
+</blockquote>
+</li>
+</ul>
+<p>我们将选择『前置中间件』来实现用户登录时间的记录。</p>
+<h4 id="第一步-创建中间件"><a href="#第一步-创建中间件" class="headerlink" title="第一步. 创建中间件"></a>第一步. 创建中间件</h4><p>运行以下命令，生成中间件类文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ php artisan make:middleware RecordLastActivedTime</span><br></pre></td></tr></table></figure>
+<h4 id="第二步-注册中间件"><a href="#第二步-注册中间件" class="headerlink" title="第二步. 注册中间件"></a>第二步. 注册中间件</h4><p>想让中间件在应用的每个 HTTP 请求期间运行，我们还需要在 <code>app/Http/Kernel.php</code>类中对中间件进行注册。</p>
+<p>为了方便大家理解，我将 <code>Kernel.php</code> 里的代码做了注释，同时在 Web 中间件组中注册了 <code>RecordLastActivedTime</code> 中间件，这样每一次 Web 请求都会运行我们的 <code>RecordLastActivedTime</code> 类里的 <code>handle()</code> 方法：</p>
+<p>app/Http/Kernel.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Http</span>\<span class="title">Kernel</span> <span class="title">as</span> <span class="title">HttpKernel</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Kernel</span> <span class="keyword">extends</span> <span class="title">HttpKernel</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">// 全局中间件，最先调用</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$middleware</span> = [</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 检测是否应用是否进入『维护模式』</span></span><br><span class="line">        <span class="comment">// 见：https://d.laravel-china.org/docs/5.5/configuration#maintenance-mode</span></span><br><span class="line">        \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 检测请求的数据是否过大</span></span><br><span class="line">        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 对提交的请求参数进行 PHP 函数 `trim()` 处理</span></span><br><span class="line">        \App\Http\Middleware\TrimStrings::class,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将提交请求参数中空子串转换为 null</span></span><br><span class="line">        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 修正代理服务器后的服务器参数</span></span><br><span class="line">        \App\Http\Middleware\TrustProxies::class,</span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 定义中间件组</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$middlewareGroups</span> = [</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Web 中间件组，应用于 routes/web.php 路由文件</span></span><br><span class="line">        <span class="string">&#x27;web&#x27;</span> =&gt; [</span><br><span class="line">            <span class="comment">// Cookie 加密解密</span></span><br><span class="line">            \App\Http\Middleware\EncryptCookies::class,</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 将 Cookie 添加到响应中</span></span><br><span class="line">            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 开启会话</span></span><br><span class="line">            \Illuminate\Session\Middleware\StartSession::class,</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 认证用户，此中间件以后 Auth 类才能生效</span></span><br><span class="line">            <span class="comment">// 见：https://d.laravel-china.org/docs/5.5/authentication</span></span><br><span class="line">            \Illuminate\Session\Middleware\AuthenticateSession::class,</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 将系统的错误数据注入到视图变量 $errors 中</span></span><br><span class="line">            \Illuminate\View\Middleware\ShareErrorsFromSession::class,</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 检验 CSRF ，防止跨站请求伪造的安全威胁</span></span><br><span class="line">            <span class="comment">// 见：https://d.laravel-china.org/docs/5.5/csrf</span></span><br><span class="line">            \App\Http\Middleware\VerifyCsrfToken::class,</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 处理路由绑定</span></span><br><span class="line">            <span class="comment">// 见：https://d.laravel-china.org/docs/5.5/routing#route-model-binding</span></span><br><span class="line">            \Illuminate\Routing\Middleware\SubstituteBindings::class,</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 记录用户最后活跃时间</span></span><br><span class="line">            \App\Http\Middleware\RecordLastActivedTime::class,</span><br><span class="line">        ],</span><br><span class="line"></span><br><span class="line">        <span class="comment">// API 中间件组，应用于 routes/api.php 路由文件</span></span><br><span class="line">        <span class="string">&#x27;api&#x27;</span> =&gt; [</span><br><span class="line">            <span class="comment">// 使用别名来调用中间件</span></span><br><span class="line">            <span class="comment">// 请见：https://d.laravel-china.org/docs/5.5/middleware#为路由分配中间件</span></span><br><span class="line">            <span class="string">&#x27;throttle:60,1&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;bindings&#x27;</span>,</span><br><span class="line">        ],</span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 中间件别名设置，允许你使用别名调用中间件，例如上面的 api 中间件组调用</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$routeMiddleware</span> = [</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 只有登录用户才能访问，我们在控制器的构造方法中大量使用</span></span><br><span class="line">        <span class="string">&#x27;auth&#x27;</span> =&gt; \Illuminate\Auth\Middleware\Authenticate::class,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// HTTP Basic Auth 认证</span></span><br><span class="line">        <span class="string">&#x27;auth.basic&#x27;</span> =&gt; \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 处理路由绑定</span></span><br><span class="line">        <span class="comment">// 见：https://d.laravel-china.org/docs/5.5/routing#route-model-binding</span></span><br><span class="line">        <span class="string">&#x27;bindings&#x27;</span> =&gt; \Illuminate\Routing\Middleware\SubstituteBindings::class,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 用户授权功能</span></span><br><span class="line">        <span class="string">&#x27;can&#x27;</span> =&gt; \Illuminate\Auth\Middleware\Authorize::class,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 只有游客才能访问，在 register 和 login 请求中使用，只有未登录用户才能访问这些页面</span></span><br><span class="line">        <span class="string">&#x27;guest&#x27;</span> =&gt; \App\Http\Middleware\RedirectIfAuthenticated::class,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 访问节流，类似于 『1 分钟只能请求 10 次』的需求，一般在 API 中使用</span></span><br><span class="line">        <span class="string">&#x27;throttle&#x27;</span> =&gt; \Illuminate\Routing\Middleware\ThrottleRequests::class,</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="第三步-书写中间件类"><a href="#第三步-书写中间件类" class="headerlink" title="第三步. 书写中间件类"></a>第三步. 书写中间件类</h4><p>app/Http/Middleware/RecordLastActivedTime.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Middleware</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Auth</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RecordLastActivedTime</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 如果是登录用户的话</span></span><br><span class="line">        <span class="keyword">if</span> (Auth::check()) &#123;</span><br><span class="line">            <span class="comment">// 记录最后登录时间</span></span><br><span class="line">            Auth::user()-&gt;recordLastActivedAt();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$next</span>(<span class="variable">$request</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们将业务逻辑封装与 User 类中，事实上，我们要将记录和读取的相关逻辑放置于单独的 Trait 中：</p>
+<p>app/Models/Traits/LastActivedAtHelper.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Models</span>\<span class="title">Traits</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Redis</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Carbon</span>\<span class="title">Carbon</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">LastActivedAtHelper</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">// 缓存相关</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$hash_prefix</span> = <span class="string">&#x27;larabbs_last_actived_at_&#x27;</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$field_prefix</span> = <span class="string">&#x27;user_&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">recordLastActivedAt</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 获取今天的日期</span></span><br><span class="line">        <span class="variable">$date</span> = Carbon::now()-&gt;toDateString();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Redis 哈希表的命名，如：larabbs_last_actived_at_2017-10-21</span></span><br><span class="line">        <span class="variable">$hash</span> = <span class="keyword">$this</span>-&gt;hash_prefix . <span class="variable">$date</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 字段名称，如：user_1</span></span><br><span class="line">        <span class="variable">$field</span> = <span class="keyword">$this</span>-&gt;field_prefix . <span class="keyword">$this</span>-&gt;id;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 当前时间，如：2017-10-21 08:35:15</span></span><br><span class="line">        <span class="variable">$now</span> = Carbon::now()-&gt;toDateTimeString();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 数据写入 Redis ，字段已存在会被更新</span></span><br><span class="line">        Redis::hSet(<span class="variable">$hash</span>, <span class="variable">$field</span>, <span class="variable">$now</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后在 User 模型引用：</p>
+<p>app/Models/User.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">.</span><br><span class="line">.</span><br><span class="line">.</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">extends</span> <span class="title">Authenticatable</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">use</span> <span class="title">Traits</span>\<span class="title">LastActivedAtHelper</span>;</span><br><span class="line"></span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="测试一下"><a href="#测试一下" class="headerlink" title="测试一下"></a>测试一下</h4><p>如果我们的代码可用的话，当我们处于登录状态时，每一次访问网站都会将当前的时间，记录在 Redis 的哈希表里。<br>接下来修改 recordLastActivedAt 方法，在得到哈希表名称后，使用 hGetAll 获取哈希表里的全部数据，并使用 Laravel 自带的调试方法 dd() 打印出来：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">recordLastActivedAt</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 获取今天的日期</span></span><br><span class="line">    <span class="variable">$date</span> = Carbon::now()-&gt;toDateString();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Redis 哈希表的命名，如：larabbs_last_actived_at_2017-10-21</span></span><br><span class="line">    <span class="variable">$hash</span> = <span class="keyword">$this</span>-&gt;hash_prefix . <span class="variable">$date</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 字段名称，如：user_1</span></span><br><span class="line">    <span class="variable">$field</span> = <span class="keyword">$this</span>-&gt;field_prefix . <span class="keyword">$this</span>-&gt;id;</span><br><span class="line"></span><br><span class="line">    dd(Redis::hGetAll(<span class="variable">$hash</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 当前时间，如：2017-10-21 08:35:15</span></span><br><span class="line">    <span class="variable">$now</span> = Carbon::now()-&gt;toDateTimeString();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 数据写入 Redis ，字段已存在会被更新</span></span><br><span class="line">    Redis::hSet(<span class="variable">$hash</span>, <span class="variable">$field</span>, <span class="variable">$now</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>刷新页面即可看到，我们已经能正常记录用户的访问时间<br>测试完成后删除 dd(Redis::hGetAll($hash)); 调用。</p>
+<h3 id="同步到数据库"><a href="#同步到数据库" class="headerlink" title="同步到数据库"></a>同步到数据库</h3><p>接下来把记录下来的时间同步到数据库中。我们将设置一个 24 小时运行一次的计划任务，此任务负责将 Redis 中用户最后登录时间同步到数据库中。</p>
+<h4 id="第一步-数据库添加字段"><a href="#第一步-数据库添加字段" class="headerlink" title="第一步. 数据库添加字段"></a>第一步. 数据库添加字段</h4><p>首先我们需要在 users 表中新建字段，用以存储</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ php artisan make:migration add_last_actived_at_to_users_table --table=users</span><br></pre></td></tr></table></figure>
+<p>代码迁移内容：</p>
+<p>database/migrations/timestamp_add_last_actived_at_to_users_table.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">Schema</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Schema</span>\<span class="title">Blueprint</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Migrations</span>\<span class="title">Migration</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AddLastActivedAtToUsersTable</span> <span class="keyword">extends</span> <span class="title">Migration</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">up</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Schema::table(<span class="string">&#x27;users&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$table</span>-&gt;timestamp(<span class="string">&#x27;last_actived_at&#x27;</span>)-&gt;nullable();</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">down</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Schema::table(<span class="string">&#x27;users&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">            <span class="variable">$table</span>-&gt;dropColumn(<span class="string">&#x27;last_actived_at&#x27;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>生效到数据库中：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ php artisan migrate</span><br></pre></td></tr></table></figure>
+
+<h4 id="第二步-新建-Artisan-命令"><a href="#第二步-新建-Artisan-命令" class="headerlink" title="第二步. 新建 Artisan 命令"></a>第二步. 新建 Artisan 命令</h4><p>我们需要新建命令，以供计划任务调用：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ php artisan make:command SyncUserActivedAt --command=larabbs:sync-user-actived-at</span><br></pre></td></tr></table></figure>
+<p>编辑命令类：</p>
+<p>app/Console/Commands/SyncUserActivedAt.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Console</span>\<span class="title">Commands</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Console</span>\<span class="title">Command</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Models</span>\<span class="title">User</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SyncUserActivedAt</span> <span class="keyword">extends</span> <span class="title">Command</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$signature</span> = <span class="string">&#x27;larabbs:sync-user-actived-at&#x27;</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$description</span> = <span class="string">&#x27;将用户最后登录时间从 Redis 同步到数据库中&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params">User <span class="variable">$user</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$user</span>-&gt;syncUserActivedAt();</span><br><span class="line">        <span class="keyword">$this</span>-&gt;info(<span class="string">&quot;同步成功！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为方便代码管理，我们将具体的业务代码放置于 LastActivedAtHelper Trait 中：</p>
+<p>app/Models/Traits/LastActivedAtHelper.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">.</span><br><span class="line">.</span><br><span class="line">.</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">LastActivedAtHelper</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">syncUserActivedAt</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 获取昨天的日期，格式如：2017-10-21</span></span><br><span class="line">        <span class="variable">$yesterday_date</span> = Carbon::yesterday()-&gt;toDateString();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Redis 哈希表的命名，如：larabbs_last_actived_at_2017-10-21</span></span><br><span class="line">        <span class="variable">$hash</span> = <span class="keyword">$this</span>-&gt;hash_prefix . <span class="variable">$yesterday_date</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 从 Redis 中获取所有哈希表里的数据</span></span><br><span class="line">        <span class="variable">$dates</span> = Redis::hGetAll(<span class="variable">$hash</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 遍历，并同步到数据库中</span></span><br><span class="line">        <span class="keyword">foreach</span> (<span class="variable">$dates</span> <span class="keyword">as</span> <span class="variable">$user_id</span> =&gt; <span class="variable">$actived_at</span>) &#123;</span><br><span class="line">            <span class="comment">// 会将 `user_1` 转换为 1</span></span><br><span class="line">            <span class="variable">$user_id</span> = str_replace(<span class="keyword">$this</span>-&gt;field_prefix, <span class="string">&#x27;&#x27;</span>, <span class="variable">$user_id</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 只有当用户存在时才更新到数据库中</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="variable">$user</span> = <span class="keyword">$this</span>-&gt;find(<span class="variable">$user_id</span>)) &#123;</span><br><span class="line">                <span class="variable">$user</span>-&gt;last_actived_at = <span class="variable">$actived_at</span>;</span><br><span class="line">                <span class="variable">$user</span>-&gt;save();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 以数据库为中心的存储，既已同步，即可删除</span></span><br><span class="line">        Redis::del(<span class="variable">$hash</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="第三步-测试-Artisan-命令"><a href="#第三步-测试-Artisan-命令" class="headerlink" title="第三步. 测试 Artisan 命令"></a>第三步. 测试 Artisan 命令</h4><p>接下来我们需测试下代码，已确保 Redis 中的数据能正常同步到数据库中。在开始之前，我们获取的是昨日的数据，不方便测试，我们需将以下这一行代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$yesterday_date</span> = Carbon::yesterday()-&gt;toDateString();</span><br></pre></td></tr></table></figure>
+<p>临时修改为今天的日期，这样就能将我们的上一个测试制造的数据获取到：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$yesterday_date</span> = Carbon::now()-&gt;toDateString();</span><br></pre></td></tr></table></figure>
+<p>修改完成后，命令行执行：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ php artisan larabbs:sync-user-actived-at</span><br></pre></td></tr></table></figure>
+
+<h3 id="第四步-任务调度"><a href="#第四步-任务调度" class="headerlink" title="第四步. 任务调度"></a>第四步. 任务调度</h3><p>我们还需要在每天零时 00:00 自动对数据进行同步。Laravel 任务调度可以轻松帮我们实现此功能。</p>
+<p>在前面开发活跃用户章节中我们已经做了 Cron 设置，此处我们只需在 Kernel.php 的 schedule() 方法中新增任务调度即可：</p>
+<p>app/Console/Kernel.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">.</span><br><span class="line">.</span><br><span class="line">.</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Kernel</span> <span class="keyword">extends</span> <span class="title">ConsoleKernel</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">schedule</span>(<span class="params">Schedule <span class="variable">$schedule</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// $schedule-&gt;command(&#x27;inspire&#x27;)</span></span><br><span class="line">        <span class="comment">//          -&gt;hourly();</span></span><br><span class="line">        <span class="comment">// 每隔一个小时执行一遍</span></span><br><span class="line">        <span class="variable">$schedule</span>-&gt;command(<span class="string">&#x27;larabbs:calculate-active-user&#x27;</span>)-&gt;hourly();</span><br><span class="line">        <span class="comment">// 每日零时执行一次</span></span><br><span class="line">        <span class="variable">$schedule</span>-&gt;command(<span class="string">&#x27;larabbs:sync-user-actived-at&#x27;</span>)-&gt;dailyAt(<span class="string">&#x27;00:00&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="数据读取"><a href="#数据读取" class="headerlink" title="数据读取"></a>数据读取</h3><p>接下来我们要将记录下来的数据在用户的个人空间里显示出来。</p>
+<h4 id="第一步-配置访问器"><a href="#第一步-配置访问器" class="headerlink" title="第一步. 配置访问器"></a>第一步. 配置访问器</h4><p>我们将使用 Eloquent 的 访问器 来实现此功能。当我们从实例中获取某些属性值的时候，访问器允许我们对 Eloquent 属性值进行动态修改。</p>
+<p>访问器的命名规范与修改器类似，只是将 set 换成 get 而已：</p>
+<p>app/Models/Traits/LastActivedAtHelper.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">.</span><br><span class="line">.</span><br><span class="line">.</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">LastActivedAtHelper</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line">    .</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getLastActivedAtAttribute</span>(<span class="params"><span class="variable">$value</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 获取今天的日期</span></span><br><span class="line">        <span class="variable">$date</span> = Carbon::now()-&gt;toDateString();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Redis 哈希表的命名，如：larabbs_last_actived_at_2017-10-21</span></span><br><span class="line">        <span class="variable">$hash</span> = <span class="keyword">$this</span>-&gt;hash_prefix . <span class="variable">$date</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 字段名称，如：user_1</span></span><br><span class="line">        <span class="variable">$field</span> = <span class="keyword">$this</span>-&gt;field_prefix . <span class="keyword">$this</span>-&gt;id;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 三元运算符，优先选择 Redis 的数据，否则使用数据库中</span></span><br><span class="line">        <span class="variable">$datetime</span> = Redis::hGet(<span class="variable">$hash</span>, <span class="variable">$field</span>) ? : <span class="variable">$value</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果存在的话，返回时间对应的 Carbon 实体</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$datetime</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Carbon(<span class="variable">$datetime</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 否则使用用户注册时间</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;created_at;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时意识到一个问题，我们一直在重复哈希表和哈希字段的命名代码，为了提高代码的可维护性，我们需将其抽出为可复用的方法 getHashFromDateString 和 getHashField ，并重构整个 LastActivedAtHelper 类：</p>
+<p>app/Models/Traits/LastActivedAtHelper.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Models</span>\<span class="title">Traits</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Redis</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Carbon</span>\<span class="title">Carbon</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">LastActivedAtHelper</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">// 缓存相关</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$hash_prefix</span> = <span class="string">&#x27;larabbs_last_actived_at_&#x27;</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$field_prefix</span> = <span class="string">&#x27;user_&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">recordLastActivedAt</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 获取今日 Redis 哈希表名称，如：larabbs_last_actived_at_2017-10-21</span></span><br><span class="line">        <span class="variable">$hash</span> = <span class="keyword">$this</span>-&gt;getHashFromDateString(Carbon::now()-&gt;toDateString());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 字段名称，如：user_1</span></span><br><span class="line">        <span class="variable">$field</span> = <span class="keyword">$this</span>-&gt;getHashField();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 当前时间，如：2017-10-21 08:35:15</span></span><br><span class="line">        <span class="variable">$now</span> = Carbon::now()-&gt;toDateTimeString();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 数据写入 Redis ，字段已存在会被更新</span></span><br><span class="line">        Redis::hSet(<span class="variable">$hash</span>, <span class="variable">$field</span>, <span class="variable">$now</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">syncUserActivedAt</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 获取昨日的哈希表名称，如：larabbs_last_actived_at_2017-10-21</span></span><br><span class="line">        <span class="variable">$hash</span> = <span class="keyword">$this</span>-&gt;getHashFromDateString(Carbon::yesterday()-&gt;toDateString());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 从 Redis 中获取所有哈希表里的数据</span></span><br><span class="line">        <span class="variable">$dates</span> = Redis::hGetAll(<span class="variable">$hash</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 遍历，并同步到数据库中</span></span><br><span class="line">        <span class="keyword">foreach</span> (<span class="variable">$dates</span> <span class="keyword">as</span> <span class="variable">$user_id</span> =&gt; <span class="variable">$actived_at</span>) &#123;</span><br><span class="line">            <span class="comment">// 会将 `user_1` 转换为 1</span></span><br><span class="line">            <span class="variable">$user_id</span> = str_replace(<span class="keyword">$this</span>-&gt;field_prefix, <span class="string">&#x27;&#x27;</span>, <span class="variable">$user_id</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 只有当用户存在时才更新到数据库中</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="variable">$user</span> = <span class="keyword">$this</span>-&gt;find(<span class="variable">$user_id</span>)) &#123;</span><br><span class="line">                <span class="variable">$user</span>-&gt;last_actived_at = <span class="variable">$actived_at</span>;</span><br><span class="line">                <span class="variable">$user</span>-&gt;save();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 以数据库为中心的存储，既已同步，即可删除</span></span><br><span class="line">        Redis::del(<span class="variable">$hash</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getLastActivedAtAttribute</span>(<span class="params"><span class="variable">$value</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 获取今日对应的哈希表名称</span></span><br><span class="line">        <span class="variable">$hash</span> = <span class="keyword">$this</span>-&gt;getHashFromDateString(Carbon::now()-&gt;toDateString());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 字段名称，如：user_1</span></span><br><span class="line">        <span class="variable">$field</span> = <span class="keyword">$this</span>-&gt;getHashField();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 三元运算符，优先选择 Redis 的数据，否则使用数据库中</span></span><br><span class="line">        <span class="variable">$datetime</span> = Redis::hGet(<span class="variable">$hash</span>, <span class="variable">$field</span>) ? : <span class="variable">$value</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果存在的话，返回时间对应的 Carbon 实体</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$datetime</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Carbon(<span class="variable">$datetime</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 否则使用用户注册时间</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;created_at;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getHashFromDateString</span>(<span class="params"><span class="variable">$date</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// Redis 哈希表的命名，如：larabbs_last_actived_at_2017-10-21</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;hash_prefix . <span class="variable">$date</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getHashField</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 字段名称，如：user_1</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;field_prefix . <span class="keyword">$this</span>-&gt;id;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="第二步-页面显示"><a href="#第二步-页面显示" class="headerlink" title="第二步. 页面显示"></a>第二步. 页面显示</h4><p>在 『注册于』 区块下新增 『最后活跃』，因返回的值为 Carbon 实体，故我们可用 diffForHumans() 来输出用户友好的时间：</p>
+<p>resources/views/users/show.blade.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;h4&gt;&lt;strong&gt;注册于&lt;/strong&gt;&lt;/h4&gt;</span><br><span class="line">&lt;p&gt;&#123;&#123; <span class="variable">$user</span>-&gt;created_at-&gt;diffForHumans() &#125;&#125;&lt;/p&gt;</span><br><span class="line">&lt;hr&gt;</span><br><span class="line">&lt;h4&gt;&lt;strong&gt;最后活跃&lt;/strong&gt;&lt;/h4&gt;</span><br><span class="line">&lt;p title=<span class="string">&quot;&#123;&#123;  <span class="subst">$user</span>-&gt;last_actived_at &#125;&#125;&quot;</span>&gt;&#123;&#123; <span class="variable">$user</span>-&gt;last_actived_at-&gt;diffForHumans() &#125;&#125;&lt;/p&gt;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/30/%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%BA%BF%E7%A8%8B%E7%9A%84%E7%90%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/30/%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%BA%BF%E7%A8%8B%E7%9A%84%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">进程和线程的理解</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-03-30 10:18:16 / 修改时间：11:22:43" itemprop="dateCreated datePublished" datetime="2018-03-30T10:18:16+09:00">2018-03-30</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+倚楼听风雨，淡看江湖路
+</blockquote>
+
+<p>什么叫“多任务”呢？简单地说，就是操作系统可以同时运行多个任务。打个比方，你一边在用浏览器上网，一边在听MP3，一边在用Word赶作业，这就是多任务，至少同时有3个任务正在运行。还有很多任务悄悄地在后台同时运行着，只是桌面上没有显示而已。</p>
+<p>现在，多核CPU已经非常普及了，但是，即使过去的单核CPU，也可以执行多任务。由于CPU执行代码都是顺序执行的，那么，单核CPU是怎么执行多任务的呢？</p>
+<p>答案就是操作系统轮流让各个任务交替执行，任务1执行0.01秒，切换到任务2，任务2执行0.01秒，再切换到任务3，执行0.01秒……这样反复执行下去。表面上看，每个任务都是交替执行的，但是，由于CPU的执行速度实在是太快了，我们感觉就像所有任务都在同时执行一样。</p>
+<p>真正的并行执行多任务只能在多核CPU上实现，但是，由于任务数量远远多于CPU的核心数量，所以，操作系统也会自动把很多任务轮流调度到每个核心上执行。</p>
+<p>对于操作系统来说，一个任务就是一个进程（<code>Process</code>），比如打开一个浏览器就是启动一个浏览器进程，打开一个记事本就启动了一个记事本进程，打开两个记事本就启动了两个记事本进程，打开一个Word就启动了一个Word进程。</p>
+<p>有些进程还不止同时干一件事，比如Word，它可以同时进行打字、拼写检查、打印等事情。在一个进程内部，要同时干多件事，就需要同时运行多个“子任务”，我们把进程内的这些“子任务”称为线程（<code>Thread</code>）。</p>
+<p>由于每个进程至少要干一件事，所以，一个进程至少有一个线程。当然，像Word这种复杂的进程可以有多个线程，多个线程可以同时执行，多线程的执行方式和多进程是一样的，也是由操作系统在多个线程之间快速切换，让每个线程都短暂地交替运行，看起来就像同时执行一样。当然，真正地同时执行多线程需要多核CPU才可能实现。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/0014319272686365ec7ceaeca33428c914edf8f70cca383000">https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/0014319272686365ec7ceaeca33428c914edf8f70cca383000</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -942,286 +1171,6 @@ body参数信息<figure class="highlight json"><table><tr><td class="gutter"><pr
 <p>老式浏览器只支持前三个参数。</p>
 <h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><blockquote>
 <p><a target="_blank" rel="noopener" href="http://javascript.ruanyifeng.com/bom/window.html">http://javascript.ruanyifeng.com/bom/window.html</a><br><a target="_blank" rel="noopener" href="https://danlimerick.wordpress.com/2014/01/18/how-to-catch-javascript-errors-with-window-onerror-even-on-chrome-and-firefox/">https://danlimerick.wordpress.com/2014/01/18/how-to-catch-javascript-errors-with-window-onerror-even-on-chrome-and-firefox/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/22/setTimeout%E5%87%BD%E6%95%B0%E4%B9%8B%E5%BE%AA%E7%8E%AF%E5%92%8C%E9%97%AD%E5%8C%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/22/setTimeout%E5%87%BD%E6%95%B0%E4%B9%8B%E5%BE%AA%E7%8E%AF%E5%92%8C%E9%97%AD%E5%8C%85/" class="post-title-link" itemprop="url">setTimeout函数之循环和闭包</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-03-22 17:46:47" itemprop="dateCreated datePublished" datetime="2018-03-22T17:46:47+09:00">2018-03-22</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 21:52:23" itemprop="dateModified" datetime="2018-03-27T21:52:23+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-所有的时光都是被辜负被浪费后，才能从记忆里将某一段拎出来，拍拍上面沉积的灰尘，感叹它是最好的时光。
-</blockquote>
-
-<h3 id="代码片段一"><a href="#代码片段一" class="headerlink" title="代码片段一"></a>代码片段一</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(i);</span><br><span class="line">    &#125;, <span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果:</p>
-<blockquote>
-<p>在控制台下, 一秒后输出5个5, 没有时间间隔;</p>
-</blockquote>
-<p>分析:</p>
-<blockquote>
-<p>setTimeout的执行异步的, for 循环的执行是很快的, 当setTimeout开始执行的时候,for循环已经执行完毕, 此时的i变为5(for循环使用var申明的变量是全局的), 因为所有的都是延迟1S执行, 所以最后一起输出;</p>
-</blockquote>
-<h3 id="代码片段二"><a href="#代码片段二" class="headerlink" title="代码片段二"></a>代码片段二</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(i);</span><br><span class="line">    &#125;, i * <span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>结果:</p>
-<blockquote>
-<p>在控制台下, 每隔一秒输出一个5;</p>
-</blockquote>
-<p>分析:</p>
-<blockquote>
-<p>为什么是5, 上一个代码片段已经分析, 每一秒输出一个的原因就是for循环过程中调用setTimeout的时候,调用5次时间非常短可忽略不计, 调用依次给的延迟秒数是0s,1s,2s,3s,4s.所以我们再最后看到他执行的时候, 是每隔一秒出现一个;</p>
-</blockquote>
-<h3 id="代码片段三"><a href="#代码片段三" class="headerlink" title="代码片段三"></a>代码片段三</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    (<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(i);</span><br><span class="line">        &#125;, i*<span class="number">1000</span>);</span><br><span class="line">    &#125;)();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果:</p>
-<blockquote>
-<p>在控制台下, 每隔一秒输出一个5, 和代码片段二的结果一样;</p>
-</blockquote>
-<p>分析:<br>虽然加了闭包, 但是并没有影响结果</p>
-<h3 id="代码片段四"><a href="#代码片段四" class="headerlink" title="代码片段四"></a>代码片段四</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">	(<span class="function"><span class="keyword">function</span> (<span class="params">i</span>) </span>&#123;</span><br><span class="line">	    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">	        <span class="built_in">console</span>.log(i);</span><br><span class="line">	    &#125;, i*<span class="number">1000</span>);</span><br><span class="line">	&#125;)(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果:</p>
-<blockquote>
-<p>在控制台下,每隔一秒依次输出0,1,2,3,4;</p>
-</blockquote>
-<p>分析:<br>此时setTimeout里面的参数是通过闭包传递的, 并没有受到全局i的影响</p>
-<h3 id="代码片段五"><a href="#代码片段五" class="headerlink" title="代码片段五"></a>代码片段五</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    (<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(i);</span><br><span class="line">        &#125;, i*<span class="number">1000</span>);</span><br><span class="line">    &#125;)();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果:</p>
-<blockquote>
-<p>在控制台下,每隔一秒依次输出0,1,2,3,4;</p>
-</blockquote>
-<p>分析:</p>
-<blockquote>
-<p>使用let申明的变量是块级作用域, 当前的i只在本轮循环有效，所以每一次循环的i其实都是一个新的变量;</p>
-</blockquote>
-<p>更多关于let var 的区别, 请参考我的另外一篇文字: <a href="2017/08/08/var-let-const%E7%9A%84%E5%8C%BA%E5%88%AB/">var,let,const的区别</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/22/Github%E7%9A%84Restful-HTTP-API%E8%AE%BE%E8%AE%A1%E5%88%86%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/22/Github%E7%9A%84Restful-HTTP-API%E8%AE%BE%E8%AE%A1%E5%88%86%E8%A7%A3/" class="post-title-link" itemprop="url">Github的Restful-HTTP-API设计分解</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-03-22 15:46:39 / 修改时间：17:09:22" itemprop="dateCreated datePublished" datetime="2018-03-22T15:46:39+09:00">2018-03-22</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-在硝烟中想起冰棒汽水的味道
-和那些无所事事一整个夏天的年少
-</blockquote>
-
-<h3 id="什么是-RESTful"><a href="#什么是-RESTful" class="headerlink" title="什么是 RESTful"></a>什么是 RESTful</h3><p>RESTful 是一种软件设计风格，由 Roy Fielding 在他的 论文 中提出，全称为 Representational State Transfer，直译为表现层状态转移，或许可以解释为用 URL 定位资源，用 HTTP 动词描述操作，不用太纠结于定义，接下来我们会详细讨论。</p>
-<p>RESTful 风格的接口，目前来看，实现的最好的就是 Github API，经常被效仿。接下来我们通过分析 Github API 来引出我们的 API 设计原则。</p>
-<h3 id="为什么选择-RESTful"><a href="#为什么选择-RESTful" class="headerlink" title="为什么选择 RESTful"></a>为什么选择 RESTful</h3><p>我认为一套接口应该尽量满足以下几个原则：</p>
-<ul>
-<li>安全可靠，高效，易扩展。</li>
-<li>简单明了，可读性强，没有歧义。</li>
-<li>API 风格统一，调用规则，传入参数和返回数据有统一的标准。</li>
-</ul>
-<p>我们当然可以根据自己的经验，或者参考知名公司的接口总结设计出一套满足要求的接口，但是每个人对接口的理解不同，设计出来的接口也会有所不同，接口的命名，请求参数的格式，响应的结果，错误响应的错误码，等等很多地方都会有不一样的实现。当你去寻求一种设计理念来帮助我们设计出满足要求的接口，一定会发现 RESTful。<br>RESTful 的设计理念基于 HTTP 协议，因为 Roy Fielding 就是 HTTP 协议（1.0版和1.1版）的主要设计者。它是一种设计风格，没有规定我们一定如何实现，但是为我们提供了很好的设计理念。风格的统一，使得我们不需要过多的解释，就能让使用者明白该如何使用，同时也会有很多现成的工具来帮助我们实现 RESTful 风格的接口。</p>
-<h3 id="RESTful-设计原则"><a href="#RESTful-设计原则" class="headerlink" title="RESTful 设计原则"></a>RESTful 设计原则</h3><h4 id="1-HTTPS"><a href="#1-HTTPS" class="headerlink" title="1. HTTPS"></a>1. HTTPS</h4><p>HTTPS 为接口的安全提供了保障，可以有效防止通信被窃听和篡改。而且现在部署 HTTPS 的成本也越来越低，你可以通过 cerbot 等工具，方便快速的制作免费的安全证书，所以生产环境，请务必使用 HTTPS。</p>
-<blockquote>
-<p>另外注意，非 HTTPS 的 API 调用，不要重定向到 HTTPS，而要直接返回调用错误以禁止不安全的调用。</p>
-</blockquote>
-<h4 id="2-域名"><a href="#2-域名" class="headerlink" title="2. 域名"></a>2. 域名</h4><p>应当尽可能的将 API 与其主域名区分开，可以使用专用的域名，访问我们的 API，例如：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.vxndy.com</span></span><br></pre></td></tr></table></figure>
-<p>或者可以放在主域名下，例如：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//www.vxndy.com/api</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="3-版本控制"><a href="#3-版本控制" class="headerlink" title="3. 版本控制"></a>3. 版本控制</h4><p>随着业务的发展，需求的不断变化，API 的迭代是必然的，很可能当前版本正在使用，而我们就得开发甚至上线一个不兼容的新版本，为了让旧用户可以正常使用，为了保证开发的顺利进行，我们需要控制好 API 的版本。</p>
-<p>通常情况下，有两种做法：</p>
-<ul>
-<li>将版本号直接加入 URL 中<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.vxndy.com/v1</span></span><br><span class="line">https:<span class="comment">//api.vxndy.com/v2</span></span><br></pre></td></tr></table></figure></li>
-<li>使用 HTTP 请求头的 Accept 字段进行区分<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.larabbs.com/</span></span><br><span class="line">    Accept: application/prs.vxndy.v1+json</span><br><span class="line">    Accept: application/prs.vxndy.v2+json</span><br></pre></td></tr></table></figure>
-Github Api 虽然默认使用了第一种方法，但是其实是推荐并实现了第二种方法的，我们同样也尽量使用第二种方式。</li>
-</ul>
-<h4 id="4-用-URL-定位资源"><a href="#4-用-URL-定位资源" class="headerlink" title="4. 用 URL 定位资源"></a>4. 用 URL 定位资源</h4><p>在 RESTful 的架构中，所有的一切都表示资源，每一个 URL 都代表着一种资源，资源应当是一个名词，而且大部分情况下是名词的复数，尽量不要在 URL 中出现动词。<br>先来看看 github 的 例子：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GET /issues                                      列出所有的 issue</span><br><span class="line">GET /orgs/:org/issues                            列出某个项目的 issue</span><br><span class="line">GET /repos/:owner/:repo/issues/:number           获取某个项目的某个 issue</span><br><span class="line">POST /repos/:owner/:repo/issues                  为某个项目创建 issue</span><br><span class="line">PATCH /repos/:owner/:repo/issues/:number         修改某个 issue</span><br><span class="line">PUT /repos/:owner/:repo/issues/:number/lock      锁住某个 issue</span><br><span class="line">DELETE /repos/:owner/:repo/issues/:number/lock   接收某个 issue</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>例子中冒号开始的代表变量，例如 /repos/summerblue/larabbs/issues</p>
-</blockquote>
-<p>在 github 的实现中，我们可以总结出：</p>
-<ul>
-<li>资源的设计可以嵌套，表明资源与资源之间的关系。</li>
-<li>大部分情况下我们访问的是某个资源集合，想得到单个资源可以通过资源的 id 或number 等唯一标识获取。</li>
-<li>某些情况下，资源会是单数形式，例如某个项目某个 issue 的锁，每个 issue 只会有一把锁，所以它是单数。</li>
-</ul>
-<p>错误的例子</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST https:<span class="comment">//api.larabbs.com/createTopic</span></span><br><span class="line">GET https:<span class="comment">//api.larabbs.com/topic/show/1</span></span><br><span class="line">POST https:<span class="comment">//api.larabbs.com/topics/1/comments/create</span></span><br><span class="line">POST https:<span class="comment">//api.larabbs.com/topics/1/comments/100/delete</span></span><br></pre></td></tr></table></figure>
-
-<p>正确的例子</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST https:<span class="comment">//api.larabbs.com/topics</span></span><br><span class="line">GET https:<span class="comment">//api.larabbs.com/topics/1</span></span><br><span class="line">POST https:<span class="comment">//api.larabbs.com/topics/1/comments</span></span><br><span class="line">DELETE https:<span class="comment">//api.larabbs.com/topics/1/comments/100</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="5-用-HTTP-动词描述操作"><a href="#5-用-HTTP-动词描述操作" class="headerlink" title="5. 用 HTTP 动词描述操作"></a>5. 用 HTTP 动词描述操作</h4><p>HTTP 设计了很多动词，来表示不同的操作，RESTful 很好的利用的这一点，我们需要正确的使用 HTTP 动词，来表明我们要如何操作资源。<br>先来解释一个概念，幂等性，指一次和多次请求某一个资源应该具有同样的副作用，也就是一次访问与多次访问，对这个资源带来的变化是相同的。</p>
-<p>常用的动词及幂等性</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">动词	描述	                              是否幂等</span><br><span class="line">GET	获取资源，单个或多个	                  是</span><br><span class="line">POST	创建资源	                                  否</span><br><span class="line">PUT	更新资源，客户端提供完整的资源数据	          是</span><br><span class="line">PATCH	更新资源，客户端提供部分的资源数据	          否</span><br><span class="line">DELETE	删除资源	                                  是</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>为什么 PUT 是幂等的而 PATCH 是非幂等的，因为 PUT 是根据客户端提供了完整的资源数据，客户端提交什么就替换为什么，而 PATCH 有可能是根据客户端提供的参数，动态的计算出某个值，例如每次请求后资源的某个参数减1，所以多次调用，资源会有不同的变化。</p>
-</blockquote>
-<p>另外需要注意的是，GET 请求是安全的，不允许通过 GET 请求改变（更新或创建）资源，但是真实使用中，为了方便统计类的数据，会有一些例外情况，例如帖子详情，记录访问次数，每调用一次，访问次数 +1;</p>
-<h4 id="6-资源过滤"><a href="#6-资源过滤" class="headerlink" title="6. 资源过滤"></a>6. 资源过滤</h4><p>我们需要提供合理的参数供客户端过滤资源，例如</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">?state=closed: 不同状态的资源</span><br><span class="line">?page=<span class="number">2</span>&amp;per_page=<span class="number">100</span>：访问第几页数据，每页多少条。</span><br><span class="line">?sortby=name&amp;order=asc：指定返回结果按照哪个属性排序，以及排序顺序。</span><br></pre></td></tr></table></figure>
-
-<h4 id="7-正确使用状态码"><a href="#7-正确使用状态码" class="headerlink" title="7. 正确使用状态码"></a>7. 正确使用状态码</h4><p>HTTP 提供了丰富的状态码供我们使用，正确的使用状态码可以让响应数据更具可读性。</p>
-<ul>
-<li>200 OK - 对成功的 GET、PUT、PATCH 或 DELETE 操作进行响应。也可以被用在不创建新资源的 POST 操作上</li>
-<li>201 Created - 对创建新资源的 POST 操作进行响应。应该带着指向新资源地址的 Location 头</li>
-<li>202 Accepted - 服务器接受了请求，但是还未处理，响应中应该包含相应的指示信息，告诉客户端该去哪里查询关于本次请求的信息</li>
-<li>204 No Content - 对不会返回响应体的成功请求进行响应（比如 DELETE 请求）</li>
-<li>304 Not Modified - HTTP缓存header生效的时候用</li>
-<li>400 Bad Request - 请求异常，比如请求中的body无法解析</li>
-<li>401 Unauthorized - 没有进行认证或者认证非法</li>
-<li>403 Forbidden - 服务器已经理解请求，但是拒绝执行它</li>
-<li>404 Not Found - 请求一个不存在的资源</li>
-<li>405 Method Not Allowed - 所请求的 HTTP 方法不允许当前认证用户访问</li>
-<li>410 Gone - 表示当前请求的资源不再可用。当调用老版本 API 的时候很有用</li>
-<li>415 Unsupported Media Type - 如果请求中的内容类型是错误的</li>
-<li>422 Unprocessable Entity - 用来表示校验错误</li>
-<li>429 Too Many Requests - 由于请求频次达到上限而被拒绝访问</li>
-</ul>
-<h4 id="8-数据响应格式"><a href="#8-数据响应格式" class="headerlink" title="8. 数据响应格式"></a>8. 数据响应格式</h4><p>考虑到响应数据的可读性及通用性，默认使用 JSON 作为数据响应格式。如果客户端有需求使用其他的响应格式，例如 XML，需要在 Accept 头中指定需要的格式。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.vxndy.com/</span></span><br><span class="line">    Accept: application/prs.vxndy.v1+json</span><br><span class="line">    Accept: application/prs.vxndy.v1+xml</span><br></pre></td></tr></table></figure>
-
-<p>对于错误数据，默认使用如下结构：</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x27;message&#x27; =&gt; &#x27;:message&#x27;,          <span class="comment">// 错误的具体描述</span></span><br><span class="line">&#x27;errors&#x27; =&gt; &#x27;:errors&#x27;,            <span class="comment">// 参数的具体错误描述，422 等状态提供</span></span><br><span class="line">&#x27;code&#x27; =&gt; &#x27;:code&#x27;,                <span class="comment">// 自定义的异常码</span></span><br><span class="line">&#x27;status_code&#x27; =&gt; &#x27;:status_code&#x27;,  <span class="comment">// http状态码</span></span><br><span class="line">&#x27;debug&#x27; =&gt; &#x27;:debug&#x27;,              <span class="comment">// debug 信息，非生产环境提供</span></span><br></pre></td></tr></table></figure>
-
-<p>例如</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;message&quot;</span>: <span class="string">&quot;422 Unprocessable Entity&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;errors&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;name&quot;</span>: [</span><br><span class="line">            <span class="string">&quot;姓名 必须为字符串。&quot;</span></span><br><span class="line">        ]</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;status_code&quot;</span>: <span class="number">422</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;message&quot;</span>: <span class="string">&quot;您无权访问该订单&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;status_code&quot;</span>: <span class="number">403</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="9-调用频率限制"><a href="#9-调用频率限制" class="headerlink" title="9. 调用频率限制"></a>9. 调用频率限制</h4><p>为了防止服务器被攻击，减少服务器压力，需要对接口进行合适的限流控制，需要在响应头信息中加入合适的信息，告知客户端当前的限流情况</p>
-<ul>
-<li>X-RateLimit-Limit :100 最大访问次数</li>
-<li>X-RateLimit-Remaining :93 剩余的访问次数</li>
-<li>X-RateLimit-Reset :1513784506 到该时间点，访问次数会重置为 X-RateLimit-Limit</li>
-</ul>
-<h4 id="10-编写文档"><a href="#10-编写文档" class="headerlink" title="10. 编写文档"></a>10. 编写文档</h4><p>为了方便用户使用，我们需要提供清晰的文档，尽可能包括以下几点</p>
-<ul>
-<li>包括每个接口的请求参数，每个参数的类型限制，是否必填，可选的值等。</li>
-<li>响应结果的例子说明，包括响应结果中，每个参数的释义。</li>
-<li>对于某一类接口，需要有尽量详细的文字说明，比如针对一些特定场景，接口应该如何调用。</li>
-</ul>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://developer.github.com/v3/">https://developer.github.com/v3/</a></p>
 </blockquote>
 
       

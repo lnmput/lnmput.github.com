@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">408</span>
+          <span class="site-state-item-count">410</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,218 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/25/Golang%E8%87%AA%E5%8A%A8%E5%8C%96%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/25/Golang%E8%87%AA%E5%8A%A8%E5%8C%96%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">Golang自动化实现</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-08-25 12:09:45 / 修改时间：12:19:07" itemprop="dateCreated datePublished" datetime="2022-08-25T12:09:45+09:00">2022-08-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+私（わたし）が年（とし）をとっても仲良（なかよ）くしてください。
+</blockquote>
+
+
+<h3 id="ライブラリの紹介"><a href="#ライブラリの紹介" class="headerlink" title="ライブラリの紹介"></a>ライブラリの紹介</h3><p>今回見つけたライブラリは、<br>Robotgo<br>です。<br>Robotgoは、<br>Go言語でのデスクトップオートメーション。マウス、キーボード、ビットマップ、<br>画像を制御し、画面、プロセス、ウィンドウハンドル、グローバルイベントリスナーを読み取りが行える。<br>ライブラリです。<br>対応するOSは、<br>Windows、Mac、Linux<br>のようで、64bit/32bit両方に対応しています。</p>
+<h3 id="環境構築"><a href="#環境構築" class="headerlink" title="環境構築"></a>環境構築</h3><p>今回、Windows、Linuxで動かしてみました。<br>それぞれの環境構築手順をまとめておきたいと思います。<br>なお、Windows、Linuxの詳細ですが、<br>Windows：Windows 10<br>Linux：Ubuntu20.04<br>を用いてみました。</p>
+<p>まず、Robotgoをインストールする前の下準備をまとめておきます。</p>
+<p>最初にWindowsの環境構築手順に関してまとめたいと思います。<br>といってもWIndowの場合、<br>MinGW-w64<br>をインストールするのみです。<br>すでにインストール済みでしたら他の作業は不要です。<br>インストール手順は下記にまとまっていますのでこちらをご参考にしてください。<br>といっても、インストーラを用いてインストールしてパスを通すのみなので簡単。<br><a target="_blank" rel="noopener" href="https://www.javadrive.jp/cstart/install/index6.html">https://www.javadrive.jp/cstart/install/index6.html</a></p>
+<p>後、もしかしたら下記が必要になるかもです。<br>(自分は必要でした)</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> get github.com/lxn/win</span><br></pre></td></tr></table></figure>
+<p>次にLinux。<br>今回Ubuntuを用いたのでUbuntuの手順をまとめます。<br>下記ライブラリをapt-get する。以上です。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install gcc libc6-dev</span><br><span class="line">sudo apt install libx11-dev xorg-dev libxtst-dev libpng ++-dev</span><br><span class="line">sudo apt install xcb libxcb-xkb-dev x11-xkb-utils libx11-xcb-dev libxkbcommon-x11-dev </span><br><span class="line">sudo apt install libxkbcommon-dev</span><br><span class="line">sudo apt install xsel xclip</span><br></pre></td></tr></table></figure>
+<p>後は、Windows、Linuxどちらも</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> get github.com/<span class="keyword">go</span>-vgo/robotgo</span><br></pre></td></tr></table></figure>
+<p>でインストールするのみです。</p>
+<h3 id="マウス操作自動化"><a href="#マウス操作自動化" class="headerlink" title="マウス操作自動化"></a>マウス操作自動化</h3><p>では早速、マウス操作の自動化コードを作成してみます。<br>といっても今回は公式がご紹介しているサンプルを載せておきます。<br>公式：<a target="_blank" rel="noopener" href="https://github.com/go-vgo/robotgo">https://github.com/go-vgo/robotgo</a></p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;github.com/go-vgo/robotgo&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  robotgo.ScrollMouse(<span class="number">10</span>, <span class="string">&quot;up&quot;</span>)</span><br><span class="line">  robotgo.Scroll(<span class="number">100</span>, <span class="number">200</span>)</span><br><span class="line"></span><br><span class="line">  robotgo.MoveMouse(<span class="number">10</span>, <span class="number">10</span>)</span><br><span class="line">  robotgo.Drag(<span class="number">10</span>, <span class="number">10</span>)</span><br><span class="line"></span><br><span class="line">  robotgo.MouseClick(<span class="string">&quot;left&quot;</span>, <span class="literal">true</span>)</span><br><span class="line">  robotgo.MoveMouseSmooth(<span class="number">100</span>, <span class="number">200</span>, <span class="number">1.0</span>, <span class="number">100.0</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">robotgo.ScrollMouse(<span class="number">10</span>, <span class="string">&quot;up&quot;</span>)</span><br><span class="line">robotgo.Scroll(<span class="number">100</span>, <span class="number">200</span>)</span><br></pre></td></tr></table></figure>
+<p>でマウスのスクロールを行い、</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">robotgo.MoveMouse(<span class="number">10</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>でマウスを移動させ、</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">robotgo.MouseClick(<span class="string">&quot;left&quot;</span>, <span class="literal">true</span>)</span><br></pre></td></tr></table></figure>
+<p>でマウスの左クリックを押下する。</p>
+<h3 id="キーボード入力"><a href="#キーボード入力" class="headerlink" title="キーボード入力"></a>キーボード入力</h3><p>次はキーボード入力です。<br>こちらは公式で展開しているサンプルから少し変更を行い、</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Hello WorldだんしゃりHi galaxy. こんにちは世界.</span><br></pre></td></tr></table></figure>
+<p>という文字を入力後、テキストファイルを保存する処理になります。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  robotgo.TypeStr(<span class="string">&quot;Hello World&quot;</span>)</span><br><span class="line">  robotgo.TypeStr(<span class="string">&quot;だんしゃり&quot;</span>, <span class="number">1.0</span>)</span><br><span class="line"></span><br><span class="line">  robotgo.TypeStr(<span class="string">&quot;Hi galaxy. こんにちは世界.&quot;</span>)</span><br><span class="line">  robotgo.Sleep(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">  robotgo.KeyTap(<span class="string">&quot;enter&quot;</span>)</span><br><span class="line">  robotgo.KeyTap(<span class="string">&quot;s&quot;</span>, <span class="string">&quot;ctrl&quot;</span>)</span><br><span class="line"></span><br><span class="line">  time.Sleep(<span class="number">1</span> * time.Second)</span><br><span class="line"></span><br><span class="line">  robotgo.TypeStr(<span class="string">&quot;こんにちは世界.&quot;</span>)</span><br><span class="line"></span><br><span class="line">  robotgo.KeyTap(<span class="string">&quot;enter&quot;</span>)</span><br><span class="line"></span><br><span class="line">  robotgo.WriteAll(<span class="string">&quot;Test&quot;</span>)</span><br><span class="line">  text, err := robotgo.ReadAll()</span><br><span class="line">  <span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">    fmt.Println(text)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">  robotgo.TypeStr(<span class="string">&quot;Hello World&quot;</span>)</span><br><span class="line">  robotgo.TypeStr(<span class="string">&quot;だんしゃり&quot;</span>, <span class="number">1.0</span>)</span><br><span class="line"></span><br><span class="line">  robotgo.TypeStr(<span class="string">&quot;Hi galaxy. こんにちは世界.&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>でキーボードによる文字入力を行い、</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">robotgo.KeyTap(<span class="string">&quot;enter&quot;</span>)</span><br><span class="line">robotgo.KeyTap(<span class="string">&quot;s&quot;</span>, <span class="string">&quot;ctrl&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>で特定のキーボードをタップする形になります。</p>
+<p>PyAutoGuiで言うところの、<br>pyautogui.write関数が、robotgo.TypeStr関数に該当し、<br>pyautogui.press関数が、robotgo.KeyTapに該当します。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">robotgo.WriteAll(<span class="string">&quot;Test&quot;</span>)</span><br><span class="line">text, err := robotgo.ReadAll()</span><br></pre></td></tr></table></figure>
+<p>こちらは内部メモリへの文字列書き込みと読み出しを行う処理のようです。</p>
+<h3 id="■最後に"><a href="#■最後に" class="headerlink" title="■最後に"></a>■最後に</h3><p>今回はgo言語で自動化が行える、Robotgoに関する環境構築や簡単なキーボード・マウス操作に関してまとめてみました。<br>ちょっと長くなってきたので今回はここまでとします。</p>
+<p>まだ画像認識やイベント操作などが書けていないので、次回まとめたいと思います。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://elsammit-beginnerblg.hatenablog.com/entry/2021/10/03/095838">https://elsammit-beginnerblg.hatenablog.com/entry/2021/10/03/095838</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/21/Golang%E4%B8%AD%E7%9A%84%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/21/Golang%E4%B8%AD%E7%9A%84%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Golang中的原子操作</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-08-21 23:57:16" itemprop="dateCreated datePublished" datetime="2022-08-21T23:57:16+09:00">2022-08-21</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2022-08-22 12:27:58" itemprop="dateModified" datetime="2022-08-22T12:27:58+09:00">2022-08-22</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Love means never having to say you're sorry. 
+</blockquote>
+
+
+<p>With it easy to use go routines, you have unbridled power to harness concurrency in your programs. However, Go is not spared from race conditions. We still have to use mutex and atomic constructs to ensure that shared variables and their state are correct when read/write by go routines. The aim of this article is to see what could go wrong if you are not careful and how to avoid race conditions in your code.</p>
+<p>Let’s create a simple program to demonstrate a shared variable.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> mutexAtomicExample</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">        <span class="string">&quot;fmt&quot;</span></span><br><span class="line">        <span class="string">&quot;sync&quot;</span></span><br><span class="line">        <span class="string">&quot;sync/atomic&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Increment</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">var</span> count <span class="keyword">int</span></span><br><span class="line">        <span class="keyword">var</span> wg sync.WaitGroup <span class="comment">//needed so that the function don&#x27;t   </span></span><br><span class="line">                              <span class="comment">//exit prematurely relative </span></span><br><span class="line">                              <span class="comment">//to all go routines</span></span><br><span class="line">        <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++ &#123;</span><br><span class="line">                wg.Add(<span class="number">1</span>)</span><br><span class="line">                <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">                        <span class="keyword">defer</span> wg.Done()</span><br><span class="line">                        count++</span><br><span class="line">                &#125;()</span><br><span class="line">        &#125;</span><br><span class="line">        wg.Wait()</span><br><span class="line">        fmt.Printf(<span class="string">&quot;count: %v for 100000 cycles\n&quot;</span>, count) </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>In the increment function above, we use create 100,000 go routines where each of these will increment the count variable. We use a waitgroup to ensure the main program stays blocked [at the wg.Wait() line] until all the go routines have the chance to run till completion.</p>
+<p>Surprisingly, the output is as follows if we run the increment function.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">count: <span class="number">98152</span> <span class="keyword">for</span> <span class="number">100000</span> cycles</span><br></pre></td></tr></table></figure>
+<p>What gives?? Turns out that despite the waitgroup, the increment count operations carried out by each go routine may not be successful. The increment operation is not atomic, meaning that it could be interrupted midway by another go routine that is working concurrently to increment the same count variable. Hence, you won’t have count that will reach 100,000 but less than that. At the high level, this is a race condition.</p>
+<p>Two ways to handle — Mutex and Atomic Construct</p>
+<p>In the first way, we use mutex to lock the shared variable such that only one go routine can increment the count at a time.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IncrementMutex</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> count <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup </span><br><span class="line">	m := sync.Mutex&#123;&#125; <span class="comment">//1</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++ &#123;</span><br><span class="line">	        wg.Add(<span class="number">1</span>)</span><br><span class="line">	        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">	                <span class="keyword">defer</span> wg.Done()</span><br><span class="line">	                m.Lock()</span><br><span class="line">	                <span class="keyword">defer</span> m.Unlock()</span><br><span class="line">	                count++</span><br><span class="line">	        &#125;()</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line">	fmt.Printf(<span class="string">&quot;count: %v for 100000 cycles with Mutex\n&quot;</span>, count)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>In //(1), we create a variable mutex with the sync.Mutex{} structure which will give a zero value mutex. This will by default be an unlocked mutex.</p>
+<p>In the go routine, we lock the mutex before the increment of the count and unlock thereafter. And below is the output of running the function.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">count: <span class="number">100000</span> <span class="keyword">for</span> <span class="number">100000</span> cycles with Mutex</span><br></pre></td></tr></table></figure>
+
+<p>Now, let’s try to use the atomic construct which is available as part of the sync/atomic. Again we create a variant of the increment function:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IncrementAtomic</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">var</span> count <span class="keyword">int64</span> <span class="comment">// sync atomic cannot work with int (1)</span></span><br><span class="line">        <span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">        <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++ &#123;</span><br><span class="line">                wg.Add(<span class="number">1</span>)</span><br><span class="line">                <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">                        <span class="keyword">defer</span> wg.Done()</span><br><span class="line">                        atomic.AddInt64(&amp;count, <span class="number">1</span>) <span class="comment">//(2)</span></span><br><span class="line">                &#125;()</span><br><span class="line">        &#125;</span><br><span class="line">        wg.Wait()</span><br><span class="line">        fmt.Printf(<span class="string">&quot;count: %v for 100000 cycles with Atomic\n&quot;</span>, count)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Notice in (1), we had to use a int64 instead of the int since the atomic package cannot work with int. We can also use int32. Below are some functions showing the specific integer types that will work. So be sure to check the official documentations before using the sync/atomic package.</p>
+<ul>
+<li><code>func AddInt32(addr *int32, delta int32) (new int32)</code></li>
+<li><code>func AddInt64(addr *int64, delta int64) (new int64)</code></li>
+<li><code>func AddUint32(addr *uint32, delta uint32) (new uint32)</code></li>
+<li><code>func AddUint64(addr *uint64, delta uint64) (new uint64)</code></li>
+<li><code>func AddUintptr(addr *uintptr, delta uintptr) (new uintptr)</code></li>
+</ul>
+<p>In //(2), we evoke the AddInt64 function which requires the int64 variable as the first parameter and the delta value (also another int64) that we want to add to it.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@naikofficial56/concurrency-with-golang-7d8e0c65ef85">https://medium.com/@naikofficial56/concurrency-with-golang-7d8e0c65ef85</a></p>
+</blockquote>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@naikofficial56/concurrency-with-golang-7d8e0c65ef85">https://medium.com/@naikofficial56/concurrency-with-golang-7d8e0c65ef85</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -960,207 +1172,6 @@ If you have no critics, you will likely have no success.
 <h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;github.com/gin-gonic/gin&quot;</span></span><br><span class="line">	<span class="string">&quot;html/template&quot;</span></span><br><span class="line">	<span class="string">&quot;net/http&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">//go:embed static templates</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line"></span><br><span class="line">	router := gin.Default()</span><br><span class="line">	templ := template.Must(template.New(<span class="string">&quot;&quot;</span>).ParseFS(f, <span class="string">&quot;templates/*.html&quot;</span>))</span><br><span class="line">	router.SetHTMLTemplate(templ)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// example: /public/static/js/1.js</span></span><br><span class="line">	router.StaticFS(<span class="string">&quot;/public&quot;</span>, http.FS(f))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	router.GET(<span class="string">&quot;/&quot;</span>, <span class="function"><span class="keyword">func</span><span class="params">(c *gin.Context)</span></span> &#123;</span><br><span class="line">		c.HTML(http.StatusOK, <span class="string">&quot;index.html&quot;</span>, gin.H&#123;</span><br><span class="line">			<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Embed Demo&quot;</span>,</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	router.GET(<span class="string">&quot;/foo&quot;</span>, <span class="function"><span class="keyword">func</span><span class="params">(c *gin.Context)</span></span> &#123;</span><br><span class="line">		c.HTML(http.StatusOK, <span class="string">&quot;foo.html&quot;</span>, gin.H&#123;</span><br><span class="line">			<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Foo Bar&quot;</span>,</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	_ = router.Run(<span class="string">&quot;:9080&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Title<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;text/javascript&quot;</span> <span class="attr">src</span>=<span class="string">&quot;/public/static/js/1.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>htn<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/05/31/Golang%E6%96%B9%E6%B3%95%E5%92%8C%E6%8E%A5%E5%8F%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/05/31/Golang%E6%96%B9%E6%B3%95%E5%92%8C%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Golang方法和接口</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-05-31 13:41:52 / 修改时间：14:01:19" itemprop="dateCreated datePublished" datetime="2022-05-31T13:41:52+09:00">2022-05-31</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-这里荒芜寸草不生
-后来你来这里走了一遭
-奇迹般万物生长
-这里是我的心
-</blockquote>
-
-<h3 id="What-is-a-method"><a href="#What-is-a-method" class="headerlink" title="What is a method?"></a>What is a method?</h3><blockquote>
-<p>A method is a function or a piece of code that is associated with an object.</p>
-</blockquote>
-<p>Let’s say, you have a struct called “Car” and you create a method of the struct named “Drive”, then you declare an object from the struct and name it as “tesla”. So you can call the “Drive” method of your “tesla” to do whatever you programmed the method to do by using the properties or fields of your “tesla” to go the calculation.</p>
-<p>What I just explained to you is only an example to make you get the concept of method. So now I will show you how to create your own methods and how to use them.</p>
-<h3 id="Usage-of-Method"><a href="#Usage-of-Method" class="headerlink" title="Usage of Method"></a>Usage of Method</h3><p>Basically, all methods are associated with objects, means that you need to have at least one object in your code to declare any methods.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Car <span class="keyword">struct</span> &#123;</span><br><span class="line">  color <span class="keyword">string</span></span><br><span class="line">  distance <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  tesla := &amp;Car&#123;</span><br><span class="line">    distance: <span class="number">0</span>,</span><br><span class="line">  &#125;</span><br><span class="line">  fmt.Println(tesla)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>After you got your struct, you will be able to create your method</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Car <span class="keyword">struct</span> &#123;</span><br><span class="line">  color <span class="keyword">string</span></span><br><span class="line">  distance <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">Drive</span><span class="params">(dist <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">  c.distance += dist</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  tesla := &amp;Car&#123;</span><br><span class="line">    distance: <span class="number">0</span>,</span><br><span class="line">  &#125;</span><br><span class="line">  fmt.Println(<span class="string">&quot;init distance:&quot;</span>, tesla.distance)</span><br><span class="line">  tesla.Drive(<span class="number">10</span>)</span><br><span class="line">  fmt.Println(<span class="string">&quot;1st drive distance:&quot;</span>, tesla.distance)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; OUTPUT &lt;&lt;&lt;</span></span><br><span class="line"><span class="comment">init distance: 0</span></span><br><span class="line"><span class="comment">1st drive distance: 10</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-
-<p>A method is very similar to a function but the difference is that the method is associated with an object and can you the properties inside the object to calculate, just like the “Drive” method that uses “distance” property of “Car” to calculate new “distance”.</p>
-<p>In case you need to expose some fields of your struct to other packages without directly exporting them, using methods as “Getter” is your best choice.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Car <span class="keyword">struct</span> &#123;</span><br><span class="line">  color <span class="keyword">string</span></span><br><span class="line">  distance <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">Drive</span><span class="params">(dist <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">  c.distance += dist</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">GetDistance</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> c.distance</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  tesla := &amp;Car&#123;</span><br><span class="line">    distance: <span class="number">0</span>,</span><br><span class="line">  &#125;</span><br><span class="line">  tesla.Drive(<span class="number">10</span>)</span><br><span class="line">  fmt.Println(<span class="string">&quot;1st drive distance (without exporting):&quot;</span>, tesla.GetDistance())</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; OUTPUT &lt;&lt;&lt;</span></span><br><span class="line"><span class="comment">1st drive distance (without exporting): 10</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-
-<p>Setter is a way to set the value of unexported fields and getter can be used to setup default value of any field you want like the example below.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Car <span class="keyword">struct</span> &#123;</span><br><span class="line">  color <span class="keyword">string</span></span><br><span class="line">  distance <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">Drive</span><span class="params">(dist <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">  c.distance += dist</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Getter</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">GetDistance</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> c.distance</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Setter</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">SetColor</span><span class="params">(color <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">  c.color = color</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Getter with default value</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">GetColor</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">  <span class="keyword">if</span> c.color == <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">    c.color = <span class="string">&quot;white&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> c.color</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  tesla := &amp;Car&#123;</span><br><span class="line">    distance: <span class="number">0</span>,</span><br><span class="line">  &#125;</span><br><span class="line">  fmt.Println(<span class="string">&quot;get default color:&quot;</span>, tesla.GetColor())</span><br><span class="line">  tesla.SetColor(<span class="string">&quot;silver&quot;</span>)</span><br><span class="line">  fmt.Println(<span class="string">&quot;get new color:&quot;</span>, tesla.GetColor())</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; OUTPUT &lt;&lt;&lt;</span></span><br><span class="line"><span class="comment">get default color: white</span></span><br><span class="line"><span class="comment">get new color: silver</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-
-<p>Now you have already learnt how methods work and how to work with methods, but there is another feature in Golang that can enhance the power of structs and their methods. The feature is “Interface”.</p>
-<h3 id="What-is-an-interface"><a href="#What-is-an-interface" class="headerlink" title="What is an interface?"></a>What is an interface?</h3><blockquote>
-<p>An interface is a set of method signature that an object can implement.</p>
-</blockquote>
-<p>To make it more understandable, let’s say you have another struct named “Plane” and its methods: “Fly” and “GetDistance”. And you want to use it with “Car” struct by using the same logic to get their distance. An interface will help you for this kind of task.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Car struct </span></span><br><span class="line"><span class="keyword">type</span> Car <span class="keyword">struct</span> &#123;</span><br><span class="line">  distance <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">Drive</span><span class="params">(dist <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">  c.distance += dist</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">GetDistance</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> c.distance</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Plane struct</span></span><br><span class="line"><span class="keyword">type</span> Plane <span class="keyword">struct</span> &#123;</span><br><span class="line">  distance <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Plane)</span> <span class="title">Fly</span><span class="params">(dist <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">  p.distance += dist</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Plane)</span> <span class="title">GetDistance</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> p.distance</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Use interface as argument</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetVehicleDistance</span><span class="params">(i <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> i.(<span class="keyword">type</span>) &#123;</span><br><span class="line">  <span class="keyword">case</span> *Car:</span><br><span class="line">    c := i.(*Car) <span class="comment">// Type assertion</span></span><br><span class="line">    <span class="keyword">return</span> c.GetDistance()</span><br><span class="line">  <span class="keyword">case</span> *Plane:</span><br><span class="line">    p := i.(*Plane) <span class="comment">// Type assertion</span></span><br><span class="line">    <span class="keyword">return</span> p.GetDistance()</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  tesla := &amp;Car&#123;&#125;</span><br><span class="line">  airbus := &amp;Plane&#123;&#125;</span><br><span class="line">  tesla.Drive(<span class="number">10</span>)</span><br><span class="line">  airbus.Fly(<span class="number">10000</span>)</span><br><span class="line">  fmt.Println(<span class="string">&quot;tesla distance:&quot;</span>, GetVehicleDistance(tesla))</span><br><span class="line">  fmt.Println(<span class="string">&quot;airbus distance:&quot;</span>, GetVehicleDistance(airbus))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; OUTPUT &lt;&lt;&lt;</span></span><br><span class="line"><span class="comment">tesla distance: 10</span></span><br><span class="line"><span class="comment">airbus distance: 10000</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-
-<p>From the example above, you can use the same function with different parameter types by using interface as argument. And before you use the method from the interface, you need to do “type assertion” which is very important step for using interfaces.</p>
-<p>Anyway the code can be improved and shorten by declaring an interface type with a set of method signature. For our case, it is “GetDistance” method. You will see how short it is.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Car struct </span></span><br><span class="line"><span class="keyword">type</span> Car <span class="keyword">struct</span> &#123;</span><br><span class="line">  distance <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">Drive</span><span class="params">(dist <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">  c.distance += dist</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Car)</span> <span class="title">GetDistance</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> c.distance</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Plane struct</span></span><br><span class="line"><span class="keyword">type</span> Plane <span class="keyword">struct</span> &#123;</span><br><span class="line">  distance <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Plane)</span> <span class="title">Fly</span><span class="params">(dist <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">  p.distance += dist</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Plane)</span> <span class="title">GetDistance</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> p.distance</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Declare interface type</span></span><br><span class="line"><span class="keyword">type</span> Vehicle <span class="keyword">interface</span> &#123;</span><br><span class="line">  GetDistance() <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Use interface as argument</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetVehicleDistance</span><span class="params">(i <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">  v := i.(Vehicle)</span><br><span class="line">  <span class="keyword">return</span> v.GetDistance()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  tesla := &amp;Car&#123;&#125;</span><br><span class="line">  airbus := &amp;Plane&#123;&#125;</span><br><span class="line">  tesla.Drive(<span class="number">10</span>)</span><br><span class="line">  airbus.Fly(<span class="number">10000</span>)</span><br><span class="line">  fmt.Println(<span class="string">&quot;tesla distance:&quot;</span>, GetVehicleDistance(tesla))</span><br><span class="line">  fmt.Println(<span class="string">&quot;airbus distance:&quot;</span>, GetVehicleDistance(airbus))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">&gt;&gt;&gt; OUTPUT &lt;&lt;&lt;</span></span><br><span class="line"><span class="comment">tesla distance: 10</span></span><br><span class="line"><span class="comment">airbus distance: 10000</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-<p>However, don’t forget to validate your interface before using it because somehow it can be nil.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetVehicleDistance</span><span class="params">(i <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">  <span class="keyword">if</span> i == <span class="literal">nil</span> &#123; <span class="comment">// validate interface before using</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">  &#125;</span><br><span class="line">  v := i.(Vehicle)</span><br><span class="line">  <span class="keyword">return</span> v.GetDistance()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>I hope you would get some point about implementing interface with multiple types, it will allow you to create only one logic for executing their method and make you life easier 😂.</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/05/14/Laravel%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%9C%A8%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8env%E5%87%BD%E6%95%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/05/14/Laravel%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%9C%A8%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8env%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">Laravel为什么不能在程序中直接使用env函数</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-05-14 13:28:56 / 修改时间：13:37:27" itemprop="dateCreated datePublished" datetime="2022-05-14T13:28:56+09:00">2022-05-14</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-一定要爱着点什么，恰似草木对光阴的钟情。
-</blockquote>
-
-<h3 id="HH"><a href="#HH" class="headerlink" title="HH"></a>HH</h3><ul>
-<li><code>env()</code>は コントローラー, モデル, etc.. 内で直接使わない。</li>
-<li><code>config/*.php</code>に<code>env()</code>の値を入れて<code>config()</code>から参照する。</li>
-</ul>
-<p>例</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// config/my-app.php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> [</span><br><span class="line">    <span class="comment">// configに.envの内容を入れる。</span></span><br><span class="line">    <span class="string">&#x27;my-env&#x27;</span> =&gt; env(<span class="string">&#x27;MY_ENV&#x27;</span>),</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// コントローラー内など</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// config() を使用。</span></span><br><span class="line"><span class="variable">$my_env</span> = config(<span class="string">&#x27;my-app.my-env&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// これはダメなパターン。</span></span><br><span class="line"><span class="variable">$my_env</span> = env(<span class="string">&#x27;MY_ENV&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="何故-env-を使ってはいけないのか"><a href="#何故-env-を使ってはいけないのか" class="headerlink" title="何故 env() を使ってはいけないのか"></a>何故 env() を使ってはいけないのか</h3><p>本番環境で<code>config:cache</code>コマンドを実行した際、<code>.env</code>ファイルを読み込まないから。</p>
-<p><code>.env</code>ファイルは<code>Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables</code>クラスの<code>bootstrap()</code>で読み込まれるのですが、読み込む前に<code>config</code>のキャッシュの有無を確認し、キャッシュがあった場合は<code>.env</code>ファイルを読み込まない仕様になっています。</p>
-<p>当該部分のLaravelのコードを引用。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// 省略</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">bootstrap</span>(<span class="params">Application <span class="variable">$app</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$app</span>-&gt;configurationIsCached()) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;checkForSpecificEnvironmentFile(<span class="variable">$app</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            (<span class="keyword">new</span> Dotenv(<span class="variable">$app</span>-&gt;environmentPath(), <span class="variable">$app</span>-&gt;environmentFile()))-&gt;load();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InvalidPathException <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (InvalidFileException <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">&#x27;The environment file is invalid: &#x27;</span>.<span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 省略</span></span><br></pre></td></tr></table></figure>
-
-<p>大体の場合の本番環境では、高速化の為に設定を一纏めにする<code>config:cache</code>コマンドを実行すると思うのですが、前述の通りキャッシュがあると.envが読み込まれないので、<code>env()</code>を直接叩いてると開発時やテスト時には動くけど本番環境で死ぬ。といった事になります。(実際なった)</p>
-<h3 id="実際に試す"><a href="#実際に試す" class="headerlink" title="実際に試す"></a>実際に試す</h3><p>適当なコントローラーを用意してddを使って値をダンプするだけ。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HogeController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getHoge</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        dd(</span><br><span class="line">            env(<span class="string">&#x27;MY_ENV&#x27;</span>),</span><br><span class="line">            config(<span class="string">&#x27;my-app.my-env&#x27;</span>)</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>まずはキャッシュ無しでアクセス。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;Foo&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;Foo&quot;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>テスト環境や開発環境と同じ様にキャッシュを作成していないのでどちらも同じ値が取得できます。</p>
-<p>次にキャッシュさせてアクセス。<code>artisan</code>の<code>config:cache</code>を実行して<code>bootstrap/cache/config.php</code>を作成します。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan config:cache</span><br></pre></td></tr></table></figure>
-<p>で、先ほどと同じ様にアクセスしてみる。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">null</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;Foo&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p><code>.env</code>ファイルが読み出されていないので<code>env()</code>で取得した所で値が入ってる訳もなくnullを返します。</p>
-<p>と言う訳で最初に書いた通り、env()は直接使わずにconfig()に.envの値を入れて使いましょう。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://hiroto-k.hatenablog.com/entry/2018/03/28/213000">https://hiroto-k.hatenablog.com/entry/2018/03/28/213000</a></p>
-</blockquote>
-
       
     </div>
 

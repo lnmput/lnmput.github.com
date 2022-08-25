@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">408</span>
+          <span class="site-state-item-count">410</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,208 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/" class="post-title-link" itemprop="url">Laravel之开发测试和生产环境区分</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-05-31 11:48:11 / 修改时间：13:05:32" itemprop="dateCreated datePublished" datetime="2018-05-31T11:48:11+09:00">2018-05-31</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+不做动机揣测，少做价值判断
+</blockquote>
+
+<p>Laravel环境检测的方法是很容易的，因为大家都知道Laravel中使用了Dotenv来做文件配置，这就牵扯到了我们的都很熟悉的.env。</p>
+<p>比如一个典型的.env是:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=local</span><br><span class="line">APP_DEBUG=<span class="literal">true</span></span><br><span class="line">APP_KEY=base64:<span class="number">3</span>csTuw5O1me1PF4j9xErbUR+seyH1xdf6uRfvjuQ22Q=</span><br><span class="line">APP_URL=http:<span class="comment">//localhost</span></span><br><span class="line"></span><br><span class="line">DB_CONNECTION=mysql</span><br><span class="line">DB_HOST=<span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line">DB_PORT=<span class="number">3306</span></span><br><span class="line">DB_DATABASE=db_name</span><br><span class="line">DB_USERNAME=db_user</span><br><span class="line">DB_PASSWORD=db_pass</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
+<p>今天我的这篇分享主要介绍两种区分不同环境的方法。</p>
+<h3 id="不同环境维护自己的-env文件"><a href="#不同环境维护自己的-env文件" class="headerlink" title="不同环境维护自己的.env文件"></a>不同环境维护自己的.env文件</h3><p>这种办法也是Laravel默认的办法，也就是开发环境、测试环境和生产环境各自维护自己的.env文件，也就是说.env不要加到版本控制系统中，通过不同的配置可以做到环境的区分，比如:</p>
+<p>开发环境</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=dev</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
+<p>测试环境</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=staging</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
+<p>生产环境</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=production</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
+<p>这样，在我们的代码中即可以通过判断APP_ENV来判断是哪种环境。但是这种办法我个人是不太喜欢的，原因有以下几点:</p>
+<ul>
+<li>环境的判断过多的写到代码里面，维护起来很麻烦</li>
+<li>如果某次上线需要修改配置文件，则每次上线代码还需要到线上机器修改.env文件，部署起来很麻烦</li>
+</ul>
+<h3 id="不同环境加载自己的-env-文件"><a href="#不同环境加载自己的-env-文件" class="headerlink" title="不同环境加载自己的.env.文件"></a>不同环境加载自己的.env.文件</h3><p>这里面的.env.文件延伸开来就是.env.dev、.env.test和.env.prod，比如开发环境会自动加载.env.dev，依此类推，那么如果是这样的话，不同环境的机器又怎么知道加载哪个文件呢？其实这里面还是耍了点小聪明，别忘了我们有php.ini</p>
+<ul>
+<li>1.在php.ini中追加一行配置<br>当然开发、测试和生产环境中env所对应的值也需要不一样<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//开发环境</span></span><br><span class="line">env=dev</span><br><span class="line"><span class="comment">//测试环境</span></span><br><span class="line">env=staging</span><br><span class="line"><span class="comment">//生产环境</span></span><br><span class="line">env=production</span><br></pre></td></tr></table></figure></li>
+<li>2.加载不同的配置文件<br>在bootstrap/app.php文件中添加如下判断，在这里将通过获取php.ini中的env的值，然后从而加载不同的配置文件。<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//...省略</span></span><br><span class="line"><span class="variable">$env</span> = get_cfg_var(<span class="string">&#x27;env&#x27;</span>);</span><br><span class="line"><span class="variable">$env</span> = !<span class="keyword">empty</span>(<span class="variable">$env</span>) ? <span class="variable">$env</span> : <span class="string">&#x27;production&#x27;</span>;</span><br><span class="line"><span class="keyword">if</span>(!defined(<span class="string">&#x27;APP_MODE&#x27;</span>))&#123;</span><br><span class="line">    define(<span class="string">&#x27;APP_MODE&#x27;</span>, <span class="variable">$env</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$app</span>-&gt;loadEnvironmentFrom(<span class="string">&#x27;.env.&#x27;</span>.<span class="variable">$env</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> <span class="variable">$app</span>;</span><br></pre></td></tr></table></figure></li>
+<li>3.新建.env.dev、.env.staging和.env.production</li>
+</ul>
+<p>好，就到此为止了，当然虽然我非常喜欢第二种办法，但第二种毕竟需要对线上机器做一次大的改动，需要运维同学支持下。但是也需要具体情况具体来选择吧。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://xuwenzhi.com/2016/07/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E3%80%81%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/">http://xuwenzhi.com/2016/07/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E3%80%81%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/30/%E7%8E%B0%E4%BB%A3%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91%E8%80%85%E5%BF%85%E5%A4%87%E6%8A%80%E8%83%BD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/30/%E7%8E%B0%E4%BB%A3%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91%E8%80%85%E5%BF%85%E5%A4%87%E6%8A%80%E8%83%BD/" class="post-title-link" itemprop="url">现代后端开发者必备技能</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-05-30 16:47:52 / 修改时间：17:53:45" itemprop="dateCreated datePublished" datetime="2018-05-30T16:47:52+09:00">2018-05-30</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+能够击败我的不会是孤独，而是试图摆脱孤独。
+</blockquote>
+
+<h3 id="第1步-学习一门语言"><a href="#第1步-学习一门语言" class="headerlink" title="第1步 - 学习一门语言"></a>第1步 - 学习一门语言</h3><p>谈到选择语言有很多选择。我已经将它们分成几类，以便你更容易做出决定。对于刚开始进入后端开发的初学者，我建议你选择任何脚本语言，因为它们有很多需求，它可以让你快速起步。如果你有一些前端知识，你可能会发现Node.js更容易，再加上有一个很大的就业市场。</p>
+<p>如果你已经在做后端开发并且知道一些脚本语言，我建议你不要选择另一种脚本语言，并从“功能”或“多参数”部分中选择一些。<br>例如，如果你已经在使用PHP或Node.js，请不要使用Python或Ruby，而应尝试使用Erlang或Golang。它肯定会帮助你延伸思维，并开启你的思想到新的视野。</p>
+<h3 id="第2步-练习你学到的东西"><a href="#第2步-练习你学到的东西" class="headerlink" title="第2步 - 练习你学到的东西"></a>第2步 - 练习你学到的东西</h3><p>没有比实践更好的学习方式。一旦你选择了你的语言，并且对这些概念有了基本的了解，就可以使用它们。尽你所能制作尽可能多的小应用程序。尽你所能制作尽可能多的小应用程序：</p>
+<p>在bash中实现一些你自己使用的命令尝试实现 ls 的功能<br>编写一个命令，为你提供JSON格式的目录结构，例如 jsonify dir-name 给你一个带有 dir-name 内结构的JSON文件<br>编写一个从上面的步骤读取JSON的命令并创建目录结构<br>想想你每天都在做的一些任务，并尝试将其自动化</p>
+<h3 id="第3步-学习软件包管理器"><a href="#第3步-学习软件包管理器" class="headerlink" title="第3步 - 学习软件包管理器"></a>第3步 - 学习软件包管理器</h3><p>了解了该语言的基础知识并制作了一些示例应用程序后，请了解如何使用你选择的语言的软件包管理器。软件包管理器可帮助你在应用程序中使用外部库，并分发你的库供其他人使用。</p>
+<p>如果你选择了PHP，你将不得不学习 Composer，Node.js 有 NPM 或 Yarn，Python 有 Pip，Ruby 有 RubyGems。无论你选择什么，请继续学习如何使用其包管理器。</p>
+<h3 id="第4步-标准和最佳实践"><a href="#第4步-标准和最佳实践" class="headerlink" title="第4步 - 标准和最佳实践"></a>第4步 - 标准和最佳实践</h3><p>每种语言都有自己的标准和做事的最佳实践。研究他们为你挑选的语言。例如 PHP 有 PHP-FIG 和 PSR 。使用 Node.js 有许多不同的社区驱动指南，其他语言也有相同的指导。</p>
+<h3 id="第5步-安全"><a href="#第5步-安全" class="headerlink" title="第5步 - 安全"></a>第5步 - 安全</h3><p>请务必阅读有关安全的最佳做法。阅读 OWASP 指南并了解不同的安全问题以及如何以你选择的语言避免它们。</p>
+<h3 id="第6步-练习"><a href="#第6步-练习" class="headerlink" title="第6步 - 练习"></a>第6步 - 练习</h3><p>现在你已经掌握了语言，标准和最佳实践的基础知识，安全性以及如何使用软件包管理器。现在开始创建一个包并分发给其他人使用，并确保遵循你迄今为止学到的标准和最佳实践。例如，如果你选择了PHP，那么你将在Packagist上发布它，如果你选择了Node.js，那么你将在Npm注册源中发布它，等等。</p>
+<p>一旦你完成了，在Github上搜索一些项目，并在某些项目中打开一些pull请求。对此的一些想法：</p>
+<p>重构并实施你学到的最佳实践<br>查看未解决的问题并尝试解决<br>添加任何附加功能</p>
+<h3 id="第7步-了解测试"><a href="#第7步-了解测试" class="headerlink" title="第7步 - 了解测试"></a>第7步 - 了解测试</h3><p>测试有几种不同的测试类型。了解这些类型它们的目的是什么。了解如何在应用程序中编写单元测试和集成测试。另外，了解不同的测试术语，如 mocks, stubs 等。</p>
+<h3 id="第8步-实践"><a href="#第8步-实践" class="headerlink" title="第8步 - 实践"></a>第8步 - 实践</h3><p>对于练习，继续编写单元测试，以完成目前为止所做的实际任务，特别是你在步骤6中所做的练习。</p>
+<p>还要学习和计算你编写的测试的覆盖率。</p>
+<h3 id="第9步-了解关系数据库"><a href="#第9步-了解关系数据库" class="headerlink" title="第9步 - 了解关系数据库"></a>第9步 - 了解关系数据库</h3><p>了解如何将数据保存在关系数据库中。在你选择要学习的工具之前，请先了解不同的数据库术语，例如键，索引，规范化等。</p>
+<p>这里有几个选项。但是，如果你学习一个，其他的应该相当容易。你想学习的是MySQL，MariaDB（大部分是相同的，是MySQL的分支）和PostgreSQL。选择MySQL开始。</p>
+<h3 id="第十步-实践时间"><a href="#第十步-实践时间" class="headerlink" title="第十步 - 实践时间"></a>第十步 - 实践时间</h3><p>现在是时候把你所学到的一切都用到这里去了。</p>
+<p>使用你迄今为止学到的所有内容创建一个简单的应用程序。可以选择任何想法​​，也许创建一个简单的博客应用程序，并实现其中的以下功能。</p>
+<p>用户帐户 - 注册和登录<br>注册用户可以创建博客文章<br>用户应该能够查看他创建的所有博客文章<br>他们应该能够删除他们的博客文章<br>确保用户只能看到他的个人博客帖子，而不能看到他人<br>编写应用程序的单元/集成测试<br>你应该为查询应用索引。分析查询以确保正在使用索引</p>
+<h3 id="第11步-了解一个框架"><a href="#第11步-了解一个框架" class="headerlink" title="第11步 - 了解一个框架"></a>第11步 - 了解一个框架</h3><p>根据你选择的项目和语言，你可能需要也可能不需要框架。每种语言都有几个不同的选项，继续看看你选择的语言有哪些选项可供选择，然后选择相关的一个。</p>
+<p>如果你选择了PHP，我会建议你使用 Laravel或Symfony，如果是为框架的话，使用Lumen或Slim。如果你选择Node.js，有几种不同的选择，但突出的是Express.js。</p>
+<h3 id="第12步-实践时间"><a href="#第12步-实践时间" class="headerlink" title="第12步 - 实践时间"></a>第12步 - 实践时间</h3><p>为了实现此步骤，请将你在 步骤10 中创建的应用程序转换为使用你选择的框架。还要确保移植包括测试在内的所有内容。</p>
+<h3 id="第13步-学习NoSQL数据库"><a href="#第13步-学习NoSQL数据库" class="headerlink" title="第13步 - 学习NoSQL数据库"></a>第13步 - 学习NoSQL数据库</h3><p>首先了解它们是什么，它们与关系数据库有何不同以及为什么它们是需要的。有几种不同的选择，研究一点看看，并比较它们的特点和差异。你可以选择的一些常用选项是Rdeis，MongoDB，Cassandra，RethinkDB和Couchbase。如果你必须选择一个，请使用Redis。</p>
+<h3 id="第14步-缓存"><a href="#第14步-缓存" class="headerlink" title="第14步 - 缓存"></a>第14步 - 缓存</h3><p>了解如何在你的应用程序中实施应用程序级缓存。了解如何使用Redis或Memcached并在你在 步骤12 中创建的应用程序中实施缓存。</p>
+<h3 id="第15步-创建RESTful-API"><a href="#第15步-创建RESTful-API" class="headerlink" title="第15步 - 创建RESTful API"></a>第15步 - 创建RESTful API</h3><p>了解REST并学习如何制作RESTful API，并确保从 Roy Fielding 的原始文章中阅读关于REST的部分。如果他们说REST仅适用于HTTP API，请确保你能够与其他人对战。</p>
+<h3 id="第16步-了解不同的身份验证方法"><a href="#第16步-了解不同的身份验证方法" class="headerlink" title="第16步 - 了解不同的身份验证方法"></a>第16步 - 了解不同的身份验证方法</h3><p>了解不同的身份验证和授权方法。你应该知道他们是什么，他们有什么不同以及什么时候偏好某一个</p>
+<p>OAuth - 开放认证<br>基本认证<br>令牌认证<br>JWT - JSON Web令牌<br>OpenID</p>
+<h3 id="第17步-消息代理"><a href="#第17步-消息代理" class="headerlink" title="第17步 - 消息代理"></a>第17步 - 消息代理</h3><p>了解消息代理并了解何时以及为何使用它们。有多种选择，但突出的是 RabbitMQ 和 Kafka。现在学习如何使用RabbitMQ，如果你想选择一个。</p>
+<h3 id="第18步-搜索引擎"><a href="#第18步-搜索引擎" class="headerlink" title="第18步 - 搜索引擎"></a>第18步 - 搜索引擎</h3><p>随着应用程序的增长，对关系数据库或NoSQL数据库的简单查询不会将其切断，你将不得不求助于搜索引擎。有多种选择，每种选择都有自己的差异。比如 Solr, Sphinx, ElasticSearch，Xapian等。</p>
+<h3 id="第19步-了解如何使用Docker"><a href="#第19步-了解如何使用Docker" class="headerlink" title="第19步 - 了解如何使用Docker"></a>第19步 - 了解如何使用Docker</h3><p>无论你是在复制与生产环境相同的环境，还是保持操作系统清洁或加快你的编码，测试或部署，Docker都可以在开发过程中大大方便你的工作。在这一步中，继续学习如何使用Docker。</p>
+<h3 id="第20步-关于Web服务器的知识"><a href="#第20步-关于Web服务器的知识" class="headerlink" title="第20步 - 关于Web服务器的知识"></a>第20步 - 关于Web服务器的知识</h3><p>如果你已经走到这么远，你可能不得不在前面的步骤中使用服务器。这一步主要是找出不同Web服务器之间的差异，了解限制和不同的可用配置选项，以及如何最好地利用这些限制编写应用程序。</p>
+<h3 id="第21步-了解如何使用Web-Sockets"><a href="#第21步-了解如何使用Web-Sockets" class="headerlink" title="第21步 - 了解如何使用Web Sockets"></a>第21步 - 了解如何使用Web Sockets</h3><p>虽然不是必需的，但在工具带中有这些知识是有益的。学习如何使用 Web sockets 编写实时Web应用程序并使用它创建一些示例应用程序。你可以在上面制作的博客应用程序中使用它来实现博客文章列表中的实时更新。</p>
+<h3 id="第22步-学习GraphQL"><a href="#第22步-学习GraphQL" class="headerlink" title="第22步 - 学习GraphQL"></a>第22步 - 学习GraphQL</h3><p>学习如何使用GraphQL制作API。了解它与REST的不同之处，以及它为什么被称为 REST 2.0。</p>
+<h3 id="第23步-研究Graph数据库"><a href="#第23步-研究Graph数据库" class="headerlink" title="第23步 - 研究Graph数据库"></a>第23步 - 研究Graph数据库</h3><p>Graph 模型代表了一种处理数据中关系的非常灵活的方式，图数据库为其提供了快速高效的存储，检索和查询。学习如何使用 Neo4j或 OrientDB。</p>
+<h3 id="第24步-保持探索"><a href="#第24步-保持探索" class="headerlink" title="第24步 - 保持探索"></a>第24步 - 保持探索</h3><p>一旦你开始学习和练习，你一定会遇到我们在这个路线图中没有涉及的东西。只要保持开放的心态和对新事物的健康渴望。</p>
+<p>记住关键是要尽可能多地练习。它在开始时看起来更加可怕，你可能会觉得你并没有抓住任何东西，但这是正常的，随着时间的推移，你会觉得自己越来越好。</p>
+<p>好了，就这么多。感谢阅读。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://phpcasts.org/posts/modern-backend-developer-in-2018">https://phpcasts.org/posts/modern-backend-developer-in-2018</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -970,200 +1172,6 @@
 <h4 id="composer-update"><a href="#composer-update" class="headerlink" title="composer update"></a>composer update</h4><p>为了获取依赖的最新版本，并且升级 composer.lock 文件，你应该使用 update 命令。</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer update</span><br></pre></td></tr></table></figure>
 <p>这将解决项目的所有依赖，并将确切的版本号写入 <code>composer.lock</code>。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/26/%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85nginx/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/26/%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85nginx/" class="post-title-link" itemprop="url">编译安装nginx</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-26 15:25:58 / 修改时间：16:47:04" itemprop="dateCreated datePublished" datetime="2018-04-26T15:25:58+09:00">2018-04-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-等一个不爱你的人，就像在机场等一艘船
-</blockquote>
-
-<h3 id="编译环境"><a href="#编译环境" class="headerlink" title="编译环境"></a>编译环境</h3><p>在linux使用make方式安装，需要保证linux已经具备比较OK的编译环境，例如gcc等编译工具。一般而言，服务器提供商在安装的系统中已经默认集成了这些软件，但是为了保险起见，我们还是通过一些较为基础的方式，把这些依赖包都跑一遍，以防在之后的编译中出差错。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install gcc gcc-c++ autoconf automake libtool make cmake<span class="comment"># yum -y install zlib zlib-devel openssl openssl-devel pcre-devel</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="创建用来运行nginx的用户及组"><a href="#创建用来运行nginx的用户及组" class="headerlink" title="创建用来运行nginx的用户及组"></a>创建用来运行nginx的用户及组</h3><p>我们创建一个新的用户和用户组来运行nginx，这样可以把nginx和root分开，保证nginx不具备root权限。但是，我们并不希望nginx成为一个真实的可以登陆到远程进行操作的用户，所以，我们并不给它创建家目录，在useradd的时候，用-M参数：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">groupadd nginx</span><br><span class="line">useradd -g nginx -M nginx</span><br></pre></td></tr></table></figure>
-<p>-g参数为nginx用户指定了一个组<br>-M参数保证其不自动生成home目录</p>
-<p>禁止用户登陆也很方便，只需要修改配置文件中有关用户和用户组的信息即可。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># vi /etc/passwd</span></span><br></pre></td></tr></table></figure>
-<p>找到nginx，将后面的<code>/bin/bash</code>改为<code>/sbin/nologin</code>即可。</p>
-<h3 id="编译安装Nginx"><a href="#编译安装Nginx" class="headerlink" title="编译安装Nginx"></a>编译安装Nginx</h3><ul>
-<li><p>下载</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http:<span class="comment">//xxxxxxxxxx/nginx1.7.x.tar.gz# tar zxvf nginx1.7.x.tar.gz# cd nginx1.7.x</span></span><br></pre></td></tr></table></figure></li>
-<li><p>配置</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ./configure --prefix=/usr/local/nginx \--pid-path=/usr/local/nginx/run/nginx.pid \--with-http_ssl_module \--user=nginx \ --group=nginx \--with-pcre \--without-mail_pop3_module \--without-mail_imap_module \--without-mail_smtp_module</span></span><br></pre></td></tr></table></figure>
-<p>说明可以使用<code>./configure --help</code>查看一些配置信息</p>
-</li>
-<li><p>编译</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></li>
-<li><p>运行</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/nginx</span><br><span class="line">ls</span><br><span class="line">sbin/nginx</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="nginx服务的载入"><a href="#nginx服务的载入" class="headerlink" title="nginx服务的载入"></a>nginx服务的载入</h3><p>make编译安装的软件，可不像yum安装的服务，我们熟悉的service命令并不起效，不然你用service nginx restart试试看。这是因为service调用/etc/ini.d/目录下的程序完成，而该目录下并不存在nginx这个程序。那么这个时候怎么重启nginx呢？如下操作：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/nginx/sbin/nginx -s reload</span><br></pre></td></tr></table></figure>
-<p>这个操作可以重新加载nginx的配置文件，相当于重启。如果一定要重启整个服务，那只能通过杀死nginx进程，然后在运行程序了。</p>
-<p>不过为了使用我们熟悉的service操作, 现在提供一个文件(nginx)</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> nginx Startup script <span class="keyword">for</span> the Nginx HTTP Server</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> this script create it by ivan at 2010.12.29.</span></span><br><span class="line"><span class="meta">#</span><span class="bash"></span></span><br><span class="line"><span class="bash"><span class="comment"># chkconfig: - 85 15</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> description: Nginx is a high-performance web and proxy server.</span></span><br><span class="line"><span class="meta">#</span><span class="bash">              It has a lot of features, but it<span class="string">&#x27;s not for everyone.</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> processname: nginx</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> pidfile: /var/run/nginx.pid</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> config: /etc/nginx.conf</span></span></span><br><span class="line"></span><br><span class="line">nginxd=/usr/local/nginx/sbin/nginx</span><br><span class="line">nginx_config=/usr/local/nginx/conf/nginx.conf</span><br><span class="line">nginx_pid=/usr/local/nginx/run/nginx.pid</span><br><span class="line"></span><br><span class="line">RETVAL=0</span><br><span class="line">prog=&quot;nginx&quot;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Source function library.</span></span></span><br><span class="line">. /etc/rc.d/init.d/functions</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Source networking configuration.</span></span></span><br><span class="line">. /etc/sysconfig/network</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Check that networking is up.</span></span></span><br><span class="line">[ $&#123;NETWORKING&#125; = &quot;no&quot; ] &amp;&amp; exit 0</span><br><span class="line">[ -x $nginxd ] || exit 0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Start nginx daemons functions.</span></span></span><br><span class="line">start()&#123;</span><br><span class="line"></span><br><span class="line">        if [ -e $nginx_pid ]; then</span><br><span class="line">                echo &quot;nginx already running...&quot;</span><br><span class="line">                exit 1</span><br><span class="line">        fi</span><br><span class="line">        echo -n $&quot;Starting $prog:&quot;</span><br><span class="line">        daemon $nginxd -c $&#123;nginx_config&#125;</span><br><span class="line">        RETVAL=$?</span><br><span class="line">        echo</span><br><span class="line">        [ $RETVAL = 0 ] &amp;&amp; touch /var/lock/subsys/nginx</span><br><span class="line">        return $RETVAL</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Stop nginx daemons functions.</span></span></span><br><span class="line">stop()&#123;</span><br><span class="line">        echo -n $&quot;Stopping $prog:&quot;</span><br><span class="line">        killproc $nginxd</span><br><span class="line">        RETVAL=$?</span><br><span class="line">        echo</span><br><span class="line">        [ $RETVAL = 0 ] &amp;&amp; rm -f /var/lock/subsys/nginx $nginx_pid</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string">reload nginx service functions.</span></span></span><br><span class="line">reload()&#123;</span><br><span class="line">        echo -n $&quot;Reloading $proc:&quot;</span><br><span class="line">        killproc $nginxd -HUP</span><br><span class="line">        RETVAL=$?</span><br><span class="line">        echo</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> See how we were called.</span></span></span><br><span class="line">case &quot;$1&quot; in</span><br><span class="line">        start)</span><br><span class="line">                start</span><br><span class="line">                ;;</span><br><span class="line">        stop)</span><br><span class="line">                stop</span><br><span class="line">                ;;</span><br><span class="line">        reload)</span><br><span class="line">                reload</span><br><span class="line">                ;;</span><br><span class="line">        restart)</span><br><span class="line">                stop</span><br><span class="line">                start</span><br><span class="line">                ;;</span><br><span class="line">        status)</span><br><span class="line">                status $prog</span><br><span class="line">                RETVAL=$?</span><br><span class="line">                ;;</span><br><span class="line">        *)</span><br><span class="line">                echo $&quot;Usage: $prog &#123;start|stop|restart|reload|status|help&#125;&quot;</span><br><span class="line">                exit 1</span><br><span class="line">esac</span><br><span class="line"></span><br><span class="line">exit $RETVAL</span><br></pre></td></tr></table></figure>
-
-<p>放到/etc/ini.d/目录下，并执行：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x /etc/init.d/nginx <span class="comment"># chkconfig --add nginx# chkconfig nginx on</span></span><br></pre></td></tr></table></figure>
-<p>这样就可以通过service nginx restart等方法来操作nginx了。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.tangshuang.net/1774.html">https://www.tangshuang.net/1774.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/25/%E4%BD%BF%E7%94%A8swoole%E8%BF%9B%E8%A1%8C%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/25/%E4%BD%BF%E7%94%A8swoole%E8%BF%9B%E8%A1%8C%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/" class="post-title-link" itemprop="url">使用swoole进行系统监控</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-25 09:13:22 / 修改时间：10:30:04" itemprop="dateCreated datePublished" datetime="2018-04-25T09:13:22+09:00">2018-04-25</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-问世间情为何物，两岸猿声啼不住。
-</blockquote>
-
-<p>通常情况下我们需要对服务器的某一个服务进行监控, 以确定该服务是在正常运行, 一般使用linux的计划任务可以实现, 但是计划任务的最小执行时间间隔是秒,往往并不能满足我们的要求, 这时候<code>Swoole</code>的毫秒定时器就该出场了</p>
-<h3 id="监控代码"><a href="#监控代码" class="headerlink" title="监控代码"></a>监控代码</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Server</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> PORT = <span class="number">80</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">port</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$shell</span>  =  <span class="string">&quot;netstat -anp 2&gt;/dev/null | grep &quot;</span>. <span class="built_in">self</span>::PORT . <span class="string">&quot; | grep LISTEN | wc -l&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="variable">$result</span> = shell_exec(<span class="variable">$shell</span>);</span><br><span class="line">        <span class="keyword">if</span>(<span class="variable">$result</span> != <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="comment">// 发送报警服务 邮件 短信</span></span><br><span class="line">            <span class="comment">/// todo</span></span><br><span class="line">            <span class="keyword">echo</span> date(<span class="string">&quot;Ymd H:i:s&quot;</span>).<span class="string">&quot;error&quot;</span>.PHP_EOL;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">echo</span> date(<span class="string">&quot;Ymd H:i:s&quot;</span>).<span class="string">&quot;succss&quot;</span>.PHP_EOL;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// nohup</span></span><br><span class="line">swoole_timer_tick(<span class="number">2000</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$timer_id</span></span>) </span>&#123;</span><br><span class="line">    (<span class="keyword">new</span> Server())-&gt;port();</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;time-start&quot;</span>.PHP_EOL;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>注意以下命令要求使用绝对路径</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup /usr/bin/php /home/vagrant/code/swoole/script/bin/jian.php &gt; /home/vagrant/code/swoole/script/bin/log.txt &amp;</span><br></pre></td></tr></table></figure>
-
-<h3 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h3><h4 id="amp"><a href="#amp" class="headerlink" title="&amp;"></a>&amp;</h4><p>当在前台运行某个作业时，终端被该作业占据；可以在命令后面加上&amp; 实现后台运行。例如：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh test.sh &amp; </span><br></pre></td></tr></table></figure>
-<p>适合在后台运行的命令有<code>find</code>、费时的排序及一些<code>shell</code>脚本。在后台运行作业时要当心：需要用户交互的命令不要放在后台执行，因为这样你的机器就会在那里傻等。不过，作业在后台运行一样会将结果输出到屏幕上，干扰你的工作。如果放在后台运行的作业会产生大量的输出，最好使用下面的方法把它的输出重定向到某个文件中：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command &gt; out.file <span class="number">2</span>&gt;&amp;<span class="number">1</span> &amp; </span><br></pre></td></tr></table></figure>
-<p>这样，所有的标准输出和错误输出都将被重定向到一个叫做<code>out.file</code>的文件中。</p>
-<h4 id="nohup"><a href="#nohup" class="headerlink" title="nohup"></a>nohup</h4><p>使用<code>&amp;</code>命令后，作业被提交到后台运行，当前控制台没有被占用，但是一但把当前控制台关掉(退出帐户时)，作业就会停止运行。<code>nohup</code>命令可以在你退出帐户之后继续运行相应的进程。<code>nohup</code>就是不挂起的意思(no hang up)。该命令的一般形式为：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup command &amp;</span><br></pre></td></tr></table></figure>
-<p>如果使用<code>nohup</code>命令提交作业，那么在缺省情况下该作业的所有输出都被重定向到一个名为<code>nohup.out</code>的文件中，除非另外指定了输出文件：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup command &gt; myout.file <span class="number">2</span>&gt;&amp;<span class="number">1</span> &amp;</span><br></pre></td></tr></table></figure>
-<p>使用了<code>nohup</code>之后，很多人就这样不管了，其实这样有可能在当前账户非正常退出或者结束的时候，命令还是自己结束了。所以在使用<code>nohup</code>命令后台运行命令之后，需要使用exit正常退出当前账户，这样才能保证命令一直在后台运行。</p>
-<h4 id="2-gt-amp-1解析"><a href="#2-gt-amp-1解析" class="headerlink" title="2&gt;&amp;1解析"></a>2&gt;&amp;1解析</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command &gt;out.file <span class="number">2</span>&gt;&amp;<span class="number">1</span> &amp;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>command&gt;out.file是将command的输出重定向到out.file文件，即输出内容不打印到屏幕上，而是输出到out.file文件中。</li>
-<li>2&gt;&amp;1 是将标准出错重定向到标准输出，这里的标准输出已经重定向到了out.file文件，即将标准出错也输出到out.file文件中。最后一个&amp;， 是让该命令在后台执行。</li>
-<li>试想2&gt;1代表什么，2与&gt;结合代表错误重定向，而1则代表错误重定向到一个文件1，而不代表标准输出；换成2&gt;&amp;1，&amp;与1结合就代表标准输出了，就变成错误重定向到标准输出.</li>
-</ul>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/liuyanfeier/article/details/62422742">https://blog.csdn.net/liuyanfeier/article/details/62422742</a></p>
-</blockquote>
 
       
     </div>

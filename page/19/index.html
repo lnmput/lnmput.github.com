@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">408</span>
+          <span class="site-state-item-count">410</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,215 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/01/php%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E5%92%8C%E8%87%AA%E5%8A%A8%E8%BD%BD%E5%85%A5%E7%90%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/01/php%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E5%92%8C%E8%87%AA%E5%8A%A8%E8%BD%BD%E5%85%A5%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">php命名空间和自动载入理解</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-01 16:06:57" itemprop="dateCreated datePublished" datetime="2018-03-01T16:06:57+09:00">2018-03-01</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:32:05" itemprop="dateModified" datetime="2018-03-27T22:32:05+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+ 每个人的心里都有一片属于自己的森林，迷失的人迷失了，相遇的人会再相遇
+</blockquote>
+今天写一个demo，遇到一个问题，平时框架用多了，下意识的就以为use就能引入类，导致一直跑不成功，后来才意识到use与引用类并不是一回事。use只是指定了要使用哪个命名空间下的类，但是并不会引入类，类的引用还是需要使用include或require。
+
+<h3 id="不使用命名空间"><a href="#不使用命名空间" class="headerlink" title="不使用命名空间"></a>不使用命名空间</h3><p>我们的所有的php文件都没有申明使用命名空间, 所有相关文件的引入使用include或require, 并需要指明文件的具体路径</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Cat.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Dog.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">action</span>(<span class="params">AnimalInterface <span class="variable">$animal</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$animal</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$demo</span> = <span class="keyword">new</span> Demo();</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> Cat());</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> Dog());</span><br></pre></td></tr></table></figure>
+
+<p>注意:使用 <code>include_once</code> 可以防止文件重复引入定义</p>
+<p>如果不使用命名空间, 那么我们的同一个文件夹就不能重复定义相同的类名, 如果需要解决这个重名的冲突, 就需要放在不同的文件夹下面, 或者申明不同的命名空间;</p>
+<h3 id="使用命名空间"><a href="#使用命名空间" class="headerlink" title="使用命名空间"></a>使用命名空间</h3><p>申明使用命名空间</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">AnimalInterface</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>申明以后所有需要引入这个文件都必须使用<code>use</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">AnimalInterface</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> <span class="keyword">implements</span>  <span class="title">AnimalInterface</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;dog run&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果引用的文件是在同一个命名空间下, 则无需使用<code>use</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">AnimalInterface</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Cat.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Dog.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">action</span>(<span class="params">AnimalInterface <span class="variable">$animal</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$animal</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>如果被引入的文件没有申明命名空间,则默认全局命名空间<code>\</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Index</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">AnimalInterface</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Cat.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Dog.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">action</span>(<span class="params">AnimalInterface <span class="variable">$animal</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$animal</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$demo</span> = <span class="keyword">new</span> Demo();</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> \Cat());</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> \Dog());</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">AnimalInterface</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> <span class="keyword">implements</span>  <span class="title">AnimalInterface</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;dog run&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="自动载入"><a href="#自动载入" class="headerlink" title="自动载入"></a>自动载入</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Index</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">AnimalInterface</span>;</span><br><span class="line"></span><br><span class="line">spl_autoload_register(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$filename</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$filename</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (file_exists(<span class="variable">$filename</span>.<span class="string">&#x27;.php&#x27;</span>)) &#123;</span><br><span class="line">            <span class="keyword">include_once</span> <span class="variable">$filename</span>.<span class="string">&#x27;.php&#x27;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//include_once &#x27;AnimalInterface.php&#x27;;</span></span><br><span class="line"><span class="comment">//include_once &#x27;Cat.php&#x27;;</span></span><br><span class="line"><span class="comment">//include_once &#x27;Dog.php&#x27;;</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">action</span>(<span class="params">AnimalInterface <span class="variable">$animal</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$animal</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$demo</span> = <span class="keyword">new</span> Demo();</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> \Cat());</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> \Dog());</span><br></pre></td></tr></table></figure>
+
+<p>所有文件的自动载入需要在<code>spl_autoload_register</code>这个函数中通过<code>include_once</code>实现;</p>
+<h3 id="PSR"><a href="#PSR" class="headerlink" title="PSR"></a>PSR</h3><p>命名空间跟文件加载并无直接关系，只是有些语言，将命名空间结构和文件结构对应起来了。 以php为例，一般的命名空间结构，跟php文件结构是存在映射关系的，通过命名空间名称，就能算出该类的实际存储位置， 然后实例化的时候，会触发用设置的spl自动加载函数将文件引入。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/" class="post-title-link" itemprop="url">在PHP下理解和应用多态</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-01 11:18:28" itemprop="dateCreated datePublished" datetime="2018-03-01T11:18:28+09:00">2018-03-01</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:02:34" itemprop="dateModified" datetime="2018-03-27T22:02:34+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+ 后来我终于知道 ， 它并不是我的花 ，我只是恰好途径了它的盛放。 
+</blockquote>
+
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>封装是类的构建过程，php具有；php也具有继承的特性。唯独这个多态，php体现的十分模糊。原因是php是弱类型语言。<br>java的多态体现的十分清晰，大体分两类：父类引用指向子类对象；接口引用指向实现接口的类对象。java声明变量时都要给变量设定类型，所以存在什么父类引用和接口引用。而php则没有这点体现，php声明变量不需要给变量设定类型，一个变量可以指向不同的数据类型。所以，php不具有像java一样的多态。</p>
+<p>多态，作为面向对象编程中的一种设计模式，指的是通过遵循同一个interface，类可以有不同的功能实现（相当于说，有多种形态）。<br>在编程世界里，多态形式可以让我们的程序更加地模块化，易于扩展，而不是到处都是基于不同状态的条件判断，比如动不动就switch，动不动就层层嵌套if判断，这种情况下，十有八九是你的代码“有问题”了。</p>
+<h3 id="Interfaces"><a href="#Interfaces" class="headerlink" title="Interfaces"></a>Interfaces</h3><p>interface里可以定义方法名及相应参数，任何实现这个interface的类必须具体实现interface里定义的所有抽象方法，一个class可以实现多个interface</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 正确的做法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> <span class="keyword">implements</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// code that does this</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// code that does that</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;name = <span class="variable">$name</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 无效的做法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> <span class="keyword">implements</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 缺少 doThis()方法!</span></span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 这个方法必须也是public!</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 缺少 name 参数!</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h3><p>Abstract Class可以说是介于interface和普通class之间，它既可以通过abstract method的形式定义统一的接口，又可以定义具体的功能实现。一个扩展了该Abstract Class的普通class，必须得具体实现该Abstract Class的所有抽象方法。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">MyAbstract</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// do this</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">abstract</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">abstract</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="问题的引出"><a href="#问题的引出" class="headerlink" title="问题的引出"></a>问题的引出</h3><p>假设你有一个articleclass：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$author</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$date</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$category</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span>  <span class="title">__construct</span>(<span class="params"><span class="variable">$title</span>, <span class="variable">$author</span>, <span class="variable">$date</span>, <span class="variable">$category</span> = <span class="number">0</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;title = <span class="variable">$title</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;author = <span class="variable">$author</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;date = <span class="variable">$date</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;category = <span class="variable">$category</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在呢，你想添加一个方法，来以不同的形式输出article相关的信息，比如说XML格式，或者说JSON格式。<br>可能你一开始会想着这么来处理：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params"><span class="variable">$type</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$ret</span> = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="keyword">switch</span>(<span class="variable">$type</span>) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;XML&#x27;</span>:</span><br><span class="line">                <span class="variable">$ret</span> = <span class="string">&#x27;&lt;article&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;title&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;title . <span class="string">&#x27;&lt;/title&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;author&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;author . <span class="string">&#x27;&lt;/author&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;date&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;date . <span class="string">&#x27;&lt;/date&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;category&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;category . <span class="string">&#x27;&lt;/category&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;/article&gt;&#x27;</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;JSON&#x27;</span>:</span><br><span class="line">                <span class="variable">$array</span> = <span class="keyword">array</span>(<span class="string">&#x27;article&#x27;</span> =&gt; <span class="variable">$obj</span>);</span><br><span class="line">                <span class="variable">$ret</span> = json_encode(<span class="variable">$array</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$ret</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>虽然功能上能实现效果，但是看上去很糟糕，不是吗？假设，将来你又想加上其他的格式，那该怎么办？再加几个case判断，这代码得多臃肿呢？</p>
+<p>关于面向对象，有一个很重要的原则就是，一个class应该只做份内之事。每当你遇到大块的条件判断的时候，你就应该有所警醒，因为很可能这个时候你已经在同一个class或method下，硬要去做太多的事情了。那么这个时候，也就是该尝试多态实现了。</p>
+<h3 id="尝试解决"><a href="#尝试解决" class="headerlink" title="尝试解决"></a>尝试解决</h3><p>定义 Interface</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>具体实现 Interface</p>
+<p>XMLWriter可以这样来实现：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">XMLWriter</span> <span class="keyword">implements</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$ret</span> = <span class="string">&#x27;&lt;article&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;title&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;title . <span class="string">&#x27;&lt;/title&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;author&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;author . <span class="string">&#x27;&lt;/author&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;date&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;date . <span class="string">&#x27;&lt;/date&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;category&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;category . <span class="string">&#x27;&lt;/category&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;/article&gt;&#x27;</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$ret</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>JSONWriter：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JSONWriter</span> <span class="keyword">implements</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$array</span> = <span class="keyword">array</span>(<span class="string">&#x27;article&#x27;</span> =&gt; <span class="variable">$obj</span>);</span><br><span class="line">        <span class="keyword">return</span> json_encode(<span class="variable">$array</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样每一种个的class只负责各自的那一件事。</p>
+<p>具体调用</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Writer <span class="variable">$writer</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$writer</span>-&gt;write(<span class="keyword">$this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样article的write方法接收的是一个实现了Writer这个interface的具体类，article不再需要关注具体该用什么样的格式，那已经不是它要负责的了，交给背后具体的Writer去处理就好了。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://pilishen.com/posts/Understanding-and-Applying-Polymorphism-in-PHP">http://pilishen.com/posts/Understanding-and-Applying-Polymorphism-in-PHP</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -892,216 +1101,6 @@ nothing is impossible
 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/48270127/can-a-1-a-2-a-3-ever-evaluate-to-true">https://stackoverflow.com/questions/48270127/can-a-1-a-2-a-3-ever-evaluate-to-true</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/25/Laravel%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%BC%93%E5%AD%98%E6%8A%80%E5%B7%A7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/25/Laravel%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%BC%93%E5%AD%98%E6%8A%80%E5%B7%A7/" class="post-title-link" itemprop="url">Laravel的模型缓存技巧</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-25 18:58:01" itemprop="dateCreated datePublished" datetime="2018-01-25T18:58:01+09:00">2018-01-25</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:16:54" itemprop="dateModified" datetime="2018-03-27T22:16:54+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-牛b的人是不会废话的，只会默默的砸烂你的人生观，价值观，社会观。
-</blockquote>
-You’ve probably cached some model data in the controller before, but I am going to show you a Laravel model caching technique that’s a little more granular using Active Record models. This is a technique I originally learned about on RailsCasts.
-
-<p>Using a unique cache key on the model, you can cache properties and associations on your models that are automatically updated (and the cache invalidated) when the model (or associated model) is updated. A side benefit is that accessing the cached data is more portable than caching data in the controller, because it’s on the model instead of within a single controller method.</p>
-<p>Here’s the gist of the technique:</p>
-<p>Let’s say you have an Article model that has many Comment models. Given the following Laravel blade template, you might retrieve the comment count like so on your <code>/article/:id route</code>:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;h3&gt;<span class="variable">$article</span>-&gt;comments-&gt;count() &#123;&#123; str_plural(<span class="string">&#x27;Comment&#x27;</span>, <span class="variable">$article</span>-&gt;comments-&gt;count())&lt;/h3&gt;</span><br></pre></td></tr></table></figure>
-<p>You could cache the comment count in the controller, but the controller can get pretty ugly when you have multiple one-off queries and data you need to cache. Using the controller, accessing the cached data isn’t very portable either.</p>
-<p>We can build a template that will only hit the database when the article is updated, and any code that has access to the model can grab the cached value:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;h3&gt;<span class="variable">$article</span>-&gt;cached_comments_count &#123;&#123; str_plural(<span class="string">&#x27;Comment&#x27;</span>, <span class="variable">$article</span>-&gt;cached_comments_count)&lt;/h3&gt;</span><br></pre></td></tr></table></figure>
-
-<p>Using a model accessor, we will cache the comment count based on the last time the article was updated.</p>
-<p>So how do we update the article’s updated_at column when a new comment is added or removed?</p>
-<p>Enter the touch method.</p>
-<h3 id="Touching-Models"><a href="#Touching-Models" class="headerlink" title="Touching Models"></a>Touching Models</h3><p>Using the model’s touch() method, we can update an article’s updated_at column:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ php artisan tinker</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; <span class="variable">$article</span> = \App\Article::first();</span><br><span class="line">=&gt; App\Article &#123;<span class="comment">#746</span></span><br><span class="line">     id: <span class="number">1</span>,</span><br><span class="line">     title: <span class="string">&quot;Hello World&quot;</span>,</span><br><span class="line">     body: <span class="string">&quot;The Body&quot;</span>,</span><br><span class="line">     created_at: <span class="string">&quot;2018-01-11 05:16:51&quot;</span>,</span><br><span class="line">     updated_at: <span class="string">&quot;2018-01-11 05:51:07&quot;</span>,</span><br><span class="line">   &#125;</span><br><span class="line">&gt;&gt;&gt; <span class="variable">$article</span>-&gt;updated_at-&gt;timestamp</span><br><span class="line">=&gt; <span class="number">1515649867</span></span><br><span class="line">&gt;&gt;&gt; <span class="variable">$article</span>-&gt;touch();</span><br><span class="line">=&gt; <span class="literal">true</span></span><br><span class="line">&gt;&gt;&gt; <span class="variable">$article</span>-&gt;updated_at-&gt;timestamp</span><br><span class="line">=&gt; <span class="number">1515650910</span></span><br></pre></td></tr></table></figure>
-<p>We can use the updated timestamp to invalidate a cache, but how can we touch the article’s updated_at field when we add or remove a comment?</p>
-<p>It just so happens that Eloquent models have a property called $touches. Here’s what our comment model might look like:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Article</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Eloquent</span>\<span class="title">Model</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Comment</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$guarded</span> = [];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$touches</span> = [<span class="string">&#x27;article&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">article</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;belongsTo(Article::class);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>The $touches property is an array containing the association that will get “touched” when a comment is created, saved, or removed.</p>
-<h3 id="The-Cached-Attribute"><a href="#The-Cached-Attribute" class="headerlink" title="The Cached Attribute"></a>The Cached Attribute</h3><p>Let’s go back to the $article-&gt;cached_comments_count accessor. The implementation might look like this on the App\Article model:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getCachedCommentsCountAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Cache::remember(<span class="keyword">$this</span>-&gt;cacheKey() . <span class="string">&#x27;:comments_count&#x27;</span>, <span class="number">15</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;comments-&gt;count();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>We are caching the model for fifteen minutes using a unique cacheKey() method and simply returning the comment count inside the closure.</p>
-<p>Note that we could also use the Cache::rememberForever() method and rely on our caching mechanism’s garbage collection to remove stale keys. I’ve set a timer so that the cache will be hit most of the time, with a fresh cache every fifteen minutes.</p>
-<p>The cacheKey() method needs to make the model unique, and invalidate the cache when the model is updated. Here’s my cacheKey implementation:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">cacheKey</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> sprintf(</span><br><span class="line">        <span class="string">&quot;%s/%s-%s&quot;</span>,</span><br><span class="line">        <span class="keyword">$this</span>-&gt;getTable(),</span><br><span class="line">        <span class="keyword">$this</span>-&gt;getKey(),</span><br><span class="line">        <span class="keyword">$this</span>-&gt;updated_at-&gt;timestamp</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>The example output for the model’s cacheKey() method might return the following string representation:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">articles/<span class="number">1</span>-<span class="number">1515650910</span></span><br></pre></td></tr></table></figure>
-
-<p>The key is the name of the table, the model id, and the current updated_at timestamp. Once we touch the model, the timestamp will be updated, and our model cache will be invalidated appropriately.</p>
-<p>Here’s the Article model if full:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Comment</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">Cache</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Eloquent</span>\<span class="title">Model</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">cacheKey</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> sprintf(</span><br><span class="line">            <span class="string">&quot;%s/%s-%s&quot;</span>,</span><br><span class="line">            <span class="keyword">$this</span>-&gt;getTable(),</span><br><span class="line">            <span class="keyword">$this</span>-&gt;getKey(),</span><br><span class="line">            <span class="keyword">$this</span>-&gt;updated_at-&gt;timestamp</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">comments</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;hasMany(Comment::class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getCachedCommentsCountAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Cache::remember(<span class="keyword">$this</span>-&gt;cacheKey() . <span class="string">&#x27;:comments_count&#x27;</span>, <span class="number">15</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;comments-&gt;count();</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>And the associated Comment model:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Article</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Eloquent</span>\<span class="title">Model</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Comment</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$guarded</span> = [];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$touches</span> = [<span class="string">&#x27;article&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">article</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;belongsTo(Article::class);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="What’s-Next"><a href="#What’s-Next" class="headerlink" title="What’s Next?"></a>What’s Next?</h3><p>I’ve shown you how to cache a simple comment count, but what about caching all the comments?</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getCachedCommentsAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Cache::remember(<span class="keyword">$this</span>-&gt;cacheKey() . <span class="string">&#x27;:comments&#x27;</span>, <span class="number">15</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;comments;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>You might also choose to convert the comments to an array instead of serializing the models to only allow simple array access to the data on the frontend:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getCachedCommentsAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Cache::remember(<span class="keyword">$this</span>-&gt;cacheKey() . <span class="string">&#x27;:comments&#x27;</span>, <span class="number">15</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;comments-&gt;toArray();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Lastly, I defined the cacheKey() method on the Article model, but you would want to define this method via a trait called something like ProvidesModelCacheKey that you can use on multiple models or define the method on a base model that all our models extend. You might even want to use a contract (interface) for models that implement a cacheKey() method.</p>
-<p>I hope you’ve found this simple technique useful!</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-news.com/laravel-model-caching">https://laravel-news.com/laravel-model-caching</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/24/%E8%AF%B4%E8%AF%B4laravel%E7%AE%A1%E9%81%93pipeline%E7%9A%84%E5%AE%9E%E7%8E%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/24/%E8%AF%B4%E8%AF%B4laravel%E7%AE%A1%E9%81%93pipeline%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">说说laravel管道pipeline的实现</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-24 09:19:26" itemprop="dateCreated datePublished" datetime="2018-01-24T09:19:26+09:00">2018-01-24</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:09:01" itemprop="dateModified" datetime="2018-03-27T22:09:01+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我来过，我战斗过，我不在乎结局。
-</blockquote>
-Laravel中比较优雅的实现了MiddleWare. 主要用来层层递进的处理Request.
-
-<h3 id="Pipeline对象"><a href="#Pipeline对象" class="headerlink" title="Pipeline对象"></a>Pipeline对象</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">new</span> Pipeline())</span><br><span class="line">     -&gt;send(<span class="variable">$passable</span>) <span class="comment">// 待处理对象，要经过流水线的对象（比如request对象）</span></span><br><span class="line">     -&gt;through(<span class="variable">$middlewares</span>) <span class="comment">// 流水线上的各个环节（中间件）</span></span><br><span class="line">     -&gt;via(<span class="string">&#x27;handle&#x27;</span>) <span class="comment">// 指定每个环节的处理方法，比如 Authenticate::handle</span></span><br><span class="line">     -&gt;then(<span class="variable">$handler</span>); <span class="comment">// 尽头，最后的处理（返回时，则是源头）</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="then-方法"><a href="#then-方法" class="headerlink" title="then()方法"></a>then()方法</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">then</span>(<span class="params"><span class="built_in">Closure</span> <span class="variable">$destination</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$pipeline</span> = array_reduce(</span><br><span class="line">        array_reverse(<span class="keyword">$this</span>-&gt;pipes), <span class="keyword">$this</span>-&gt;carry(), <span class="keyword">$this</span>-&gt;prepareDestination(<span class="variable">$destination</span>)</span><br><span class="line">    );</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$pipeline</span>(<span class="keyword">$this</span>-&gt;passable);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>$this-&gt;pipes 是我们的中间件数组:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">2018</span>-<span class="number">01</span>-<span class="number">24</span> <span class="number">08</span>:<span class="number">55</span>:<span class="number">58</span>] local.INFO: <span class="keyword">array</span> (</span><br><span class="line">  <span class="number">0</span> =&gt; <span class="string">&#x27;App\\Http\\Middleware\\EncryptCookies&#x27;</span>,</span><br><span class="line">  <span class="number">1</span> =&gt; <span class="string">&#x27;Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse&#x27;</span>,</span><br><span class="line">  <span class="number">2</span> =&gt; <span class="string">&#x27;Illuminate\\Session\\Middleware\\StartSession&#x27;</span>,</span><br><span class="line">  <span class="number">3</span> =&gt; <span class="string">&#x27;Illuminate\\View\\Middleware\\ShareErrorsFromSession&#x27;</span>,</span><br><span class="line">  <span class="number">4</span> =&gt; <span class="string">&#x27;App\\Http\\Middleware\\VerifyCsrfToken&#x27;</span>,</span><br><span class="line">  <span class="number">5</span> =&gt; <span class="string">&#x27;Illuminate\\Auth\\Middleware\\Authenticate&#x27;</span>,</span><br><span class="line">  <span class="number">6</span> =&gt; <span class="string">&#x27;Illuminate\\Routing\\Middleware\\SubstituteBindings&#x27;</span>,</span><br><span class="line">)  </span><br></pre></td></tr></table></figure>
-
-<h3 id="carry-方法"><a href="#carry-方法" class="headerlink" title="carry()方法"></a>carry()方法</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">carry</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$stack</span>, <span class="variable">$pipe</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$passable</span></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$stack</span>, <span class="variable">$pipe</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable">$pipe</span> <span class="keyword">instanceof</span> <span class="built_in">Closure</span>) &#123;</span><br><span class="line">                <span class="comment">// If the pipe is an instance of a Closure, we will just call it directly but</span></span><br><span class="line">                <span class="comment">// otherwise we&#x27;ll resolve the pipes out of the container and call it with</span></span><br><span class="line">                <span class="comment">// the appropriate method and arguments, returning the results back out.</span></span><br><span class="line">                <span class="keyword">return</span> <span class="variable">$pipe</span>(<span class="variable">$passable</span>, <span class="variable">$stack</span>);</span><br><span class="line">            &#125; <span class="keyword">elseif</span> (! is_object(<span class="variable">$pipe</span>)) &#123;</span><br><span class="line">                <span class="keyword">list</span>(<span class="variable">$name</span>, <span class="variable">$parameters</span>) = <span class="keyword">$this</span>-&gt;parsePipeString(<span class="variable">$pipe</span>);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// If the pipe is a string we will parse the string and resolve the class out</span></span><br><span class="line">                <span class="comment">// of the dependency injection container. We can then build a callable and</span></span><br><span class="line">                <span class="comment">// execute the pipe function giving in the parameters that are required.</span></span><br><span class="line">                <span class="variable">$pipe</span> = <span class="keyword">$this</span>-&gt;getContainer()-&gt;make(<span class="variable">$name</span>);</span><br><span class="line"></span><br><span class="line">                <span class="variable">$parameters</span> = array_merge([<span class="variable">$passable</span>, <span class="variable">$stack</span>], <span class="variable">$parameters</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// If the pipe is already an object we&#x27;ll just make a callable and pass it to</span></span><br><span class="line">                <span class="comment">// the pipe as-is. There is no need to do any extra parsing and formatting</span></span><br><span class="line">                <span class="comment">// since the object we&#x27;re given was already a fully instantiated object.</span></span><br><span class="line">                <span class="variable">$parameters</span> = [<span class="variable">$passable</span>, <span class="variable">$stack</span>];</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$pipe</span>-&gt;&#123;<span class="keyword">$this</span>-&gt;method&#125;(...<span class="variable">$parameters</span>);</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这里使用了<code>array_reduce</code>和闭包, 在闭包中判断, 如果是迭代就执行这个迭代.<br><code>$this-&gt;method</code> 这个方法是<code>handle</code>, 也是每次我们需要自定义中间件时需要实现的方法.</p>
-<h3 id="简化说明"><a href="#简化说明" class="headerlink" title="简化说明"></a>简化说明</h3><p>先看下面这段代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="string">&#x27;AAAA&#x27;</span>];</span><br><span class="line"></span><br><span class="line"><span class="variable">$res</span> = array_reduce(<span class="variable">$arr</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (is_null(<span class="variable">$carry</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&#x27;Carry IS NULL&#x27;</span> . <span class="variable">$item</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>此时的数组长度为1，并且没有指定初始值, 故仅仅会迭代一次,返回一个闭包 use（$carry = null, $item = ‘AAAA’），当我们执行（$res()）这个闭包时，得到的结果为Carry IS NULLAAAA</p>
-<p>然后我们再看另外一段代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="string">&#x27;AAAA&#x27;</span>, <span class="string">&#x27;BBBB&#x27;</span>];</span><br><span class="line"></span><br><span class="line"><span class="variable">$res</span> = array_reduce(<span class="variable">$arr</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$carry</span>, <span class="variable">$item</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (is_null(<span class="variable">$carry</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&#x27;Carry IS NULL&#x27;</span> . <span class="variable">$item</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$carry</span> <span class="keyword">instanceof</span> \<span class="built_in">Closure</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$carry</span>() . <span class="variable">$item</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>我们新增了一个条件判断，若当前迭代的值是一个闭包，返回该闭包的执行结果。<br>当我们执行这个闭包时，满足$carry instanceof \Closure，得到结果Carry IS NULLAAAABBBB。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-china.org/articles/5206/the-use-of-php-built-in-function-array-reduce-in-laravel">https://laravel-china.org/articles/5206/the-use-of-php-built-in-function-array-reduce-in-laravel</a></p>
 </blockquote>
 
       
