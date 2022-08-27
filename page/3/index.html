@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">410</span>
+          <span class="site-state-item-count">412</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,237 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/02/28/golang%E4%B8%ADembed%E7%AE%80%E5%8D%95%E7%94%A8%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/02/28/golang%E4%B8%ADembed%E7%AE%80%E5%8D%95%E7%94%A8%E6%B3%95/" class="post-title-link" itemprop="url">golang中embed简单用法</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-02-28 21:11:17" itemprop="dateCreated datePublished" datetime="2022-02-28T21:11:17+09:00">2022-02-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2022-03-24 00:23:20" itemprop="dateModified" datetime="2022-03-24T00:23:20+09:00">2022-03-24</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+无聊是非常有必要的，一个人在空白时间所做的事，决定了这个人和他人根本的不同。
+</blockquote>
+
+
+<p>Go编译的程序非常适合部署，如果没有通过CGO引用其它的库的话，我们一般编译出来的可执行二进制文件都是单个的文件，非常适合复制和部署。在实际使用中，除了二进制文件，可能还需要一些配置文件，或者静态文件，比如html模板、静态的图片、CSS、javascript等文件，如何这些文件也能打进到二进制文件中，那就太美妙，我们只需复制、按照单个的可执行文件即可。</p>
+<h2 id="嵌入"><a href="#嵌入" class="headerlink" title="嵌入"></a>嵌入</h2><h3 id="嵌入为字符串"><a href="#嵌入为字符串" class="headerlink" title="嵌入为字符串"></a>嵌入为字符串</h3><p>比如当前文件下有个hello.txt的文件，文件内容为hello,world!。通过go:embed指令，在编译后下面程序中的s变量的值就变为了hello,world!。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	_ <span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="keyword">var</span> s <span class="keyword">string</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(s)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="嵌入为byte-slice"><a href="#嵌入为byte-slice" class="headerlink" title="嵌入为byte slice"></a>嵌入为byte slice</h3><p>你还可以把单个文件的内容嵌入为slice of byte，也就是一个字节数组。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	_ <span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="keyword">var</span> b []<span class="keyword">byte</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(b)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="嵌入为fs-FS"><a href="#嵌入为fs-FS" class="headerlink" title="嵌入为fs.FS"></a>嵌入为fs.FS</h3><p>甚至你可以嵌入为一个文件系统，这在嵌入多个文件的时候非常有用。<br>比如嵌入一个文件：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>嵌入本地的另外一个文件hello2.txt, 支持同一个变量上多个go:embed指令(嵌入为string或者byte slice是不能有多个go:embed指令的):</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="comment">//go:embed hello2.txt</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">	data, _ = f.ReadFile(<span class="string">&quot;hello2.txt&quot;</span>)</span><br><span class="line">    fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当前重复的go:embed指令嵌入为embed.FS是支持的，相当于一个:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>还可以嵌入子文件夹下的文件：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed p/hello.txt</span></span><br><span class="line"><span class="comment">//go:embed p/hello2.txt</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;p/hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">	data, _ = f.ReadFile(<span class="string">&quot;p/hello2.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="同一个文件嵌入为多个变量"><a href="#同一个文件嵌入为多个变量" class="headerlink" title="同一个文件嵌入为多个变量"></a>同一个文件嵌入为多个变量</h3><p>比如下面的例子，s和s2变量都嵌入hello.txt的文件。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	_ <span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="keyword">var</span> s <span class="keyword">string</span></span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="keyword">var</span> s2 <span class="keyword">string</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(s)</span><br><span class="line">	fmt.Println(s2)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="exported-unexported的变量都支持"><a href="#exported-unexported的变量都支持" class="headerlink" title="exported/unexported的变量都支持"></a>exported/unexported的变量都支持</h3><p>Go可以将文件可以嵌入为exported的变量，也可以嵌入为unexported的变量。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	_ <span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="keyword">var</span> s <span class="keyword">string</span></span><br><span class="line"><span class="comment">//go:embed hello2.txt</span></span><br><span class="line"><span class="keyword">var</span> S <span class="keyword">string</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(s)</span><br><span class="line">	fmt.Println(S)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="package级别的变量和局部变量都支持"><a href="#package级别的变量和局部变量都支持" class="headerlink" title="package级别的变量和局部变量都支持"></a>package级别的变量和局部变量都支持</h3><p>前面的例子都是package一级的的变量，即使是函数内的局部变量，也都支持嵌入：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	_ <span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">//go:embed hello.txt</span></span><br><span class="line">	<span class="keyword">var</span> s <span class="keyword">string</span></span><br><span class="line">	<span class="comment">//go:embed hello.txt</span></span><br><span class="line">	<span class="keyword">var</span> s2 <span class="keyword">string</span></span><br><span class="line">	fmt.Println(s, s2)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>局部变量s的值在编译时就已经嵌入了，而且虽然s和s2嵌入同一个文件，但是它们的值在编译的时候会使用初始化字段中的不同的值</p>
+<h3 id="只读"><a href="#只读" class="headerlink" title="只读"></a>只读</h3><p>嵌入的内容是只读的。也就是在编译期嵌入文件的内容是什么，那么在运行时的内容也就是什么。</p>
+<p>FS文件系统值提供了打开和读取的方法，并没有write的方法，也就是说FS实例是线程安全的，多个goroutine可以并发使用。</p>
+<h2 id="go-embed指令"><a href="#go-embed指令" class="headerlink" title="go:embed指令"></a>go:embed指令</h2><h3 id="go-embed指令支持嵌入多个文件"><a href="#go-embed指令支持嵌入多个文件" class="headerlink" title="go:embed指令支持嵌入多个文件"></a>go:embed指令支持嵌入多个文件</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed hello.txt hello2.txt</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">	data, _ = f.ReadFile(<span class="string">&quot;hello2.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然你也可以像前面的例子一样写成多行go:embed:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed hello.txt</span></span><br><span class="line"><span class="comment">//go:embed hello2.txt</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">	data, _ = f.ReadFile(<span class="string">&quot;hello2.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="支持文件夹"><a href="#支持文件夹" class="headerlink" title="支持文件夹"></a>支持文件夹</h3><p>文件夹分隔符采用正斜杠/,即使是windows系统也采用这个模式。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed p</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;p/hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">	data, _ = f.ReadFile(<span class="string">&quot;p/hello2.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用的是相对路径"><a href="#使用的是相对路径" class="headerlink" title="使用的是相对路径"></a>使用的是相对路径</h3><p>相对路径的根路径是go源文件所在的文件夹。</p>
+<p>支持使用双引号”或者反引号的方式应用到嵌入的文件名或者文件夹名或者模式名上，这对名称中带空格或者特殊字符的文件文件夹有用。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed &quot;he llo.txt&quot; `hello-2.txt`</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;he llo.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="匹配模式"><a href="#匹配模式" class="headerlink" title="匹配模式"></a>匹配模式</h3><p><code>go:embed</code>指令中可以只写文件夹名，此文件夹中除了<code>.</code>和<code>_</code>开头的文件和文件夹都会被嵌入，并且子文件夹也会被递归的嵌入，形成一个此文件夹的文件系统。</p>
+<p>如果想嵌入<code>.</code>和<code>_</code>开头的文件和文件夹， 比如<code>p</code>文件夹下的<code>.hello.txt</code>文件，那么就需要使用<code>*</code>，比如<code>go:embed p/*</code>。</p>
+<p><em>不具有递归性，所以子文件夹下的.和_不会被嵌入，除非你在专门使用子文件夹的</em>进行嵌入</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed p/*</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;p/.hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">	data, _ = f.ReadFile(<span class="string">&quot;p/q/.hi.txt&quot;</span>) <span class="comment">// 没有嵌入 p/q/.hi.txt</span></span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>嵌入和嵌入模式不支持绝对路径、不支持路径中包含.和..,如果想嵌入go源文件所在的路径，使用<code>*</code>:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed *</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	data, _ := f.ReadFile(<span class="string">&quot;hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">	data, _ = f.ReadFile(<span class="string">&quot;.hello.txt&quot;</span>)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="文件系统"><a href="#文件系统" class="headerlink" title="文件系统"></a>文件系统</h2><p>embed.FS实现了 io/fs.FS接口，它可以打开一个文件，返回fs.File:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed *</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	helloFile, _ := f.Open(<span class="string">&quot;hello.txt&quot;</span>)</span><br><span class="line">	stat, _ := helloFile.Stat()</span><br><span class="line">	fmt.Println(stat.Name(), stat.Size())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它还提供了ReadFileh和ReadDir功能，遍历一个文件下的文件和文件夹信息：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed *</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	dirEntries, _ := f.ReadDir(<span class="string">&quot;p&quot;</span>)</span><br><span class="line">	<span class="keyword">for</span> _, de := <span class="keyword">range</span> dirEntries &#123;</span><br><span class="line">		fmt.Println(de.Name(), de.IsDir())</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为它实现了io/fs.FS接口，所以可以返回它的子文件夹作为新的文件系统：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;io/fs&quot;</span></span><br><span class="line">	<span class="string">&quot;io/ioutil&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="comment">//go:embed *</span></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	ps, _ := fs.Sub(f, <span class="string">&quot;p&quot;</span>)</span><br><span class="line">	hi, _ := ps.Open(<span class="string">&quot;q/hi.txt&quot;</span>)</span><br><span class="line">	data, _ := ioutil.ReadAll(hi)</span><br><span class="line">	fmt.Println(<span class="keyword">string</span>(data))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h2><h3 id="net-http"><a href="#net-http" class="headerlink" title="net/http"></a>net/http</h3><p>先前，我们提供一个静态文件的服务时，使用：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http.Handle(<span class="string">&quot;/&quot;</span>, http.FileServer(http.Dir(<span class="string">&quot;/tmp&quot;</span>)))</span><br></pre></td></tr></table></figure>
+<p>现在，io/fs.FS文件系统也可以转换成http.FileServer的参数了:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> FileSystem</span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">FS</span><span class="params">(fsys fs.FS)</span> <span class="title">FileSystem</span></span></span><br><span class="line"><span class="keyword">type</span> Handler</span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">FileServer</span><span class="params">(root FileSystem)</span> <span class="title">Handler</span></span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>所以，嵌入文件可以使用下面的方式:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http.Handle(<span class="string">&quot;/&quot;</span>, http.FileServer(http.FS(fsys)))</span><br></pre></td></tr></table></figure>
+<h3 id="text-template和html-template"><a href="#text-template和html-template" class="headerlink" title="text/template和html/template."></a>text/template和html/template.</h3><p>同样的,template也可以从嵌入的文件系统中解析模板：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ParseFS</span><span class="params">(fsys fs.FS, patterns ...<span class="keyword">string</span>)</span> <span class="params">(*Template, error)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Template)</span> <span class="title">ParseFS</span><span class="params">(fsys fs.FS, patterns ...<span class="keyword">string</span>)</span> <span class="params">(*Template, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://colobu.com/2021/01/17/go-embed-tutorial/">https://colobu.com/2021/01/17/go-embed-tutorial/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/02/01/%E5%86%99%E7%BB%992022/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/02/01/%E5%86%99%E7%BB%992022/" class="post-title-link" itemprop="url">写给2022</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-02-01 10:39:40 / 修改时间：10:53:12" itemprop="dateCreated datePublished" datetime="2022-02-01T10:39:40+09:00">2022-02-01</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+贰零贰贰 ● 要努力
+</blockquote>
+
+<blockquote>
+<p>新的一年，坚持锻炼身体</p>
+</blockquote>
+<blockquote>
+<p>新的一年，照顾好家人</p>
+</blockquote>
+<blockquote>
+<p>新的一年，好好工作</p>
+</blockquote>
+<blockquote>
+<p>新的一年，有时间就陪女儿</p>
+</blockquote>
+<blockquote>
+<p>新的一年，开展自己的第二事业</p>
+</blockquote>
+<blockquote>
+<p>新的一年，要努力</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -913,195 +1144,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/05/Homestead%E7%8E%AF%E5%A2%83%E4%B8%8B%E5%AE%89%E8%A3%85Elasticsearch%E5%B9%B6%E4%BD%BF%E7%94%A8scout%E8%BF%9B%E8%A1%8C%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/10/05/Homestead%E7%8E%AF%E5%A2%83%E4%B8%8B%E5%AE%89%E8%A3%85Elasticsearch%E5%B9%B6%E4%BD%BF%E7%94%A8scout%E8%BF%9B%E8%A1%8C%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2/" class="post-title-link" itemprop="url">Homestead环境下安装Elasticsearch并使用scout进行全文检索</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2021-10-05 17:03:51 / 修改时间：17:12:38" itemprop="dateCreated datePublished" datetime="2021-10-05T17:03:51+09:00">2021-10-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-长亭外，古道边，芳草碧连天。
-晚风扶柳笛声残，夕阳山外山。
-</blockquote>
-
-<h3 id="在-homestead-的-homestead-yml-配置文件中添加"><a href="#在-homestead-的-homestead-yml-配置文件中添加" class="headerlink" title="在 homestead 的 homestead.yml 配置文件中添加"></a>在 homestead 的 homestead.yml 配置文件中添加</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">features:</span><br><span class="line">    - mariadb: <span class="literal">false</span></span><br><span class="line">    - ohmyzsh: <span class="literal">false</span></span><br><span class="line">    - webdriver: <span class="literal">false</span></span><br><span class="line">    - elasticsearch:</span><br><span class="line">        version: <span class="number">7.6</span></span><br><span class="line"></span><br><span class="line">ports:</span><br><span class="line">    - send: <span class="number">63790</span></span><br><span class="line">      to: <span class="number">6379</span></span><br><span class="line">    - send: <span class="number">9100</span></span><br><span class="line">      to: <span class="number">9200</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>开启 homestead 中的 elasticsearch</p>
-<p>因为需要安装软件镜像在国外，所以需要设置国内的镜像</p>
-<p>打开 homestead/scripts/features/elasticssearch.sh 文件</p>
-<p>将 apt-get 安装的内容替换为</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">sed -i <span class="string">&quot;s@http://.*archive.ubuntu.com@http://mirrors.huaweicloud.com@g&quot;</span> /etc/apt/sources.<span class="keyword">list</span></span><br><span class="line">sed -i <span class="string">&quot;s@http://.*security.ubuntu.com@http://mirrors.huaweicloud.com@g&quot;</span> /etc/apt/sources.<span class="keyword">list</span></span><br><span class="line"></span><br><span class="line">sudo apt-get update</span><br><span class="line"></span><br><span class="line">wget  https:<span class="comment">//mirrors.huaweicloud.com/elasticsearch/7.6.1/elasticsearch-7.6.1-amd64.deb</span></span><br><span class="line">sudo apt-get -y install openjdk-<span class="number">11</span>-jre</span><br><span class="line"><span class="comment"># sudo apt-get -y install elasticsearch&quot;$installVersion&quot;</span></span><br><span class="line"></span><br><span class="line">sudo dpkg -i elasticsearch-<span class="number">7.6</span>.<span class="number">1</span>-amd64.deb</span><br><span class="line"><span class="comment"># Start Elasticsearch on boot</span></span><br><span class="line"></span><br><span class="line">sudo update-rc.d elasticsearch defaults <span class="number">95</span> <span class="number">10</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="设置外网访问"><a href="#设置外网访问" class="headerlink" title="设置外网访问"></a>设置外网访问</h3><p>在 /etc/elasticsearch/elasticsearch.yml 中添加</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">network.host: <span class="number">0.0</span>.<span class="number">0.0</span></span><br><span class="line">discovery.seed_hosts: [<span class="string">&quot;127.0.0.1&quot;</span>, <span class="string">&quot;::1&quot;</span>]</span><br></pre></td></tr></table></figure>
-<p>重启 elasticsearch</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo service elasticsearch restart</span><br></pre></td></tr></table></figure>
-
-<h3 id="安装-ik-中文分词插件"><a href="#安装-ik-中文分词插件" class="headerlink" title="安装 ik 中文分词插件"></a>安装 ik 中文分词插件</h3><p>打开 <code>/usr/share/elasticsearch/plugins</code></p>
-<p>创建 文件夹</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir ik</span><br></pre></td></tr></table></figure>
-<p>将下载的 <a target="_blank" rel="noopener" href="https://github.com/medcl/elasticsearch-ana">https://github.com/medcl/elasticsearch-ana</a>… 解压到 ik 文件夹中</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unzip  xxx.zip</span><br></pre></td></tr></table></figure>
-<p>重启服务</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo service elasticsearch restart</span><br></pre></td></tr></table></figure>
-
-<h3 id="安装-kibana"><a href="#安装-kibana" class="headerlink" title="安装 kibana"></a>安装 kibana</h3><p>kibana 是一款界面管理工具 官方出品的</p>
-<h3 id="laravel-安装全文搜索"><a href="#laravel-安装全文搜索" class="headerlink" title="laravel 安装全文搜索"></a>laravel 安装全文搜索</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> tamayo/laravel-scout-elastic </span><br><span class="line">composer <span class="keyword">require</span> laravel/scout  <span class="comment">//版本可能不兼容 具体看composer中的兼容版本</span></span><br><span class="line">php artisan vendor:publish <span class="comment">//选择其中的配置文件发布</span></span><br></pre></td></tr></table></figure>
-<p>发布配置文件后需要对配置文件进行更改</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;driver&#x27;</span> =&gt; env(<span class="string">&#x27;SCOUT_DRIVER&#x27;</span>, <span class="string">&#x27;algolia&#x27;</span>), <span class="comment">//在env 中 添加   elasticsearch</span></span><br></pre></td></tr></table></figure>
-<p>在 scount.php 中添加</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;elasticsearch&#x27;</span> =&gt; [    </span><br><span class="line">    <span class="string">&#x27;index&#x27;</span> =&gt; env(<span class="string">&#x27;ELASTICSEARCH_INDEX&#x27;</span>, <span class="string">&#x27;products&#x27;</span>),   </span><br><span class="line">    <span class="string">&#x27;hosts&#x27;</span> =&gt; [        env(<span class="string">&#x27;ELASTICSEARCH_HOST&#x27;</span>, <span class="string">&#x27;http://localhost&#x27;</span>),   ]</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://learnku.com/articles/42730">https://learnku.com/articles/42730</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/03/JQuery%E9%80%89%E6%8B%A9%E5%99%A8%E4%B8%AD%E5%90%84%E4%B8%AA%E7%AC%A6%E5%8F%B7%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/10/03/JQuery%E9%80%89%E6%8B%A9%E5%99%A8%E4%B8%AD%E5%90%84%E4%B8%AA%E7%AC%A6%E5%8F%B7%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">jQuery选择器中各个符号的区别</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2021-10-03 18:18:24" itemprop="dateCreated datePublished" datetime="2021-10-03T18:18:24+09:00">2021-10-03</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-11-20 11:06:30" itemprop="dateModified" datetime="2021-11-20T11:06:30+09:00">2021-11-20</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你的善良，必须带点锋芒，否则等于零。
-</blockquote>
-
-<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>空格：<code>$(&#39;parent childchild&#39;)</code>表示获取parent下的所有的<code>childchild</code>节点</p>
-<p>大于号：<code>$(&#39;parent &gt; childchild&#39;)</code>表示获取parent下的所有下一级<code>childchild</code></p>
-<p>加号：<code>$(&#39;pre + nextbrother&#39;)</code>表示获得pre节点的下一个兄弟节点，相当于<code>next()</code>方法</p>
-<p>波浪号：<code>$(&#39;pre ~ brother&#39;)</code>表示获取pre节点的后面的所有兄弟节点，相当于<code>nextAll()</code>方法</p>
-<h3 id="详细解读"><a href="#详细解读" class="headerlink" title="详细解读"></a>详细解读</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;imgs_box&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;play_imgs_width imgs_source&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;imgs_buttons play_imgs_width&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span> <span class="attr">class</span>=<span class="string">&quot;buttons_ahover&quot;</span>&gt;</span>1<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span> <span class="attr">class</span>=<span class="string">&quot;buttons_default&quot;</span>&gt;</span>2<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span> <span class="attr">class</span>=<span class="string">&quot;buttons_default&quot;</span>&gt;</span>3<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span>	</span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;test&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span></span><br><span class="line">	  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;test_first_child&quot;</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="空格的使用"><a href="#空格的使用" class="headerlink" title="空格的使用"></a>空格的使用</h4><p>如果要获取imgs_box中的所有a标签，可以使用空格，代码如下</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;#imgs_box a&#x27;</span>).length;  <span class="comment">// 6</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="大于号的使用"><a href="#大于号的使用" class="headerlink" title="大于号的使用"></a>大于号的使用</h3><p>如果要imgs_box中下一级的所有ul元素，不包含类为test_first_child的元素，可以使用如下代码</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;#imgs_box &gt; ul&#x27;</span>).length;</span><br></pre></td></tr></table></figure>
-<h3 id="加号的使用"><a href="#加号的使用" class="headerlink" title="加号的使用"></a>加号的使用</h3><p>如果想获取类为imgs_source元素的相邻的下一个元素，可以使用加号</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;.imgs_source + ul&#x27;</span>).css(<span class="string">&quot;color&quot;</span>,<span class="string">&quot;red&quot;</span>);</span><br></pre></td></tr></table></figure>
-<h3 id="波浪号的使用"><a href="#波浪号的使用" class="headerlink" title="波浪号的使用"></a>波浪号的使用</h3><p>如果想获取类为 imgs_source元素所有的同级元素，可以使用波浪号~</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;.imgs_source ~ ul&#x27;</span>).css(<span class="string">&quot;color&quot;</span>,<span class="string">&quot;red&quot;</span>);</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>

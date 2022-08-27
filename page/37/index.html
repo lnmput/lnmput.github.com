@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">410</span>
+          <span class="site-state-item-count">412</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,177 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/12/09/python%E6%8A%95%E7%A5%A8%E5%92%8Cip%E5%9C%B0%E5%9D%80%E7%9A%84%E4%BC%AA%E9%80%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/12/09/python%E6%8A%95%E7%A5%A8%E5%92%8Cip%E5%9C%B0%E5%9D%80%E7%9A%84%E4%BC%AA%E9%80%A0/" class="post-title-link" itemprop="url">python投票和ip地址的伪造</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-12-09 10:30:46" itemprop="dateCreated datePublished" datetime="2016-12-09T10:30:46+09:00">2016-12-09</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 14:05:32" itemprop="dateModified" datetime="2021-09-10T14:05:32+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+全怪我们太穷了，又不认识人。
+</blockquote>
+
+<h3 id="项目说明"><a href="#项目说明" class="headerlink" title="项目说明"></a>项目说明</h3><ul>
+<li>投票地址：<a target="_blank" rel="noopener" href="http://kepudasai.cdstm.cn/index.php?kepu-postvote">http://kepudasai.cdstm.cn/index.php?kepu-postvote</a></li>
+<li>投票限制：IP，每个ip每天10票</li>
+<li>提交方式：post</li>
+<li>提交参数：{‘group’: ‘gaozhongzu’,’key’ : 10}</li>
+</ul>
+<h3 id="php获取IP问题"><a href="#php获取IP问题" class="headerlink" title="php获取IP问题"></a>php获取IP问题</h3><p>一般我们写的获取ip的方式：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">GetIP</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">empty</span>(<span class="variable">$_SERVER</span>[<span class="string">&quot;HTTP_CLIENT_IP&quot;</span>])) &#123;</span><br><span class="line">        <span class="variable">$cip</span> = <span class="variable">$_SERVER</span>[<span class="string">&quot;HTTP_CLIENT_IP&quot;</span>];</span><br><span class="line">    &#125; <span class="keyword">elseif</span> (!<span class="keyword">empty</span>(<span class="variable">$_SERVER</span>[<span class="string">&quot;HTTP_X_FORWARDED_FOR&quot;</span>])) &#123;</span><br><span class="line">        <span class="variable">$cip</span> = <span class="variable">$_SERVER</span>[<span class="string">&quot;HTTP_X_FORWARDED_FOR&quot;</span>];</span><br><span class="line">    &#125; <span class="keyword">elseif</span> (!<span class="keyword">empty</span>(<span class="variable">$_SERVER</span>[<span class="string">&quot;REMOTE_ADDR&quot;</span>])) &#123;</span><br><span class="line">        <span class="variable">$cip</span> = <span class="variable">$_SERVER</span>[<span class="string">&quot;REMOTE_ADDR&quot;</span>];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="variable">$cip</span> = <span class="string">&quot;0.0.0.0&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$cip</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实这是有问题的，通过header我们可以轻易改变ip：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$curl</span> = curl_init();    <span class="comment">//初始化一个curl对象  </span></span><br><span class="line">curl_setopt(<span class="variable">$curl</span>, CURLOPT_URL, <span class="string">&quot;127.0.0.1/server.php&quot;</span>); </span><br><span class="line"><span class="variable">$header</span> = <span class="keyword">array</span>(        <span class="comment">//构造头部</span></span><br><span class="line">    <span class="string">&#x27;CLIENT-IP:58.68.44.61&#x27;</span>, </span><br><span class="line">    <span class="string">&#x27;X-FORWARDED-FOR:58.68.44.61&#x27;</span>, </span><br><span class="line">); </span><br><span class="line"></span><br><span class="line">curl_setopt(<span class="variable">$curl</span>, CURLOPT_HTTPHEADER, <span class="variable">$header</span>); </span><br><span class="line">curl_setopt(<span class="variable">$curl</span>, CURLOPT_RETURNTRANSFER, <span class="literal">true</span>); </span><br><span class="line"></span><br><span class="line"><span class="variable">$str</span> = curl_exec(<span class="variable">$curl</span>);    <span class="comment">//执行请求  </span></span><br><span class="line">curl_close(<span class="variable">$curl</span>);    <span class="comment">//关闭c</span></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$str</span>;    <span class="comment">//输出抓取的结果  </span></span><br></pre></td></tr></table></figure>
+<p>解决方法：<br>在判断的时候以<code>$_SERVER[&quot;REMOTE_ADDR&quot;]</code>优先。</p>
+<h3 id="python脚本"><a href="#python脚本" class="headerlink" title="python脚本"></a>python脚本</h3><p>初学，不喜勿喷</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> struct</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">url = <span class="string">&#x27;http://kepudasai.cdstm.cn/index.php?kepu-postvote&#x27;</span></span><br><span class="line"></span><br><span class="line">data = &#123;<span class="string">&#x27;group&#x27;</span>: <span class="string">&#x27;gaozhongzu&#x27;</span>,<span class="string">&#x27;key&#x27;</span> : <span class="number">10</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">createHeader</span>():</span></span><br><span class="line">    ip = socket.inet_ntoa(struct.pack(<span class="string">&#x27;&gt;I&#x27;</span>, random.randint(<span class="number">1</span>, <span class="number">0xffffffff</span>)))</span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">&#x27;Content-Type&#x27;</span>: <span class="string">&#x27;application/x-www-form-urlencoded&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;User-Agent&#x27;</span>: <span class="string">&#x27;Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;CLIENT-IP&#x27;</span>: ip,</span><br><span class="line">        <span class="string">&#x27;X-FORWARDED-FOR&#x27;</span>: ip</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> headers</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">toupiao</span>():</span></span><br><span class="line">    index = <span class="number">0</span></span><br><span class="line">    headers = createHeader();</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        html = requests.post(url, data=data, headers=headers)</span><br><span class="line">        result = json.loads(html.text)</span><br><span class="line">        <span class="keyword">if</span>(result[<span class="string">&#x27;error&#x27;</span>] == <span class="number">1</span>):</span><br><span class="line">            time.sleep(random.randint(<span class="number">1</span>, <span class="number">3</span>))</span><br><span class="line">            headers = createHeader();</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            index += <span class="number">1</span></span><br><span class="line">        <span class="keyword">if</span>(index == <span class="number">10000</span>):</span><br><span class="line">            <span class="built_in">print</span> index</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">toupiao()</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/12/08/%E5%85%B3%E4%BA%8Ehttp%E7%9A%84%E4%B8%80%E4%BA%9B%E7%9F%A5%E8%AF%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/12/08/%E5%85%B3%E4%BA%8Ehttp%E7%9A%84%E4%B8%80%E4%BA%9B%E7%9F%A5%E8%AF%86/" class="post-title-link" itemprop="url">关于http的一些知识</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-12-08 15:35:42" itemprop="dateCreated datePublished" datetime="2016-12-08T15:35:42+09:00">2016-12-08</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-04-25 10:47:44" itemprop="dateModified" datetime="2018-04-25T10:47:44+09:00">2018-04-25</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+兴趣是最好的老师，其次是耻辱
+</blockquote>
+
+<h3 id="简要说明"><a href="#简要说明" class="headerlink" title="简要说明"></a>简要说明</h3><p>简言之，HTTP Referer是header的一部分，当浏览器向web服务器发送请求的时候，一般会带上Referer，告诉服务器我是从哪个页面链接过来的，服务器籍此可以获得一些信息用于处理。比如从我主页上链接到一个朋友那里，他的服务器就能够从HTTP Referer中统计出每天有多少用户点击我主页上的链接访问他的网站。</p>
+<p>从一个https页面上的链接访问到一个非加密的http页面的时候，在http页面上是检查不到HTTP Referer的，比如当我点击自己的https页面下面的w3c xhtml验证图标（网址为<a target="_blank" rel="noopener" href="http://validator.w3.org/check?uri=referer%EF%BC%89%EF%BC%8C%E4%BB%8E%E6%9D%A5%E9%83%BD%E6%97%A0%E6%B3%95%E5%AE%8C%E6%88%90%E6%A0%A1%E9%AA%8C%EF%BC%8C%E6%8F%90%E7%A4%BA%EF%BC%9A">http://validator.w3.org/check?uri=referer），从来都无法完成校验，提示：</a></p>
+<p>No Referer header found!<br>原来，在http协议的rfc文档中有定义：</p>
+<p>15.1.3 Encoding Sensitive Information in URI’s</p>
+<p>…</p>
+<p>   Clients SHOULD NOT include a Referer header field in a (non-secure)<br>   HTTP request if the referring page was transferred with a secure<br>   protocol.<br>这样是出于安全的考虑，访问非加密页时，如果来源是加密页，客户端不发送Referer，IE一直都是这样实现的，Firefox浏览器也不例外。但这并不影响从加密页到加密页的访问。</p>
+<h3 id="详细论述"><a href="#详细论述" class="headerlink" title="详细论述"></a>详细论述</h3><p>从一个https页面上的链接访问到一个非加密的http页面的时候，在http页面上是检查不到HTTP Referer的，但是这是在https中未做设置的情况下，如facebook，</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://serverfault.com/questions/520244/referer-is-passed-from-https-to-http-in-some-cases-how">http://serverfault.com/questions/520244/referer-is-passed-from-https-to-http-in-some-cases-how</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -915,176 +1086,8 @@ ES中的聚合被分为两大类：Metric度量和bucket桶（原谅我英语差
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/11/29/chrome%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91%E4%B9%8B%E8%8E%B7%E5%8F%96%E5%9B%BE%E7%89%87%E4%BF%A1%E6%81%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/11/29/chrome%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91%E4%B9%8B%E8%8E%B7%E5%8F%96%E5%9B%BE%E7%89%87%E4%BF%A1%E6%81%AF/" class="post-title-link" itemprop="url">chrome插件开发之获取图片信息</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-11-29 23:21:48" itemprop="dateCreated datePublished" datetime="2016-11-29T23:21:48+09:00">2016-11-29</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-09-08 15:45:25" itemprop="dateModified" datetime="2018-09-08T15:45:25+09:00">2018-09-08</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-受任于败军之际，奉命于危难之间，尔来二十有一年矣。
-</blockquote>
-
-<h3 id="manifest-json"><a href="#manifest-json" class="headerlink" title="manifest.json"></a>manifest.json</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line"><span class="attr">&quot;name&quot;</span> : <span class="string">&quot;Imageinfo&quot;</span>,</span><br><span class="line"><span class="attr">&quot;version&quot;</span> : <span class="string">&quot;1.0.1&quot;</span>,</span><br><span class="line"><span class="attr">&quot;description&quot;</span> : <span class="string">&quot;Get image info for images, including EXIF data&quot;</span>,</span><br><span class="line"><span class="attr">&quot;background&quot;</span> : &#123; <span class="attr">&quot;scripts&quot;</span>: [<span class="string">&quot;js/background.js&quot;</span>] &#125;,</span><br><span class="line"><span class="attr">&quot;permissions&quot;</span> : [</span><br><span class="line"><span class="string">&quot;contextMenus&quot;</span>,</span><br><span class="line"><span class="string">&quot;tabs&quot;</span>,</span><br><span class="line"><span class="string">&quot;http://*/*&quot;</span>,</span><br><span class="line"><span class="string">&quot;https://*/*&quot;</span></span><br><span class="line">],</span><br><span class="line"><span class="attr">&quot;minimum_chrome_version&quot;</span> : <span class="string">&quot;6.0.0.0&quot;</span>,</span><br><span class="line"><span class="attr">&quot;icons&quot;</span> : &#123;</span><br><span class="line"><span class="attr">&quot;16&quot;</span> : <span class="string">&quot;images/icon16.png&quot;</span>,</span><br><span class="line"><span class="attr">&quot;48&quot;</span> : <span class="string">&quot;images/icon48.png&quot;</span>,</span><br><span class="line"><span class="attr">&quot;128&quot;</span> : <span class="string">&quot;images/icon128.png&quot;</span></span><br><span class="line">&#125;,</span><br><span class="line"><span class="attr">&quot;manifest_version&quot;</span>: <span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="background-js"><a href="#background-js" class="headerlink" title="background.js"></a>background.js</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getClickHandler</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line"><span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">info, tab</span>) </span>&#123;</span><br><span class="line"><span class="keyword">var</span> url = <span class="string">&#x27;html/index.html#&#x27;</span> + info.srcUrl;</span><br><span class="line">chrome.windows.create(&#123; <span class="attr">url</span>: url, <span class="attr">width</span>: <span class="number">520</span>, <span class="attr">height</span>: <span class="number">660</span> &#125;);</span><br><span class="line">&#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">chrome.contextMenus.create(&#123;</span><br><span class="line"><span class="string">&quot;title&quot;</span> : <span class="string">&quot;Get image info&quot;</span>,</span><br><span class="line"><span class="string">&quot;type&quot;</span> : <span class="string">&quot;normal&quot;</span>,</span><br><span class="line"><span class="string">&quot;contexts&quot;</span> : [<span class="string">&quot;image&quot;</span>],</span><br><span class="line"><span class="string">&quot;onclick&quot;</span> : getClickHandler()</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<h3 id="index-html"><a href="#index-html" class="headerlink" title="index.html"></a>index.html</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;viewport&quot;</span></span></span><br><span class="line"><span class="tag"><span class="attr">content</span>=<span class="string">&quot;width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;X-UA-Compatible&quot;</span> <span class="attr">content</span>=<span class="string">&quot;ie=edge&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;text/javascript&quot;</span> <span class="attr">src</span>=<span class="string">&quot;../js/jquery.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;text/javascript&quot;</span> <span class="attr">src</span>=<span class="string">&quot;../js/content.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>Document<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">h1</span>&gt;</span>tihs is a new page<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;con&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">     <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="content-js"><a href="#content-js" class="headerlink" title="content.js"></a>content.js</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">url = <span class="built_in">window</span>.location.href;</span><br><span class="line">kk = url.split(<span class="string">&#x27;#&#x27;</span>);</span><br><span class="line">$(<span class="string">&quot;#con&quot;</span>).html(<span class="string">&quot;&lt;img src=&#x27;&quot;</span>+kk[<span class="number">1</span>]+<span class="string">&quot;&#x27; /&gt;&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/11/25/%E4%BA%8B%E4%BB%B6DOMContentLoaded%E5%92%8Cload%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/11/25/%E4%BA%8B%E4%BB%B6DOMContentLoaded%E5%92%8Cload%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">事件DOMContentLoaded和load的区别</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-11-25 09:18:27" itemprop="dateCreated datePublished" datetime="2016-11-25T09:18:27+09:00">2016-11-25</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-24 14:47:21" itemprop="dateModified" datetime="2018-04-24T14:47:21+09:00">2018-04-24</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-她是你姑姑，又是你师父，怎么能做你妻子！
-</blockquote>
-
-<h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p>他们的区别是，触发的时机不一样，先触发DOMContentLoaded事件，后触发load事件。</p>
-<p>DOM文档加载的步骤为：</p>
-<ul>
-<li>解析HTML结构。</li>
-<li>加载外部脚本和样式表文件。</li>
-<li>解析并执行脚本代码。</li>
-<li>DOM树构建完成。//DOMContentLoaded</li>
-<li>加载图片等外部文件。</li>
-<li>页面加载完毕。//load</li>
-</ul>
-<p>在第4步，会触发DOMContentLoaded事件。在第6步，触发load事件。<br>用原生js可以这么写:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 不兼容老的浏览器，兼容写法见[jQuery中ready与load事件](http://www.imooc.com/code/3253)，或用jQuery</span></span><br><span class="line"><span class="built_in">document</span>.addEventListener(<span class="string">&quot;DOMContentLoaded&quot;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="comment">// ...代码...</span></span><br><span class="line">&#125;, <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">window</span>.addEventListener(<span class="string">&quot;load&quot;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ...代码...</span></span><br><span class="line">&#125;, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
-<p>用jQuery这么写:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DOMContentLoaded</span></span><br><span class="line">$(<span class="built_in">document</span>).ready(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ...代码...</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//load</span></span><br><span class="line">$(<span class="built_in">document</span>).load(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ...代码...</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/d851db5f2f30">http://www.jianshu.com/p/d851db5f2f30</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/36/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/36/">36</a><span class="page-number current">37</span><a class="page-number" href="/page/38/">38</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/38/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/36/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/36/">36</a><span class="page-number current">37</span><a class="page-number" href="/page/38/">38</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/38/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>

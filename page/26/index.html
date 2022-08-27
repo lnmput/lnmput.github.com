@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">410</span>
+          <span class="site-state-item-count">412</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,167 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/21/swoole%E7%BB%93%E5%90%88thinkphp5%E5%AE%9E%E7%8E%B0%E6%AF%AB%E7%A7%92%E7%BA%A7%E5%AE%9A%E6%97%B6%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/09/21/swoole%E7%BB%93%E5%90%88thinkphp5%E5%AE%9E%E7%8E%B0%E6%AF%AB%E7%A7%92%E7%BA%A7%E5%AE%9A%E6%97%B6%E5%99%A8/" class="post-title-link" itemprop="url">swoole结合thinkphp5实现毫秒级定时器</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-09-21 12:46:20" itemprop="dateCreated datePublished" datetime="2017-09-21T12:46:20+09:00">2017-09-21</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:50:37" itemprop="dateModified" datetime="2018-03-27T21:50:37+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我有一把折断的剑，一条荆棘的路，一个看不清的未来和一场回不去的梦。
+</blockquote>
+### 创建命令行类
+
+<p>创建application/console/Timer.php文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">Console</span>;</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">console</span>\<span class="title">Command</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">console</span>\<span class="title">Input</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">console</span>\<span class="title">Output</span>;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Timer</span> <span class="keyword">extends</span> <span class="title">Command</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$server</span>;</span><br><span class="line">    <span class="comment">// 命令行配置函数</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">configure</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// setName 设置命令行名称</span></span><br><span class="line">        <span class="comment">// setDescription 设置命令行描述</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;setName(<span class="string">&#x27;timer:start&#x27;</span>)-&gt;setDescription(<span class="string">&#x27;Start TCP(Timer) Server!&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 设置命令返回信息</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">execute</span>(<span class="params">Input <span class="variable">$input</span>, Output <span class="variable">$output</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;server = <span class="keyword">new</span> \swoole_server(<span class="string">&#x27;0.0.0.0&#x27;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;server-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">4</span>,</span><br><span class="line">            <span class="string">&#x27;daemonize&#x27;</span>  =&gt; <span class="literal">false</span>,</span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;server-&gt;on(<span class="string">&#x27;Start&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onStart&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;server-&gt;on(<span class="string">&#x27;WorkerStart&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onWorkerStart&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;server-&gt;on(<span class="string">&#x27;Connect&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onConnect&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;server-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;server-&gt;on(<span class="string">&#x27;Close&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onClose&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;server-&gt;start();</span><br><span class="line">        <span class="comment">// $output-&gt;writeln(&quot;TCP: Start.\n&quot;);</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 主进程启动时回调函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onStart</span>(<span class="params">\swoole_server <span class="variable">$server</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Start&quot;</span> . PHP_EOL;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Worker 进程启动时回调函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onWorkerStart</span>(<span class="params">\swoole_server <span class="variable">$server</span>, <span class="variable">$worker_id</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 仅在第一个 Worker 进程启动时启动 Timer 定时器</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$worker_id</span> == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// 启动 Timer，每 1000 毫秒回调一次 onTick 函数，</span></span><br><span class="line">            swoole_timer_tick(<span class="number">1000</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onTick&#x27;</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 定时任务函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onTick</span>(<span class="params"><span class="variable">$timer_id</span>, <span class="variable">$params</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&#x27;Hello&#x27;</span> . PHP_EOL;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 建立连接时回调函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onConnect</span>(<span class="params">\swoole_server <span class="variable">$server</span>, <span class="variable">$fd</span>, <span class="variable">$from_id</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Connect&quot;</span> . PHP_EOL;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 收到信息时回调函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params">\swoole_server <span class="variable">$server</span>, <span class="variable">$fd</span>, <span class="variable">$from_id</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;message: <span class="subst">&#123;$data&#125;</span> form Client: <span class="subst">&#123;$fd&#125;</span>&quot;</span> . PHP_EOL;</span><br><span class="line">        <span class="comment">// 将受到的客户端消息再返回给客户端</span></span><br><span class="line">        <span class="variable">$server</span>-&gt;send(<span class="variable">$fd</span>, <span class="string">&quot;Message form Server: &quot;</span>.<span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 关闭连时回调函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onClose</span>(<span class="params">\swoole_server <span class="variable">$server</span>, <span class="variable">$fd</span>, <span class="variable">$from_id</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Close&quot;</span> . PHP_EOL;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="注册命令"><a href="#注册命令" class="headerlink" title="注册命令"></a>注册命令</h3><p>文件所在 application/command.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">return</span> [</span><br><span class="line">    <span class="string">&#x27;app\console\Timer&#x27;</span>,</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+<p>接下来就可以通过命令行来启动毫秒定时器</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php think timer:start</span><br></pre></td></tr></table></figure>
+<h3 id="查看结果"><a href="#查看结果" class="headerlink" title="查看结果"></a>查看结果</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@iZ2ze20vl8jnphmrpet8txZ tp5]<span class="comment"># php think timer:start</span></span><br><span class="line">Start</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://www.iswoole.com/article/2067">http://www.iswoole.com/article/2067</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/20/javascript%E8%8E%B7%E5%8F%96%E7%B3%BB%E7%BB%9F%E5%BD%93%E5%89%8D%E6%97%B6%E9%97%B4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/09/20/javascript%E8%8E%B7%E5%8F%96%E7%B3%BB%E7%BB%9F%E5%BD%93%E5%89%8D%E6%97%B6%E9%97%B4/" class="post-title-link" itemprop="url">javascript获取系统当前时间</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-09-20 17:33:00" itemprop="dateCreated datePublished" datetime="2017-09-20T17:33:00+09:00">2017-09-20</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:20:26" itemprop="dateModified" datetime="2018-03-27T22:20:26+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我对蝉说:他日再见,要待来年. 蝉对我说:他日重逢,要等来生
+</blockquote>
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">HTML</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;Content-Type&quot;</span> <span class="attr">content</span>=<span class="string">&quot;text/html; charset=utf-8&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>当前系统时间<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;style.css&quot;</span>  /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">language</span>=<span class="string">&quot;javascript&quot;</span> <span class="attr">type</span>=<span class="string">&quot;text/javascript&quot;</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript">  <span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">    showTime();</span></span><br><span class="line"><span class="javascript">  &#125;</span></span><br><span class="line"><span class="javascript">  <span class="function"><span class="keyword">function</span> <span class="title">checkTime</span>(<span class="params">i</span>)</span>&#123;  <span class="comment">//补位处理</span></span></span><br><span class="line"><span class="javascript">    <span class="keyword">if</span>(i&lt;<span class="number">10</span>)  &#123;</span></span><br><span class="line"><span class="javascript">        i=<span class="string">&#x27;0&#x27;</span>+i;</span></span><br><span class="line"><span class="javascript">    &#125;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">return</span> i;</span></span><br><span class="line"><span class="javascript">  &#125;</span></span><br><span class="line"><span class="javascript">  <span class="function"><span class="keyword">function</span> <span class="title">showTime</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> now=<span class="keyword">new</span> <span class="built_in">Date</span>();</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> year= now.getFullYear()  ;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> month=  now.getMonth()+<span class="number">1</span> ;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> day=  now.getDate()  ;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> h=  now.getHours()  ;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> m=  now.getMinutes()  ;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> s=  now.getSeconds()  ;</span></span><br><span class="line"><span class="javascript">    m=checkTime(m)</span></span><br><span class="line"><span class="javascript">    s=checkTime(s)</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> weekday=<span class="keyword">new</span> <span class="built_in">Array</span>(<span class="number">7</span>)</span></span><br><span class="line"><span class="javascript">    weekday[<span class="number">0</span>]=<span class="string">&quot;星期日&quot;</span></span></span><br><span class="line"><span class="javascript">    weekday[<span class="number">1</span>]=<span class="string">&quot;星期一&quot;</span></span></span><br><span class="line"><span class="javascript">    weekday[<span class="number">2</span>]=<span class="string">&quot;星期二&quot;</span></span></span><br><span class="line"><span class="javascript">    weekday[<span class="number">3</span>]=<span class="string">&quot;星期三&quot;</span></span></span><br><span class="line"><span class="javascript">    weekday[<span class="number">4</span>]=<span class="string">&quot;星期四&quot;</span></span></span><br><span class="line"><span class="javascript">    weekday[<span class="number">5</span>]=<span class="string">&quot;星期五&quot;</span></span></span><br><span class="line"><span class="javascript">    weekday[<span class="number">6</span>]=<span class="string">&quot;星期六&quot;</span></span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript">    <span class="built_in">document</span>.getElementById(<span class="string">&quot;show&quot;</span>).innerHTML=<span class="string">&quot;&quot;</span>+year+<span class="string">&quot;年&quot;</span>+month+<span class="string">&quot;月&quot;</span>+day+<span class="string">&quot;日 &quot;</span>+  weekday[now.getDay()] +h+<span class="string">&quot;:&quot;</span>+m+<span class="string">&quot;:&quot;</span>+s;</span></span><br><span class="line"><span class="javascript">    t=<span class="built_in">setTimeout</span>(<span class="string">&#x27;showTime()&#x27;</span>,<span class="number">500</span>)</span></span><br><span class="line"><span class="javascript">  &#125;</span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;content1&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;show&quot;</span>&gt;</span>显示时间的位置<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -932,175 +1093,8 @@ Linux是一个多用户多任务的操作系统，可以在Linux中为不同的�
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/29/Laravel%E4%B8%8B%E4%BD%BF%E7%94%A8Guzzle%E7%BC%96%E5%86%99%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%88%AC%E8%99%AB%E5%AE%9E%E6%88%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/08/29/Laravel%E4%B8%8B%E4%BD%BF%E7%94%A8Guzzle%E7%BC%96%E5%86%99%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%88%AC%E8%99%AB%E5%AE%9E%E6%88%98/" class="post-title-link" itemprop="url">Laravel下使用Guzzle编写多线程爬虫实战</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-08-29 14:20:07" itemprop="dateCreated datePublished" datetime="2017-08-29T14:20:07+09:00">2017-08-29</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:19:12" itemprop="dateModified" datetime="2018-03-27T22:19:12+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-中年以后的男人,时常会觉得孤独,因为他一睁开眼睛,周围都是要依靠他的人,却没有他可以依靠的人
-</blockquote>
-### 创建命令
-运行命令行创建命令
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan make:console MultithreadingRequest --command=test:multithreading-request</span><br></pre></td></tr></table></figure>
-### 注册命令
-编辑 app/Console/Kernel.php，在 $commands 数组中增加：
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Commands\MultithreadingRequest::class,</span><br></pre></td></tr></table></figure>
-### 测试命令
-修改 app/Console/Commands/MultithreadingRequest.php 文件，在 handle 方法中增加：
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;info(<span class="string">&#x27;hello&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="安装-Guzzle"><a href="#安装-Guzzle" class="headerlink" title="安装 Guzzle"></a>安装 Guzzle</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> guzzlehttp/guzzle <span class="string">&quot;6.2&quot;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Console</span>\<span class="title">Commands</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">GuzzleHttp</span>\<span class="title">Client</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">GuzzleHttp</span>\<span class="title">Pool</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">GuzzleHttp</span>\<span class="title">Psr7</span>\<span class="title">Request</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">GuzzleHttp</span>\<span class="title">Exception</span>\<span class="title">ClientException</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Console</span>\<span class="title">Command</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MultithreadingRequest</span> <span class="keyword">extends</span> <span class="title">Command</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$totalPageCount</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$counter</span>        = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$concurrency</span>    = <span class="number">7</span>;  <span class="comment">// 同时并发抓取</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$users</span> = [<span class="string">&#x27;CycloneAxe&#x27;</span>, <span class="string">&#x27;appleboy&#x27;</span>, <span class="string">&#x27;Aufree&#x27;</span>, <span class="string">&#x27;lifesign&#x27;</span>,</span><br><span class="line">                        <span class="string">&#x27;overtrue&#x27;</span>, <span class="string">&#x27;zhengjinghua&#x27;</span>, <span class="string">&#x27;NauxLiu&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$signature</span> = <span class="string">&#x27;test:multithreading-request&#x27;</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$description</span> = <span class="string">&#x27;Command description&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">parent</span>::__construct();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;totalPageCount = count(<span class="keyword">$this</span>-&gt;users);</span><br><span class="line"></span><br><span class="line">        <span class="variable">$client</span> = <span class="keyword">new</span> Client();</span><br><span class="line"></span><br><span class="line">        <span class="variable">$requests</span> = <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$total</span></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$client</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">foreach</span> (<span class="keyword">$this</span>-&gt;users <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$user</span>) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="variable">$uri</span> = <span class="string">&#x27;https://api.github.com/users/&#x27;</span> . <span class="variable">$user</span>;</span><br><span class="line">                <span class="keyword">yield</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) <span class="keyword">use</span> (<span class="params"><span class="variable">$client</span>, <span class="variable">$uri</span></span>) </span>&#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="variable">$client</span>-&gt;getAsync(<span class="variable">$uri</span>);</span><br><span class="line">                &#125;;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="variable">$pool</span> = <span class="keyword">new</span> Pool(<span class="variable">$client</span>, <span class="variable">$requests</span>(<span class="keyword">$this</span>-&gt;totalPageCount), [</span><br><span class="line">            <span class="string">&#x27;concurrency&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;concurrency,</span><br><span class="line">            <span class="string">&#x27;fulfilled&#x27;</span>   =&gt; <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$response</span>, <span class="variable">$index</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">                <span class="variable">$res</span> = json_decode(<span class="variable">$response</span>-&gt;getBody()-&gt;getContents());</span><br><span class="line"></span><br><span class="line">                <span class="keyword">$this</span>-&gt;info(<span class="string">&quot;请求第 <span class="subst">$index</span> 个请求，用户 &quot;</span> . <span class="keyword">$this</span>-&gt;users[<span class="variable">$index</span>] . <span class="string">&quot; 的 Github ID 为：&quot;</span> .<span class="variable">$res</span>-&gt;id);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">$this</span>-&gt;countedAndCheckEnded();</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">&#x27;rejected&#x27;</span> =&gt; <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$reason</span>, <span class="variable">$index</span></span>)</span>&#123;</span><br><span class="line">                <span class="keyword">$this</span>-&gt;error(<span class="string">&quot;rejected&quot;</span> );</span><br><span class="line">                <span class="keyword">$this</span>-&gt;error(<span class="string">&quot;rejected reason: &quot;</span> . <span class="variable">$reason</span> );</span><br><span class="line">                <span class="keyword">$this</span>-&gt;countedAndCheckEnded();</span><br><span class="line">            &#125;,</span><br><span class="line">        ]);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 开始发送请求</span></span><br><span class="line">        <span class="variable">$promise</span> = <span class="variable">$pool</span>-&gt;promise();</span><br><span class="line">        <span class="variable">$promise</span>-&gt;wait();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">countedAndCheckEnded</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;counter &lt; <span class="keyword">$this</span>-&gt;totalPageCount)&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;counter++;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;info(<span class="string">&quot;请求结束！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/2130/laravel-under-the-use-of-guzzle-to-prepare-multi-threaded-crawler-combat">https://laravel-china.org/topics/2130/laravel-under-the-use-of-guzzle-to-prepare-multi-threaded-crawler-combat</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/08/28/PHP%E8%BE%93%E5%87%BA%E7%BC%93%E5%86%B2%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/08/28/PHP%E8%BE%93%E5%87%BA%E7%BC%93%E5%86%B2%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8/" class="post-title-link" itemprop="url">PHP输出缓冲及其应用</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2017-08-28 11:21:45 / 修改时间：12:26:06" itemprop="dateCreated datePublished" datetime="2017-08-28T11:21:45+09:00">2017-08-28</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-某天，你无端想起一个人，她曾让你对明天有所期许，但是却完全没有出现在你的明天里。
-</blockquote>
-缓冲(buffer)是为了协调吞吐速度相差很大的设备之间数据传送而采用的技术，用来存放缓冲数据的区域叫缓冲区，在计算机科学领域，当数据从一个地方传送到另一个地方时，缓冲区被用来临时存储数据。与缓冲相似的一个技术是缓存(cache)，它们都是为了解决数据存储和传输速度不同而带来的问题，不同的是，缓冲主要在写时使用，而缓存主要用来在读时使用。
-
-<p>PHP在执行的过程中，嵌入的HTML代码，’echo’,’print_r’等指令都是一次数据输出，正是因为有缓冲区的存在，系统可以在php执行完之后再一次把数据发送给浏览器，运行如下代码:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;这里是第一行数据&quot;</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;这里是第二行数据，下面睡眠5秒&quot;</span>;</span><br><span class="line">sleep(<span class="number">5</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;这里是第三行数据，下面是HTML代码&quot;</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">&lt;h1&gt;标题&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
-<p>发现浏览器是同时显示所有内容，而不是先显示第一行和第二行数据，等待5秒后再显示后面的数据。不仅这样，PHP的缓冲区还提供给我们更加强大的功能，我们可以在数据发送之前对其作出捕获，更改等。PHP提供给我们”ob_”系列函数，例如如下代码，可以对某些字符进行替换:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">ob_start();</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;Hello world, this is http://www.hitoy.org/&quot;</span>;</span><br><span class="line"><span class="variable">$content</span> = ob_get_contents();</span><br><span class="line">ob_end_clean();</span><br><span class="line"><span class="keyword">echo</span> str_replace(<span class="string">&quot;http://&quot;</span>,<span class="string">&quot;https://&quot;</span>,<span class="variable">$content</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>上面中的ob_start,ob_get_contents,ob_end_clean分别用来开启用户缓冲区，获取缓存内容和关闭缓存区.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.hitoy.org/php-output-buffer.html">https://www.hitoy.org/php-output-buffer.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/25/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><span class="page-number current">26</span><a class="page-number" href="/page/27/">27</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/27/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/25/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><span class="page-number current">26</span><a class="page-number" href="/page/27/">27</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/27/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>

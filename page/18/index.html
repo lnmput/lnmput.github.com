@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">410</span>
+          <span class="site-state-item-count">412</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,235 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/25/ThinkPHP%E7%9A%84%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81%E8%AE%BE%E8%AE%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/25/ThinkPHP%E7%9A%84%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81%E8%AE%BE%E8%AE%A1/" class="post-title-link" itemprop="url">ThinkPHP的数据验证设计</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-03-25 20:46:07 / 修改时间：22:39:10" itemprop="dateCreated datePublished" datetime="2018-03-25T20:46:07+09:00">2018-03-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+人活在世上，无非是面对两大世界，身外的大千世界和自己的内心世界。
+</blockquote>
+
+<h3 id="一般的验证方式"><a href="#一般的验证方式" class="headerlink" title="一般的验证方式"></a>一般的验证方式</h3><p>新建验证文件<br>tp5\application\api\validate\TestValidate.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">api</span>\<span class="title">validate</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Validate</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TestValidate</span> <span class="keyword">extends</span> <span class="title">Validate</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$rule</span> = [</span><br><span class="line">        <span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;require|max:10&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;email&#x27;</span> =&gt; <span class="string">&#x27;email&#x27;</span></span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>控制器中调用验证</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getBanner</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$data</span> = [</span><br><span class="line">        <span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;yangzie&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;email&#x27;</span> =&gt; <span class="string">&#x27;yangzie@@.com&#x27;</span></span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="variable">$validate</span> = <span class="keyword">new</span> TestValidate();</span><br><span class="line"></span><br><span class="line">    <span class="variable">$result</span> = <span class="variable">$validate</span>-&gt;batch()-&gt;check(<span class="variable">$data</span>);  <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">    var_dump(<span class="variable">$validate</span>-&gt;getError());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="控制器调用"><a href="#控制器调用" class="headerlink" title="控制器调用"></a>控制器调用</h3><p>这里需要验证传入的ID必须是一个正整数；<br>tp5\application\api\controller\v1\Products.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">app</span>\<span class="title">api</span>\<span class="title">validate</span>\<span class="title">IDMustBePositiveInt</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getAllInCategory</span>(<span class="params"><span class="variable">$id</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    (<span class="keyword">new</span> IDMustBePositiveInt())-&gt;goCheck();</span><br><span class="line"></span><br><span class="line">    <span class="variable">$res</span> = Product::getProductsByCategoryID(<span class="variable">$id</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$res</span>-&gt;isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> ProductException();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$res</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="验证基类"><a href="#验证基类" class="headerlink" title="验证基类"></a>验证基类</h3><p>这里包含了所有验证类需要调用的一些公共方法<br>tp5\application\api\validate\BaseValidate.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">api</span>\<span class="title">validate</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">app</span>\<span class="title">lib</span>\<span class="title">exception</span>\<span class="title">ParameterException</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Request</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Validate</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BaseValidate</span> <span class="keyword">extends</span> <span class="title">Validate</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">goCheck</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$request</span> = Request::instance();</span><br><span class="line">        <span class="variable">$params</span> = <span class="variable">$request</span>-&gt;param();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">$this</span>-&gt;batch()-&gt;check(<span class="variable">$params</span>)) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="variable">$e</span> = <span class="keyword">new</span> ParameterException([</span><br><span class="line">                <span class="string">&#x27;msg&#x27;</span> =&gt; is_array(<span class="keyword">$this</span>-&gt;error) ? implode(<span class="string">&#x27;;&#x27;</span>, <span class="keyword">$this</span>-&gt;error) : <span class="keyword">$this</span>-&gt;error,</span><br><span class="line">            ]);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">throw</span> <span class="variable">$e</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">isPositiveInteger</span>(<span class="params"><span class="variable">$value</span>, <span class="variable">$rule</span>=<span class="string">&#x27;&#x27;</span>, <span class="variable">$data</span>=<span class="string">&#x27;&#x27;</span>, <span class="variable">$field</span>=<span class="string">&#x27;&#x27;</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (is_numeric(<span class="variable">$value</span>) &amp;&amp; is_int(<span class="variable">$value</span> + <span class="number">0</span>) &amp;&amp; (<span class="variable">$value</span> + <span class="number">0</span>) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">isNotEmpty</span>(<span class="params"><span class="variable">$value</span>, <span class="variable">$rule</span>=<span class="string">&#x27;&#x27;</span>, <span class="variable">$data</span>=<span class="string">&#x27;&#x27;</span>, <span class="variable">$field</span>=<span class="string">&#x27;&#x27;</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">empty</span>(<span class="variable">$value</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$field</span> . <span class="string">&#x27;不允许为空&#x27;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getDataByRule</span>(<span class="params"><span class="variable">$arrays</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (array_key_exists(<span class="string">&#x27;user_id&#x27;</span>, <span class="variable">$arrays</span>) | array_key_exists(<span class="string">&#x27;uid&#x27;</span>, <span class="variable">$arrays</span>)) &#123;</span><br><span class="line">            <span class="comment">// 不允许包含user_id或者uid，防止恶意覆盖user_id外键</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException([</span><br><span class="line">                <span class="string">&#x27;msg&#x27;</span> =&gt; <span class="string">&#x27;参数中包含有非法的参数名user_id或者uid&#x27;</span></span><br><span class="line">            ]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="variable">$newArray</span> = [];</span><br><span class="line">        <span class="keyword">foreach</span> (<span class="keyword">$this</span>-&gt;rule <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$value</span>) &#123;</span><br><span class="line">            <span class="variable">$newArray</span>[<span class="variable">$key</span>] = <span class="variable">$arrays</span>[<span class="variable">$key</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$newArray</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">isMobile</span>(<span class="params"><span class="variable">$value</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$rule</span> = <span class="string">&#x27;^1(3|4|5|7|8)[0-9]\d&#123;8&#125;$^&#x27;</span>;</span><br><span class="line">        <span class="variable">$result</span> = preg_match(<span class="variable">$rule</span>, <span class="variable">$value</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$result</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ID-验证类"><a href="#ID-验证类" class="headerlink" title="ID 验证类"></a>ID 验证类</h3><p>tp5\application\api\validate\IDMustBePositiveInt.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">api</span>\<span class="title">validate</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">IDMustBePositiveInt</span> <span class="keyword">extends</span> <span class="title">BaseValidate</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$rule</span> = [</span><br><span class="line">        <span class="string">&#x27;id&#x27;</span> =&gt; <span class="string">&#x27;require|isPositiveInteger&#x27;</span>,</span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$message</span> = [</span><br><span class="line">        <span class="string">&#x27;id&#x27;</span> =&gt; <span class="string">&#x27;ID必须是正整数&#x27;</span></span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/23/javascript%E7%9A%84window%E5%AF%B9%E8%B1%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/23/javascript%E7%9A%84window%E5%AF%B9%E8%B1%A1/" class="post-title-link" itemprop="url">javascript的window对象</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-23 17:14:20" itemprop="dateCreated datePublished" datetime="2018-03-23T17:14:20+09:00">2018-03-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:20:40" itemprop="dateModified" datetime="2018-03-27T22:20:40+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我最不喜欢等，因为这个期限永远都是个未知数。
+</blockquote>
+
+<h3 id="1-概述"><a href="#1-概述" class="headerlink" title="1.概述"></a>1.概述</h3><p>在浏览器中，<code>window</code>对象（注意，w为小写）指当前的浏览器窗口。它也是所有对象的顶层对象。<br>“顶层对象”指的是最高一层的对象，所有其他对象都是它的下属。JavaScript规定，浏览器环境的所有全局变量，都是<code>window</code>对象的属性。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="built_in">window</span>.a <span class="comment">// 1</span></span><br></pre></td></tr></table></figure>
+<p>上面代码中，变量a是一个全局变量，但是实质上它是window对象的属性。声明一个全局变量，就是为<code>window</code>对象的同名属性赋值。</p>
+<h3 id="2-window对象的属性"><a href="#2-window对象的属性" class="headerlink" title="2.window对象的属性"></a>2.window对象的属性</h3><h4 id="window-window，window-name"><a href="#window-window，window-name" class="headerlink" title="window.window，window.name"></a>window.window，window.name</h4><p>window对象的window属性指向自身。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.window === <span class="built_in">this</span> <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>window.name属性用于设置当前浏览器窗口的名字。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.name = <span class="string">&#x27;Hello World!&#x27;</span>;</span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">window</span>.name)</span><br><span class="line"><span class="comment">// &quot;Hello World!&quot;</span></span><br></pre></td></tr></table></figure>
+<p>各个浏览器对这个值的储存容量有所不同，但是一般来说，可以高达几MB。<br>该属性只能保存字符串，且当浏览器窗口关闭后，所保存的值就会消失。因此局限性比较大，但是与<code>&lt;iframe&gt;</code>窗口通信时，非常有用。</p>
+<h4 id="window-location"><a href="#window-location" class="headerlink" title="window.location"></a>window.location</h4><p>window.location返回一个location对象，用于获取窗口当前的URL信息。它等同于<code>document.location</code>对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.location === <span class="built_in">document</span>.location <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-window对象的方法"><a href="#3-window对象的方法" class="headerlink" title="3.window对象的方法"></a>3.window对象的方法</h3><h4 id="window-open-window-close"><a href="#window-open-window-close" class="headerlink" title="window.open(), window.close()"></a>window.open(), window.close()</h4><p>window.open方法用于新建另一个浏览器窗口，并且返回该窗口对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> popup = <span class="built_in">window</span>.open(<span class="string">&#x27;somefile.html&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>上面代码会让浏览器弹出一个新建窗口，网址是当前域名下的somefile.html。</p>
+<p>open方法一共可以接受四个参数。</p>
+<ul>
+<li>第一个参数：字符串，表示新窗口的网址。如果省略，默认网址就是about:blank。</li>
+<li>第二个参数：字符串，表示新窗口的名字。如果该名字的窗口已经存在，则跳到该窗口，不再新建窗口。如果省略，就默认使用_blank，表示新建一个没有名字的窗口。</li>
+<li>第三个参数：字符串，内容为逗号分隔的键值对，表示新窗口的参数，比如有没有提示栏、工具条等等。如果省略，则默认打开一个完整UI的新窗口。</li>
+<li>第四个参数：布尔值，表示第一个参数指定的网址，是否应该替换<code>history</code>对象之中的当前网址记录，默认值为<code>false</code>。显然，这个参数只有在第二个参数指向已经存在的窗口时，才有意义。</li>
+</ul>
+<h4 id="window-getSelection"><a href="#window-getSelection" class="headerlink" title="window.getSelection()"></a>window.getSelection()</h4><p>window.getSelection方法返回一个Selection对象，表示用户现在选中的文本。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> selObj = <span class="built_in">window</span>.getSelection();</span><br></pre></td></tr></table></figure>
+<p>使用Selction对象的toString方法可以得到选中的文本。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> selectedText = selObj.toString();</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-多窗口操作"><a href="#4-多窗口操作" class="headerlink" title="4.多窗口操作"></a>4.多窗口操作</h3><h4 id="窗口的引用"><a href="#窗口的引用" class="headerlink" title="窗口的引用"></a>窗口的引用</h4><p>各个窗口之中的脚本，可以引用其他窗口。浏览器提供了一些特殊变量，用来返回其他窗口。</p>
+<ul>
+<li><code>top</code>：顶层窗口，即最上层的那个窗口</li>
+<li><code>parent</code>：父窗口</li>
+<li><code>self</code>：当前窗口，即自身</li>
+</ul>
+<p>下面代码可以判断，当前窗口是否为顶层窗口。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">top === self</span><br><span class="line"></span><br><span class="line"><span class="comment">// 更好的写法</span></span><br><span class="line"><span class="built_in">window</span>.top === <span class="built_in">window</span>.self</span><br></pre></td></tr></table></figure>
+<p>下面的代码让父窗口的访问历史后退一次。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parent.history.back();</span><br></pre></td></tr></table></figure>
+
+<p>与这些变量对应，浏览器还提供一些特殊的窗口名，供<code>open</code>方法、<code>&lt;a&gt;</code>标签、<code>&lt;form&gt;</code>标签等引用。</p>
+<ul>
+<li><code>_top</code>：顶层窗口</li>
+<li><code>_parent</code>：父窗口</li>
+<li><code>_blank</code>：新窗口</li>
+</ul>
+<p>下面代码就表示在顶层窗口打开链接。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=<span class="string">&quot;somepage.html&quot;</span> target=<span class="string">&quot;_top&quot;</span>&gt;Link&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="iframe标签"><a href="#iframe标签" class="headerlink" title="iframe标签"></a>iframe标签</h4><p>对于<code>iframe</code>嵌入的窗口，<code>document.getElementById</code>方法可以拿到该窗口的<code>DOM</code>节点，然后使用<code>contentWindow</code>属性获得<code>iframe</code>节点包含的<code>window</code>对象，或者使用<code>contentDocument</code>属性获得包含的<code>document</code>对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> frame = <span class="built_in">document</span>.getElementById(<span class="string">&#x27;theFrame&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> frameWindow = frame.contentWindow;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 等同于 frame.contentWindow.document</span></span><br><span class="line"><span class="keyword">var</span> frameDoc = frame.contentDocument;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取子窗口的变量和属性</span></span><br><span class="line">frameWindow.function()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取子窗口的标题</span></span><br><span class="line">frameWindow.title</span><br></pre></td></tr></table></figure>
+<p><code>iframe</code>元素遵守同源政策，只有当父页面与框架页面来自同一个域名，两者之间才可以用脚本通信，否则只有使用<code>window.postMessage方</code>法。</p>
+<p><code>iframe</code>窗口内部，使用<code>window.parent</code>引用父窗口。如果当前页面没有父窗口，则<code>window.parent</code>属性返回自身。因此，可以通过<code>window.parent</code>是否等于<code>window.self</code>，判断当前窗口是否为<code>iframe</code>窗口。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="built_in">window</span>.parent !== <span class="built_in">window</span>.self) &#123;</span><br><span class="line">  <span class="comment">// 当前窗口是子窗口</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>iframe</code>嵌入窗口的<code>window</code>对象，有一个<code>frameElement</code>属性，返回它在父窗口中的<code>DOM</code>节点。对于那么非嵌入的窗口，该属性等于<code>null</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> f1Element = <span class="built_in">document</span>.getElementById(<span class="string">&#x27;f1&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> fiWindow = f1Element.contentWindow;</span><br><span class="line">f1Window.frameElement === f1Element <span class="comment">// true</span></span><br><span class="line"><span class="built_in">window</span>.frameElement === <span class="literal">null</span> <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="frames属性"><a href="#frames属性" class="headerlink" title="frames属性"></a>frames属性</h4><p>window对象的frames属性返回一个类似数组的对象，成员是所有子窗口的<code>window</code>对象。可以使用这个属性，实现窗口之间的互相引用。比如，<code>frames[0]</code>返回第一个子窗口，<code>frames[1].frames[2]</code>返回第二个子窗口内部的第三个子窗口，<code>parent.frames[1]</code>返回父窗口的第二个子窗口。</p>
+<p>需要注意的是，<code>window.frames</code>每个成员的值，是框架内的窗口（即框架的<code>window</code>对象），而不是<code>iframe</code>标签在父窗口的<code>DOM</code>节点。如果要获取每个框架内部的DOM树，需要使用<code>window.frames[0].document</code>的写法。</p>
+<p>另外，如果<code>iframe</code>元素设置了<code>name</code>或<code>id</code>属性，那么属性值会自动成为全局变量，并且可以通过<code>window.frames</code>属性引用，返回子窗口的<code>window</code>对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HTML代码为&lt;iframe id=&quot;myFrame&quot;&gt;</span></span><br><span class="line">myFrame <span class="comment">// [HTMLIFrameElement]</span></span><br><span class="line">frames.myframe === myFrame <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>另外，name属性的值会自动成为子窗口的名称，可以用在<code>window.open</code>方法的第二个参数，或者<code>&lt;a&gt;</code>和<code>&lt;frame&gt;</code>标签的<code>target</code>属性。</p>
+<h3 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h3><h4 id="error-事件和-onerror-属性"><a href="#error-事件和-onerror-属性" class="headerlink" title="error 事件和 onerror 属性"></a>error 事件和 onerror 属性</h4><p>浏览器脚本发生错误时，会触发window对象的error事件。我们可以通过window.onerror属性对该事件指定回调函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.onerror = <span class="function"><span class="keyword">function</span> (<span class="params">message, filename, lineno, colno, error</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;出错了！--&gt; %s&quot;</span>, error.stack);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>由于历史原因，window的error事件的回调函数不接受错误对象作为参数，而是一共可以接受五个参数，它们的含义依次如下。</p>
+<ul>
+<li>出错信息</li>
+<li>出错脚本的网址</li>
+<li>行号</li>
+<li>列号</li>
+<li>错误对象</li>
+</ul>
+<p>老式浏览器只支持前三个参数。</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="http://javascript.ruanyifeng.com/bom/window.html">http://javascript.ruanyifeng.com/bom/window.html</a><br><a target="_blank" rel="noopener" href="https://danlimerick.wordpress.com/2014/01/18/how-to-catch-javascript-errors-with-window-onerror-even-on-chrome-and-firefox/">https://danlimerick.wordpress.com/2014/01/18/how-to-catch-javascript-errors-with-window-onerror-even-on-chrome-and-firefox/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -994,195 +1223,8 @@ Github Api 虽然默认使用了第一种方法，但是其实是推荐并实现
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/03/PHP%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7%E7%9A%84%E7%BB%A7%E6%89%BF%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/03/PHP%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7%E7%9A%84%E7%BB%A7%E6%89%BF%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">PHP静态属性的继承问题</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-03-03 10:38:17" itemprop="dateCreated datePublished" datetime="2018-03-03T10:38:17+09:00">2018-03-03</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:29:39" itemprop="dateModified" datetime="2018-03-27T22:29:39+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-和你们这些少爷不同，我们光是活着就竭尽全力了。
-</blockquote>
-
-<h3 id="非静态属性"><a href="#非静态属性" class="headerlink" title="非静态属性"></a>非静态属性</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$instance</span> = <span class="string">&#x27;Null&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setInstance</span>(<span class="params"><span class="variable">$ins</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;instance = <span class="variable">$ins</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getInstance</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span> <span class="keyword">extends</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Baz</span> <span class="keyword">extends</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="variable">$bar</span> = <span class="keyword">new</span> Bar;</span><br><span class="line"><span class="variable">$bar</span>-&gt;setInstance(<span class="string">&#x27;baidu.com&#x27;</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$bar</span>-&gt;getInstance();  <span class="comment">//  baidu.com</span></span><br><span class="line"><span class="keyword">echo</span> (<span class="keyword">new</span> Foo)-&gt;getInstance();  <span class="comment">//  NULL</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;\n&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$baz</span> = <span class="keyword">new</span> Baz;</span><br><span class="line"><span class="variable">$baz</span>-&gt;setInstance(<span class="string">&#x27;laravel&#x27;</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$baz</span>-&gt;getInstance(); <span class="comment">// laravel</span></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$bar</span>-&gt;getInstance();  <span class="comment">// baidu.com</span></span><br><span class="line"><span class="keyword">echo</span> (<span class="keyword">new</span> Foo)-&gt;getInstance();  <span class="comment">// NULL</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>说明：<br>非静态属性的继承关系子类会继承父类的属性和方法，子类中的修改并不会影响到父类中属性的改变</p>
-<h3 id="静态属性"><a href="#静态属性" class="headerlink" title="静态属性"></a>静态属性</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="built_in">static</span> <span class="variable">$instance</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">setInstance</span>(<span class="params"><span class="variable">$ins</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">static</span>::<span class="variable">$instance</span> = <span class="variable">$ins</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">getInstance</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">static</span>::<span class="variable">$instance</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span> <span class="keyword">extends</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Bar::setInstance(<span class="string">&#x27;baidu.com&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> Bar::getInstance();  <span class="comment">// baidu.com</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> Foo::getInstance();  <span class="comment">// baidu.com</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>说明：<br>子类对属性的修改已经影响到了父类， 当然，这是在子类没有设置相同属性的情况下， 此时如果子类设置了相同的静态属性， 则如果对子类中这个属性的修改， 并不会影响到父类</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="built_in">static</span> <span class="variable">$instance</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">setInstance</span>(<span class="params"><span class="variable">$ins</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">static</span>::<span class="variable">$instance</span> = <span class="variable">$ins</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">getInstance</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">static</span>::<span class="variable">$instance</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span> <span class="keyword">extends</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="built_in">static</span> <span class="variable">$instance</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Bar::setInstance(<span class="string">&#x27;baidu.com&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> Bar::getInstance();  <span class="comment">// baidu.com</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> Foo::getInstance();  </span><br></pre></td></tr></table></figure>
-
-<p>再看一个子类之间相互影响的例子</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="built_in">static</span> <span class="variable">$instance</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">setInstance</span>(<span class="params"><span class="variable">$ins</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">static</span>::<span class="variable">$instance</span> = <span class="variable">$ins</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">getInstance</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">static</span>::<span class="variable">$instance</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span> <span class="keyword">extends</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Baz</span> <span class="keyword">extends</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Bar::setInstance(<span class="string">&#x27;baidu.com&#x27;</span>);</span><br><span class="line"><span class="keyword">echo</span> Bar::getInstance();  <span class="comment">// baidu.com</span></span><br><span class="line"><span class="keyword">echo</span> Foo::getInstance();  <span class="comment">// baidu.com</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;\n&quot;</span>;</span><br><span class="line"></span><br><span class="line">Baz::setInstance(<span class="string">&#x27;laravel&#x27;</span>);</span><br><span class="line"><span class="keyword">echo</span> Baz::getInstance();  <span class="comment">// laravel</span></span><br><span class="line"><span class="keyword">echo</span> Bar::getInstance();  <span class="comment">// laravel</span></span><br><span class="line"><span class="keyword">echo</span> Foo::getInstance();  <span class="comment">// laravel</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>修改其中一个子类， 父类以及该父类的其他子类都会受到影响</p>
-<h3 id="laravel-源码分析"><a href="#laravel-源码分析" class="headerlink" title="laravel 源码分析"></a>laravel 源码分析</h3><p>在Laravel 中的 <code>app()</code>这个辅助函数可以获得 一个 <code>Application</code> 对象实例</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">app</span>(<span class="params"><span class="variable">$abstract</span> = <span class="literal">null</span>, <span class="keyword">array</span> <span class="variable">$parameters</span> = []</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (is_null(<span class="variable">$abstract</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> Container::getInstance();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> Container::getInstance()-&gt;make(<span class="variable">$abstract</span>, <span class="variable">$parameters</span>);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>进入这个<code>Container</code>类, 发现仅仅是一个静态属性。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Container</span> <span class="keyword">implements</span> <span class="title">ArrayAccess</span>, <span class="title">ContainerContract</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The current globally available container (if any).</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> static</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="built_in">static</span> <span class="variable">$instance</span>;</span><br><span class="line"></span><br><span class="line">    ......</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">getInstance</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (is_null(<span class="built_in">static</span>::<span class="variable">$instance</span>)) &#123;</span><br><span class="line">            <span class="built_in">static</span>::<span class="variable">$instance</span> = <span class="keyword">new</span> <span class="built_in">static</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">static</span>::<span class="variable">$instance</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>然后我们从入口文件看起<br>index.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$app</span> = <span class="keyword">require_once</span> <span class="keyword">__DIR__</span>.<span class="string">&#x27;/../bootstrap/app.php&#x27;</span>;</span><br></pre></td></tr></table></figure>
-<p>app.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$app</span> = <span class="keyword">new</span> Illuminate\Foundation\Application(</span><br><span class="line">    realpath(<span class="keyword">__DIR__</span>.<span class="string">&#x27;/../&#x27;</span>)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-<p><code>Application</code>这个类， 继承了 <code>Container</code> 类， 而<code>Container</code>这个类中有一个静态属性<code>$instance</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Application</span> <span class="keyword">extends</span> <span class="title">Container</span> <span class="keyword">implements</span> <span class="title">ApplicationContract</span>, <span class="title">HttpKernelInterface</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	</span><br><span class="line"> ......</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="variable">$basePath</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$basePath</span>) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;setBasePath(<span class="variable">$basePath</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;registerBaseBindings();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;registerBaseServiceProviders();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;registerCoreContainerAliases();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">registerBaseBindings</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">static</span>::setInstance(<span class="keyword">$this</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;instance(<span class="string">&#x27;app&#x27;</span>, <span class="keyword">$this</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;instance(Container::class, <span class="keyword">$this</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;instance(PackageManifest::class, <span class="keyword">new</span> PackageManifest(</span><br><span class="line">            <span class="keyword">new</span> Filesystem, <span class="keyword">$this</span>-&gt;basePath(), <span class="keyword">$this</span>-&gt;getCachedPackagesPath()</span><br><span class="line">        ));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>正是是用了静态属性继承这一特性；</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://pilishen.com/posts/Inheritance-with-the-static-elements-in-php-especially-during-late-static-binding">http://pilishen.com/posts/Inheritance-with-the-static-elements-in-php-especially-during-late-static-binding</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/02/PHP%E7%9A%84%E5%90%8E%E6%9C%9F%E9%9D%99%E6%80%81%E7%BB%91%E5%AE%9A/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/02/PHP%E7%9A%84%E5%90%8E%E6%9C%9F%E9%9D%99%E6%80%81%E7%BB%91%E5%AE%9A/" class="post-title-link" itemprop="url">PHP的后期静态绑定</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-03-02 14:39:02" itemprop="dateCreated datePublished" datetime="2018-03-02T14:39:02+09:00">2018-03-02</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-05-11 17:22:00" itemprop="dateModified" datetime="2018-05-11T17:22:00+09:00">2018-05-11</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-....
-</blockquote>
-
-<p>自 PHP 5.3.0 起，PHP 增加了一个叫做后期静态绑定的功能，用于在继承范围内引用静态调用的类。<br>当进行静态方法调用时，该类名即为明确指定的那个（通常在 <code>::</code> 运算符左侧部分）；当进行非静态方法调用时，即为该对象所属的类。<br>“后期绑定”的意思是说，static:: 不再被解析为定义当前方法所在的类，而是在实际运行时计算的。也可以称之为“静态绑定”，因为它可以用于（但不限于）静态方法的调用。</p>
-<h3 id="解释说明"><a href="#解释说明" class="headerlink" title="解释说明"></a>解释说明</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">who</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="keyword">__CLASS__</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">self</span>::who();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">who</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="keyword">__CLASS__</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">B::test();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>以上例程会输出：A, 因为 self 关键词只能取到定义当前方法所在的类, 或者说它只能取到自己所在的那个类, 最终引用的类是A, 而不是B<br>好吧, 但是如果我们想要运行时最终运行的是B该如何呢?</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">who</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="keyword">__CLASS__</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">static</span>::who(); <span class="comment">// 后期静态绑定从这里开始</span></span><br><span class="line">    以上例程会输出：B&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">who</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="keyword">__CLASS__</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">B::test();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>以上例程会输出：B</p>
-<h3 id="实际用法"><a href="#实际用法" class="headerlink" title="实际用法"></a>实际用法</h3><p>在Laravel框架中</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">create</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$attributes</span> = []</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$model</span> = <span class="keyword">new</span> <span class="built_in">static</span>(<span class="variable">$attributes</span>);</span><br><span class="line"></span><br><span class="line">        <span class="variable">$model</span>-&gt;save();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$model</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Task</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Task::create([</span><br><span class="line">	<span class="string">&#x27;title&#x27;</span>=&gt;<span class="string">&#x27;学习laravel&#x27;</span>,</span><br><span class="line">	<span class="string">&#x27;author&#x27;</span>=&gt;<span class="string">&#x27;pilishen&#x27;</span></span><br><span class="line">]);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>当执行Task::create()的时候，因为extends了Model，所以就到了Model里的create方法，由于$model = new static($attributes);使用了static关键词，所以此时也就相当于是执行了new Task();，也就是借助static静态绑定，我们在laravel里的自己创建的各个model，就可以共用一系列提前定义好的方法，同时在实际调用的时候，又将结果或过程只作用于自己，从而实现了一个典型的active record design pattern。</p>
-<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Father</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">getSelf</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">self</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">getStatic</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">static</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Son</span> <span class="keyword">extends</span> <span class="title">Father</span> </span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> get_class(Son::getSelf());  <span class="comment">// Father</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> get_class(Son::getStatic()); <span class="comment">// Son</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> get_class(Father::getSelf()); <span class="comment">// Father</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> get_class(Father::getStatic()); <span class="comment">// Father</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://pilishen.com/posts/php-late-static-bindings-in-laravel">http://pilishen.com/posts/php-late-static-bindings-in-laravel</a><br><a target="_blank" rel="noopener" href="http://php.net/manual/zh/language.oop5.late-static-bindings.php">http://php.net/manual/zh/language.oop5.late-static-bindings.php</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/17/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><span class="page-number current">18</span><a class="page-number" href="/page/19/">19</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/19/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/17/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><span class="page-number current">18</span><a class="page-number" href="/page/19/">19</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/19/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>

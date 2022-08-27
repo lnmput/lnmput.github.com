@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">410</span>
+          <span class="site-state-item-count">412</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,193 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/05/Homestead%E7%8E%AF%E5%A2%83%E4%B8%8B%E5%AE%89%E8%A3%85Elasticsearch%E5%B9%B6%E4%BD%BF%E7%94%A8scout%E8%BF%9B%E8%A1%8C%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/10/05/Homestead%E7%8E%AF%E5%A2%83%E4%B8%8B%E5%AE%89%E8%A3%85Elasticsearch%E5%B9%B6%E4%BD%BF%E7%94%A8scout%E8%BF%9B%E8%A1%8C%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2/" class="post-title-link" itemprop="url">Homestead环境下安装Elasticsearch并使用scout进行全文检索</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-10-05 17:03:51 / 修改时间：17:12:38" itemprop="dateCreated datePublished" datetime="2021-10-05T17:03:51+09:00">2021-10-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+长亭外，古道边，芳草碧连天。
+晚风扶柳笛声残，夕阳山外山。
+</blockquote>
+
+<h3 id="在-homestead-的-homestead-yml-配置文件中添加"><a href="#在-homestead-的-homestead-yml-配置文件中添加" class="headerlink" title="在 homestead 的 homestead.yml 配置文件中添加"></a>在 homestead 的 homestead.yml 配置文件中添加</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">features:</span><br><span class="line">    - mariadb: <span class="literal">false</span></span><br><span class="line">    - ohmyzsh: <span class="literal">false</span></span><br><span class="line">    - webdriver: <span class="literal">false</span></span><br><span class="line">    - elasticsearch:</span><br><span class="line">        version: <span class="number">7.6</span></span><br><span class="line"></span><br><span class="line">ports:</span><br><span class="line">    - send: <span class="number">63790</span></span><br><span class="line">      to: <span class="number">6379</span></span><br><span class="line">    - send: <span class="number">9100</span></span><br><span class="line">      to: <span class="number">9200</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>开启 homestead 中的 elasticsearch</p>
+<p>因为需要安装软件镜像在国外，所以需要设置国内的镜像</p>
+<p>打开 homestead/scripts/features/elasticssearch.sh 文件</p>
+<p>将 apt-get 安装的内容替换为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">sed -i <span class="string">&quot;s@http://.*archive.ubuntu.com@http://mirrors.huaweicloud.com@g&quot;</span> /etc/apt/sources.<span class="keyword">list</span></span><br><span class="line">sed -i <span class="string">&quot;s@http://.*security.ubuntu.com@http://mirrors.huaweicloud.com@g&quot;</span> /etc/apt/sources.<span class="keyword">list</span></span><br><span class="line"></span><br><span class="line">sudo apt-get update</span><br><span class="line"></span><br><span class="line">wget  https:<span class="comment">//mirrors.huaweicloud.com/elasticsearch/7.6.1/elasticsearch-7.6.1-amd64.deb</span></span><br><span class="line">sudo apt-get -y install openjdk-<span class="number">11</span>-jre</span><br><span class="line"><span class="comment"># sudo apt-get -y install elasticsearch&quot;$installVersion&quot;</span></span><br><span class="line"></span><br><span class="line">sudo dpkg -i elasticsearch-<span class="number">7.6</span>.<span class="number">1</span>-amd64.deb</span><br><span class="line"><span class="comment"># Start Elasticsearch on boot</span></span><br><span class="line"></span><br><span class="line">sudo update-rc.d elasticsearch defaults <span class="number">95</span> <span class="number">10</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="设置外网访问"><a href="#设置外网访问" class="headerlink" title="设置外网访问"></a>设置外网访问</h3><p>在 /etc/elasticsearch/elasticsearch.yml 中添加</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">network.host: <span class="number">0.0</span>.<span class="number">0.0</span></span><br><span class="line">discovery.seed_hosts: [<span class="string">&quot;127.0.0.1&quot;</span>, <span class="string">&quot;::1&quot;</span>]</span><br></pre></td></tr></table></figure>
+<p>重启 elasticsearch</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo service elasticsearch restart</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装-ik-中文分词插件"><a href="#安装-ik-中文分词插件" class="headerlink" title="安装 ik 中文分词插件"></a>安装 ik 中文分词插件</h3><p>打开 <code>/usr/share/elasticsearch/plugins</code></p>
+<p>创建 文件夹</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir ik</span><br></pre></td></tr></table></figure>
+<p>将下载的 <a target="_blank" rel="noopener" href="https://github.com/medcl/elasticsearch-ana">https://github.com/medcl/elasticsearch-ana</a>… 解压到 ik 文件夹中</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unzip  xxx.zip</span><br></pre></td></tr></table></figure>
+<p>重启服务</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo service elasticsearch restart</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装-kibana"><a href="#安装-kibana" class="headerlink" title="安装 kibana"></a>安装 kibana</h3><p>kibana 是一款界面管理工具 官方出品的</p>
+<h3 id="laravel-安装全文搜索"><a href="#laravel-安装全文搜索" class="headerlink" title="laravel 安装全文搜索"></a>laravel 安装全文搜索</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> tamayo/laravel-scout-elastic </span><br><span class="line">composer <span class="keyword">require</span> laravel/scout  <span class="comment">//版本可能不兼容 具体看composer中的兼容版本</span></span><br><span class="line">php artisan vendor:publish <span class="comment">//选择其中的配置文件发布</span></span><br></pre></td></tr></table></figure>
+<p>发布配置文件后需要对配置文件进行更改</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;driver&#x27;</span> =&gt; env(<span class="string">&#x27;SCOUT_DRIVER&#x27;</span>, <span class="string">&#x27;algolia&#x27;</span>), <span class="comment">//在env 中 添加   elasticsearch</span></span><br></pre></td></tr></table></figure>
+<p>在 scount.php 中添加</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;elasticsearch&#x27;</span> =&gt; [    </span><br><span class="line">    <span class="string">&#x27;index&#x27;</span> =&gt; env(<span class="string">&#x27;ELASTICSEARCH_INDEX&#x27;</span>, <span class="string">&#x27;products&#x27;</span>),   </span><br><span class="line">    <span class="string">&#x27;hosts&#x27;</span> =&gt; [        env(<span class="string">&#x27;ELASTICSEARCH_HOST&#x27;</span>, <span class="string">&#x27;http://localhost&#x27;</span>),   ]</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://learnku.com/articles/42730">https://learnku.com/articles/42730</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/03/JQuery%E9%80%89%E6%8B%A9%E5%99%A8%E4%B8%AD%E5%90%84%E4%B8%AA%E7%AC%A6%E5%8F%B7%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/10/03/JQuery%E9%80%89%E6%8B%A9%E5%99%A8%E4%B8%AD%E5%90%84%E4%B8%AA%E7%AC%A6%E5%8F%B7%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">jQuery选择器中各个符号的区别</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-10-03 18:18:24" itemprop="dateCreated datePublished" datetime="2021-10-03T18:18:24+09:00">2021-10-03</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-11-20 11:06:30" itemprop="dateModified" datetime="2021-11-20T11:06:30+09:00">2021-11-20</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你的善良，必须带点锋芒，否则等于零。
+</blockquote>
+
+<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>空格：<code>$(&#39;parent childchild&#39;)</code>表示获取parent下的所有的<code>childchild</code>节点</p>
+<p>大于号：<code>$(&#39;parent &gt; childchild&#39;)</code>表示获取parent下的所有下一级<code>childchild</code></p>
+<p>加号：<code>$(&#39;pre + nextbrother&#39;)</code>表示获得pre节点的下一个兄弟节点，相当于<code>next()</code>方法</p>
+<p>波浪号：<code>$(&#39;pre ~ brother&#39;)</code>表示获取pre节点的后面的所有兄弟节点，相当于<code>nextAll()</code>方法</p>
+<h3 id="详细解读"><a href="#详细解读" class="headerlink" title="详细解读"></a>详细解读</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;imgs_box&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;play_imgs_width imgs_source&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;imgs_buttons play_imgs_width&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span> <span class="attr">class</span>=<span class="string">&quot;buttons_ahover&quot;</span>&gt;</span>1<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span> <span class="attr">class</span>=<span class="string">&quot;buttons_default&quot;</span>&gt;</span>2<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span> <span class="attr">class</span>=<span class="string">&quot;buttons_default&quot;</span>&gt;</span>3<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span>	</span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;test&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">li</span>&gt;</span></span><br><span class="line">	  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;test_first_child&quot;</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">	  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="空格的使用"><a href="#空格的使用" class="headerlink" title="空格的使用"></a>空格的使用</h4><p>如果要获取imgs_box中的所有a标签，可以使用空格，代码如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;#imgs_box a&#x27;</span>).length;  <span class="comment">// 6</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="大于号的使用"><a href="#大于号的使用" class="headerlink" title="大于号的使用"></a>大于号的使用</h3><p>如果要imgs_box中下一级的所有ul元素，不包含类为test_first_child的元素，可以使用如下代码</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;#imgs_box &gt; ul&#x27;</span>).length;</span><br></pre></td></tr></table></figure>
+<h3 id="加号的使用"><a href="#加号的使用" class="headerlink" title="加号的使用"></a>加号的使用</h3><p>如果想获取类为imgs_source元素的相邻的下一个元素，可以使用加号</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;.imgs_source + ul&#x27;</span>).css(<span class="string">&quot;color&quot;</span>,<span class="string">&quot;red&quot;</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="波浪号的使用"><a href="#波浪号的使用" class="headerlink" title="波浪号的使用"></a>波浪号的使用</h3><p>如果想获取类为 imgs_source元素所有的同级元素，可以使用波浪号~</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&#x27;.imgs_source ~ ul&#x27;</span>).css(<span class="string">&quot;color&quot;</span>,<span class="string">&quot;red&quot;</span>);</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -883,255 +1070,8 @@ This trait provides a temporary($relationship) method on your model for you to a
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/07/30/%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%80%E5%8F%B0%E6%9C%BA%E5%99%A8%E4%B8%8A%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E5%8F%B7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/07/30/%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%80%E5%8F%B0%E6%9C%BA%E5%99%A8%E4%B8%8A%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E5%8F%B7/" class="post-title-link" itemprop="url">如何在一台机器上管理多个Github账号</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2021-07-30 11:19:01 / 修改时间：11:29:13" itemprop="dateCreated datePublished" datetime="2021-07-30T11:19:01+09:00">2021-07-30</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你说我会遇到更好的人，其实是你想拥有更好的人
-</blockquote>
-
-<p>我们有时候需要在一台电脑上管理两个或者两个以上的 GitHub 账号，例如要在电脑上同时使用个人和公司的 Github 账号，那么如何操作呢？</p>
-<h3 id="创建新的-SSH-Key"><a href="#创建新的-SSH-Key" class="headerlink" title="创建新的 SSH Key"></a>创建新的 SSH Key</h3><p>假设个人电脑上已经有了一个正使用的 GitHub 账号 user_a ，现在添加第二个 GitHub 账号 user_b 的配置。<br>打开终端生成一个新的 SSH Key:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C <span class="string">&quot;user_b@gmail.com&quot;</span></span><br></pre></td></tr></table></figure>
-<p>注意，新生成的密钥不要覆盖原来的，在 ssh-keygent 运行中让新生成的 key 命名为 user_b。<br>在我电脑里面，它被保存在  <code>~/.ssh/user_b_id_rsa</code><br>把新生成的 SSH key 添加到 ssh-agent:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="keyword">eval</span> <span class="string">&quot;$(ssh-agent -s)&quot;</span></span><br><span class="line">$ ssh-add ~/.ssh/user_b_id_rsa</span><br></pre></td></tr></table></figure>
-
-<h3 id="在第二个-GitHub-账户里面添加-新生成-user-b-id-rsa-pub"><a href="#在第二个-GitHub-账户里面添加-新生成-user-b-id-rsa-pub" class="headerlink" title="在第二个 GitHub 账户里面添加 新生成 user_b_id_rsa.pub"></a>在第二个 GitHub 账户里面添加 新生成 user_b_id_rsa.pub</h3><p>登录第二个 Github 账号，把 user_b_id_rsa.pub 添加到账号里面。</p>
-<h3 id="在～-ssh-目录下新建-config-文件"><a href="#在～-ssh-目录下新建-config-文件" class="headerlink" title="在～/.ssh 目录下新建 config 文件"></a>在～/.ssh 目录下新建 config 文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ touch ~/.ssh/config</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Host</span> <span class="string">user_a-github.com</span></span><br><span class="line">  <span class="string">HostName</span> <span class="string">github.com</span></span><br><span class="line">  <span class="string">User</span> <span class="string">git</span></span><br><span class="line">  <span class="string">IdentityFile</span> <span class="string">~/.ssh/user_a_id_rsa</span></span><br><span class="line"></span><br><span class="line"><span class="string">Host</span> <span class="string">user_b-github.com</span></span><br><span class="line">  <span class="string">HostName</span> <span class="string">github.com</span></span><br><span class="line">  <span class="string">User</span> <span class="string">git</span></span><br><span class="line">  <span class="string">IdentityFile</span> <span class="string">~/.ssh/user_b_id_rsa</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="测试连接"><a href="#测试连接" class="headerlink" title="测试连接"></a>测试连接</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ssh -T git@user_a-github.com</span><br><span class="line">$ ssh -T git@user_b-github.com</span><br></pre></td></tr></table></figure>
-<p>若成功，都会接收到类似这样的信息：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Hi user_a! You<span class="string">&#x27;ve successfully authenticated, but GitHub does not provide shell access.</span></span><br><span class="line"><span class="string">Hi user_b! You&#x27;</span>ve successfully authenticated, but GitHub does not provide shell access.</span><br></pre></td></tr></table></figure>
-
-<h3 id="测试用把仓库提交到第二个-Github-账号"><a href="#测试用把仓库提交到第二个-Github-账号" class="headerlink" title="测试用把仓库提交到第二个 Github 账号"></a>测试用把仓库提交到第二个 Github 账号</h3><p>新建一个文件夹，初始化为仓库，创建第一个 commit</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir Test</span><br><span class="line">$ cd Test</span><br><span class="line">$ git init</span><br><span class="line">$ git commit -am <span class="string">&quot;first commit&quot;</span></span><br><span class="line">$ git remote add origin git@user_b-github.com:user_b/testing.git</span><br><span class="line">$ git branch -M main</span><br><span class="line">$ git push -u origin main</span><br></pre></td></tr></table></figure>
-<p>注意：为本地仓库添加远程地址时，要替换为 config 文件里面的 Host 。<br>例如此处： user_b-github.com</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add origin git@user_b-github.com:user_b/testing.git</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://learnku.com/articles/59358">https://learnku.com/articles/59358</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/06/28/golang%E7%9A%84panic%E5%92%8Crecover/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/06/28/golang%E7%9A%84panic%E5%92%8Crecover/" class="post-title-link" itemprop="url">golang的panic和recover</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2021-06-28 12:49:24" itemprop="dateCreated datePublished" datetime="2021-06-28T12:49:24+09:00">2021-06-28</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2021-09-10 13:55:48" itemprop="dateModified" datetime="2021-09-10T13:55:48+09:00">2021-09-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h3 id="What-is-Panic"><a href="#What-is-Panic" class="headerlink" title="What is Panic?"></a>What is Panic?</h3><p>The idiomatic way of handling abnormal conditions in a Go program is using errors. Errors are sufficient for most of the abnormal conditions arising in the program.</p>
-<p>But there are some situations where the program cannot continue execution after an abnormal condition. In this case, we use panic to prematurely terminate the program. When a function encounters a panic, its execution is stopped, any deferred functions are executed and then the control returns to its caller. This process continues until all the functions of the current goroutine have returned at which point the program prints the panic message, followed by the stack trace and then terminates. This concept will be more clear when we write an example program.</p>
-<p>It is possible to regain control of a panicking program using recover which we will discuss later in this tutorial.</p>
-<p>panic and recover can be considered similar to try-catch-finally idiom in other languages such as Java except that they are rarely used in Go.</p>
-<h3 id="When-Should-Panic-Be-Used"><a href="#When-Should-Panic-Be-Used" class="headerlink" title="When Should Panic Be Used?"></a>When Should Panic Be Used?</h3><p>One important factor is that you should avoid panic and recover and use errors where ever possible. Only in cases where the program just cannot continue execution should panic and recover mechanism be used.</p>
-<p>There are two valid use cases for panic.</p>
-<ul>
-<li><p>An unrecoverable error where the program cannot simply continue its execution.<br>One example is a web server that fails to bind to the required port. In this case, it’s reasonable to panic as there is nothing else to do if the port binding itself fails.</p>
-</li>
-<li><p>A programmer error.<br>Let’s say we have a method that accepts a pointer as a parameter and someone calls this method using a nil argument. In this case, we can panic as it’s a programmer error to call a method with nil argument which was expecting a valid pointer.</p>
-</li>
-</ul>
-<h3 id="Panic-Example"><a href="#Panic-Example" class="headerlink" title="Panic Example"></a>Panic Example</h3><p>The signature of the built-in panic function is provided below,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">panic</span><span class="params">(<span class="keyword">interface</span>&#123;&#125;)</span></span>  </span><br></pre></td></tr></table></figure>
-
-<p>The argument passed to the panic function will be printed when the program terminates. The use of this will be clear when we write a sample program. So let’s do that right away.</p>
-<p>We will start with a contrived example which shows how panic works.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fullName</span><span class="params">(firstName *<span class="keyword">string</span>, lastName *<span class="keyword">string</span>)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> firstName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: first name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> lastName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: last name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%s %s\n&quot;</span>, *firstName, *lastName)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from fullName&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    firstName := <span class="string">&quot;Elon&quot;</span></span><br><span class="line">    fullName(&amp;firstName, <span class="literal">nil</span>)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from main&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>The above is a simple program to print the full name of a person. The fullName function in line no. 7 prints the full name of a person. This function checks whether the firstName and lastName pointers are nil in line nos. 8 and 11 respectively. If it is nil the function calls panic with a corresponding message. This message will be printed when the program terminates.</p>
-<p>Running this program will print the following output,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">panic</span>: runtime error: last name cannot be <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.fullName(<span class="number">0xc00006af58</span>, <span class="number">0x0</span>)  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">12</span> +<span class="number">0x193</span></span><br><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">20</span> +<span class="number">0x4d</span></span><br></pre></td></tr></table></figure>
-
-<p>Let’s analyze this output to understand how panic works and how the stack trace is printed when the program panics.</p>
-<p>In line no. 19 we assign Elon to firstName. We call fullName function with lastName as nil in line no. 20. Hence the condition in line no. 11 will be satisfied and the program will panic. When panic is encountered, the program execution terminates, the argument passed to the panic function is printed followed by the stack trace. Since the program terminates following the panic function call in line no. 12, the code in line nos. 13, 14, and 15 will not be executed.</p>
-<p>This program first prints the message passed to the panic function,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">panic</span>: runtime error: last name cannot be <span class="literal">nil</span>  </span><br></pre></td></tr></table></figure>
-
-<p>and then prints the stack trace.</p>
-<p>The program panicked in line no. 12 of fullName function and hence,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.fullName(<span class="number">0xc00006af58</span>, <span class="number">0x0</span>)  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">12</span> +<span class="number">0x193</span></span><br></pre></td></tr></table></figure>
-
-<p>will be printed first. Then the next item in the stack will be printed. In our case, line no. 20 where the fullName is called is the next item in the stack trace. Hence it is printed next.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox210590465/prog.<span class="keyword">go</span>:<span class="number">20</span> +<span class="number">0x4d</span></span><br></pre></td></tr></table></figure>
-
-<p>Now we have reached the top level function which caused the panic and there are no more levels above, hence there is nothing more to print.</p>
-<h3 id="One-More-Example"><a href="#One-More-Example" class="headerlink" title="One More Example"></a>One More Example</h3><p>Panics can also be caused by errors that happen during the runtime such as trying to access an index that is not present in a slice.</p>
-<p>Let’s write a contrived example which creates a panic due to out of bounds slice access.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">slicePanic</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    n := []<span class="keyword">int</span>&#123;<span class="number">5</span>, <span class="number">7</span>, <span class="number">4</span>&#125;</span><br><span class="line">    fmt.Println(n[<span class="number">4</span>])</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from a&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    slicePanic()</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>In the program above, in line no. 9 we are trying to access n[4] which is an invalid index in the slice. This program will panic with the following output,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">panic</span>: runtime error: index out of <span class="keyword">range</span> [<span class="number">4</span>] with length <span class="number">3</span></span><br><span class="line"></span><br><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.slicePanic()  </span><br><span class="line">    /tmp/sandbox942516049/prog.<span class="keyword">go</span>:<span class="number">9</span> +<span class="number">0x1d</span></span><br><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox942516049/prog.<span class="keyword">go</span>:<span class="number">13</span> +<span class="number">0x22</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="Defer-Calls-During-a-Panic"><a href="#Defer-Calls-During-a-Panic" class="headerlink" title="Defer Calls During a Panic"></a>Defer Calls During a Panic</h3><p>Let’s recollect what panic does. When a function encounters a panic, its execution is stopped, any deferred functions are executed and then the control returns to its caller. This process continues until all the functions of the current goroutine have returned at which point the program prints the panic message, followed by the stack trace and then terminates.</p>
-<p>In the example above, we did not defer any function calls. If a deferred function call is present, it is executed and then the control returns to its caller.</p>
-<p>Let’s modify the example above a little and use a defer statement.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fullName</span><span class="params">(firstName *<span class="keyword">string</span>, lastName *<span class="keyword">string</span>)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;deferred call in fullName&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> firstName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: first name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> lastName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: last name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%s %s\n&quot;</span>, *firstName, *lastName)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from fullName&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;deferred call in main&quot;</span>)</span><br><span class="line">    firstName := <span class="string">&quot;Elon&quot;</span></span><br><span class="line">    fullName(&amp;firstName, <span class="literal">nil</span>)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>The only changes made are the addition of the deferred function calls in line nos. 8 and 20.</p>
-<p>This program prints,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">deferred call in fullName  </span><br><span class="line">deferred call in main  </span><br><span class="line"><span class="built_in">panic</span>: runtime error: last name cannot be <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">goroutine <span class="number">1</span> [running]:  </span><br><span class="line">main.fullName(<span class="number">0xc00006af28</span>, <span class="number">0x0</span>)  </span><br><span class="line">    /tmp/sandbox451943841/prog.<span class="keyword">go</span>:<span class="number">13</span> +<span class="number">0x23f</span></span><br><span class="line">main.main()  </span><br><span class="line">    /tmp/sandbox451943841/prog.<span class="keyword">go</span>:<span class="number">22</span> +<span class="number">0xc6</span></span><br></pre></td></tr></table></figure>
-
-<p>When the program panics in line no. 13, any deferred function calls are first executed and then the control returns to the caller whose deferred calls are executed and so on until the top level caller is reached.</p>
-<p>In our case, defer statement in line no. 8 of fullName function is executed first. This prints the following message.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">deferred call in fullName  </span><br></pre></td></tr></table></figure>
-
-<p>And then the control returns to the main function whose deferred calls are executed and hence this prints,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">deferred call in main  </span><br></pre></td></tr></table></figure>
-<p>Now the control has reached the top level function and hence the program prints the panic message followed by the stack trace and then terminates.</p>
-<h3 id="Recovering-from-a-Panic"><a href="#Recovering-from-a-Panic" class="headerlink" title="Recovering from a Panic"></a>Recovering from a Panic</h3><p>recover is a builtin function that is used to regain control of a panicking program.</p>
-<p>The signature of recover function is provided below,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recover</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>Recover is useful only when called inside deferred functions. Executing a call to recover inside a deferred function stops the panicking sequence by restoring normal execution and retrieves the error message passed to the panic function call. If recover is called outside the deferred function, it will not stop a panicking sequence.</p>
-<p>Let’s modify our program and use recover to restore normal execution after a panic.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recoverFullName</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> r := <span class="built_in">recover</span>(); r!= <span class="literal">nil</span> &#123;</span><br><span class="line">        fmt.Println(<span class="string">&quot;recovered from &quot;</span>, r)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">fullName</span><span class="params">(firstName *<span class="keyword">string</span>, lastName *<span class="keyword">string</span>)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> recoverFullName()</span><br><span class="line">    <span class="keyword">if</span> firstName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: first name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> lastName == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;runtime error: last name cannot be nil&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%s %s\n&quot;</span>, *firstName, *lastName)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from fullName&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;deferred call in main&quot;</span>)</span><br><span class="line">    firstName := <span class="string">&quot;Elon&quot;</span></span><br><span class="line">    fullName(&amp;firstName, <span class="literal">nil</span>)</span><br><span class="line">    fmt.Println(<span class="string">&quot;returned normally from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>The recoverFullName() function in line no. 7 calls recover() which returns the value passed to panic function call. Here we are just printing the value returned by recover in line no. 9. recoverFullName() is being deferred in line no. 14 of the fullName function.</p>
-<p>When fullName panics, the deferred function recoverName() will be called which uses recover() to stop the panicking sequence.</p>
-<p>This program will print,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">recovered from  runtime error: last name cannot be <span class="literal">nil</span>  </span><br><span class="line">returned normally from main  </span><br><span class="line">deferred call in main  </span><br></pre></td></tr></table></figure>
-
-<p>When the program panics in line no. 19, the deferred recoverFullName function is called which in turn calls recover() to regain control of the panicking sequence. The call to recover() in line no. 8 returns the argument passed to panic() and hence it prints,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">recovered from  runtime error: last name cannot be <span class="literal">nil</span>  </span><br></pre></td></tr></table></figure>
-
-<p>After execution of recover(), the panicking stops and the control returns to the caller, in this case, the main function. The program continues to execute normally from line 29 in main since the panic has been recovered 😃. It prints returned normally from main followed by deferred call in main</p>
-<p>Let’s look at one more example where we recover from a panic caused by accessing an invalid index of a slice.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (  </span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recoverInvalidAccess</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> r := <span class="built_in">recover</span>(); r != <span class="literal">nil</span> &#123;</span><br><span class="line">        fmt.Println(<span class="string">&quot;Recovered&quot;</span>, r)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">invalidSliceAccess</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">defer</span> recoverInvalidAccess()</span><br><span class="line">    n := []<span class="keyword">int</span>&#123;<span class="number">5</span>, <span class="number">7</span>, <span class="number">4</span>&#125;</span><br><span class="line">    fmt.Println(n[<span class="number">4</span>])</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from a&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    invalidSliceAccess()</span><br><span class="line">    fmt.Println(<span class="string">&quot;normally returned from main&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Running the above program will output,</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Recovered runtime error: index out of <span class="keyword">range</span> [<span class="number">4</span>] with length <span class="number">3</span>  </span><br><span class="line">normally returned from main  </span><br></pre></td></tr></table></figure>
-
-<p>From the output, you can understand that we have recovered from the panic.</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://golangbot.com/panic-and-recover/">https://golangbot.com/panic-and-recover/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>

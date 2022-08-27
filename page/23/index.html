@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">410</span>
+          <span class="site-state-item-count">412</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,166 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/11/21/%E5%9C%A8Laravel%E4%B8%AD%E4%BD%BF%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/11/21/%E5%9C%A8Laravel%E4%B8%AD%E4%BD%BF%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/" class="post-title-link" itemprop="url">在Laravel中使用数据库事务</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-11-21 10:36:41" itemprop="dateCreated datePublished" datetime="2017-11-21T10:36:41+09:00">2017-11-21</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-05-03 20:00:23" itemprop="dateModified" datetime="2018-05-03T20:00:23+09:00">2018-05-03</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+不要盲目而残忍地成为，这世界恶意的一部分。
+</blockquote>
+
+<h3 id="使用闭包"><a href="#使用闭包" class="headerlink" title="使用闭包"></a>使用闭包</h3><p>在Laravel中要想在数据库事务中运行一组操作，则可以在 DB facade 中使用 transaction 方法。如果在事务的闭包内抛出异常，事务将会被自动还原。如果闭包运行成功，事务将被自动提交。你不需要担心在使用 transaction 方法时还需要亲自去手动还原或提交事务：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">DB::transaction(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    DB::table(<span class="string">&#x27;users&#x27;</span>)-&gt;update([<span class="string">&#x27;votes&#x27;</span> =&gt; <span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">    DB::table(<span class="string">&#x27;posts&#x27;</span>)-&gt;delete();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="手动创建事务"><a href="#手动创建事务" class="headerlink" title="手动创建事务"></a>手动创建事务</h3><p>如果你想手动处理事务并对还原或提交操作进行完全控制，则可以在 DB facade 使用 beginTransaction 方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">DB::beginTransaction(); <span class="comment">//事务开始</span></span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$somethingIsFailed</span>)&#123;</span><br><span class="line">    DB::rollback(); <span class="comment">//事务失败 操作回滚</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">DB::commit();  <span class="comment">//事务成功 提交操作</span></span><br></pre></td></tr></table></figure>
+<p>注意： DB facade 的事务方法也可以用来控制 查询语句构造器 及 Eloquent ORM 的事务, 在事务中一定要定义回滚的条件, 可以用 try - catch 来捕获异常回滚, 或者是我们上面所写的这样, 根据一定的条件去判断回滚.事务的最终状态要么被提交, 要么回滚.</p>
+<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><p>创建表的时候一定要使用InnoDB存储引擎</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">up</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Schema::create(<span class="string">&#x27;fetch_taobao_billno_task_nos&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$table</span>-&gt;engine = <span class="string">&#x27;InnoDB&#x27;</span>;</span><br><span class="line">        <span class="variable">$table</span>-&gt;increments(<span class="string">&#x27;id&#x27;</span>);</span><br><span class="line">        ......</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如何查看某一张表使用的存储引擎</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show create table 表名;</span><br></pre></td></tr></table></figure>
+<p>修改某一张表的存储引擎</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">alter table bulk_tb_billnos engine=innodb</span><br><span class="line">alter table bulk_tb_billnos engine=myisam</span><br></pre></td></tr></table></figure>
+<p>看你的mysql当前默认的存储引擎</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show variables like <span class="string">&#x27;%storage_engine%&#x27;</span>;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/11/19/%E4%BD%BF%E7%94%A8vue2-0%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AATODO%E5%BA%94%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/11/19/%E4%BD%BF%E7%94%A8vue2-0%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AATODO%E5%BA%94%E7%94%A8/" class="post-title-link" itemprop="url">使用vue2.0实现一个TODO应用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-11-19 11:58:43" itemprop="dateCreated datePublished" datetime="2017-11-19T11:58:43+09:00">2017-11-19</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:36:09" itemprop="dateModified" datetime="2018-03-27T22:36:09+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+朋友，然后爱人，最后什么都不是。
+</blockquote>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Title<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">link</span> <span class="attr">href</span>=<span class="string">&quot;js/bootstrap.min.css&quot;</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;container&quot;</span> <span class="attr">id</span>=<span class="string">&quot;app&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;row&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;col-md-8 col-md-offset-2&quot;</span> <span class="attr">style</span>=<span class="string">&quot;margin-top: 90px;&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;panel panel-default&quot;</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;panel-heading&quot;</span>&gt;</span>vue demo<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;panel-body&quot;</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">h1</span>&gt;</span>事件个数&#123;&#123; todoCount &#125;&#125;<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">todo-items</span> <span class="attr">:todos</span>=<span class="string">&quot;todos&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">todo-items</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">todo-form</span> <span class="attr">:todos</span>=<span class="string">&quot;todos&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">todo-form</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;text/x-template&quot;</span> <span class="attr">id</span>=<span class="string">&quot;todo-items&quot;</span>&gt;</span><span class="handlebars"><span class="xml"></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;list-group&quot;</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">&quot;list-group-item&quot;</span>  <span class="attr">v-bind:class</span>=<span class="string">&quot;&#123; &#x27;text-danger&#x27;:todo.status &#125;&quot;</span>  <span class="attr">v-for</span>=<span class="string">&quot;(todo, index) in todos&quot;</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      </span><span class="template-variable">&#123;&#123; <span class="name">todo.title</span>&#125;&#125;</span><span class="xml"></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      <span class="tag">&lt;<span class="name">button</span> <span class="attr">class</span>=<span class="string">&quot;btn btn-danger btn-xs pull-right&quot;</span> <span class="attr">v-on:click</span>=<span class="string">&quot;deleteTodo(index)&quot;</span>&gt;</span>删除<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      <span class="tag">&lt;<span class="name">button</span> <span class="attr">class</span>=<span class="string">&quot;btn btn-xs pull-right&quot;</span> <span class="attr">v-bind:class</span>=<span class="string">&quot;[todo.status ? &#x27;btn-danger&#x27; : &#x27;btn-success&#x27; ]&quot;</span> <span class="attr">v-on:click</span>=<span class="string">&quot;complete(todo)&quot;</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">        </span><span class="template-variable">&#123;&#123; <span class="name">todo.status</span> ? <span class="string">&#x27;撤销&#x27;</span> : <span class="string">&#x27;完成&#x27;</span> &#125;&#125;</span><span class="xml"></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">    <span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars"></span></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;text/x-template&quot;</span> <span class="attr">id</span>=<span class="string">&quot;todo-forms&quot;</span>&gt;</span><span class="handlebars"><span class="xml"></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">  <span class="tag">&lt;<span class="name">form</span> <span class="attr">v-on:submit.prevent</span>=<span class="string">&quot;addTodo(newTodo)&quot;</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;form-group&quot;</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      <span class="tag">&lt;<span class="name">label</span> <span class="attr">for</span>=<span class="string">&quot;add-todo&quot;</span>&gt;</span>事件名称<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">class</span>=<span class="string">&quot;form-control&quot;</span> <span class="attr">id</span>=<span class="string">&quot;add-todo&quot;</span> <span class="attr">v-model</span>=<span class="string">&quot;newTodo.title&quot;</span> &gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">class</span>=<span class="string">&quot;btn btn-default&quot;</span>&gt;</span>添加事件<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">  <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span></span></span><br><span class="line"><span class="xml"><span class="handlebars"></span></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;js/vue.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript">    Vue.component(<span class="string">&#x27;todo-form&#x27;</span>, &#123;</span></span><br><span class="line"><span class="javascript">        <span class="attr">template</span>:<span class="string">&#x27;#todo-forms&#x27;</span>,</span></span><br><span class="line"><span class="javascript">        <span class="attr">props</span>: [<span class="string">&#x27;todos&#x27;</span>],</span></span><br><span class="line"><span class="javascript">        <span class="function"><span class="title">data</span>(<span class="params"></span>)</span> &#123;</span></span><br><span class="line"><span class="javascript">            <span class="keyword">return</span> &#123;</span></span><br><span class="line"><span class="javascript">                <span class="attr">newTodo</span>: &#123;<span class="string">&#x27;title&#x27;</span>: <span class="string">&#x27;&#x27;</span>, <span class="string">&#x27;status&#x27;</span>: <span class="literal">false</span>&#125;</span></span><br><span class="line"><span class="javascript">            &#125;;</span></span><br><span class="line"><span class="javascript">        &#125;,</span></span><br><span class="line"><span class="javascript">        <span class="attr">methods</span>: &#123;</span></span><br><span class="line"><span class="javascript">            <span class="function"><span class="title">addTodo</span>(<span class="params">newTodo</span>)</span> &#123;</span></span><br><span class="line"><span class="javascript">                <span class="built_in">this</span>.todos.push(newTodo);</span></span><br><span class="line"><span class="javascript">                <span class="built_in">this</span>.newTodo = &#123;<span class="string">&#x27;title&#x27;</span>: <span class="string">&#x27;&#x27;</span>, <span class="string">&#x27;status&#x27;</span>: <span class="literal">false</span>&#125;;</span></span><br><span class="line"><span class="javascript">            &#125;</span></span><br><span class="line"><span class="javascript">        &#125;</span></span><br><span class="line"><span class="javascript">    &#125;);</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript">    Vue.component(<span class="string">&#x27;todo-items&#x27;</span>, &#123;</span></span><br><span class="line"><span class="javascript">      <span class="attr">template</span>:<span class="string">&#x27;#todo-items&#x27;</span>,</span></span><br><span class="line"><span class="javascript">      <span class="attr">props</span>: [<span class="string">&#x27;todos&#x27;</span>],</span></span><br><span class="line"><span class="javascript">      <span class="attr">methods</span>: &#123;</span></span><br><span class="line"><span class="javascript">          <span class="function"><span class="title">deleteTodo</span>(<span class="params">index</span>)</span> &#123;</span></span><br><span class="line"><span class="javascript">              <span class="built_in">this</span>.todos.splice(index, <span class="number">1</span>);</span></span><br><span class="line"><span class="javascript">          &#125;,</span></span><br><span class="line"><span class="javascript">          <span class="function"><span class="title">complete</span>(<span class="params">todo</span>)</span> &#123;</span></span><br><span class="line"><span class="javascript">              todo.status = !todo.status;</span></span><br><span class="line"><span class="javascript">          &#125;</span></span><br><span class="line"><span class="javascript">      &#125;</span></span><br><span class="line"><span class="javascript">  &#125;);</span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript"></span></span><br><span class="line"><span class="javascript">  <span class="keyword">new</span> Vue(&#123;</span></span><br><span class="line"><span class="javascript">      <span class="attr">el</span>:<span class="string">&#x27;#app&#x27;</span>,</span></span><br><span class="line"><span class="javascript">      <span class="attr">data</span>: &#123;</span></span><br><span class="line"><span class="javascript">          <span class="attr">message</span>: <span class="string">&#x27;yangzie&#x27;</span>,</span></span><br><span class="line"><span class="javascript">          <span class="attr">todos</span>: [</span></span><br><span class="line"><span class="javascript">              &#123;<span class="string">&#x27;title&#x27;</span>: <span class="string">&#x27;吃早餐&#x27;</span>, <span class="string">&#x27;status&#x27;</span>: <span class="literal">false</span>&#125;,</span></span><br><span class="line"><span class="javascript">              &#123;<span class="string">&#x27;title&#x27;</span>: <span class="string">&#x27;洗漱&#x27;</span>, <span class="string">&#x27;status&#x27;</span>: <span class="literal">false</span>&#125;</span></span><br><span class="line"><span class="javascript">          ]</span></span><br><span class="line"><span class="javascript">      &#125;,</span></span><br><span class="line"><span class="javascript">      <span class="attr">computed</span>: &#123;</span></span><br><span class="line"><span class="javascript">          <span class="function"><span class="title">todoCount</span>(<span class="params"></span>)</span> &#123;</span></span><br><span class="line"><span class="javascript">              <span class="keyword">return</span> <span class="built_in">this</span>.todos.length;</span></span><br><span class="line"><span class="javascript">          &#125;</span></span><br><span class="line"><span class="javascript">      &#125;</span></span><br><span class="line"><span class="javascript">  &#125;);</span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -857,180 +1017,8 @@ QQ邮箱祝你生日快乐。
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/11/04/%E5%A4%96%E8%B4%B8%E5%95%86%E5%9F%8E%E9%A1%B9%E7%9B%AE%E7%AE%80%E4%BB%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/11/04/%E5%A4%96%E8%B4%B8%E5%95%86%E5%9F%8E%E9%A1%B9%E7%9B%AE%E7%AE%80%E4%BB%8B/" class="post-title-link" itemprop="url">外贸商城项目简介</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-11-04 21:30:50" itemprop="dateCreated datePublished" datetime="2017-11-04T21:30:50+09:00">2017-11-04</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2017-11-05 22:50:29" itemprop="dateModified" datetime="2017-11-05T22:50:29+09:00">2017-11-05</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我徒然学会了拒绝热闹，却还未透悟真正的冷清
-</blockquote>
-
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>一个基于octobercms的外贸商城系统，完全自主开发， 依赖laravel的强大功能，使用redis和 elasticsearch 做数据缓存，具有强大的功能和优秀的性能。</p>
-<h3 id="功能点"><a href="#功能点" class="headerlink" title="功能点"></a>功能点</h3><h4 id="后台首页"><a href="#后台首页" class="headerlink" title="后台首页"></a>后台首页</h4><p><img src="/images/cc01.png"></p>
-<h4 id="产品列表页面"><a href="#产品列表页面" class="headerlink" title="产品列表页面"></a>产品列表页面</h4><p><img src="/images/cc02.png"></p>
-<h4 id="产品详情页面"><a href="#产品详情页面" class="headerlink" title="产品详情页面"></a>产品详情页面</h4><p><img src="/images/cc09.png"></p>
-<h4 id="分类列表页面"><a href="#分类列表页面" class="headerlink" title="分类列表页面"></a>分类列表页面</h4><p><img src="/images/cc03.png"></p>
-<h4 id="产品抓取页面"><a href="#产品抓取页面" class="headerlink" title="产品抓取页面"></a>产品抓取页面</h4><p><img src="/images/cc04.png"></p>
-<h4 id="订单列表页面"><a href="#订单列表页面" class="headerlink" title="订单列表页面"></a>订单列表页面</h4><p><img src="/images/cc05.png"></p>
-<h4 id="后台设置"><a href="#后台设置" class="headerlink" title="后台设置"></a>后台设置</h4><p><img src="/images/cc06.png"></p>
-<h4 id="订单分析"><a href="#订单分析" class="headerlink" title="订单分析"></a>订单分析</h4><p><img src="/images/cc07.png"></p>
-<h4 id="销量分析"><a href="#销量分析" class="headerlink" title="销量分析"></a>销量分析</h4><p><img src="/images/cc08.png"></p>
-<h4 id="站点广告位"><a href="#站点广告位" class="headerlink" title="站点广告位"></a>站点广告位</h4><p><img src="/images/cc10.png"></p>
-<h4 id="ES重建"><a href="#ES重建" class="headerlink" title="ES重建"></a>ES重建</h4><p><img src="/images/cc11.png"></p>
-<h4 id="产品勾选"><a href="#产品勾选" class="headerlink" title="产品勾选"></a>产品勾选</h4><p><img src="/images/cc12.png"></p>
-<h4 id="产品促销管理"><a href="#产品促销管理" class="headerlink" title="产品促销管理"></a>产品促销管理</h4><p><img src="/images/cc13.png"></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/11/04/erp%E9%A1%B9%E7%9B%AE%E7%AE%80%E4%BB%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/11/04/erp%E9%A1%B9%E7%9B%AE%E7%AE%80%E4%BB%8B/" class="post-title-link" itemprop="url">erp项目简介</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-11-04 21:30:21" itemprop="dateCreated datePublished" datetime="2017-11-04T21:30:21+09:00">2017-11-04</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2017-11-30 17:13:59" itemprop="dateModified" datetime="2017-11-30T17:13:59+09:00">2017-11-30</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-当完成了童年理想 童年又成了理想
-</blockquote>
-
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>基于laravel5.4开发，用于所有商城的订单管理，实现了采购， 备货，发货, 仓储的完全管理， 极大的提高了员工的工作效率</p>
-<h3 id="功能点"><a href="#功能点" class="headerlink" title="功能点"></a>功能点</h3><h4 id="首页"><a href="#首页" class="headerlink" title="首页"></a>首页</h4><p><img src="/images/erp01.png"></p>
-<h4 id="订单列表"><a href="#订单列表" class="headerlink" title="订单列表"></a>订单列表</h4><p><img src="/images/erp02.png"></p>
-<h4 id="订单详情"><a href="#订单详情" class="headerlink" title="订单详情"></a>订单详情</h4><p><img src="/images/erp03.png"></p>
-<h4 id="未采购商品列表"><a href="#未采购商品列表" class="headerlink" title="未采购商品列表"></a>未采购商品列表</h4><p><img src="/images/erp04.png"></p>
-<h4 id="物流信息翻译"><a href="#物流信息翻译" class="headerlink" title="物流信息翻译"></a>物流信息翻译</h4><p><img src="/images/erp05.png"></p>
-<h4 id="采购信息录入"><a href="#采购信息录入" class="headerlink" title="采购信息录入"></a>采购信息录入</h4><p><img src="/images/erp06.png"></p>
-<h4 id="批量运费补录"><a href="#批量运费补录" class="headerlink" title="批量运费补录"></a>批量运费补录</h4><p><img src="/images/erp07.png"></p>
-<h4 id="备货标签打印"><a href="#备货标签打印" class="headerlink" title="备货标签打印"></a>备货标签打印</h4><p><img src="/images/erp08.png"></p>
-<h4 id="菜单功能演示"><a href="#菜单功能演示" class="headerlink" title="菜单功能演示"></a>菜单功能演示</h4><p><img src="/images/erp.gif"></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/22/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/22/">22</a><span class="page-number current">23</span><a class="page-number" href="/page/24/">24</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/24/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/22/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/22/">22</a><span class="page-number current">23</span><a class="page-number" href="/page/24/">24</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/24/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>

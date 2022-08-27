@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">410</span>
+          <span class="site-state-item-count">412</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,221 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/16/go%E8%AF%BB%E5%86%99csv%E6%96%87%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/03/16/go%E8%AF%BB%E5%86%99csv%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">go读写csv文件</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-03-16 21:18:44" itemprop="dateCreated datePublished" datetime="2020-03-16T21:18:44+09:00">2020-03-16</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:55:00" itemprop="dateModified" datetime="2021-09-10T13:55:00+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我害怕，看到你，独自一人绝望；
+更害怕，看不到你，不能和你一起迷惘……
+</blockquote>
+
+<p>go言語の encoding/csv パッケージの使い方。<br>CSVファイルの読み書きと、オプション、エラーハンドリングについて書いてます。</p>
+<h3 id="一行ずつ読み込む-Read"><a href="#一行ずつ読み込む-Read" class="headerlink" title="一行ずつ読み込む(Read)"></a>一行ずつ読み込む(Read)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;io&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前,年齢,身長,体重</span></span><br><span class="line"><span class="string">Tanaka,31,190cm,97kg</span></span><br><span class="line"><span class="string">Suzuki,46,180cm,79kg</span></span><br><span class="line"><span class="string">Matsui,45,188cm,95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// recordは配列</span></span><br><span class="line">        fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, record)</span><br><span class="line"></span><br><span class="line">        <span class="comment">// []string&#123;&quot;名前&quot;, &quot;年齢&quot;, &quot;身長&quot;, &quot;体重&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Tanaka&quot;, &quot;31&quot;, &quot;190cm&quot;, &quot;97kg&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Suzuki&quot;, &quot;46&quot;, &quot;180cm&quot;, &quot;79kg&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Matsui&quot;, &quot;45&quot;, &quot;188cm&quot;, &quot;95kg&quot;&#125;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ファイルから読み込む"><a href="#ファイルから読み込む" class="headerlink" title="ファイルから読み込む"></a>ファイルから読み込む</h3><p>ファイルから読み込む場合は <code>csv.NewReader</code> に <code>*os.File</code> を渡す</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;os&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    f, err := os.Open(<span class="string">&quot;file.csv&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    r := csv.NewReader(f)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line">        fmt.Println(record)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="csv-Readerのオプション"><a href="#csv-Readerのオプション" class="headerlink" title="csv.Readerのオプション"></a>csv.Readerのオプション</h3><blockquote>
+<p>Comma: 区切り文字を変更<br>Comment: コメント行の先頭になる文字を指定<br>FieldsPerRecord: 各行のフィールド数を指定<br>LazyQuotes: ダブルクオートを厳密にチェックするかどうか<br>TrimLeadingSpace: 先頭の空白文字を無視する<br>ReuseRecord: スライスの再利用<br>TrailingComma: Deprecated(非推奨)</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;io&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前;年齢;身長;体重</span></span><br><span class="line"><span class="string"># コメント行</span></span><br><span class="line"><span class="string">Tanaka;31;190cm;97kg</span></span><br><span class="line"><span class="string"># コメント行</span></span><br><span class="line"><span class="string">Suzuki;46;180cm;79kg</span></span><br><span class="line"><span class="string"># コメント行</span></span><br><span class="line"><span class="string">Matsui;45;188cm;95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line"></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line">    r.Comma = <span class="string">&#x27;;&#x27;</span> <span class="comment">// 区切り文字を , から ; に変更</span></span><br><span class="line">    r.Comment = <span class="string">&#x27;#&#x27;</span> <span class="comment">// 先頭が # の場合はコメント行として扱う</span></span><br><span class="line">    r.FieldsPerRecord = <span class="number">4</span> <span class="comment">// 各行のフィールド数。多くても少なくてもエラーになる</span></span><br><span class="line">    r.LazyQuotes = <span class="literal">true</span> <span class="comment">// true の場合、&quot;&quot; が値の途中に &quot;180&quot;cm のようになっていてもエラーにならない</span></span><br><span class="line">    r.TrimLeadingSpace = <span class="literal">true</span> <span class="comment">// true の場合は、先頭の空白文字を無視する</span></span><br><span class="line">    r.ReuseRecord = <span class="literal">true</span> <span class="comment">// true の場合は、Read で戻ってくるスライスを次回再利用する。パフォーマンスが上がる</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// recordは配列</span></span><br><span class="line">        fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, record)</span><br><span class="line"></span><br><span class="line">        <span class="comment">// []string&#123;&quot;名前&quot;, &quot;年齢&quot;, &quot;身長&quot;, &quot;体重&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Tanaka&quot;, &quot;31&quot;, &quot;190cm&quot;, &quot;97kg&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Suzuki&quot;, &quot;46&quot;, &quot;180cm&quot;, &quot;79kg&quot;&#125;</span></span><br><span class="line">        <span class="comment">// []string&#123;&quot;Matsui&quot;, &quot;45&quot;, &quot;188cm&quot;, &quot;95kg&quot;&#125;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="エラーハンドリング-csv-ParseError"><a href="#エラーハンドリング-csv-ParseError" class="headerlink" title="エラーハンドリング(csv.ParseError)"></a>エラーハンドリング(csv.ParseError)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前,年齢,身長,体重</span></span><br><span class="line"><span class="string">Tanaka,31,190cm,97kg</span></span><br><span class="line"><span class="string">Suzuki,46,180cm,79kg</span></span><br><span class="line"><span class="string">Matsui,45,188cm,95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line"></span><br><span class="line">    records, err := r.ReadAll()</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> e, ok := err.(*csv.ParseError); ok &#123;</span><br><span class="line">            n := <span class="number">0</span></span><br><span class="line">            <span class="keyword">switch</span> e.Err &#123;</span><br><span class="line">            <span class="keyword">case</span> csv.ErrBareQuote:</span><br><span class="line">                <span class="comment">// ダブルクオート途中で使用されていて LazyQuotes を true にしていない場合のエラー</span></span><br><span class="line">                <span class="comment">// 例えば、 Tan&quot;aka,31,190cm,97kg のように 途中に &quot; がある場合</span></span><br><span class="line">                n = <span class="number">1</span></span><br><span class="line">            <span class="keyword">case</span> csv.ErrQuote:</span><br><span class="line">                <span class="comment">// 先頭がダブルクオートで始まっていて、末尾がダブルクオートになっていない場合のエラー</span></span><br><span class="line">                <span class="comment">// 例えば、 &quot;Tanaka,31,190cm,97kg のように閉じるための &quot; がない場合</span></span><br><span class="line">                n = <span class="number">2</span></span><br><span class="line">            <span class="keyword">case</span> csv.ErrFieldCount:</span><br><span class="line">                <span class="comment">// FieldsPerRecordで指定した数と異なる場合のエラー</span></span><br><span class="line">                n = <span class="number">3</span></span><br><span class="line">            &#125;</span><br><span class="line">            log.Fatal(<span class="string">&quot;\nエラー: &quot;</span>, n, <span class="string">&quot;\n&quot;</span>, e.Err,</span><br><span class="line">                <span class="string">&quot;\nStartLine:&quot;</span>, e.StartLine, <span class="string">&quot;\nLine:&quot;</span>, e.Line, <span class="string">&quot;\nColumn:&quot;</span>, e.Column)</span><br><span class="line">        &#125;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fmt.Println(records)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="読み込んだShift-JISファイルをUTF8にする"><a href="#読み込んだShift-JISファイルをUTF8にする" class="headerlink" title="読み込んだShift-JISファイルをUTF8にする"></a>読み込んだShift-JISファイルをUTF8にする</h3><p><code>encoding/japanese</code> と <code>text/transform</code> が必要なのでダウンロードする</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="keyword">go</span> get golang.org/x/text/encoding/japanese golang.org/x/text/transform</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;os&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;golang.org/x/text/encoding/japanese&quot;</span></span><br><span class="line">    <span class="string">&quot;golang.org/x/text/transform&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    f, err := os.Open(<span class="string">&quot;file-sjis.csv&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    r := csv.NewReader(transform.NewReader(f, japanese.ShiftJIS.NewDecoder()))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        fmt.Println(record)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="一度にすべて読み込む-ReadAll"><a href="#一度にすべて読み込む-ReadAll" class="headerlink" title="一度にすべて読み込む(ReadAll)"></a>一度にすべて読み込む(ReadAll)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前,年齢,身長,体重</span></span><br><span class="line"><span class="string">Tanaka,31,190cm,97kg</span></span><br><span class="line"><span class="string">Suzuki,46,180cm,79kg</span></span><br><span class="line"><span class="string">Matsui,45,188cm,95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line"></span><br><span class="line">    record, err := r.ReadAll()</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fmt.Printf(<span class="string">&quot;%#v\n&quot;</span>, record)</span><br><span class="line">    <span class="comment">// [][]string&#123;</span></span><br><span class="line">    <span class="comment">//     []string&#123;&quot;名前&quot;, &quot;年齢&quot;, &quot;身長&quot;, &quot;体重&quot;&#125;,</span></span><br><span class="line">    <span class="comment">//     []string&#123;&quot;Tanaka&quot;, &quot;31&quot;, &quot;190cm&quot;, &quot;97kg&quot;&#125;,</span></span><br><span class="line">    <span class="comment">//     []string&#123;&quot;Suzuki&quot;, &quot;46&quot;, &quot;180cm&quot;, &quot;79kg&quot;&#125;,</span></span><br><span class="line">    <span class="comment">//     []string&#123;&quot;Matsui&quot;, &quot;45&quot;, &quot;188cm&quot;, &quot;95kg&quot;&#125;,</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="一行ずつ書き込む-Write"><a href="#一行ずつ書き込む-Write" class="headerlink" title="一行ずつ書き込む(Write)"></a>一行ずつ書き込む(Write)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;os&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    records := [][]<span class="keyword">string</span>&#123;</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;名前&quot;</span>, <span class="string">&quot;年齢&quot;</span>, <span class="string">&quot;身長&quot;</span>, <span class="string">&quot;体重&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Tanaka&quot;</span>, <span class="string">&quot;31&quot;</span>, <span class="string">&quot;190cm&quot;</span>, <span class="string">&quot;97kg&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Suzuki&quot;</span>, <span class="string">&quot;46&quot;</span>, <span class="string">&quot;180cm&quot;</span>, <span class="string">&quot;79kg&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Matsui&quot;</span>, <span class="string">&quot;45&quot;</span>, <span class="string">&quot;188cm&quot;</span>, <span class="string">&quot;95kg&quot;</span>&#125;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    f, err := os.Create(<span class="string">&quot;file.csv&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    w := csv.NewWriter(f)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// オプション</span></span><br><span class="line">    w.Camma = <span class="string">&#x27;,&#x27;</span> <span class="comment">// デフォルトはカンマ区切りで出力される。変更する場合はこの rune 文字を変更する</span></span><br><span class="line">    w.UseCRLF = <span class="literal">true</span> <span class="comment">// 改行文字を CRLF(\r\n) にする</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _, record := <span class="keyword">range</span> records &#123;</span><br><span class="line">        <span class="keyword">if</span> err := w.Write(record); err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    w.Flush() <span class="comment">// バッファに残っているデータをすべて書き込む</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err := w.Error(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>書き込み結果</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cat file.csv</span><br><span class="line">名前,年齢,身長,体重</span><br><span class="line">Tanaka,<span class="number">31</span>,<span class="number">190</span>cm,<span class="number">97</span>kg</span><br><span class="line">Suzuki,<span class="number">46</span>,<span class="number">180</span>cm,<span class="number">79</span>kg</span><br><span class="line">Matsui,<span class="number">45</span>,<span class="number">188</span>cm,<span class="number">95</span>kg</span><br></pre></td></tr></table></figure>
+
+<h3 id="すべて一度に書き込む-WriteAll"><a href="#すべて一度に書き込む-WriteAll" class="headerlink" title="すべて一度に書き込む(WriteAll)"></a>すべて一度に書き込む(WriteAll)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;os&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    records := [][]<span class="keyword">string</span>&#123;</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;名前&quot;</span>, <span class="string">&quot;年齢&quot;</span>, <span class="string">&quot;身長&quot;</span>, <span class="string">&quot;体重&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Tanaka&quot;</span>, <span class="string">&quot;31&quot;</span>, <span class="string">&quot;190cm&quot;</span>, <span class="string">&quot;97kg&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Suzuki&quot;</span>, <span class="string">&quot;46&quot;</span>, <span class="string">&quot;180cm&quot;</span>, <span class="string">&quot;79kg&quot;</span>&#125;,</span><br><span class="line">        []<span class="keyword">string</span>&#123;<span class="string">&quot;Matsui&quot;</span>, <span class="string">&quot;45&quot;</span>, <span class="string">&quot;188cm&quot;</span>, <span class="string">&quot;95kg&quot;</span>&#125;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    f, err := os.Create(<span class="string">&quot;file.csv&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    w := csv.NewWriter(f)</span><br><span class="line"></span><br><span class="line">    w.WriteAll(records)</span><br><span class="line"></span><br><span class="line">    w.Flush()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err := w.Error(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="CSVを構造体にマッピングする"><a href="#CSVを構造体にマッピングする" class="headerlink" title="CSVを構造体にマッピングする"></a>CSVを構造体にマッピングする</h3><p>以下のように書いてみたけど、reflect 使うとさらに面倒そう。<br>なので gocsv (gocsvのgodocページ) を使えば、読み込んだCSVを構造体にマッピングできて、 その逆で構造体からCSVに変換するのも楽にできそう。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;encoding/csv&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;io&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;strconv&quot;</span></span><br><span class="line">    <span class="string">&quot;strings&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> People <span class="keyword">struct</span> &#123;</span><br><span class="line">    Name   <span class="keyword">string</span></span><br><span class="line">    Age    <span class="keyword">int</span></span><br><span class="line">    Height <span class="keyword">string</span></span><br><span class="line">    Weight <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := <span class="string">`名前,年齢,身長,体重</span></span><br><span class="line"><span class="string">Tanaka,31,190cm,97kg</span></span><br><span class="line"><span class="string">Suzuki,46,180cm,79kg</span></span><br><span class="line"><span class="string">Matsui,45,188cm,95kg</span></span><br><span class="line"><span class="string">`</span></span><br><span class="line">    r := csv.NewReader(strings.NewReader(s))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> p []People</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; ; i++ &#123;</span><br><span class="line">        record, err := r.Read()</span><br><span class="line">        <span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">            log.Fatal(err)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> i == <span class="number">0</span> &#123;</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> people People</span><br><span class="line">        <span class="keyword">for</span> i, v := <span class="keyword">range</span> record &#123;</span><br><span class="line">            <span class="keyword">switch</span> i &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                people.Name = v</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">                people.Age, err = strconv.Atoi(v)</span><br><span class="line">                <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">                    log.Fatal(err)</span><br><span class="line">                &#125;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">                people.Height = v</span><br><span class="line">            <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">                people.Weight = v</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        p = <span class="built_in">append</span>(p, people)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fmt.Println(p)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://golang.hateblo.jp/entry/golang-encoding-csv">https://golang.hateblo.jp/entry/golang-encoding-csv</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/13/%E7%90%86%E8%A7%A3laravel%E7%9A%84%E7%AE%A1%E9%81%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/03/13/%E7%90%86%E8%A7%A3laravel%E7%9A%84%E7%AE%A1%E9%81%93/" class="post-title-link" itemprop="url">理解laravel的管道</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2020-03-13 17:18:06 / 修改时间：18:43:02" itemprop="dateCreated datePublished" datetime="2020-03-13T17:18:06+09:00">2020-03-13</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+当我们搬开别人架下的绊脚石时，也许恰恰是在为自己铺路。
+</blockquote>
+
+<p>Basically, using laravel pipelines you can pass an object between several classes in a fluid way to perform any type of task and finally return the resulting value once all the “tasks” have been executed.</p>
+<p>The most clear example about how pipelines works resides in one of the most used components of the framework itself. I’m talking about middlewares.</p>
+<p>Middleware provide a convenient mechanism for filtering HTTP requests entering your application… This is how a basic middleware looks like:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">app(Pipeline::class)</span><br><span class="line">    -&gt;send(<span class="variable">$content</span>)</span><br><span class="line">    -&gt;through(<span class="variable">$pipes</span>)</span><br><span class="line">    -&gt;via(‘customMethodName’) <span class="comment">// &lt;---- This one :)</span></span><br><span class="line">    -&gt;then(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$content</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Post::create([<span class="string">&#x27;content&#x27;</span> =&gt; <span class="variable">$content</span>]);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>These “middlewares” are in fact just pipes by where the request is going to be sent thru, in order to perform any needed task. Here you can check if the request is an HTTP request, a JSON request, if there is any user authenticated, etc.</p>
+<p>If you take a quick look to the <code>Illuminate\Foundation\Http\Kernel</code> class, you’ll see how the middlewares are executed by using a new instance of the Pipeline class.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Send the given request through the middleware / router.</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span>  \Illuminate\Http\Request  $request</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@return</span> \Illuminate\Http\Response</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">sendRequestThroughRouter</span>(<span class="params"><span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;app-&gt;instance(<span class="string">&#x27;request&#x27;</span>, <span class="variable">$request</span>);</span><br><span class="line">    Facade::clearResolvedInstance(<span class="string">&#x27;request&#x27;</span>);</span><br><span class="line">    <span class="keyword">$this</span>-&gt;bootstrap();</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">new</span> Pipeline(<span class="keyword">$this</span>-&gt;app))</span><br><span class="line">                    -&gt;send(<span class="variable">$request</span>)</span><br><span class="line">                    -&gt;through(<span class="keyword">$this</span>-&gt;app-&gt;shouldSkipMiddleware() ? [] : <span class="keyword">$this</span>-&gt;middleware)</span><br><span class="line">    -&gt;then(<span class="keyword">$this</span>-&gt;dispatchToRouter());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>You can read in the code something like: a new pipeline that sends the request through a list of middlewares and then dispatch the router.</p>
+<p>Don’t worry if this seems a little overwhelmed to you. Let’s try to clarify the concept with the follow example.</p>
+<h3 id="Working-on-a-class-that-requires-to-run-multiple-tasks"><a href="#Working-on-a-class-that-requires-to-run-multiple-tasks" class="headerlink" title="Working on a class that requires to run multiple tasks"></a>Working on a class that requires to run multiple tasks</h3><p>Consider this situation. Let’s say you are building a forum where people can create threads and leave comments. But your client ask you to auto-remove tags or edit them on every piece of content when it’s created.</p>
+<p>So this is what you are asked to do:</p>
+<ul>
+<li>Replace link tags with plain text.</li>
+<li>Replace bad words with “*”</li>
+<li>Remove script tags entirely from the content</li>
+</ul>
+<p>Probably you end up creating classes to handle each of these “tasks”.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="variable">$pipes</span> = [</span><br><span class="line">    RemoveBadWords::class</span><br><span class="line">    ReplaceLinkTags::clas</span><br><span class="line">    RemoveScriptTags::class</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+
+<p>What we are going to do is to pass the given “content” to each task and then return the result to the next one. We can do this using a pipeline.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">create</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$pipes</span> = [</span><br><span class="line">        RemoveBadWords::class,</span><br><span class="line">        ReplaceLinkTags::clas,</span><br><span class="line">        RemoveScriptTags::class</span><br><span class="line">    ];</span><br><span class="line">    <span class="variable">$post</span> = app(Pipeline::class)</span><br><span class="line">        -&gt;send(<span class="variable">$request</span>-&gt;content)</span><br><span class="line">        -&gt;through(<span class="variable">$pipes</span>)</span><br><span class="line">        -&gt;then(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$content</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> Post::create([<span class="string">&#x27;content&#x27;</span> =&gt; <span class="string">&#x27;content&#x27;</span>]);</span><br><span class="line">        &#125;);</span><br><span class="line">    <span class="comment">// return any type of response</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Each “task” class should have a “handle” method to perform the action. Maybe it would be a good idea to have a contract to be implemented by each class:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Pipe</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$content</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Closure</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RemoveBadWords</span> <span class="keyword">implements</span> <span class="title">Pipe</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$content</span>, <span class="built_in">Closure</span> <span class="variable">$next</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// Here you perform the task and return the updated $content</span></span><br><span class="line">        <span class="comment">// to the next pipe</span></span><br><span class="line">        <span class="keyword">return</span>  <span class="variable">$next</span>(<span class="variable">$content</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The method used to perform the task should receive two parameters, the first one would be the passable object, and the second one would be a closure where the object is going to be redirected to after running the last pipe.</p>
+<p>You can use a custom method name instead of ‘handle’. Then you need to specify the method name to be used by the pipeline, like so</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">app(Pipeline::class)</span><br><span class="line">    -&gt;send(<span class="variable">$content</span>)</span><br><span class="line">    -&gt;through(<span class="variable">$pipes</span>)</span><br><span class="line">    -&gt;via(‘customMethodName’) <span class="comment">// &lt;---- This one :)</span></span><br><span class="line">    -&gt;then(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$content</span></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> Post::create([<span class="string">&#x27;content&#x27;</span> =&gt; <span class="variable">$content</span>]);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="What-happens-at-the-end"><a href="#What-happens-at-the-end" class="headerlink" title="What happens at the end ?"></a>What happens at the end ?</h3><p>What should happen here is that the post content is going to be modified by each one of the <code>$pipes</code> and at the end, this resulting content is going to be stored.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$post</span> = app(Pipeline::class)</span><br><span class="line">    -&gt;send(<span class="variable">$request</span>-&gt;all())</span><br><span class="line">    -&gt;through(<span class="variable">$pipes</span>)</span><br><span class="line">    -&gt;then(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$content</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Post::create([<span class="string">&#x27;content&#x27;</span> =&gt; <span class="variable">$content</span>]);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Final-words"><a href="#Final-words" class="headerlink" title="Final words"></a>Final words</h3><p>Remember, there are tons of ways you can approach this type of issues. What you decide to do it’s up to you. But it is good to know that you have this tool in your arsenal to be used if necessary. I hope this example gives you a better understanding of what these “laravel pipelines” are and how to use them. You can also take a look at api laravel documents if you want to know more about how this</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://jeffochoa.me/understanding-laravel-pipelines">https://jeffochoa.me/understanding-laravel-pipelines</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -958,171 +1173,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/05/new-shop-system-named-mshop/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/01/05/new-shop-system-named-mshop/" class="post-title-link" itemprop="url">一个全新的外贸商城系统(mshop)</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-01-05 23:54:24" itemprop="dateCreated datePublished" datetime="2020-01-05T23:54:24+09:00">2020-01-05</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2020-01-06 01:23:05" itemprop="dateModified" datetime="2020-01-06T01:23:05+09:00">2020-01-06</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-都说时间是良药，但治好的都是皮外伤
-</blockquote>
-
-<h3 id="产品列表"><a href="#产品列表" class="headerlink" title="产品列表"></a>产品列表</h3><p><img src="/images/mshop01.jpg"></p>
-<h3 id="产品详情"><a href="#产品详情" class="headerlink" title="产品详情"></a>产品详情</h3><p><img src="/images/mshop02.jpg"></p>
-<h3 id="分类列表"><a href="#分类列表" class="headerlink" title="分类列表"></a>分类列表</h3><p><img src="/images/mshop03.jpg"></p>
-<h3 id="产品归类"><a href="#产品归类" class="headerlink" title="产品归类"></a>产品归类</h3><p><img src="/images/mshop04.jpg"></p>
-<h3 id="产品爬虫"><a href="#产品爬虫" class="headerlink" title="产品爬虫"></a>产品爬虫</h3><p><img src="/images/mshop05.jpg"></p>
-<h3 id="订单列表"><a href="#订单列表" class="headerlink" title="订单列表"></a>订单列表</h3><p><img src="/images/mshop06.jpg"></p>
-<h3 id="订单详情"><a href="#订单详情" class="headerlink" title="订单详情"></a>订单详情</h3><p><img src="/images/mshop07.jpg"></p>
-<h3 id="订单促销"><a href="#订单促销" class="headerlink" title="订单促销"></a>订单促销</h3><p><img src="/images/mshop08.jpg"></p>
-<h3 id="产品促销"><a href="#产品促销" class="headerlink" title="产品促销"></a>产品促销</h3><p><img src="/images/mshop09.jpg"></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/11/26/laravel-chunk-missing-half-the-results/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/11/26/laravel-chunk-missing-half-the-results/" class="post-title-link" itemprop="url">laravel-chunk-missing-half-the-results</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2019-11-26 17:43:01 / 修改时间：18:50:06" itemprop="dateCreated datePublished" datetime="2019-11-26T17:43:01+09:00">2019-11-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-只要从现在开始努力，最坏不过是大器晚成
-</blockquote>
-
-<h3 id="Q"><a href="#Q" class="headerlink" title="Q"></a>Q</h3><p>I have a problem with Laravel’s ORM Eloquent chunk() method. It misses some results. Here is a test query :</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$destinataires</span> = Destinataire::where(<span class="string">&#x27;statut&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="number">3</span>)</span><br><span class="line">    -&gt;where(<span class="string">&#x27;tokenized_at&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="variable">$date_active</span>)</span><br><span class="line">    -&gt;chunk(<span class="keyword">$this</span>-&gt;chunk, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$destinataires</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">foreach</span>(<span class="variable">$destinataires</span> <span class="keyword">as</span> <span class="variable">$destinataire</span>) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;i++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">echo</span> <span class="keyword">$this</span>-&gt;i;</span><br></pre></td></tr></table></figure>
-<p>It gives 124838 results.<br>But :</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$num_dest</span> = Destinataire::where(<span class="string">&#x27;statut&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="number">3</span>)</span><br><span class="line">    -&gt;where(<span class="string">&#x27;tokenized_at&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="variable">$date_active</span>)</span><br><span class="line">    -&gt;count();</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$num_dest</span>;</span><br></pre></td></tr></table></figure>
-<p>gives 249676, so just TWICE as the first code example.</p>
-<h3 id="A"><a href="#A" class="headerlink" title="A"></a>A</h3><p>Use chunkById() instead of chunk().</p>
-<p>When updating or deleting records inside the chunk callback, any changes to the primary key or foreign keys could affect the chunk query. This could potentially result in records not being included in the chunked results.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DB::table(<span class="string">&#x27;users&#x27;</span>)-&gt;where(<span class="string">&#x27;active&#x27;</span>, <span class="literal">false</span>)</span><br><span class="line">    -&gt;chunkById(<span class="number">100</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$users</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">foreach</span> (<span class="variable">$users</span> <span class="keyword">as</span> <span class="variable">$user</span>) &#123;</span><br><span class="line">            DB::table(<span class="string">&#x27;users&#x27;</span>)</span><br><span class="line">                -&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="variable">$user</span>-&gt;id)</span><br><span class="line">                -&gt;update([<span class="string">&#x27;active&#x27;</span> =&gt; <span class="literal">true</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/32700537/eloquent-chunk-missing-half-the-results">https://stackoverflow.com/questions/32700537/eloquent-chunk-missing-half-the-results</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>

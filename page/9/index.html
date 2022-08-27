@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">410</span>
+          <span class="site-state-item-count">412</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,204 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/03/08/centos%E5%AE%89%E8%A3%85shadowsocks%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AE%9E%E7%8E%B0%E8%81%94%E7%BD%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/03/08/centos%E5%AE%89%E8%A3%85shadowsocks%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AE%9E%E7%8E%B0%E8%81%94%E7%BD%91/" class="post-title-link" itemprop="url">CentOS安装Shadowsocks客户端实现联网</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-03-08 21:57:25" itemprop="dateCreated datePublished" datetime="2019-03-08T21:57:25+09:00">2019-03-08</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-16 23:25:24" itemprop="dateModified" datetime="2021-09-16T23:25:24+09:00">2021-09-16</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你爱上小溪 是因为没有见过大海 我已见过银河 但我只爱一颗星
+</blockquote>
+
+<h3 id="安装-pip"><a href="#安装-pip" class="headerlink" title="安装 pip"></a>安装 pip</h3><p>Pip 是 Python 的包管理工具，这里我们用 pip 安装 shadowsocks。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum install python-pip</span><br><span class="line">pip install shadowsocks</span><br></pre></td></tr></table></figure>
+<h3 id="配置-shadowsocks"><a href="#配置-shadowsocks" class="headerlink" title="配置 shadowsocks"></a>配置 shadowsocks</h3><p>新建配置文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/shadowsocks.json</span><br></pre></td></tr></table></figure>
+<p>填写以下内容:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;server&quot;</span>:<span class="string">&quot;your_server_ip&quot;</span>,      #ss服务器IP</span><br><span class="line">    <span class="string">&quot;server_port&quot;</span>:your_server_port, #端口</span><br><span class="line">    <span class="string">&quot;local_address&quot;</span>: <span class="string">&quot;127.0.0.1&quot;</span>,   #本地ip</span><br><span class="line">    <span class="string">&quot;local_port&quot;</span>:<span class="number">1080</span>,              #本地端口</span><br><span class="line">    <span class="string">&quot;password&quot;</span>:<span class="string">&quot;your_server_passwd&quot;</span>,#连接ss密码</span><br><span class="line">    <span class="string">&quot;timeout&quot;</span>:<span class="number">300</span>,                  #等待超时</span><br><span class="line">    <span class="string">&quot;method&quot;</span>:<span class="string">&quot;rc4-md5&quot;</span>,             #加密方式</span><br><span class="line">    <span class="string">&quot;fast_open&quot;</span>: <span class="literal">false</span>,             # <span class="literal">true</span> 或 <span class="literal">false</span>。如果你的服务器 Linux 内核在<span class="number">3.7</span>+，可以开启 fast_open 以降低延迟。开启方法： echo <span class="number">3</span> &gt; <span class="regexp">/proc/</span>sys/net/ipv4/tcp_fastopen 开启之后，将 fast_open 的配置设置为 <span class="literal">true</span> 即可</span><br><span class="line">    <span class="string">&quot;workers&quot;</span>: <span class="number">1</span>                    # 工作线程数</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="启动shadowsocks服务"><a href="#启动shadowsocks服务" class="headerlink" title="启动shadowsocks服务"></a>启动shadowsocks服务</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sslocal -c /etc/shadowsocks.json</span><br><span class="line"></span><br><span class="line">nohup sslocal -c /etc/shadowsocks.json &amp;&gt;&gt; /<span class="keyword">var</span>/log/sslocal.log &amp;</span><br></pre></td></tr></table></figure>
+<h3 id="设置shadowsocks开机自启"><a href="#设置shadowsocks开机自启" class="headerlink" title="设置shadowsocks开机自启"></a>设置shadowsocks开机自启</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/systemd/system/shadowsocks.service</span><br></pre></td></tr></table></figure>
+<p>填写如下内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Shadowsocks Client Service</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">ExecStart=/usr/bin/sslocal -c /etc/shadowsocks.json</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>配置生效：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable /etc/systemd/system/shadowsocks.service</span><br></pre></td></tr></table></figure>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>运行</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl --socks5 <span class="number">127.0</span>.<span class="number">0.1</span>:<span class="number">1080</span> http:<span class="comment">//httpbin.org/ip</span></span><br></pre></td></tr></table></figure>
+<p>如果返回你的 ss 服务器 ip 则测试成功：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;origin&quot;</span>: <span class="string">&quot;23.105.222.129&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="安装-Privoxy"><a href="#安装-Privoxy" class="headerlink" title="安装 Privoxy"></a>安装 Privoxy</h3><p>Shadowsocks 是一个 socket5 服务，因此我们需要使用 Privoxy 把流量转到 http/https 上。直接使用yum安装即可：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install privoxy</span><br></pre></td></tr></table></figure>
+<p>安装好后，修改一下配置：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/privoxy/config</span><br></pre></td></tr></table></figure>
+<p>搜索<code>forward-socks5t</code>将</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">forward-socks5t / <span class="number">127.0</span>.<span class="number">0.1</span>:<span class="number">9050</span> .</span><br></pre></td></tr></table></figure>
+<p>取消注释并修改为：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">forward-socks5t / <span class="number">127.0</span>.<span class="number">0.1</span>:<span class="number">1080</span> .</span><br></pre></td></tr></table></figure>
+<h3 id="启动-privoxy"><a href="#启动-privoxy" class="headerlink" title="启动 privoxy"></a>启动 privoxy</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">privoxy /etc/privoxy/config</span><br></pre></td></tr></table></figure>
+<p>或以指定用户如www运行privoxy：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">privoxy --user www /etc/privoxy/config</span><br></pre></td></tr></table></figure>
+<h3 id="设置privoxy开机自启"><a href="#设置privoxy开机自启" class="headerlink" title="设置privoxy开机自启"></a>设置privoxy开机自启</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /lib/systemd/system/privoxy.service</span><br></pre></td></tr></table></figure>
+<p>填写如下内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Privoxy Web Proxy With Advanced Filtering Capabilities</span><br><span class="line">Wants=network-online.target</span><br><span class="line">After=network-online.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=forking</span><br><span class="line">PIDFile=/run/privoxy.pid</span><br><span class="line">ExecStart=/usr/sbin/privoxy --pidfile /run/privoxy.pid /etc/privoxy/config</span><br></pre></td></tr></table></figure>
+<p>配置生效：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable /lib/systemd/system/privoxy.service</span><br></pre></td></tr></table></figure>
+<h3 id="配置-etc-profile"><a href="#配置-etc-profile" class="headerlink" title="配置/etc/profile"></a>配置/etc/profile</h3><p>执行vim /etc/profile,添加如下代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=http:<span class="comment">//127.0.0.1:8118</span></span><br><span class="line">export https_proxy=http:<span class="comment">//127.0.0.1:8118</span></span><br></pre></td></tr></table></figure>
+<p>修改后使配置生效：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
+<p>测试生效：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl www.google.com</span><br></pre></td></tr></table></figure>
+<p>返回一大堆 HTML 则说明 shadowsocks 正常工作了。</p>
+<h3 id="简化使用"><a href="#简化使用" class="headerlink" title="简化使用"></a>简化使用</h3><p>进过上面的步骤我们的确代理成功了。。但是每次都要输入这么多命令太麻烦,这时我们可以利用 命令别名 来简化我们的操作</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">alias ssinit=<span class="string">&#x27;nohup sslocal -c /etc/shadowsocks.json &amp;&gt;&gt; /var/log/sslocal.log &amp;&#x27;</span></span><br><span class="line">alias sson=<span class="string">&#x27;export http_proxy=http://127.0.0.1:8118 &amp;&amp; export https_proxy=http://127.0.0.1:8118 &amp;&amp; systemctl start privoxy&#x27;</span></span><br><span class="line">alias ssoff=<span class="string">&#x27;unset http_proxy &amp;&amp; unset https_proxy &amp;&amp; systemctl stop privoxy &amp;&amp; pkill sslocal&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>使用方法</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">### 开启ss代理</span></span><br><span class="line">ssinit</span><br><span class="line">sson</span><br><span class="line"><span class="comment">## 关闭ss代理</span></span><br><span class="line">ssoff</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://i.jakeyu.top/2017/03/16/centos%E4%BD%BF%E7%94%A8SS%E7%BF%BB%E5%A2%99/">https://i.jakeyu.top/2017/03/16/centos%E4%BD%BF%E7%94%A8SS%E7%BF%BB%E5%A2%99/</a><br><a target="_blank" rel="noopener" href="https://xeylon.com/server/140.html">https://xeylon.com/server/140.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/01/17/git%E5%B0%86%E5%BD%93%E5%89%8D%E5%88%86%E6%94%AF%E4%B8%8A%E4%BF%AE%E6%94%B9%E7%9A%84%E4%B8%9C%E8%A5%BF%E8%BD%AC%E7%A7%BB%E5%88%B0%E6%96%B0%E5%BB%BA%E5%88%86%E6%94%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/01/17/git%E5%B0%86%E5%BD%93%E5%89%8D%E5%88%86%E6%94%AF%E4%B8%8A%E4%BF%AE%E6%94%B9%E7%9A%84%E4%B8%9C%E8%A5%BF%E8%BD%AC%E7%A7%BB%E5%88%B0%E6%96%B0%E5%BB%BA%E5%88%86%E6%94%AF/" class="post-title-link" itemprop="url">git将当前分支上修改的东西转移到新建分支</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-01-17 21:26:21" itemprop="dateCreated datePublished" datetime="2019-01-17T21:26:21+09:00">2019-01-17</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 14:00:17" itemprop="dateModified" datetime="2021-09-10T14:00:17+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+为大概率坚持，为小概率备份。
+</blockquote>
+
+<p>比如我在A分支做了一些修改，现在由于某种原因(如A分支已经合并到master)不能把A分支上修改的东西保留下来但是需要把A分支上修改的东西继续在新分支继续修改。那么现在我们可以有两种简单的做法完成这一需求。</p>
+<h3 id="第一种方法"><a href="#第一种方法" class="headerlink" title="第一种方法"></a>第一种方法</h3><p>我们不需要在A分支做commit,只需要在A分支新建B分支，然后切换过去。这个时候你会发现修改的东西在A，B分支都有。这个时候在B分支commit，那么这些修改保留在B分支上，再切换到A分支上会发现修改都没有保留下来。</p>
+<h3 id="第二种方法"><a href="#第二种方法" class="headerlink" title="第二种方法"></a>第二种方法</h3><p>使用Git stash 将A分支暂存起来，然后在某一个分支（如master分支）新建一个分支B，然后在B分支上使用git stash pop 将修改弹出到B分支上，然后这些修改就在B分支上了。然后我们又可以愉快的玩耍了～</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -930,240 +1128,8 @@ Hope is a good thing and maybe the best of things. And no good thing ever dies.
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/10/swoole%E5%BC%82%E6%AD%A5task%E9%82%AE%E4%BB%B6%E6%A1%88%E4%BE%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/08/10/swoole%E5%BC%82%E6%AD%A5task%E9%82%AE%E4%BB%B6%E6%A1%88%E4%BE%8B/" class="post-title-link" itemprop="url">swoole异步task邮件案例</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-08-10 07:41:05 / 修改时间：09:36:27" itemprop="dateCreated datePublished" datetime="2018-08-10T07:41:05+09:00">2018-08-10</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-有人住高楼，有人在深沟，有人光万丈，有人一身锈。世人万千种，浮云莫去求，斯人若彩虹，遇上方知有。
-</blockquote>
-
-<p>我们在写代码的过程中应该注意的问题：</p>
-<ul>
-<li>开启数量适中的Worker进程和Task进程</li>
-<li>守护进程化</li>
-<li>配置运行时日志</li>
-<li>平滑重启</li>
-<li>避免内存泄漏</li>
-<li>避免粘包问题</li>
-</ul>
-<p>除此之外，跟swoole打交道，我们还应该注意下面这些问题：</p>
-<ul>
-<li>为了避免Worker阻塞，避免使用sleep等睡眠函数</li>
-<li>不要使用die或者exit函数，即使在你调试的时候</li>
-<li>保持良好的代码风格，try/catch捕获异常</li>
-<li>如果Worker进程无法预料会发生异常退出，虽然Manager进程会重新拉起新的Worker进程，但是我们可以通过register_shutdown_function方法在进程退出前“善后”</li>
-</ul>
-<h3 id="邮件案例"><a href="#邮件案例" class="headerlink" title="邮件案例"></a>邮件案例</h3><p>首先发送邮件，我们借助第三方类库 swiftmailer。有些框架可能集成了swiftmailer，比如yii2,本来准备在yii2的基础之上来讲，考虑部分人可能对这个框架不熟悉，我们这里直接根据swiftmailer代码操作，框架中一样可以使用，无任何影响。</p>
-<p>我们执行下面的命令，把swiftmailer下载到本地，下载好之后swiftmailer会被下载到一个叫vendor文件夹的目录里面</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer <span class="keyword">require</span> <span class="string">&quot;swiftmailer/swiftmailer:^6.0&quot;</span></span><br></pre></td></tr></table></figure>
-<p>然后我们封装一个简单的邮件类Mailer.php,同vendor目录同级，用于发送邮件，该类后期可自行完善，比如增加批量发送邮件或者增加发送模版邮件等操作。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require_once</span> <span class="keyword">__DIR__</span> . <span class="string">&#x27;/vendor/autoload.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Mailer</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$transport</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$mailer</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 发送邮件类 参数 $data 需要三个必填项 包括 邮件主题`$data[&#x27;subject&#x27;]`、接收邮件的人`$data[&#x27;to&#x27;]`和邮件内容 `$data[&#x27;content&#x27;]`</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> Array $data</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> bool $result 发送成功 or 失败</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">send</span>(<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;transport = (<span class="keyword">new</span> Swift_SmtpTransport(<span class="string">&#x27;smtp.qq.com&#x27;</span>, <span class="number">25</span>))</span><br><span class="line">            -&gt;setEncryption(<span class="string">&#x27;tls&#x27;</span>)</span><br><span class="line">            -&gt;setUsername(<span class="string">&#x27;bailangzhan@qq.com&#x27;</span>)</span><br><span class="line">            -&gt;setPassword(<span class="string">&#x27;xxxxxx&#x27;</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;mailer = <span class="keyword">new</span> Swift_Mailer(<span class="keyword">$this</span>-&gt;transport);</span><br><span class="line"></span><br><span class="line">        <span class="variable">$message</span> = (<span class="keyword">new</span> Swift_Message(<span class="variable">$data</span>[<span class="string">&#x27;subject&#x27;</span>]))</span><br><span class="line">            -&gt;setFrom(<span class="keyword">array</span>(<span class="string">&#x27;bailangzhan@qq.com&#x27;</span> =&gt; <span class="string">&#x27;白狼栈&#x27;</span>))</span><br><span class="line">            -&gt;setTo(<span class="keyword">array</span>(<span class="variable">$data</span>[<span class="string">&#x27;to&#x27;</span>]))</span><br><span class="line">            -&gt;setBody(<span class="variable">$data</span>[<span class="string">&#x27;content&#x27;</span>]);</span><br><span class="line">            </span><br><span class="line">        <span class="variable">$result</span> = <span class="keyword">$this</span>-&gt;mailer-&gt;send(<span class="variable">$message</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 释放</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;destroy();</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">destroy</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;transport = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;mailer = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在这段代码中，你需要修改的地方包括 Host、Post、Encryption、Username、Password和From。</p>
-<p>Mailer类简单的封装好之后，我们写几行代码测试下你的邮件类是否可以正确的使用</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require_once</span> <span class="keyword">__DIR__</span> . <span class="string">&quot;/task/Mailer.php&quot;</span>;</span><br><span class="line"><span class="variable">$data</span> = [</span><br><span class="line">    <span class="string">&#x27;to&#x27;</span> =&gt; <span class="string">&#x27;422744***@qq.com&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;subject&#x27;</span> =&gt; <span class="string">&#x27;just a test&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;content&#x27;</span> =&gt; <span class="string">&#x27;This is just a test.&#x27;</span>,</span><br><span class="line">];</span><br><span class="line"><span class="variable">$mailer</span> = <span class="keyword">new</span> Mailer;</span><br><span class="line"><span class="variable">$mailer</span>-&gt;send(<span class="variable">$data</span>);</span><br></pre></td></tr></table></figure>
-<p>to是要发送给谁，subject邮件标题，content邮件内容。</p>
-<p>如果不可以正常发送，请检查swiftmailer相关类正确引入并且保证Mailer类的配置可用。</p>
-<p>邮件类准备好之后，我们正式开始写swoole server，主要代码如下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskServer</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_serv</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_run</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * init</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv = <span class="keyword">new</span> Swoole\Server(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">2</span>,</span><br><span class="line">            <span class="string">&#x27;daemonize&#x27;</span> =&gt; <span class="literal">false</span>,</span><br><span class="line">            <span class="string">&#x27;log_file&#x27;</span> =&gt; <span class="keyword">__DIR__</span> . <span class="string">&#x27;/server.log&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;task_worker_num&#x27;</span> =&gt; <span class="number">2</span>,</span><br><span class="line">            <span class="string">&#x27;max_request&#x27;</span> =&gt; <span class="number">5000</span>,</span><br><span class="line">            <span class="string">&#x27;task_max_request&#x27;</span> =&gt; <span class="number">5000</span>,</span><br><span class="line">            <span class="string">&#x27;open_eof_check&#x27;</span> =&gt; <span class="literal">true</span>, <span class="comment">//打开EOF检测</span></span><br><span class="line">            <span class="string">&#x27;package_eof&#x27;</span> =&gt; <span class="string">&quot;\r\n&quot;</span>, <span class="comment">//设置EOF</span></span><br><span class="line">            <span class="string">&#x27;open_eof_split&#x27;</span> =&gt; <span class="literal">true</span>, <span class="comment">// 自动分包</span></span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Connect&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onConnect&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;WorkerStart&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onWorkerStart&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Task&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onTask&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Finish&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onFinish&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Close&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onClose&#x27;</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onConnect</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onWorkerStart</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$workerId</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">require_once</span> <span class="keyword">__DIR__</span> . <span class="string">&quot;/TaskRun.php&quot;</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_run = <span class="keyword">new</span> TaskRun;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$data</span> = <span class="keyword">$this</span>-&gt;unpack(<span class="variable">$data</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_run-&gt;receive(<span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span>);</span><br><span class="line">        <span class="comment">// 投递一个任务到task进程中</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">empty</span>(<span class="variable">$data</span>[<span class="string">&#x27;event&#x27;</span>])) &#123;</span><br><span class="line">            <span class="variable">$serv</span>-&gt;task(array_merge(<span class="variable">$data</span> , [<span class="string">&#x27;fd&#x27;</span> =&gt; <span class="variable">$fd</span>]));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onTask</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_run-&gt;task(<span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onFinish</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_run-&gt;finish(<span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onClose</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 对数据包单独处理，数据包经过`json_decode`处理之后，只能是数组</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span> $data</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> bool|mixed</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">unpack</span>(<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$data</span> = str_replace(<span class="string">&quot;\r\n&quot;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$data</span>);</span><br><span class="line">        <span class="keyword">if</span> (!<span class="variable">$data</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$data</span> = json_decode(<span class="variable">$data</span>, <span class="literal">true</span>);</span><br><span class="line">        <span class="keyword">if</span> (!<span class="variable">$data</span> || !is_array(<span class="variable">$data</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$data</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$reload</span> = <span class="keyword">new</span> TaskServer;</span><br><span class="line"><span class="variable">$reload</span>-&gt;start();</span><br></pre></td></tr></table></figure>
-<p>简单分析下:</p>
-<ul>
-<li>在onWorkerStart回调内，我们引入了实际处理业务逻辑的类TaskRun.php，为什么这么说呢？因为我们在onReceive\onTask\onFinish回调内均把数据交给了TaskRun对象去处理了</li>
-<li>我们约定，每个数据包都必须带有EOF标记<code>\r\n</code>，在server端为了更好的处理数据，onReceive回调内我们把数据包丢给了unpack方法处理，该方法的目的就是把数据包的EOF标记去掉，还原真实的数据包。我们还约定，server收到的数据包经过unpack处理之后只能是数组，非数组在unpack中就被直接处理掉了。</li>
-<li>onReceive回调内，我们看到，只有数据包含有<code>event</code>项才会被投递给Task进程，这样做的原因是Task进程可能要处理各种任务，增加<code>event</code>项是为了表明投递过来的任务是要做什么的。</li>
-</ul>
-<p>我们看TaskRun的实现</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require_once</span> (<span class="string">&#x27;./TaskClient.php&#x27;</span>);</span><br><span class="line"><span class="keyword">require_once</span> (<span class="string">&#x27;./Mailer.php&#x27;</span>);</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskRun</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">receive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">task</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">switch</span> (<span class="variable">$data</span>[<span class="string">&#x27;event&#x27;</span>]) &#123;</span><br><span class="line">                <span class="keyword">case</span> TaskClient::EVENT_TYPE_SEND_MAIL:</span><br><span class="line">                    <span class="variable">$mailer</span> = <span class="keyword">new</span> Mailer;</span><br><span class="line">                    <span class="variable">$result</span> = <span class="variable">$mailer</span>-&gt;send(<span class="variable">$data</span>);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">default</span>:</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (\<span class="built_in">Exception</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> \<span class="built_in">Exception</span>(<span class="string">&#x27;task exception :&#x27;</span> . <span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">finish</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$taskId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>目前，我们主要就一个业务，“发送邮件”，所以TaskRun类的实现现在看来非常简单。</p>
-<p>因为发邮件是一件比较耗时的任务，所以我们这里完善的是task回调。我们根据投递给Task进程的数据类型，判断投递过来的数据是要做什么。比如我们这里有一项event，等于TaskClient::EVENT_TYPE_SEND_MAIL,这一项就是发送邮件的标识，如果要投递的任务的event项等于TaskClient::EVENT_TYPE_SEND_MAIL，就表明这个任务是邮件任务，程序上就可以通过switch去处理邮件了。</p>
-<p>TaskClient是什么呢？这是一个封装好的客户端处理类，我们来看下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskClient</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$client</span>;</span><br><span class="line">    <span class="keyword">const</span> EVENT_TYPE_SEND_MAIL = <span class="string">&#x27;send-mail&#x27;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span> (<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;client = <span class="keyword">new</span> Swoole\Client(SWOOLE_SOCK_TCP);</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">$this</span>-&gt;client-&gt;connect(<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">9501</span>)) &#123;</span><br><span class="line">            <span class="variable">$msg</span> = <span class="string">&#x27;swoole client connect failed.&#x27;</span>;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> \<span class="built_in">Exception</span>(<span class="string">&quot;Error: <span class="subst">&#123;$msg&#125;</span>.&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> $data Array</span></span><br><span class="line"><span class="comment">     * send data</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sendData</span> (<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$data</span> = <span class="keyword">$this</span>-&gt;togetherDataByEof(<span class="variable">$data</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;client-&gt;send(<span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 数据末尾拼接EOF标记</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> Array $data 要处理的数据</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> String json_encode($data) . EOF</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">togetherDataByEof</span>(<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!is_array(<span class="variable">$data</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> json_encode(<span class="variable">$data</span>) . <span class="string">&quot;\r\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/09/swoole%E4%B9%8B%E7%B2%98%E5%8C%85%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/08/09/swoole%E4%B9%8B%E7%B2%98%E5%8C%85%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">swoole之粘包问题</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-08-09 22:51:16" itemprop="dateCreated datePublished" datetime="2018-08-09T22:51:16+09:00">2018-08-09</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-08-10 09:37:42" itemprop="dateModified" datetime="2018-08-10T09:37:42+09:00">2018-08-10</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-人不知道要守住多少秘密才能安度一生。
-</blockquote>
-
-<p>什么是粘包问题，为什么我们要讲这个看起来比较奇怪的问题呢？<br>不着急解释，我们先看一个例子<br>创建一个server，server端代码如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TcpBufferServer</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_serv</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * init</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv = <span class="keyword">new</span> Swoole\Server(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Server received data: <span class="subst">&#123;$data&#125;</span>&quot;</span> . PHP_EOL;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * start server</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$reload</span> = <span class="keyword">new</span> TcpBufferServer;</span><br><span class="line"><span class="variable">$reload</span>-&gt;start();</span><br></pre></td></tr></table></figure>
-<p>server的代码很简单，仅仅是在收到客户端代码后，标准输出一句话而已，client的代码需要注意了，我们写了一个for循环，连续向server send三条信息，代码如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$client</span> = <span class="keyword">new</span> swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_SYNC);</span><br><span class="line"><span class="variable">$client</span>-&gt;connect(<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">9501</span>) || <span class="keyword">exit</span>(<span class="string">&quot;connect failed. Error: <span class="subst">&#123;$client-&gt;errCode&#125;</span>\n&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 向服务端发送数据</span></span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="number">3</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">    <span class="variable">$client</span>-&gt;send(<span class="string">&quot;Just a test.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$client</span>-&gt;close();</span><br></pre></td></tr></table></figure>
-<p>在未运行测试的情况下，我们期望server所在终端输出的结果应该是这样的</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Server received data: Just a test.</span><br><span class="line">Server received data: Just a test.</span><br><span class="line">Server received data: Just a test.</span><br></pre></td></tr></table></figure>
-<p>注意哦，我们期望的结果是server被回调了3次，才有上述期望的结果值<br>实际运行的结果呢?<br><img src="/images/sw11.png"><br>上图左边是server输出的信息。<br>我们看到，左侧显示的结果是server一次性输出的结果，按理论来说，client发起了3次请求，server应该跟我们期望的结果一致，会执行3次呀，这怎么回事呢？<br>这个问题，便是我们今天要说的粘包问题。<br>为了说清楚这个问题，我们先来看下client/server之间数据传递的过程</p>
-<ul>
-<li>客户端-&gt;发送数据</li>
-<li>服务端-&gt;接收数据</li>
-</ul>
-<p>通常我们直觉性的认为，客户端直接向网络中传输数据，对端从网络中读取数据，但是这是不正确的。<br>socket有缓冲区buffer的概念，每个TCP socket在内核中都有一个发送缓冲区和一个接收缓冲区。客户端send操作仅仅是把数据拷贝到buffer中，也就是说send完成了，数据并不代表已经发送到服务端了，之后才由TCP协议从buffer中发送到服务端。此时服务端的接收缓冲区被TCP缓存网络上来的数据，而后server才从buffer中读取数据。<br>所以，在onReceive中我们拿到的数据并没有办法保证数据包的完整性，swoole_server可能会同时收到多个请求包，也可能只收到一个请求包的一部分数据。<br>这就是一个大问题呀，如此TCP协议不行呀，这货虽然能保证我们能正确的接收到数据但是数据不对呀，这麻烦不容小觑。<br>既然是个问题，那我们自然也就有解决问题的方法，不然我下面说啥呢，对吧。</p>
-<p>swoole给我们提供了两种解决方案:</p>
-<h4 id="EOF结束协议"><a href="#EOF结束协议" class="headerlink" title="EOF结束协议"></a>EOF结束协议</h4><p>EOF，end of file，意思是我们在每一个数据包的结尾加一个eof标记，表示这就是一个完整的数据包，但是如果你的数据本身含有EOF标记，那就会造成收到的数据包不完整，所以开启EOF支持后，应避免数据中含有EOF标记。</p>
-<p>在swoole_server中，我们可以配置open_eof_check为true，打开EOF检测，配置package_eof来指定EOF标记。</p>
-<p>swoole_server收到一个数据包时，会检测数据包的结尾是否是我们设置的EOF标记，如果不是就会一直拼接数据包，直到超出buffer或者超时才会终止，一旦认定是一个完整的数据包，就会投递给Worker进程，这时候我们才可以在回调内处理数据。</p>
-<p>这样server就能保证接收到一个完整的数据包了？不能保证，这样只能保证server能收到一个或者多个完整的数据包。</p>
-<p>为啥是多个呢？</p>
-<p>我们说了开启EOF检测，即open_eof_check设置为true，server只会检测数据包的末尾是否有EOF标记，如果向我们开篇的案例连发3个EOF的数据，server可能还是会一次性收到，这样我们只能在回调内对数据包进行拆分处理。</p>
-<p>我们拿开篇的案例为例</p>
-<p>server开启eof检测并指定eof标记是\r\n，代码如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;_serv-&gt;set([ </span><br><span class="line">    <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>, </span><br><span class="line">    <span class="string">&#x27;open_eof_check&#x27;</span> =&gt; <span class="literal">true</span>, <span class="comment">//打开EOF检测 </span></span><br><span class="line">    <span class="string">&#x27;package_eof&#x27;</span> =&gt; <span class="string">&quot;\r\n&quot;</span>, <span class="comment">//设置EOF </span></span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
-<p>客户端设置发送的数据末尾是\r\n符号，代码如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="number">3</span>; <span class="variable">$i</span>++) &#123; </span><br><span class="line">    <span class="variable">$client</span>-&gt;send(<span class="string">&quot;Just a test.\r\n&quot;</span>); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>按照我们刚才的分析，server的效果可能会一次性收到多个完整的包，我们运行看看结果<br><img src="/images/sw12.png"></p>
-<p>因此我们还需要在onReceive回调内对收到的数据进行拆分处理</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// echo &quot;Server received data: &#123;$data&#125;&quot; . PHP_EOL;</span></span><br><span class="line"></span><br><span class="line">    <span class="variable">$datas</span> = explode(<span class="string">&quot;\r\n&quot;</span>, <span class="variable">$data</span>);</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$datas</span> <span class="keyword">as</span> <span class="variable">$data</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(!<span class="variable">$data</span>)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Server received data: <span class="subst">&#123;$data&#125;</span>&quot;</span> . PHP_EOL;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>此时我们再看下运行结果<br><img src="/images/sw13.png"></p>
-<p>自行分包的效果便实现了，考虑到自行分包稍微麻烦，swoole提供了open_eof_split配置参数，启用该参数后，server会从左到右对数据进行逐字节对比，查找数据中的EOF标记进行分包，效果跟我们刚刚自行拆包是一样的，性能较差。<br>在案例的基础上我们看看open_eof_split配置</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">    <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">    <span class="string">&#x27;open_eof_check&#x27;</span> =&gt; <span class="literal">true</span>, <span class="comment">//打开EOF检测</span></span><br><span class="line">    <span class="string">&#x27;package_eof&#x27;</span> =&gt; <span class="string">&quot;\r\n&quot;</span>, <span class="comment">//设置EOF</span></span><br><span class="line">    <span class="string">&#x27;open_eof_split&#x27;</span> =&gt; <span class="literal">true</span>,</span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
-<p>onReceive的回调，我们不需要自行拆包</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">     <span class="keyword">echo</span> <span class="string">&quot;Server received data: <span class="subst">&#123;$data&#125;</span>&quot;</span> . PHP_EOL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>client的测试代码使用\r\n（同server端package_eof标记一致），我们看下运行效果<br><img src="/images/sw14.png"><br>EOF标记解决粘包就说这么多，下面我们再看看另一种解决方案</p>
-<h4 id="固定包头-包体协议"><a href="#固定包头-包体协议" class="headerlink" title="固定包头+包体协议"></a>固定包头+包体协议</h4><p>下面我们要说的，对于部分同学可能有点难度，对于不理解的，建议多看多操作多问多查，不躲避不畏惧，这样才能有所提高。<br>固定包头是一种非常通用的协议，它的含义就是在你要发送的数据包的前面，添加一段信息，这段信息了包含了你要发送的数据包的长度，长度一般是2个或者4个字节的整数。<br>在这种协议下，我们的数据包的组成就是包头+包体。其中包头就是包体长度的二进制形式。比如我们本来想向服务端发送一段数据 “Just a test.” 共12个字符，现在我们要发送的数据就应该是这样的</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pack(<span class="string">&#x27;N&#x27;</span>, strlen(<span class="string">&quot;Just a test.&quot;</span>)) . <span class="string">&quot;Just a test.&quot;</span></span><br></pre></td></tr></table></figure>
-<p>其中php的pack函数是把数据打包成二进制字符串。<br>为什么这样就能保证Worker进程收到的是一个完整的数据包呢？我来解释一下：<br>当server收到一个数据包（可能是多个完整的数据包）之后，会先解出包头指定的数据长度，然后按照这个长度取出后面的数据，如果一次性收到多个数据包，依次循环，如此就能保证Worker进程可以一次性收到一个完整的数据包。<br>估计好多人都看蒙了，这都是神马玩意？我们以案例来分析<br>server代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ServerPack</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_serv</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * init</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv = <span class="keyword">new</span> Swoole\Server(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">            <span class="string">&#x27;open_length_check&#x27;</span>     =&gt; <span class="literal">true</span>,      <span class="comment">// 开启协议解析</span></span><br><span class="line">            <span class="string">&#x27;package_length_type&#x27;</span>   =&gt; <span class="string">&#x27;N&#x27;</span>,     <span class="comment">// 长度字段的类型</span></span><br><span class="line">            <span class="string">&#x27;package_length_offset&#x27;</span> =&gt; <span class="number">0</span>,       <span class="comment">//第几个字节是包长度的值</span></span><br><span class="line">            <span class="string">&#x27;package_body_offset&#x27;</span>   =&gt; <span class="number">4</span>,       <span class="comment">//第几个字节开始计算长度</span></span><br><span class="line">            <span class="string">&#x27;package_max_length&#x27;</span>    =&gt; <span class="number">81920</span>,  <span class="comment">//协议最大长度</span></span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$info</span> = unpack(<span class="string">&#x27;N&#x27;</span>, <span class="variable">$data</span>);</span><br><span class="line">        <span class="variable">$len</span> = <span class="variable">$info</span>[<span class="number">1</span>];</span><br><span class="line">        <span class="variable">$body</span> = substr(<span class="variable">$data</span>, - <span class="variable">$len</span>);</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;server received data: <span class="subst">&#123;$body&#125;</span>\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * start server</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$reload</span> = <span class="keyword">new</span> ServerPack;</span><br><span class="line"><span class="variable">$reload</span>-&gt;start();</span><br></pre></td></tr></table></figure>
-<p>客户端的代码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$client</span> = <span class="keyword">new</span> swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_SYNC);</span><br><span class="line"><span class="variable">$client</span>-&gt;connect(<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">9501</span>) || <span class="keyword">exit</span>(<span class="string">&quot;connect failed. Error: <span class="subst">&#123;$client-&gt;errCode&#125;</span>\n&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 向服务端发送数据</span></span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="number">3</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">    <span class="variable">$data</span> = <span class="string">&quot;Just a test.&quot;</span>;</span><br><span class="line">    <span class="variable">$data</span> = pack(<span class="string">&#x27;N&#x27;</span>, strlen(<span class="variable">$data</span>)) . <span class="variable">$data</span>;</span><br><span class="line">    <span class="variable">$client</span>-&gt;send(<span class="variable">$data</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$client</span>-&gt;close();</span><br></pre></td></tr></table></figure>
-<p>运行的结果<br><img src="/images/sw15.png"><br>结果没错，是我们期望的结果。</p>
-<p>我们来分析下这是为什么</p>
-<p>1、首先，在server端我们配置了open_length_check，该参数表明我们要开启固定包头协议解析</p>
-<p>2、package_length_type配置，表明包头长度的类型，这个类型跟客户端使用pack打包包头的类型一致，一般设置为N或者n，N表示4个字节，n表示2个字节</p>
-<p>3、我们看下客户端的代码 pack(‘N’, strlen($data)) . $data，这句话就是包头+包体的意思，包头是pack函数打包的二进制数据，内容便是真实数据的长度 strlen($data)。</p>
-<p>在内存中，整数一般占用4个字节，所以我们看到，在这段数据中0-4字节表示的是包头，剩余的就是真实的数据。但是server不知道呀，怎么告诉server这一事实呢？</p>
-<p>看配置package_length_offset和package_body_offset，前者就是告诉server，从第几个字节开始是长度，后者就是从第几个字节开始计算长度。</p>
-<p>4、既然如此，我们就可以在onReceive回调对数据解包，然后从包头中取出包体长度，再从接收到的数据中截取真正的包体。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$info</span> = unpack(<span class="string">&#x27;N&#x27;</span>, <span class="variable">$data</span>);</span><br><span class="line"><span class="variable">$len</span> = <span class="variable">$info</span>[<span class="number">1</span>];</span><br><span class="line"><span class="variable">$body</span> = substr(<span class="variable">$data</span>, - <span class="variable">$len</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;server received data: <span class="subst">&#123;$body&#125;</span>\n&quot;</span>;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/8/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><a class="extend next" rel="next" href="/page/10/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/8/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/10/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 </div>
