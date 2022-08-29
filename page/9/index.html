@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">412</span>
+          <span class="site-state-item-count">413</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,80 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/05/30/mysql%E6%A8%A1%E7%B3%8A%E6%9F%A5%E8%AF%A2unicode%E6%B1%89%E5%AD%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/05/30/mysql%E6%A8%A1%E7%B3%8A%E6%9F%A5%E8%AF%A2unicode%E6%B1%89%E5%AD%97/" class="post-title-link" itemprop="url">MySQL模糊查询unicode汉字</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2019-05-30 19:48:37 / 修改时间：21:05:41" itemprop="dateCreated datePublished" datetime="2019-05-30T19:48:37+09:00">2019-05-30</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+最难相处的女生是那种很爱文艺但又没什么文化的
+</blockquote>
+
+<p>一般的查询：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SELECT</span><br><span class="line">	* </span><br><span class="line">FROM</span><br><span class="line">	`rainlab_translate_messages` </span><br><span class="line">WHERE</span><br><span class="line">	( ( lower( message_data ) LIKE &#x27;%&quot;\u4ef7\u683c&quot;%&#x27; ) ) </span><br><span class="line">	AND `domain_id` = 1 </span><br><span class="line">ORDER BY</span><br><span class="line">	`message_data` ASC </span><br><span class="line">	LIMIT 500 OFFSET 0</span><br></pre></td></tr></table></figure>
+<p>这样的查询是查不到结果的，应该改成这样</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SELECT</span><br><span class="line">	* </span><br><span class="line">FROM</span><br><span class="line">	`rainlab_translate_messages` </span><br><span class="line">WHERE</span><br><span class="line">	( ( lower( message_data ) LIKE &#x27;%&quot;_u4ef7_u683c&quot;%&#x27; ) ) </span><br><span class="line">	AND `domain_id` = 1 </span><br><span class="line">ORDER BY</span><br><span class="line">	`message_data` ASC </span><br><span class="line">	LIMIT 500 OFFSET 0</span><br></pre></td></tr></table></figure>
+<p>针对PHP里的，我们直接输入汉字， 可以这样进行操作：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = <span class="variable">$query</span>-&gt;searchWhere(str_replace(<span class="string">&quot;\\&quot;</span>,<span class="string">&quot;_&quot;</span>,json_encode(<span class="variable">$search</span>)), [<span class="string">&#x27;message_data&#x27;</span>]);</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -985,131 +1059,6 @@ Hope is a good thing and maybe the best of things. And no good thing ever dies.
 <h4 id="中奖通知页面"><a href="#中奖通知页面" class="headerlink" title="中奖通知页面"></a>中奖通知页面</h4><p><img src="/images/box05.png"></p>
 <h4 id="自动充值页面"><a href="#自动充值页面" class="headerlink" title="自动充值页面"></a>自动充值页面</h4><p><img src="/images/box06.png"></p>
 <h4 id="提现页面"><a href="#提现页面" class="headerlink" title="提现页面"></a>提现页面</h4><p><img src="/images/box07.png"></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/10/swoole%E7%9A%84%E5%B9%B3%E6%BB%91%E9%87%8D%E5%90%AF%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/08/10/swoole%E7%9A%84%E5%B9%B3%E6%BB%91%E9%87%8D%E5%90%AF%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">swoole的平滑重启问题</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-08-10 07:50:32 / 修改时间：09:35:13" itemprop="dateCreated datePublished" datetime="2018-08-10T07:50:32+09:00">2018-08-10</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-年轻时总以为能遇上许许多多的人。而后你就明白，所谓机缘，其实也不过那么几次。
-</blockquote>
-
-<p>守护进程（daemon）就是一种长期生存的进程，它不受终端的控制，可以在后台运行。其实我们之前也有了解，比如说nginx，fpm等一般都是作为守护进程在后台提供服务。</p>
-<p>熟悉linux的同学可能知道，我们可以利用nohup命令让程序在后台跑。swoole官方也为我们提供了配置选项daemonize，默认不启用守护进程，若要开启守护进程，daemonize设置为true即可。</p>
-<p>守护进程有优点，必然也存在缺点。我们启用守护进程后，server内所有的标准输出都会被丢弃，这样的话我们也就无法跟踪进程在运行过程中是否异常之类的错误信息了。为方便起见，swoole为我们提供了另一个配置选项log_file，我们可以指定日志路径，这样swoole在运行时就会把所有的标准输出统统记载到该文件内。</p>
-<h3 id="信号"><a href="#信号" class="headerlink" title="信号"></a>信号</h3><p>我们了解到，swoole是常驻内存的，若想让修改后的代码生效，就必须Ctrl+C，然后再重启server。对于守护进程化的server呢？了解过kill命令的同学要说了，我直接把它干掉，然后终端下再重启，就可以了。</p>
-<p>事实上，对于线上繁忙的server，如果你直接把它干掉了，可能某个进程刚好就只处理了一半的数据，对于天天来回倒腾的你来说，面对错乱的数据你不头疼，DBA也想long死你！</p>
-<p>这个时候我们就需要考虑如何平滑重启server的问题了。所谓的平滑重启，也叫“热重启”，就是在不影响用户的情况下重启服务，更新内存中已经加载的php程序代码，从而达到对业务逻辑的更新。</p>
-<p>swoole为我们提供了平滑重启机制，我们只需要向swoole_server的主进程发送特定的信号，即可完成对server的重启。</p>
-<p>那什么是信号呢？</p>
-<p>信号是软件中断，每一个信号都有一个名字。通常，信号的名字都以“SIG”开头，比如我们最熟悉的Ctrl+C就是一个名字叫“SIGINT”的信号，意味着“终端中断”。</p>
-<h3 id="平滑重启"><a href="#平滑重启" class="headerlink" title="平滑重启"></a>平滑重启</h3><p>在swoole中，我们可以向主进程发送各种不同的信号，主进程根据接收到的信号类型做出不同的处理。比如下面这几个</p>
-<ul>
-<li>SIGTERM，一种优雅的终止信号，会待进程执行完当前程序之后中断，而不是直接干掉进程</li>
-<li>SIGUSR1，将平稳的重启所有的Worker进程</li>
-<li>SIGUSR2，将平稳的重启所有的Task进程</li>
-</ul>
-<p>如果我们要实现重启server，只需要向主进程发送SIGUSR1信号就好了。</p>
-<p>平滑重启的原理是当主进程收到SIGUSR1信号时，主进程就会向一个子进程发送安全退出的信号，所谓的安全退出的意思是主进程并不会直接把Worker进程杀死，而是等这个子进程处理完手上的工作之后，再让其光荣的“退休”，最后再拉起新的子进程（重新载入新的PHP程序代码）。然后再向其他子进程发送“退休”命令，就这样一个接一个的重启所有的子进程。</p>
-<p>我们注意到，平滑重启实际上就是让旧的子进程逐个退出并重新创建新的进程。为了在平滑重启时不影响到用户，这就要求进程中不要保存用户相关的状态信息，即业务进程最好是无状态的，避免由于进程退出导致信息丢失。</p>
-<p>在swoole中，重启只能针对Worker进程启动之后载入的文件才有效！什么意思呢，就是说只有在onWorkerStart回调之后加载的文件，重启才有意义。在Worker进程启动之前就已经加载到内存中的文件，如果想让它重新生效，还是只能乖乖的关闭server再重启。</p>
-<p>我们看个例子看看到底怎么样向主进程发送SIGUSR1信号以便有效重启Worker进程。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="variable">$data</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在Test::run方法中，我们第一步仅仅是echo输出swoole_server接收到的数据。</p>
-<p>当前目录下我们创建一个swoole_server的类NoReload.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">require_once</span>(<span class="string">&quot;Test.php&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NoReload</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_serv</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_test</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * init</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv = <span class="keyword">new</span> Swoole\Server(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>]);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;_test = <span class="keyword">new</span> Test;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * start server</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_test-&gt;run(<span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$noReload</span> = <span class="keyword">new</span> NoReload;</span><br><span class="line"><span class="variable">$noReload</span>-&gt;start();</span><br></pre></td></tr></table></figure>
-<p>特别提醒：我们在初始化swoole_server的时候的写法是命名空间的写法</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> Swoole\Server</span><br></pre></td></tr></table></figure>
-<p>该种风格的写法等同于下划线写法 ,swoole对这两种风格的写法都支持</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> swoole_server</span><br></pre></td></tr></table></figure>
-<p>此外我们看下server的代码逻辑：类定义之前require_once了Test.php，初始化的时候设置了一个Worker进程，注册了NoReload::onReceive方法为swoole_server的onReceive回调，在onReceive回调内接收到的数据传递给了Test::run方法处理。</p>
-<p>接下来我们写一个client脚本测试下运行结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$client</span> = <span class="keyword">new</span> swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_SYNC);</span><br><span class="line"><span class="variable">$client</span>-&gt;connect(<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">9501</span>) || <span class="keyword">exit</span>(<span class="string">&quot;connect failed. Error: <span class="subst">&#123;$client-&gt;errCode&#125;</span>\n&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 向服务端发送数据</span></span><br><span class="line"><span class="variable">$client</span> -&gt; send(<span class="string">&quot;Just a test.\n&quot;</span>);</span><br><span class="line"><span class="variable">$client</span>-&gt;close();</span><br></pre></td></tr></table></figure>
-<p>客户端的测试代码也很简单，连接server并向server发一个字符串信息</p>
-<p>在server不动的情况下我们修改下Test.php，代码如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"><span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// echo $data;</span></span><br><span class="line">        <span class="variable">$data</span> = json_decode(<span class="variable">$data</span>, <span class="literal">true</span>);</span><br><span class="line">        <span class="keyword">if</span> (!is_array(<span class="variable">$data</span>)) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;server receive \$data format error.\n&quot;</span>;</span><br><span class="line">            <span class="keyword">return</span> ;</span><br><span class="line">        &#125; </span><br><span class="line">        var_dump(<span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>原先echo直接输出，现在我们改了下Test的代码，如果接收到的数据经过json_decode处理后不是数组，就返回一段内容并结束，否则打印receive到的数据</p>
-<p>如果这个时候我们不对server进行重启，运行client的结果肯定还是一样的</p>
-<p>server端新的代码未生效，如果Test.php新的代码生效了，会在server所在终端输出“server receive $data format error.”，这符合我们的认知。</p>
-<p>下面我们通过ps命令查看下左侧server的主进程的pid，然后通过kill命令向该进程发送SIGUSR1信号，看看结果如何</p>
-<p>结果发现即使向主进程发送了SIGUSR1信号，但是左侧server终端显示的依然是未生效的php代码，这也是对的，因为我们说过新的程序代码只针对在onWorkerStart回调之后才加载进来的php文件才能生效，我们事例中Test.php是在class定义之前就加载进来了，所以肯定不生效。</p>
-<p>我们新建一个Reload.php文件，把server的代码修改如下</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Reload</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_serv</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_test</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * init</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv = <span class="keyword">new</span> Swoole\Server(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9501</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;set([</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;Receive&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onReceive&#x27;</span>]);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;on(<span class="string">&#x27;WorkerStart&#x27;</span>, [<span class="keyword">$this</span>, <span class="string">&#x27;onWorkerStart&#x27;</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * start server</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_serv-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onWorkerStart</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$workerId</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">require_once</span>(<span class="string">&quot;Test.php&quot;</span>);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_test = <span class="keyword">new</span> Test;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">onReceive</span>(<span class="params"><span class="variable">$serv</span>, <span class="variable">$fd</span>, <span class="variable">$fromId</span>, <span class="variable">$data</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_test-&gt;run(<span class="variable">$data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$reload</span> = <span class="keyword">new</span> Reload;</span><br><span class="line"><span class="variable">$reload</span>-&gt;start();</span><br></pre></td></tr></table></figure>
-<p>仔细观察，我们仅仅移除了在类定义之前引入Test.php以及在__construct中new Test的操作。</p>
-<p>而是在__construct方法中增加了onWorkerStart回调，并在该回调内引入Test.php并初始化Test类。</p>
-<p>Test.php的代码，我们仍然先后用上面的两处代码为例，运行client看下结果</p>
-<p>结果我们发现，在给主进程发送SIGUSR1信号之后，Test.php的新代码生效了。这也便实现了热重启的效果。</p>
-<p>如此，我们在Test.php中不论如何更新代码，只需要找到主进程的PID，向它发送SIGUSR1信号即可。同理，SIGUSR2信号是只针对Task进程的，后面可以自行测试下。</p>
-<p>热重启的效果实现了，现在针对Reload.php的server，让该server进程守护化看看。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;_serv-&gt;set([   </span><br><span class="line">    <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="number">1</span>,          </span><br><span class="line">    <span class="string">&#x27;daemonize&#x27;</span> =&gt; <span class="literal">true</span>,          </span><br><span class="line">    <span class="string">&#x27;log_file&#x27;</span> =&gt; <span class="keyword">__DIR__</span> . <span class="string">&#x27;/server.log&#x27;</span>,</span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
-<h3 id="具体操作"><a href="#具体操作" class="headerlink" title="具体操作"></a>具体操作</h3><p>设置进程名</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$http</span>-&gt;on(<span class="string">&#x27;start&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$server</span></span>) </span>&#123;</span><br><span class="line">    swoole_set_process_name(<span class="string">&#x27;yangzie-test&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>查看</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -npl|grep <span class="number">9501</span></span><br></pre></td></tr></table></figure>
-<p>shell脚本</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;loading...&quot;</span><br><span class="line">pid=`pidof yangzie-test`</span><br><span class="line">echo $pid</span><br><span class="line">kill -USR1 $pid</span><br><span class="line">echo &quot;loading success&quot;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://wiki.swoole.com/wiki/page/p-server/reload.html">https://wiki.swoole.com/wiki/page/p-server/reload.html</a></p>
-</blockquote>
 
       
     </div>

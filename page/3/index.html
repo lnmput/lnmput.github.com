@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">412</span>
+          <span class="site-state-item-count">413</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,115 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/03/24/Golang%E9%94%99%E8%AF%AF%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/03/24/Golang%E9%94%99%E8%AF%AF%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">Golang错误异常处理</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-03-24 00:24:46 / 修改时间：12:02:50" itemprop="dateCreated datePublished" datetime="2022-03-24T00:24:46+09:00">2022-03-24</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+那些看似不起波澜的日复一日，会突然在某一天让人看到坚持的意义。
+</blockquote>
+
+
+<h2 id="error"><a href="#error" class="headerlink" title="error"></a>error</h2><p>对于Go语言（golang）的错误设计，相信很多人已经体验过了，它是通过返回值的方式，来强迫调用者对错误进行处理，要么你忽略，要么你处理（处理也可以是继续返回给调用者），对于golang这种设计方式，我们会在代码中写大量的if判断，以便做出决定。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	conent,err:=ioutil.ReadFile(<span class="string">&quot;filepath&quot;</span>)</span><br><span class="line">	<span class="keyword">if</span> err !=<span class="literal">nil</span>&#123;</span><br><span class="line">		<span class="comment">//错误处理</span></span><br><span class="line">	&#125;<span class="keyword">else</span> &#123;</span><br><span class="line">		fmt.Println(<span class="keyword">string</span>(conent))</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="error-接口"><a href="#error-接口" class="headerlink" title="error 接口"></a>error 接口</h3><p>error其实一个接口，内置的，我们看下它的定义</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The error built-in interface type is the conventional interface for</span></span><br><span class="line"><span class="comment">// representing an error condition, with the nil value representing no error.</span></span><br><span class="line"><span class="keyword">type</span> error <span class="keyword">interface</span> &#123;</span><br><span class="line">	Error() <span class="keyword">string</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它只有一个方法 Error，只要实现了这个方法，就是实现了error。现在我们自己定义一个错误试试。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> fileError <span class="keyword">struct</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(fe *fileError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">&quot;文件错误&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="自定义-error"><a href="#自定义-error" class="headerlink" title="自定义 error"></a>自定义 error</h3><p>自定义了一个fileError类型，实现了error接口。现在测试下看看效果。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	conent, err := openFile()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Println(err)</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		fmt.Println(<span class="keyword">string</span>(conent))</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//只是模拟一个错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">openFile</span><span class="params">()</span> <span class="params">([]<span class="keyword">byte</span>, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span>, &amp;fileError&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们运行模拟的代码，可以看到文件错误的通知。</p>
+<p>在实际的使用过程中，我们可能遇到很多错误，他们的区别是错误信息不一样，一种做法是每种错误都类似上面一样定义一个错误类型，但是这样太麻烦了。我们发现Error返回的其实是个字符串，我们可以修改下，让这个字符串可以设置就可以了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> fileError <span class="keyword">struct</span> &#123;</span><br><span class="line">	s <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(fe *fileError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> fe.s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>恩，这样改造后，我们就可以在声明fileError的时候，设置好要提示的错误文字，就可以满足我们不同的需要了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//只是模拟一个错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">openFile</span><span class="params">()</span> <span class="params">([]<span class="keyword">byte</span>, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span>, &amp;fileError&#123;<span class="string">&quot;文件错误，自定义&quot;</span>&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>恩，可以了，已经达到了我们的目的。现在我们可以把它变的更通用一些，比如修改fileError的名字，再创建一个辅助函数，便于我们创建不同的错误类型。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">New</span><span class="params">(text <span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> &amp;errorString&#123;text&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> errorString <span class="keyword">struct</span> &#123;</span><br><span class="line">	s <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *errorString)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> e.s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="panic"><a href="#panic" class="headerlink" title="panic"></a>panic</h2><p>error 返回的是一般性的错误，但是 panic 函数返回的是让程序崩溃的错误。</p>
+<p>也就是当遇到不可恢复的错误状态的时候，如数组访问越界、空指针引用等，这些运行时错误会引起 painc 异常，在一般情况下，我们不应通过调用 panic 函数来报告普通的错误，而应该只把它作为报告致命错误的一种方式。当某些不应该发生的场景发生时，我们就应该调用 panic。</p>
+<p>一般而言，当 panic 异常发生时，程序会中断运行。随后，程序崩溃并输出日志信息。日志信息包括 panic value 和函数调用的堆栈跟踪信息。</p>
+<p>当然，如果直接调用内置的 panic 函数也会引发 panic 异常；panic 函数接受任何值作为参数。</p>
+<h3 id="直接调用-panic-函数"><a href="#直接调用-panic-函数" class="headerlink" title="直接调用 panic 函数"></a>直接调用 panic 函数</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestA</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;func TestA()&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestB</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="built_in">panic</span>(<span class="string">&quot;throw error&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestC</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;func TestC()&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    TestA()</span><br><span class="line">    TestB()</span><br><span class="line">    TestC()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们在实际的开发过程中并不会直接调用 panic ( ) 函数，但是当我们编程的程序遇到致命错误时，系统会自动调用该函数来终止整个程序的运行，也就是系统内置了 panic 函数。</p>
+<h3 id="数组下标越界的问题"><a href="#数组下标越界的问题" class="headerlink" title="数组下标越界的问题"></a>数组下标越界的问题</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestA</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;func TestA()&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestB</span><span class="params">(x <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> a [<span class="number">10</span>] <span class="keyword">int</span></span><br><span class="line">    a[x] = <span class="number">222</span> <span class="comment">// x 值为11时候，数组越界</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestC</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">&quot;func TestC()&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    TestA()</span><br><span class="line">    TestB(<span class="number">11</span>)  <span class="comment">// TestB() 发生异常 中断程序</span></span><br><span class="line">    TestC()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="recover"><a href="#recover" class="headerlink" title="recover"></a>recover</h2><p>运行时 panic 异常一旦被引发就会导致程序崩溃。这当然不是我们愿意看到的，因为谁也不能保证程序不会发生任何运行时错误。</p>
+<p>Go 语言为我们提供了专用于 “拦截” 运行时 panic 的内建函数 ——recover。它可以是当前的程序从运行时 panic 的状态中恢复并重新获得流程控制权。</p>
+<p>注意：recover 只有在 defer 调用的函数中有效。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestA</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">&quot;func TestA()&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestB</span><span class="params">(x <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 设置recover</span></span><br><span class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="built_in">recover</span>()</span><br><span class="line">	&#125;() <span class="comment">// 自调用改匿名函数</span></span><br><span class="line">	<span class="keyword">var</span> a [<span class="number">10</span>] <span class="keyword">int</span></span><br><span class="line">	a[x] = <span class="number">111</span> <span class="comment">// 当x为20 的时候，导致数组越界，产生pani，导致程序崩溃</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestC</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">&quot;func TestC()&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	TestA()</span><br><span class="line">	TestB(<span class="number">11</span>)  <span class="comment">// TestB() 发生异常 中断程序</span></span><br><span class="line">	TestC()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过以上程序，我们发现虽然 TestB () 函数会导致整个应用程序崩溃，但是由于在改函数中调用了 recover () 函数，所以整个函数并没有崩溃。虽然程序没有崩溃，但是我们也没有看到任何的提示信息，那么怎样才能够看到相应的提示信息呢？</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestA</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">&quot;func TestA()&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestB</span><span class="params">(x <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 设置recover</span></span><br><span class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">if</span> err := <span class="built_in">recover</span>(); err != <span class="literal">nil</span> &#123; <span class="comment">// 产生了panic 异常</span></span><br><span class="line">			fmt.Println(err)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;() <span class="comment">// 自调用改匿名函数</span></span><br><span class="line">	<span class="keyword">var</span> a [<span class="number">10</span>] <span class="keyword">int</span></span><br><span class="line">	a[x] = <span class="number">111</span> <span class="comment">// 当x为20 的时候，导致数组越界，产生panic，导致程序崩溃</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestC</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">&quot;func TestC()&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	TestA()</span><br><span class="line">	TestB(<span class="number">1111</span>)  <span class="comment">// TestB() 不让他越界</span></span><br><span class="line">	TestC()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://xuhy.top/posts/develop/go/go-lesson/go-lesson07/">https://xuhy.top/posts/develop/go/go-lesson/go-lesson07/</a><br><a target="_blank" rel="noopener" href="https://learnku.com/docs/qianxi-golang/2020/section-2-panic-function/6444#ed4f2f">https://learnku.com/docs/qianxi-golang/2020/section-2-panic-function/6444#ed4f2f</a><br><a target="_blank" rel="noopener" href="https://www.flysnow.org/2019/01/01/golang-error-handle-suggestion.html">https://www.flysnow.org/2019/01/01/golang-error-handle-suggestion.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1021,111 +1130,6 @@
 <p>而string能支持这样的操作：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">&quot;Hello Gopher!&quot;</span></span><br><span class="line">s = <span class="string">&quot;Tello Gopher!&quot;</span></span><br></pre></td></tr></table></figure>
 <p>字符串的值不能被更改，但可以被替换。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/07/%E9%83%A8%E7%BD%B2python%E9%A1%B9%E7%9B%AE%E5%88%B0linux%E6%9C%8D%E5%8A%A1%E5%99%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/10/07/%E9%83%A8%E7%BD%B2python%E9%A1%B9%E7%9B%AE%E5%88%B0linux%E6%9C%8D%E5%8A%A1%E5%99%A8/" class="post-title-link" itemprop="url">部署python项目到linux服务器</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2021-10-07 11:40:17 / 修改时间：11:52:11" itemprop="dateCreated datePublished" datetime="2021-10-07T11:40:17+09:00">2021-10-07</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我喜欢之前的生活，没有钱也很好
-</blockquote>
-
-<p>CentOS 7的服务器上只有Python2，先安装一下Python3的环境</p>
-<h3 id="安装Python3环境"><a href="#安装Python3环境" class="headerlink" title="安装Python3环境"></a>安装Python3环境</h3><p>1.首先安装编译环境(后续需要从python官网获取Python3的源码自己编译python)</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make</span><br></pre></td></tr></table></figure>
-
-<p>2.从官网下载python3的源码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https:<span class="comment">//www.python.org/ftp/python/3.6.2/Python-3.6.2.tar.xz</span></span><br></pre></td></tr></table></figure>
-<p>3.依次执行 解压&gt;进入解压后的目录&gt;编译安装</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tar -xvJf  Python-<span class="number">3.6</span>.<span class="number">2</span>.tar.xz</span><br><span class="line">cd Python-<span class="number">3.6</span>.<span class="number">2</span></span><br><span class="line">./configure prefix=/usr/local/python3</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
-<p>4.安装完毕，创建软连接</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ln -s /usr/local/python3/bin/python3 /usr/bin/python</span><br><span class="line"><span class="comment"># 执行命令</span></span><br><span class="line">python -V <span class="comment">#将会看到python3的版本</span></span><br><span class="line"><span class="comment"># 执行命令</span></span><br><span class="line">python2 -V <span class="comment">#将会看到python2的版本</span></span><br></pre></td></tr></table></figure>
-<p>5.后续工作，由于执行CentOS的yum命令需要使用自带的python2的版本，所以需要做两处修改</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vim /usr/bin/yum</span><br><span class="line">vim /usr/libexec/urlgrabber-ext-down</span><br><span class="line"><span class="comment">#将 这两个文件的 #! /usr/bin/python修改为 #! /usr/bin/python2</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="将本地开发环境的依赖项目生成清单文件"><a href="#将本地开发环境的依赖项目生成清单文件" class="headerlink" title="将本地开发环境的依赖项目生成清单文件"></a>将本地开发环境的依赖项目生成清单文件</h3><p>1.在本地的开发环境中，env下执行：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 freeze &gt;requirements.txt</span><br></pre></td></tr></table></figure>
-<p>清单文件将会生成在当前项目目录下，内容如下所示</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">certifi==<span class="number">2018.4</span><span class="number">.16</span></span><br><span class="line">chardet==<span class="number">3.0</span><span class="number">.4</span></span><br><span class="line">idna==<span class="number">2.7</span></span><br><span class="line">requests==<span class="number">2.19</span><span class="number">.1</span></span><br><span class="line">urllib3==<span class="number">1.23</span></span><br></pre></td></tr></table></figure>
-<p>将生成后的文件上传到linux服务器</p>
-<p>2.将Python项目上传到服务器</p>
-<h3 id="在linux服务器上为项目创建虚拟环境，并安装项目所需的依赖"><a href="#在linux服务器上为项目创建虚拟环境，并安装项目所需的依赖" class="headerlink" title="在linux服务器上为项目创建虚拟环境，并安装项目所需的依赖"></a>在linux服务器上为项目创建虚拟环境，并安装项目所需的依赖</h3><p>1.切换到pip3所在的目录 /usr/local/python/bin，执行以下命令</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装虚拟环境</span></span><br><span class="line">pip3 install virtualenv</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建虚拟环境 ENV</span></span><br><span class="line">virtualenv ENV</span><br><span class="line"></span><br><span class="line"><span class="comment"># 切换到虚拟环境所在的目录</span></span><br><span class="line">cd ENV</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启用虚拟环境</span></span><br><span class="line">source ./<span class="built_in">bin</span>/activate</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装依赖清单里的库</span></span><br><span class="line">pip3 install -r requirements.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出当前虚拟环境所安装的依赖库</span></span><br><span class="line">pip3 <span class="built_in">list</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="添加自定义系统服务"><a href="#添加自定义系统服务" class="headerlink" title="添加自定义系统服务"></a>添加自定义系统服务</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这样的命令在ssh终端退出后，python进程也会被杀掉</span></span><br><span class="line">python xxx.py &amp;</span><br></pre></td></tr></table></figure>
-<p>需要创建一个自定义的系统服务，来保证python程序能够在后台运行。<br>1.创建系统服务</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /usr/lib/systemd/system/robot.service</span><br></pre></td></tr></table></figure>
-<p>内容如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=robot</span><br><span class="line">After=network.target</span><br><span class="line"> </span><br><span class="line">[Service]</span><br><span class="line"><span class="type">Type</span>=forking</span><br><span class="line">ExecStart=/usr/local/python3/<span class="built_in">bin</span>/ENV/<span class="built_in">bin</span>/python /usr/local/python3/<span class="built_in">bin</span>/ENV/p3.py &amp;</span><br><span class="line">PrivateTmp=true</span><br><span class="line"> </span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-<p>ExecStart为服务启动时执行的命令，不能用相对路径， 一定要全路径。<br>这里也可以将命令写到任意的.sh文件中，这里写.sh文件的全路径也是可以的。<br>2.启用自定义系统服务</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable robot</span><br></pre></td></tr></table></figure>
-<p>3.启动服务</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start robot</span><br></pre></td></tr></table></figure>
-<p>可以查看进程，确认一下服务是否启动</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps aux|grep robot</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://lanshiqin.com/d8d0505b/">https://lanshiqin.com/d8d0505b/</a></p>
-</blockquote>
 
       
     </div>

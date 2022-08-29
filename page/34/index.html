@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">412</span>
+          <span class="site-state-item-count">413</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,92 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/03/27/nginx%E7%9A%84%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/03/27/nginx%E7%9A%84%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E5%92%8C%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E8%B7%B5/" class="post-title-link" itemprop="url">nginx的反向代理和负载均衡实践</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-03-27 08:58:36" itemprop="dateCreated datePublished" datetime="2017-03-27T08:58:36+09:00">2017-03-27</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:34:03" itemprop="dateModified" datetime="2018-03-27T22:34:03+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+有些人让你对明天充满期许，却再也没有出现在你的明天里。
+</blockquote>
+### apache的配置
+使用 Apache 模拟出两个站点,分别使用8081和8082端口
+访问:
+http://121.42.176.99:8081/
+http://121.42.176.99:8082/
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">Listen <span class="number">8081</span></span><br><span class="line">&lt;VirtualHost *:<span class="number">8081</span>&gt;</span><br><span class="line">    ServerAdmin webmaster@dummy-host2.example.com</span><br><span class="line">    DocumentRoot <span class="string">&quot;/usr/local/httpd/htdocs/test&quot;</span></span><br><span class="line">    DirectoryIndex index.html index.php</span><br><span class="line">    ServerName <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line">    ErrorLog <span class="string">&quot;logs/dummy-host2.example.com-error_log&quot;</span></span><br><span class="line">    CustomLog <span class="string">&quot;logs/dummy-host2.example.com-access_log&quot;</span> common</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line">&lt;<span class="built_in">Directory</span> <span class="string">&quot;/usr/local/httpd/htdocs/test&quot;</span>&gt;</span><br><span class="line">    Options FollowSymLinks</span><br><span class="line">    AllowOverride  all</span><br><span class="line">    allow <span class="keyword">from</span> all</span><br><span class="line">    <span class="keyword">Require</span> all granted</span><br><span class="line">&lt;/<span class="built_in">Directory</span>&gt;</span><br><span class="line">Listen <span class="number">8082</span></span><br><span class="line">&lt;VirtualHost *:<span class="number">8082</span>&gt;</span><br><span class="line">    ServerAdmin webmaster@dummy-host2.example.com</span><br><span class="line">    DocumentRoot <span class="string">&quot;/usr/local/httpd/htdocs/test1&quot;</span></span><br><span class="line">    DirectoryIndex index.html index.php</span><br><span class="line">    ServerName <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line">    ErrorLog <span class="string">&quot;logs/dummy-host2.example.com-error_log&quot;</span></span><br><span class="line">    CustomLog <span class="string">&quot;logs/dummy-host2.example.com-access_log&quot;</span> common</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line">&lt;<span class="built_in">Directory</span> <span class="string">&quot;/usr/local/httpd/htdocs/test&quot;</span>&gt;</span><br><span class="line">    Options FollowSymLinks</span><br><span class="line">    AllowOverride  all</span><br><span class="line">    allow <span class="keyword">from</span> all</span><br><span class="line">    <span class="keyword">Require</span> all granted</span><br><span class="line">&lt;/<span class="built_in">Directory</span>&gt;</span><br></pre></td></tr></table></figure>
+网站的内容index.php 打印出服务器变量: var_export($_SERVER);
+
+<h3 id="反向代理nginx"><a href="#反向代理nginx" class="headerlink" title="反向代理nginx"></a>反向代理nginx</h3><p>nginx 默认使用80端口,<a target="_blank" rel="noopener" href="http://121.42.176.99/">http://121.42.176.99/</a><br>配置:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_passs http:<span class="comment">//localhost:8081</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>之后重启nginx<br>这时候访问<a target="_blank" rel="noopener" href="http://121.42.176.99/,%E5%B0%B1%E4%BC%9A%E8%AE%BF%E9%97%AE%E7%9A%84%E6%98%AFapache%E7%9A%848081%E7%AB%AF%E5%8F%A3">http://121.42.176.99/,就会访问的是apache的8081端口</a></p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>我们发现获取到的服务器信息不正确:<br> 1、HTTP_HOST:localhost:8081<br> 2、REMOTE_ADDR：127.0.0.1 (客户端的IP）<br>这会对我们的开发造成“迷茫”，因此要在nginx配置里加入<br>1、proxy_set_header Host $host;<br>2、proxy_set_header  X-Real-IP $remote_addr;</p>
+<p>其他的一些设置请google;</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -975,105 +1061,6 @@ Laravel facades 就是服务容器里那些基类的「静态代理」，相比�
 <h3 id="控制器-app-Http-Controllers-UserController-php"><a href="#控制器-app-Http-Controllers-UserController-php" class="headerlink" title="控制器 app\Http\Controllers\UserController.php"></a>控制器 app\Http\Controllers\UserController.php</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">User</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getUser</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$users</span> = User::all();</span><br><span class="line">        <span class="keyword">return</span> view(<span class="string">&#x27;home/user&#x27;</span>,[<span class="string">&#x27;users&#x27;</span>=&gt;<span class="variable">$users</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h3 id="视图-resources-views-home-user-blade-php"><a href="#视图-resources-views-home-user-blade-php" class="headerlink" title="视图 resources\views\home\user.blade.php"></a>视图 resources\views\home\user.blade.php</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;list-group&quot;</span>&gt;</span></span><br><span class="line">    @inject(&#x27;UserPresenter&#x27;,&#x27;App\Presenters\UserPresenter&#x27;)</span><br><span class="line">    @foreach($users as $user)</span><br><span class="line">        <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">&quot;list-group-item&quot;</span>&gt;</span></span><br><span class="line">            &#123;&#123; $UserPresenter-&gt;setName($user-&gt;name) &#125;&#125;</span><br><span class="line">        <span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    @endforeach</span><br><span class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/02/27/laravel%E7%9A%84%E4%B8%AD%E5%A4%A7%E5%9E%8B%E6%9E%B6%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/02/27/laravel%E7%9A%84%E4%B8%AD%E5%A4%A7%E5%9E%8B%E6%9E%B6%E6%9E%84/" class="post-title-link" itemprop="url">laravel的中大型架构</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-02-27 11:40:41" itemprop="dateCreated datePublished" datetime="2017-02-27T11:40:41+09:00">2017-02-27</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:17:05" itemprop="dateModified" datetime="2018-03-27T22:17:05+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-孤独到死是一个天才最好的归宿，毕竟，这个世界配不上他
-</blockquote>
-
-<h3 id="中大型架构"><a href="#中大型架构" class="headerlink" title="中大型架构"></a>中大型架构</h3><p>解决我们的控制器,模型过于肥大的问题<br>那么我们应该怎么写呢？别将我们的思维局限在 MVC 內 :</p>
-<ul>
-<li><code>Model</code> : 被当成 Eloquent class。</li>
-<li><code>Repository</code> : 辅助 model，处理资料库逻辑，然后注入到 service。</li>
-<li><code>Service</code> : 辅助 controller，处理商业逻辑，然后注入到 controller。</li>
-<li><code>Controller</code> : 接收 HTTP request，调用其他 service。</li>
-<li><code>Presenter</code> : 处理展示逻辑，然后注入到 view。</li>
-<li><code>View</code> : 使用 blade 将资料 binding 到 HTML。</li>
-</ul>
-<h3 id="实现结果"><a href="#实现结果" class="headerlink" title="实现结果"></a>实现结果</h3><p>我们可以发现 MVC 架构还在，由于 SOLID 的单一职责原则与依赖翻转原则 :</p>
-<p>我们将资料库逻辑从 model 分离出来，由 repository 辅助 model，将 model 依赖注入进 repository。<br>我们将商业逻辑从 controller 分离出来，由 service 辅助 controller，将 service 依赖注入进 controller。<br>我们将演示逻辑从 view 分离出来，由 presenter 辅助 view，将 presenter 依赖注入进 view。</p>
-<h3 id="忠告"><a href="#忠告" class="headerlink" title="忠告"></a>忠告</h3><ol>
-<li>别害怕建立目录</li>
-<li>文件单一职责原则</li>
-<li>在 app 目录下建立 <code>Repositories</code>,<code>Services</code> , <code>Presenters</code> 目錄。</li>
-</ol>
-<h3 id="详细链接"><a href="#详细链接" class="headerlink" title="详细链接"></a>详细链接</h3><ol>
-<li><a href="/2017/02/27/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Repository%E6%A8%A1%E5%BC%8F/">如何使用Repository模式</a></li>
-<li><a href="/2017/02/27/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Presenter%E6%A8%A1%E5%BC%8F/">如何使用Presenter模式</a></li>
-<li><a href="/2018/01/19/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Service%E6%A8%A1%E5%BC%8F/">如何使用Service模式</a></li>
-<li><a href="/2017/02/27/laravel%E7%9A%84%E4%B8%AD%E5%A4%A7%E5%9E%8B%E6%9E%B6%E6%9E%84/">laravel的中大型架构</a></li>
-</ol>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://oomusou.io/laravel/laravel-architecture">http://oomusou.io/laravel/laravel-architecture</a></p>
-</blockquote>
 
       
     </div>

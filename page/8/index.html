@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">412</span>
+          <span class="site-state-item-count">413</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,85 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/06/wsl%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8mysql%E7%AD%89%E6%9C%8D%E5%8A%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/01/06/wsl%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8mysql%E7%AD%89%E6%9C%8D%E5%8A%A1/" class="post-title-link" itemprop="url">WSL开机启动mysql等服务</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2020-01-06 11:32:36 / 修改时间：14:34:51" itemprop="dateCreated datePublished" datetime="2020-01-06T11:32:36+09:00">2020-01-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+命运是什么？命是弱者借口，运乃强者谦词
+</blockquote>
+
+<h3 id="WIN10设置"><a href="#WIN10设置" class="headerlink" title="WIN10设置"></a>WIN10设置</h3><p>进入windows开机启动目录,先在运行&gt;命令(win+r)中输入shell:startup打开启动文件夹<br>新建vbs文件start-wsl.vbs:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Set ws = WScript.CreateObject(<span class="string">&quot;WScript.Shell&quot;</span>)</span><br><span class="line">cmd = <span class="string">&quot;C:\Windows\System32\bash.exe -c &quot;</span><span class="string">&quot;bash /home/init.sh&quot;</span><span class="string">&quot;&quot;</span></span><br><span class="line">ws.Run cmd, <span class="number">0</span>, <span class="literal">false</span></span><br><span class="line">Set ws = Nothing</span><br><span class="line">WScript.quit</span><br></pre></td></tr></table></figure>
+
+<h3 id="WSL设置"><a href="#WSL设置" class="headerlink" title="WSL设置"></a>WSL设置</h3><p>在WSL系统里创建/home/init.sh</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 自动输入sudo密码</span></span><br><span class="line">sudo -S service ssh start &lt;&lt; EOF</span><br><span class="line"><span class="number">123456</span></span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">sudo bt start</span><br><span class="line">sudo service ssh --full-restart</span><br><span class="line">sudo service nginx restart</span><br><span class="line">sudo service mysqld restart</span><br><span class="line">sudo service redis restart</span><br><span class="line">sudo service php-fpm-<span class="number">73</span> restart</span><br><span class="line">sudo service cron start</span><br><span class="line">sudo supervisord</span><br><span class="line">sudo supervisorctl start all</span><br><span class="line"><span class="comment"># 运行bash.exe不退出</span></span><br><span class="line"><span class="keyword">while</span> <span class="literal">true</span></span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">    sleep <span class="number">600</span></span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+<p>赋予执行权限</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x init.sh</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://tech1024.com/original/3006">https://tech1024.com/original/3006</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/0a102c4bb3a2">https://www.jianshu.com/p/0a102c4bb3a2</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1013,80 +1092,6 @@
 
 <h3 id="打印sql"><a href="#打印sql" class="headerlink" title="打印sql"></a>打印sql</h3><p>在 <code>AppServiceProvider.php</code> 的 boot 方法中添加如下内容：</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (env(<span class="string">&#x27;APP_ENV&#x27;</span>) === <span class="string">&#x27;local&#x27;</span>) &#123;</span><br><span class="line">        DB::connection()-&gt;enableQueryLog();</span><br><span class="line">        Event::listen(<span class="string">&#x27;kernel.handled&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$request</span>, <span class="variable">$response</span></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> ( <span class="variable">$request</span>-&gt;has(<span class="string">&#x27;sql-debug&#x27;</span>) ) &#123;</span><br><span class="line">                <span class="variable">$queries</span> = DB::getQueryLog();</span><br><span class="line">                dd(<span class="variable">$queries</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/05/30/mysql%E6%A8%A1%E7%B3%8A%E6%9F%A5%E8%AF%A2unicode%E6%B1%89%E5%AD%97/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/05/30/mysql%E6%A8%A1%E7%B3%8A%E6%9F%A5%E8%AF%A2unicode%E6%B1%89%E5%AD%97/" class="post-title-link" itemprop="url">MySQL模糊查询unicode汉字</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2019-05-30 19:48:37 / 修改时间：21:05:41" itemprop="dateCreated datePublished" datetime="2019-05-30T19:48:37+09:00">2019-05-30</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-最难相处的女生是那种很爱文艺但又没什么文化的
-</blockquote>
-
-<p>一般的查询：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SELECT</span><br><span class="line">	* </span><br><span class="line">FROM</span><br><span class="line">	`rainlab_translate_messages` </span><br><span class="line">WHERE</span><br><span class="line">	( ( lower( message_data ) LIKE &#x27;%&quot;\u4ef7\u683c&quot;%&#x27; ) ) </span><br><span class="line">	AND `domain_id` = 1 </span><br><span class="line">ORDER BY</span><br><span class="line">	`message_data` ASC </span><br><span class="line">	LIMIT 500 OFFSET 0</span><br></pre></td></tr></table></figure>
-<p>这样的查询是查不到结果的，应该改成这样</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SELECT</span><br><span class="line">	* </span><br><span class="line">FROM</span><br><span class="line">	`rainlab_translate_messages` </span><br><span class="line">WHERE</span><br><span class="line">	( ( lower( message_data ) LIKE &#x27;%&quot;_u4ef7_u683c&quot;%&#x27; ) ) </span><br><span class="line">	AND `domain_id` = 1 </span><br><span class="line">ORDER BY</span><br><span class="line">	`message_data` ASC </span><br><span class="line">	LIMIT 500 OFFSET 0</span><br></pre></td></tr></table></figure>
-<p>针对PHP里的，我们直接输入汉字， 可以这样进行操作：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = <span class="variable">$query</span>-&gt;searchWhere(str_replace(<span class="string">&quot;\\&quot;</span>,<span class="string">&quot;_&quot;</span>,json_encode(<span class="variable">$search</span>)), [<span class="string">&#x27;message_data&#x27;</span>]);</span><br></pre></td></tr></table></figure>
 
       
     </div>
