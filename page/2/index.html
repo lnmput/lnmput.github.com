@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">413</span>
+          <span class="site-state-item-count">414</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -187,6 +187,108 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/13/Golang%E4%BD%BF%E7%94%A8%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86Unix%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/13/Golang%E4%BD%BF%E7%94%A8%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86Unix%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">Golang使用信号处理Unix命令</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-08-13 13:20:37 / 修改时间：13:34:57" itemprop="dateCreated datePublished" datetime="2022-08-13T13:20:37+09:00">2022-08-13</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+If you have no critics, you will likely have no success. 
+</blockquote>
+
+<p>Accepting and processing signals from the operating system is important for various use cases in applications.</p>
+<p>While many server-side languages have complicated or tedious approaches to processing signals from the OS, with Golang applications it’s extremely intuitive. Golang’s in-built OS package provides an easy way to integrate and react to Unix signals from your Go application. Let’s see how.</p>
+<h3 id="The-Premise"><a href="#The-Premise" class="headerlink" title="The Premise"></a>The Premise</h3><p>Let’s say we want to build a Golang application that when requested to shutdown prints a message saying, “Thank you for using Golang.” Let’s set up the main function that basically keeps doing some work until an exit command is provided to the application.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> &#123;</span><br><span class="line">      fmt.Println(<span class="string">&quot;Doing Work&quot;</span>)</span><br><span class="line">      time.Sleep(<span class="number">1</span> * time.Second)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>When you run this application and kill it by providing a kill signal from your OS (<code>Ctrl + C</code> or <code>Ctrl + Z</code>, in most cases), you may see an output similar to this one:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Doing Work</span><br><span class="line">Doing Work</span><br><span class="line">Doing Work</span><br><span class="line">Process finished with exit code <span class="number">2</span></span><br></pre></td></tr></table></figure>
+
+<p>Now, we would like to interpret this kill signal within the Golang application and process it to print out the required exit message.</p>
+<h3 id="Receiving-Signals"><a href="#Receiving-Signals" class="headerlink" title="Receiving Signals"></a>Receiving Signals</h3><p>We will create a <code>channel</code> to receive the command from the OS. The OS package provides the <code>Signal</code> interface to handle signals and has OS-specific implementations.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">killSignal := <span class="built_in">make</span>(<span class="keyword">chan</span> os.Signal, <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p>To notify <code>killSignal</code>, we use the <code>Notify</code> function provided by the <code>signal</code> package. The first parameter takes a channel of a <code>os.Signal</code>, while the next parameters accept a list of OS signals we want to notify our channel with.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">signal.Notify(killSignal, os.Interrupt)</span><br></pre></td></tr></table></figure>
+
+<p>Alternatively, we can notify our signal with specific commands using the syscall package.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">signal.Notify(killSignal, syscall.SIGINT, syscall.SIGTERM)</span><br></pre></td></tr></table></figure>
+
+<p>In order to process the signal, we’ll make our <code>main</code> function block wait for the <code>interrupt</code> signal using the <code>killSignal</code> channel. On receiving a command from the OS, we’ll print the exit message and kill the application.</p>
+<p>In order to process our work loop, let’s move that into a separate <code>goroutine</code> using an anonymous function.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> &#123;</span><br><span class="line">      fmt.Println(<span class="string">&quot;Doing Work&quot;</span>)</span><br><span class="line">      time.Sleep(<span class="number">1</span> * time.Second)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;()</span><br></pre></td></tr></table></figure>
+
+<p>While the work function runs in a separate routine, the main function will wait for the killSignal and print the exit message before exiting.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;-killSignal</span><br><span class="line">fmt.Println(<span class="string">&quot;Thanks for using Golang!&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="The-Code"><a href="#The-Code" class="headerlink" title="The Code"></a>The Code</h3><p>With all the components put together, the final code is this:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;os&quot;</span></span><br><span class="line">	<span class="string">&quot;os/signal&quot;</span></span><br><span class="line">	<span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	killSignal := <span class="built_in">make</span>(<span class="keyword">chan</span> os.Signal, <span class="number">1</span>)</span><br><span class="line">	signal.Notify(killSignal, os.Interrupt)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			fmt.Println(<span class="string">&quot;Doing Work&quot;</span>)</span><br><span class="line">			time.Sleep(<span class="number">1</span> * time.Second)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line">	&lt;-killSignal</span><br><span class="line">	fmt.Println(<span class="string">&quot;Thanks for using Golang!&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>On running this, it keeps executing the work loop, and upon receiving an <code>interrupt</code> signal from the OS, it prints the required message and then exits.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Doing Work</span><br><span class="line">Doing Work</span><br><span class="line">Doing Work</span><br><span class="line">Thanks <span class="keyword">for</span> using Golang!</span><br></pre></td></tr></table></figure>
+<h3 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h3><p>This simple example can be extrapolated to handle many real-life scenarios, such as gracefully shutting down servers and receiving commands in command-line applications.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://betterprogramming.pub/using-signals-to-handle-unix-commands-in-golang-f09e9efb7769">https://betterprogramming.pub/using-signals-to-handle-unix-commands-in-golang-f09e9efb7769</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1015,84 +1117,6 @@ Home is behind, world ahead.
 <p><a target="_blank" rel="noopener" href="https://techsemicolon.github.io/blog/2019/02/12/laravel-limiting-chunk-collection/">https://techsemicolon.github.io/blog/2019/02/12/laravel-limiting-chunk-collection/</a></p>
 </blockquote>
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/04/11/shell%E8%84%9A%E6%9C%AC%E6%97%A0%E6%B3%95%E8%AF%BB%E5%8F%96%E6%9C%80%E5%90%8E%E4%B8%80%E8%A1%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="杨子鳄鱼 ● 外贸自建站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/04/11/shell%E8%84%9A%E6%9C%AC%E6%97%A0%E6%B3%95%E8%AF%BB%E5%8F%96%E6%9C%80%E5%90%8E%E4%B8%80%E8%A1%8C/" class="post-title-link" itemprop="url">shell脚本无法读取最后一行</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-04-11 15:29:13 / 修改时间：15:38:28" itemprop="dateCreated datePublished" datetime="2022-04-11T15:29:13+09:00">2022-04-11</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-不要到处宣扬自己的内心，
-
-<p>这世上不止你一个人有故事。</p>
-</blockquote>
-
-
-<h3 id="while-read-line无法读取最后一行"><a href="#while-read-line无法读取最后一行" class="headerlink" title="while read line无法读取最后一行"></a>while read line无法读取最后一行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="built_in">read</span> line</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">    data=`...line...`</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;data&#125;</span>&quot;</span> &gt;&gt; <span class="variable">$2</span>.txt</span><br><span class="line"></span><br><span class="line"><span class="keyword">done</span> &lt; <span class="variable">$1</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><p>因为我的目标文件是在windows下创建然后传到服务器上的，这样在利用<code>while read line</code>读取文件时，如果文件最后一行之后没有换行符\n，则read读取最后一行时遇到文件结束符EOF时循环即终止。上面代码中，虽然此时$line内存有最后一行的内容，但程序已经没有机会再处理此行内容，因此导致了最后一行无法读取。</p>
-<h3 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p>修改while循环，增加 <code>[[ -n $&#123;line&#125; ]]</code>，这样当文件没有到最后一行时不会测试<code>-n $line</code>，当遇到文件结束（最后一行）时，仍然可以通过测试$line是否有内容来进行继续处理。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!bin/bash</span></span><br><span class="line"><span class="keyword">while</span> <span class="built_in">read</span> line || [[ -n <span class="variable">$&#123;line&#125;</span> ]]</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">    data=`...line...`</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;data&#125;</span>&quot;</span> &gt;&gt; <span class="variable">$2</span>.txt</span><br><span class="line"><span class="keyword">done</span> &lt; <span class="variable">$1</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p>通过分析原因可知，本质原因是因为文件格式不是unix导致的，可以直接通过设置文件格式来处理，该方式则脚本代码不需改动。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># 在服务器上vim编辑目标文件</span></span><br><span class="line">vim target_file</span><br><span class="line"> </span><br><span class="line"><span class="comment"># 然后执行如下指令，用于查看当前文件是dos格式还是unix格式</span></span><br><span class="line">:<span class="built_in">set</span> ff?</span><br><span class="line"> </span><br><span class="line"><span class="comment"># 强制切换为unix格式，然后保存即可</span></span><br><span class="line">:<span class="built_in">set</span> ff=unix</span><br><span class="line"></span><br></pre></td></tr></table></figure>
       
     </div>
 
