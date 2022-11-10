@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">413</span>
+          <span class="site-state-item-count">414</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,106 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/11/10/how-to-safely-append-data-to-the-same-slice-concurrently-in-golang/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/11/10/how-to-safely-append-data-to-the-same-slice-concurrently-in-golang/" class="post-title-link" itemprop="url">how-to-safely-append-data-to-the-same-slice-concurrently-in-golang</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-11-10 13:39:19 / 修改时间：13:52:49" itemprop="dateCreated datePublished" datetime="2022-11-10T13:39:19+09:00">2022-11-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+活着是世界上最罕见的事，
+
+<p>大多数人只是存在，仅此而已。</p>
+</blockquote>
+
+<p>In this article, we’ll go through different ways to implement like wait groups and mutex and the challenges of data race.</p>
+<p>Aim : A program that separates odd and even number from 0to 9 an appends it into their corresponding slices. So we should have odd=[1,3,5,7,9] (in any order) and even=[0,2,4,6,8] (in any order).</p>
+<h3 id="Attempt-0-Only-with-goroutines"><a href="#Attempt-0-Only-with-goroutines" class="headerlink" title="Attempt-0 Only with goroutines"></a>Attempt-0 Only with goroutines</h3><p>Background : The only goroutine that a program has at startup is the one that calls the main function, thus we refer to it as the main goroutine. The go statement generates new goroutines. A go statement is a regular function or method call that has the keyword go prefixed to it. A go statement causes a newly formed goroutine to call the function. The go statement itself is immediately finished.</p>
+<p>In this we are appending to the slice using multiple go routines. So we’ll have a main go routines and 10 new go routines created by anonymous go function.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line"> <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">done</span><span class="params">()</span></span> &#123;</span><br><span class="line"><span class="keyword">var</span> odd = <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line"> <span class="keyword">var</span> even = <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt;= <span class="number">9</span>; i++ &#123;</span><br><span class="line">  <span class="keyword">if</span> i%<span class="number">2</span> == <span class="number">0</span> &#123;</span><br><span class="line">   <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    even = <span class="built_in">append</span>(even, i)</span><br><span class="line">   &#125;(i)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">   <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    odd = <span class="built_in">append</span>(odd, i)</span><br><span class="line">   &#125;(i)</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line"> fmt.Println(odd)</span><br><span class="line"> fmt.Println(even)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"> <span class="keyword">for</span> i := <span class="number">1</span>; i &lt;= <span class="number">10</span>; i++ &#123;</span><br><span class="line">  fmt.Println(<span class="string">&quot;========================&quot;</span>)</span><br><span class="line">  done()</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Output:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span>]               </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">8</span>]                 </span><br><span class="line">========================</span><br><span class="line">[<span class="number">7</span> <span class="number">5</span> <span class="number">3</span>]                 </span><br><span class="line">[<span class="number">4</span> <span class="number">6</span> <span class="number">0</span> <span class="number">2</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span>]                 </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span>]               </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span>]                 </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span>]               </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span>]               </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span>]                 </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span>]</span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]</span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span>]</span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]</span><br></pre></td></tr></table></figure>
+<p>Major issues :</p>
+<ul>
+<li>The main goroutine can complete it’s execution without waiting for the other go routines (who will append the data in slices)to complete. As a result print statement in the main go routine will the slices where the data is still being appended by other go routines.</li>
+<li>Data race (we’ll cover in the next part)</li>
+</ul>
+<h3 id="Attempt-1-With-sync-waitgroups"><a href="#Attempt-1-With-sync-waitgroups" class="headerlink" title="Attempt-1 With sync.waitgroups"></a>Attempt-1 With sync.waitgroups</h3><p>We’ll use sync.waitgroups. With the help of the WaitGroup function in the sync package, a program can wait for particular goroutines. These Golang sync techniques halt programme execution until goroutines in the WaitGroup have finished running.</p>
+<p>In a nutshell, the main program will wait till all the other go routines have finished.</p>
+<p>WaitGroup is informed by wg.Add(1) that it needs to wait for one more goroutine every time loop starts. After that, defer wg.Done() alerts the WaitGroup when a goroutine is finished. Then, wg.Wait() delays the execution until the goroutines have finished running. The entire procedure resembles increasing a counter in wgAdd() deducts from the wg counter. Waiting for the counter in wg to reach 0 while calling done(). This is the crux how wait groups work.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line"> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"> <span class="string">&quot;sync&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">done</span><span class="params">()</span></span> &#123;</span><br><span class="line"><span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line"> <span class="keyword">var</span> odd = <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line"> <span class="keyword">var</span> even = <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt;= <span class="number">9</span>; i++ &#123;</span><br><span class="line">  wg.Add(<span class="number">1</span>)</span><br><span class="line">  <span class="keyword">if</span> i%<span class="number">2</span> == <span class="number">0</span> &#123;</span><br><span class="line">   <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line">    even = <span class="built_in">append</span>(even, i)</span><br><span class="line">   &#125;(i)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">   <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line">    odd = <span class="built_in">append</span>(odd, i)</span><br><span class="line">   &#125;(i)</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line"> wg.Wait()</span><br><span class="line"> fmt.Println(odd)</span><br><span class="line"> fmt.Println(even)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"> <span class="keyword">for</span> i := <span class="number">1</span>; i &lt;= <span class="number">10</span>; i++ &#123;</span><br><span class="line">  fmt.Println(<span class="string">&quot;========================&quot;</span>)</span><br><span class="line">  done()</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Output</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span> <span class="number">9</span>]             </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">9</span>]                 </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">9</span> <span class="number">5</span> <span class="number">7</span> <span class="number">1</span> <span class="number">3</span>]             </span><br><span class="line">[<span class="number">6</span> <span class="number">8</span> <span class="number">0</span> <span class="number">2</span> <span class="number">4</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span> <span class="number">9</span>]             </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span> <span class="number">9</span>]             </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">8</span>]               </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">9</span> <span class="number">7</span>]             </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span> <span class="number">9</span>]             </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">9</span> <span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">7</span>]             </span><br><span class="line">[<span class="number">0</span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>]             </span><br><span class="line">========================</span><br><span class="line">[<span class="number">3</span> <span class="number">9</span> <span class="number">1</span> <span class="number">5</span> <span class="number">7</span>]</span><br><span class="line">[<span class="number">0</span> <span class="number">4</span> <span class="number">2</span> <span class="number">6</span> <span class="number">8</span>]</span><br><span class="line">========================</span><br><span class="line">[<span class="number">9</span> <span class="number">1</span> <span class="number">7</span> <span class="number">3</span> <span class="number">5</span>]</span><br><span class="line">[<span class="number">0</span> <span class="number">6</span> <span class="number">8</span> <span class="number">2</span> <span class="number">4</span>]</span><br></pre></td></tr></table></figure>
+<p>What’s happening now?<br>To make sure the function was consistent, we ran it ten times. It undoubtedly outperforms the old one, but occasionally the results are not what was anticipated. So what’s the reason. The reason is data race .</p>
+<p>Data race : When two or more Goroutines access the same memory location, at least one of them is a write, and there is no ordering between them, this is referred to as a data race.</p>
+<p>In simpler terms, you have a race condition with multiple goroutines writing a slice concurrently. The behavior will be unpredictable. You need a mutex. Protect the appends by lock.</p>
+<p>We can confirm this by command go run -race pgm3b.go</p>
+<h3 id="Attempt-2-With-sync-waitgroups-and-mutex"><a href="#Attempt-2-With-sync-waitgroups-and-mutex" class="headerlink" title="Attempt-2 With sync.waitgroups and mutex"></a>Attempt-2 With sync.waitgroups and mutex</h3><p>We’ll use mutex with sync.waitgroups. This not only ensures that the main go routine waits till all other 10 go routines complete but it also ensures that at a given point of time only one go routine can write in a slice. This is the principle of mutual exclusion or mutex. Appends are protected by mutex avoiding dirty write case.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line"> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"> <span class="string">&quot;sync&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">done</span><span class="params">()</span></span> &#123;</span><br><span class="line"><span class="keyword">type</span> answer <span class="keyword">struct</span> &#123;</span><br><span class="line">  MU   sync.Mutex</span><br><span class="line">  data []<span class="keyword">int</span></span><br><span class="line"> &#125;</span><br><span class="line"><span class="keyword">var</span> odd answer</span><br><span class="line"> <span class="keyword">var</span> even answer</span><br><span class="line">wg := &amp;sync.WaitGroup&#123;&#125;</span><br><span class="line"> <span class="keyword">for</span> i := <span class="number">0</span>; i &lt;= <span class="number">9</span>; i++ &#123;</span><br><span class="line">  <span class="keyword">if</span> i%<span class="number">2</span> == <span class="number">0</span> &#123;</span><br><span class="line">   wg.Add(<span class="number">1</span>)</span><br><span class="line">   <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line">even.MU.Lock()</span><br><span class="line">    even.data = <span class="built_in">append</span>(even.data, i)</span><br><span class="line">    even.MU.Unlock()</span><br><span class="line">   &#125;(i)</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> i%<span class="number">2</span> == <span class="number">1</span> &#123;</span><br><span class="line">   wg.Add(<span class="number">1</span>)</span><br><span class="line">   <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line">odd.MU.Lock()</span><br><span class="line">    odd.data = <span class="built_in">append</span>(odd.data, i)</span><br><span class="line">    odd.MU.Unlock()</span><br><span class="line">   &#125;(i)</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line">wg.Wait()</span><br><span class="line">fmt.Println(odd.data)</span><br><span class="line">fmt.Println(even.data)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"> <span class="keyword">for</span> i := <span class="number">1</span>; i &lt;= <span class="number">10</span>; i++ &#123;</span><br><span class="line">  fmt.Println(<span class="string">&quot;========================&quot;</span>)</span><br><span class="line">  done()</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>output</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">========================</span><br><span class="line">[1 9 5 3 7]             </span><br><span class="line">[0 4 2 6 8]             </span><br><span class="line">========================</span><br><span class="line">[5 9 3 7 1]             </span><br><span class="line">[2 0 8 6 4]             </span><br><span class="line">========================</span><br><span class="line">[1 3 5 7 9]             </span><br><span class="line">[2 0 4 6 8]             </span><br><span class="line">========================</span><br><span class="line">[1 3 5 7 9]             </span><br><span class="line">[0 2 4 6 8]             </span><br><span class="line">========================</span><br><span class="line">[1 3 5 7 9]             </span><br><span class="line">[0 2 4 6 8]             </span><br><span class="line">========================</span><br><span class="line">[1 3 5 7 9]             </span><br><span class="line">[2 0 4 6 8]             </span><br><span class="line">========================</span><br><span class="line">[1 3 5 7 9]             </span><br><span class="line">[0 2 4 6 8]             </span><br><span class="line">========================</span><br><span class="line">[3 1 9 7 5]             </span><br><span class="line">[0 2 4 6 8]             </span><br><span class="line">========================</span><br><span class="line">[9 5 7 1 3]</span><br><span class="line">[6 8 4 2 0]</span><br><span class="line">========================</span><br><span class="line">[1 3 5 7 9]</span><br><span class="line">[0 2 4 6 8]</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.devgenius.io/how-to-safely-append-data-to-the-same-slice-concurrently-in-golang-df467e1ebc9c">https://blog.devgenius.io/how-to-safely-append-data-to-the-same-slice-concurrently-in-golang-df467e1ebc9c</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1090,94 +1190,6 @@ We become the most familiar strangers.
 <p>Now when we send the <code>SIGTERM</code>, <code>SIGINT</code> to the program, it will first stop feeding more jobs to the pool and exit from the producer goroutine, then it waits for the worker goroutine to finsish all the existing task, then exit the main program.</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://medium.com/@yu-yk/graceful-shutdown-concurrent-go-program-with-waitgroup-and-context-33166210e170">https://medium.com/@yu-yk/graceful-shutdown-concurrent-go-program-with-waitgroup-and-context-33166210e170</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/13/Golang%E4%BC%98%E9%9B%85%E7%9A%84%E5%81%9C%E6%AD%A2%E7%A8%8B%E5%BA%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/08/13/Golang%E4%BC%98%E9%9B%85%E7%9A%84%E5%81%9C%E6%AD%A2%E7%A8%8B%E5%BA%8F/" class="post-title-link" itemprop="url">Golang优雅的停止程序</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-08-13 13:54:57 / 修改时间：14:04:00" itemprop="dateCreated datePublished" datetime="2022-08-13T13:54:57+09:00">2022-08-13</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-I wish I could be more like you.
-</blockquote>
-
-<p>To shutdown go application gracefully, you can use open source libraries or write your own code.</p>
-<p>Following are popular libraries to stop go application gracefully</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/tylerb/graceful">https://github.com/tylerb/graceful</a><br><a target="_blank" rel="noopener" href="https://github.com/braintree/manners">https://github.com/braintree/manners</a></p>
-</blockquote>
-<p>In this article, I will explain how to write your own code to stop go app gracefully</p>
-<h3 id="Step-1"><a href="#Step-1" class="headerlink" title="Step 1"></a>Step 1</h3><p>make channel which can listen for signals from OS. Refer os.Signal package for more detail. os.Signal package is used to access incoming signals from OS.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> gracefulStop = <span class="built_in">make</span>(<span class="keyword">chan</span> os.Signal)</span><br></pre></td></tr></table></figure>
-<h3 id="Step-2"><a href="#Step-2" class="headerlink" title="Step 2"></a>Step 2</h3><p>Use notify method of os.Signal to register system calls. For gracefully stop. we should listen to SIGTERM and SIGINT. signal.Notify method takes two arguments 1. channel 2. constant from syscall.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">signal.Notify(gracefulStop, syscall.SIGTERM)</span><br><span class="line">signal.Notify(gracefulStop, syscall.SIGINT)</span><br></pre></td></tr></table></figure>
-
-<h3 id="Step-3"><a href="#Step-3" class="headerlink" title="Step 3"></a>Step 3</h3><p>Now, We needs to create Go routine to listen channel “gracefulStop” for incoming signals. the following Go routine will block until it receives signals from OS. Now, you can perform clean up your stuff it can be closing DB connections, clearing buffered channels, write something to file, etc.. In the following code, I just put wait for 2 seconds. After completing your work you need to send a signal to OS by using os.Exit function. os.Exit function takes integer argument normally, it can be 0 or 1. 0 means clean exit without any error or problem. 1 means exit with an error or some issue. The exit status will help caller to identify the last status when process end.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">       sig := &lt;-gracefulStop</span><br><span class="line">       fmt.Printf(<span class="string">&quot;caught sig: %+v&quot;</span>, sig)</span><br><span class="line">       fmt.Println(<span class="string">&quot;Wait for 2 second to finish processing&quot;</span>)</span><br><span class="line">       time.Sleep(<span class="number">2</span>*time.Second)</span><br><span class="line">       os.Exit(<span class="number">0</span>)</span><br><span class="line">&#125;()</span><br></pre></td></tr></table></figure>
-
-<h3 id="Full-Source"><a href="#Full-Source" class="headerlink" title="Full Source"></a>Full Source</h3><p>For the demo, I use simple HTTP server which will display “Server is running” message on the browser.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">       <span class="string">&quot;os&quot;</span></span><br><span class="line">       <span class="string">&quot;os/signal&quot;</span></span><br><span class="line">       <span class="string">&quot;syscall&quot;</span></span><br><span class="line">       <span class="string">&quot;fmt&quot;</span></span><br><span class="line">       <span class="string">&quot;time&quot;</span></span><br><span class="line">       <span class="string">&quot;net/http&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">       http.HandleFunc(<span class="string">&quot;/&quot;</span>, <span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">              fmt.Fprint(w,<span class="string">&quot;Server is running&quot;</span>)</span><br><span class="line">       &#125;)</span><br><span class="line">       <span class="keyword">var</span> gracefulStop = <span class="built_in">make</span>(<span class="keyword">chan</span> os.Signal)</span><br><span class="line">       signal.Notify(gracefulStop, syscall.SIGTERM)</span><br><span class="line">       signal.Notify(gracefulStop, syscall.SIGINT)</span><br><span class="line">       <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">              sig := &lt;-gracefulStop</span><br><span class="line">              fmt.Printf(<span class="string">&quot;caught sig: %+v&quot;</span>, sig)</span><br><span class="line">              fmt.Println(<span class="string">&quot;Wait for 2 second to finish processing&quot;</span>)</span><br><span class="line">              time.Sleep(<span class="number">2</span>*time.Second)</span><br><span class="line">              os.Exit(<span class="number">0</span>)</span><br><span class="line">       &#125;()</span><br><span class="line">       http.ListenAndServe(<span class="string">&quot;:8080&quot;</span>,<span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://kpbird.medium.com/golang-gracefully-stop-application-23c2390bb212">https://kpbird.medium.com/golang-gracefully-stop-application-23c2390bb212</a><br><a target="_blank" rel="noopener" href="https://pkg.go.dev/syscall#SIGINT">https://pkg.go.dev/syscall#SIGINT</a><br><a target="_blank" rel="noopener" href="http://husobee.github.io/golang/ecs/2016/05/19/ecs-graceful-go-shutdown.html4">http://husobee.github.io/golang/ecs/2016/05/19/ecs-graceful-go-shutdown.html4</a><br><a target="_blank" rel="noopener" href="https://pkg.go.dev/net/http#Server.Shutdown">https://pkg.go.dev/net/http#Server.Shutdown</a></p>
 </blockquote>
 
       

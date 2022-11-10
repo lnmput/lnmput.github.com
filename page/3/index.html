@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">413</span>
+          <span class="site-state-item-count">414</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,121 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/04/11/laravel-limit-chunk-collection/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/04/11/laravel-limit-chunk-collection/" class="post-title-link" itemprop="url">laravel-limit-chunk-collection</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-04-11 18:34:06 / 修改时间：18:44:53" itemprop="dateCreated datePublished" datetime="2022-04-11T18:34:06+09:00">2022-04-11</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Home is behind, world ahead.
+</blockquote>
+
+<p>Laravel comes up with an excellent Eloquent ORM. There are lot of cool things in Eloquent, one of which is chunk method.</p>
+<p>Usually when you need to process large data, lets say you want to update users table and assign a coupon code based on 3rd party APIs.</p>
+<p>What you can do is :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">User::get()-&gt;each(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>Doing this is good but if you have thousands of users, loading them all up at once to do the coupon saving process. That’s going to take consume a hige memory at a time and maybe the server will be exusted because so much data is stored in memory for processing at a time.</p>
+<p>The chunk method helps these kind of implementations. Chunking records means taking a batch of records by a limit, process those, take the next batch processing those and so on… The idea is you are taking a subset of data to process at a time instead of entire data loaded into memory.</p>
+<p>The chunk method will retrieve a “chunk” of Eloquent models, feeding them to a given Closure for processing. Using the chunk method will conserve memory when working with large result sets.</p>
+<p>Lets do the same but with chunk this time :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$recodsPerBatch</span> = <span class="number">50</span>;</span><br><span class="line"></span><br><span class="line">User::chunk(<span class="variable">$recodsPerBatch</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>Now, as you can probably guess this will take 50 user records at a time to process, once those are completed it will take next 50 untill all records are procesed by chunk closure.</p>
+<ul>
+<li>The main problem Limit with Chunk :</li>
+</ul>
+<p>Let’s apply limit to the above example :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$recodsPerBatch</span> = <span class="number">50</span>;</span><br><span class="line"></span><br><span class="line">User::limit(<span class="number">100</span>)-&gt;chunk(<span class="variable">$recodsPerBatch</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>If you would think laravel will chunk 50 records in 2 batches are we are limiting the total records to 100, oops not really.</p>
+<p>Laravel will do series of queries like below to chunk the records :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">select * <span class="keyword">from</span> `users` limit <span class="number">50</span> offset <span class="number">0</span></span><br><span class="line">select * <span class="keyword">from</span> `users` limit <span class="number">50</span> offset <span class="number">50</span></span><br><span class="line">select * <span class="keyword">from</span> `users` limit <span class="number">50</span> offset <span class="number">100</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>The chunk method ignores any previous eloquent method which applies limit. It can be limit and offset OR take and skip…</p>
+<p>This becomes a problem for which lot of people had raised an issue on laravel’s github repo. But Laravel’s core dev team mentioned this is the expected behaviour and rightfully so.. Chunk itself is using limit to convert entire collection in batches.</p>
+<ul>
+<li>And…. Here it is.. The Solution you were waiting for :</li>
+</ul>
+<p>Laravel has a chunk variation called chunkById. Let’s use the first example and implement chunkById now :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$recodsPerBatch</span> = <span class="number">50</span>;</span><br><span class="line"></span><br><span class="line">User::chunkById(<span class="variable">$recodsPerBatch</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>The main and only fundamental difference between chunk and chunkById is how it structures the query.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">select * <span class="keyword">from</span> `users` where `id` &gt; <span class="number">0</span> order by `id` asc limit <span class="number">50</span></span><br><span class="line">select * <span class="keyword">from</span> `users` where `id` &gt; <span class="number">0</span> <span class="keyword">and</span> `id` &gt; <span class="number">50</span> order by `id` asc limit <span class="number">50</span></span><br><span class="line">select * <span class="keyword">from</span> `users` where `id` &gt; <span class="number">0</span> <span class="keyword">and</span> `id` &gt; <span class="number">50</span> <span class="keyword">and</span> `id` &gt; <span class="number">100</span> order by `id` asc limit <span class="number">50</span></span><br><span class="line">select * <span class="keyword">from</span> `users` where `id` &gt; <span class="number">0</span> <span class="keyword">and</span> `id` &gt; <span class="number">50</span> <span class="keyword">and</span> `id` &gt; <span class="number">100</span> <span class="keyword">and</span> `id` &gt; <span class="number">150</span> order by `id` asc limit <span class="number">50</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>If you observer in the queries done by chunkById :</p>
+<ul>
+<li>It’s adding an order by clause to the id column (By the way you can specify the column as 3rd argument to chunkById method if itis not id)</li>
+<li>It adds where id &gt; x each time it processes the next batch</li>
+<li>There is no offset used and id column is used conceptually as an offset.</li>
+</ul>
+<p>This gives you an advantage that you can add your offset in the query using id column as a limit just like chunkById is doing internallu.</p>
+<p>Let’s limit the chunk in our example with 100 records to chunk :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$recodsPerBatch</span> = <span class="number">50</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$limit</span> = <span class="number">100</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$maxId</span> = User::orderBy(<span class="string">&#x27;id&#x27;</span>, <span class="string">&#x27;asc&#x27;</span>)-&gt;offset(<span class="variable">$limit</span>)-&gt;limit(<span class="number">1</span>)-&gt;select(<span class="string">&#x27;id&#x27;</span>)-&gt;first()-&gt;id;</span><br><span class="line"></span><br><span class="line">User::where(<span class="string">&#x27;id&#x27;</span>, <span class="string">&#x27;&lt;&#x27;</span>, <span class="variable">$maxId</span>)-&gt;chunkById(<span class="variable">$recodsPerBatch</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable">$coupon</span> = API::getCouponCode(<span class="variable">$user</span>-&gt;email);</span><br><span class="line">    <span class="variable">$user</span>-&gt;coupon = <span class="variable">$coupon</span>;</span><br><span class="line">    <span class="variable">$user</span>-&gt;save();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>What we did was, even if we can not use limit directly, we got an id which falls just above the limit we want. Used that to add a where clause of <code>where(&#39;id&#39;, &#39;&lt;&#39;, $maxId)</code>.</p>
+<p>This will then chunk the 100 results, with 2 batches of 50 records in each batch. Cool, isn’t it!</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://techsemicolon.github.io/blog/2019/02/12/laravel-limiting-chunk-collection/">https://techsemicolon.github.io/blog/2019/02/12/laravel-limiting-chunk-collection/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1025,95 +1140,6 @@
 <h4 id="profileparser-go"><a href="#profileparser-go" class="headerlink" title="profileparser.go"></a>profileparser.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> parser</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;github.com/bitly/go-simplejson&quot;</span></span><br><span class="line">	<span class="string">&quot;log&quot;</span></span><br><span class="line">	<span class="string">&quot;regexp&quot;</span></span><br><span class="line">	<span class="string">&quot;test/engine&quot;</span></span><br><span class="line">	<span class="string">&quot;test/model&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> re = regexp.MustCompile(<span class="string">`&lt;script&gt;window.__INITIAL_STATE__=(.+);\(function`</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ParseProfile</span><span class="params">(contents []<span class="keyword">byte</span>, name <span class="keyword">string</span>)</span> <span class="title">engine</span>.<span class="title">ParseResult</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">&quot;-------------------&quot;</span>)</span><br><span class="line">	match := re.FindSubmatch(contents)</span><br><span class="line">	result := engine.ParseResult&#123;&#125;</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(match) &gt;= <span class="number">2</span> &#123;</span><br><span class="line">		json := match[<span class="number">1</span>]</span><br><span class="line">		<span class="comment">//fmt.Printf(&quot;json : %s\n&quot;,json)</span></span><br><span class="line">		profile := parseJson(json)</span><br><span class="line">		profile.Name = name</span><br><span class="line">		<span class="comment">//fmt.Println(profile)</span></span><br><span class="line">		result.Items = <span class="built_in">append</span>(result.Items, profile)</span><br><span class="line">		fmt.Println(result)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//解析json数据</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">parseJson</span><span class="params">(json []<span class="keyword">byte</span>)</span> <span class="title">model</span>.<span class="title">Profile</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	res, err := simplejson.NewJson(json)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">&quot;解析json失败。。&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	infos, err := res.Get(<span class="string">&quot;objectInfo&quot;</span>).Get(<span class="string">&quot;basicInfo&quot;</span>).Array()</span><br><span class="line">	<span class="comment">//infos是一个切片，里面的类型是interface&#123;&#125;</span></span><br><span class="line">	<span class="comment">//fmt.Printf(&quot;infos:%v,  %T\n&quot;, infos, infos) //infos:[离异 47岁 射手座(11.22-12.21) 157cm 55kg 工作地:阿坝汶川 月收入:3-5千 教育/科研 大学本科],  []interface &#123;&#125;</span></span><br><span class="line">	<span class="keyword">var</span> profile model.Profile</span><br><span class="line">	<span class="comment">//所以我们遍历这个切片，里面使用断言来判断类型</span></span><br><span class="line">	<span class="keyword">for</span> k, v := <span class="keyword">range</span> infos &#123;</span><br><span class="line">		<span class="comment">//fmt.Printf(&quot;k:%v,%T\n&quot;, k, k)</span></span><br><span class="line">		<span class="comment">//fmt.Printf(&quot;v:%v,%T\n&quot;, v, v)</span></span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		    &quot;basicInfo&quot;:[</span></span><br><span class="line"><span class="comment">		       &quot;未婚&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;25岁&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;魔羯座(12.22-01.19)&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;152cm&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;42kg&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;工作地:阿坝茂县&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;月收入:3-5千&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;医生&quot;,</span></span><br><span class="line"><span class="comment">		       &quot;大专&quot;</span></span><br><span class="line"><span class="comment">		   ],</span></span><br><span class="line"><span class="comment">		*/</span></span><br><span class="line">		<span class="keyword">if</span> e, ok := v.(<span class="keyword">string</span>); ok &#123;</span><br><span class="line">			<span class="keyword">switch</span> k &#123;</span><br><span class="line">			<span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">				profile.Marriage = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">				<span class="comment">//年龄:47岁，我们可以设置int类型，所以可以通过另一个json字段来获取</span></span><br><span class="line">				profile.Age = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">				profile.Xingzuo = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">				profile.Height = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">				profile.Weight = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">6</span>:</span><br><span class="line">				profile.Income = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">7</span>:</span><br><span class="line">				profile.Occupation = e</span><br><span class="line">			<span class="keyword">case</span> <span class="number">8</span>:</span><br><span class="line">				profile.Education = e</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> profile</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h4 id="user-go"><a href="#user-go" class="headerlink" title="user.go"></a>user.go</h4><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment">//珍爱网用户对象模型</span></span><br><span class="line"><span class="keyword">type</span> Profile <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name       <span class="keyword">string</span> <span class="comment">//姓名</span></span><br><span class="line">	Marriage   <span class="keyword">string</span> <span class="comment">//婚况</span></span><br><span class="line">	Age        <span class="keyword">string</span> <span class="comment">//年龄</span></span><br><span class="line">	Gender     <span class="keyword">string</span> <span class="comment">//性别</span></span><br><span class="line">	Height     <span class="keyword">string</span> <span class="comment">//身高</span></span><br><span class="line">	Weight     <span class="keyword">string</span> <span class="comment">//体重</span></span><br><span class="line">	Income     <span class="keyword">string</span> <span class="comment">//收入</span></span><br><span class="line">	Education  <span class="keyword">string</span> <span class="comment">//教育</span></span><br><span class="line">	Occupation <span class="keyword">string</span> <span class="comment">//职业</span></span><br><span class="line">	Hukou      <span class="keyword">string</span> <span class="comment">//籍贯户口</span></span><br><span class="line">	Xingzuo    <span class="keyword">string</span> <span class="comment">//星座</span></span><br><span class="line">	House      <span class="keyword">string</span> <span class="comment">//房子</span></span><br><span class="line">	Car        <span class="keyword">string</span> <span class="comment">//车</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2021/10/19/golang%E4%B8%AD%E7%9A%84string%E5%92%8Cbyte%E7%90%86%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/10/19/golang%E4%B8%AD%E7%9A%84string%E5%92%8Cbyte%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">golang中的string和byte理解</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2021-10-19 22:23:53 / 修改时间：22:37:24" itemprop="dateCreated datePublished" datetime="2021-10-19T22:23:53+09:00">2021-10-19</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-有些鸟儿是注定不会被关在牢笼里的，它们的每一片羽毛都闪耀着自由的光辉
-</blockquote>
-
-<p>Go语言中有两种可以储存一串字符的类型，分别是字符串<code>string</code>和<code>byte</code>类型数组<code>[]byte</code>，但是他们直接并不能直接使用等于号赋值，也不能单纯的转换，而是要通过切片来进行转换。</p>
-<h3 id="string转换成-byte"><a href="#string转换成-byte" class="headerlink" title="string转换成[]byte"></a>string转换成[]byte</h3><p>可以直接使用<code>[]byte(str)</code>强制转换。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> str <span class="keyword">string</span> = <span class="string">&quot;test&quot;</span></span><br><span class="line">    <span class="keyword">var</span> data []<span class="keyword">byte</span> = []<span class="keyword">byte</span>(str)</span><br><span class="line"></span><br><span class="line">    fmt.Println(<span class="string">&quot;string: &quot;</span>, str)	<span class="comment">// string: test</span></span><br><span class="line">    fmt.Println(<span class="string">&quot;[]byte: &quot;</span>, data)	<span class="comment">// []byte: [116 101 115 116]</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>可以看到<code>[]byte</code>输出的结果正是<code>string</code>的各个字符对应的<code>ASCII</code>码。<br>或者</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">String2Bytes</span><span class="params">(s <span class="keyword">string</span>)</span> []<span class="title">byte</span></span> &#123;</span><br><span class="line">    sh := (*reflect.StringHeader)(unsafe.Pointer(&amp;s))</span><br><span class="line">    bh := reflect.SliceHeader&#123;</span><br><span class="line">        Data: sh.Data,</span><br><span class="line">        Len:  sh.Len,</span><br><span class="line">        Cap:  sh.Len,</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> *(*[]<span class="keyword">byte</span>)(unsafe.Pointer(&amp;bh))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="byte转换成string"><a href="#byte转换成string" class="headerlink" title="[]byte转换成string"></a>[]byte转换成string</h3><p>要将<code>byte</code>数组转换成<code>string</code>不能直接转换，而需要将<code>[]byte</code>的切片转换。即使用<code>string(数组名[:])</code>进行转换。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> data [<span class="number">5</span>]<span class="keyword">byte</span></span><br><span class="line">	data[<span class="number">0</span>] = <span class="string">&#x27;T&#x27;</span></span><br><span class="line">	data[<span class="number">1</span>] = <span class="string">&#x27;E&#x27;</span></span><br><span class="line">	data[<span class="number">2</span>] = <span class="string">&#x27;S&#x27;</span></span><br><span class="line">	data[<span class="number">3</span>] = <span class="string">&#x27;T&#x27;</span></span><br><span class="line">	<span class="keyword">var</span> str <span class="keyword">string</span> = <span class="keyword">string</span>(data[:])</span><br><span class="line">	fmt.Println(<span class="string">&quot;[]byte: &quot;</span>, data)	<span class="comment">// []byte: [84 69 83 84 0]</span></span><br><span class="line">	fmt.Println(<span class="string">&quot;string: &quot;</span>, str)	<span class="comment">// string: TEST</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// []byte to string</span></span><br><span class="line">s2 := <span class="keyword">string</span>(b)</span><br></pre></td></tr></table></figure>
-<p>再或者</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Bytes2String</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> *(*<span class="keyword">string</span>)(unsafe.Pointer(&amp;b))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="二者区别"><a href="#二者区别" class="headerlink" title="二者区别"></a>二者区别</h3><p>对于[]byte与string而言，两者之间最大的区别就是string的值不能改变。这该如何理解呢？下面通过两个例子来说明。</p>
-<p>对于[]byte来说，以下操作是可行的：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">b := []<span class="keyword">byte</span>(<span class="string">&quot;Hello Gopher!&quot;</span>)</span><br><span class="line">b [<span class="number">1</span>] = <span class="string">&#x27;T&#x27;</span></span><br></pre></td></tr></table></figure>
-<p>string，修改操作是被禁止的：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">&quot;Hello Gopher!&quot;</span></span><br><span class="line">s[<span class="number">1</span>] = <span class="string">&#x27;T&#x27;</span></span><br></pre></td></tr></table></figure>
-<p>而string能支持这样的操作：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">&quot;Hello Gopher!&quot;</span></span><br><span class="line">s = <span class="string">&quot;Tello Gopher!&quot;</span></span><br></pre></td></tr></table></figure>
-<p>字符串的值不能被更改，但可以被替换。</p>
-
       
     </div>
 
