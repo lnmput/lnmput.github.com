@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">414</span>
+          <span class="site-state-item-count">415</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,85 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/21/nginx%E4%B8%8Ephp-fpm%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/21/nginx%E4%B8%8Ephp-fpm%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="post-title-link" itemprop="url">nginx与php-fpm的负载均衡</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-21 11:01:18 / 修改时间：12:46:02" itemprop="dateCreated datePublished" datetime="2018-06-21T11:01:18+09:00">2018-06-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你不必跑在任何人后边。
+</blockquote>
+
+<p>Nginx反向代理负载均衡架构图(三台服务器为例)</p>
+<p><img src="/images/jiagou.jpg"></p>
+<h3 id="Nginx负载均衡-图示-192-168-1-1-80服务器配置"><a href="#Nginx负载均衡-图示-192-168-1-1-80服务器配置" class="headerlink" title="Nginx负载均衡(图示:192.168.1.1:80服务器配置)"></a>Nginx负载均衡(图示:192.168.1.1:80服务器配置)</h3><p>upstream示例配置</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">upstream icontact_pool &#123;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.1</span>:<span class="number">9000</span>    weight=<span class="number">5</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.2</span>:<span class="number">9000</span>    weight=<span class="number">3</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">    server  <span class="number">192.168</span>.<span class="number">1.3</span>:<span class="number">9000</span>    weight=<span class="number">2</span>    max_fails=<span class="number">3</span> fail_timeout=<span class="number">20</span>s;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h3 id="ngxin虚拟主机负载均衡配置"><a href="#ngxin虚拟主机负载均衡配置" class="headerlink" title="ngxin虚拟主机负载均衡配置"></a>ngxin虚拟主机负载均衡配置</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">server &#123;  </span><br><span class="line">    listen  <span class="number">192.168</span>.<span class="number">1.1</span>:<span class="number">80</span>;  </span><br><span class="line">    server_name <span class="number">192.168</span>.<span class="number">1.1</span>;  </span><br><span class="line">  </span><br><span class="line">    access_log  /<span class="keyword">var</span>/log/nginx/balance/loadbalance.access.log;    </span><br><span class="line">    error_log   /<span class="keyword">var</span>/log/nginx/balance/loadbalance.<span class="built_in">error</span>.log;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">#允许列目录  </span></span><br><span class="line">    location / &#123;  </span><br><span class="line">        root    /balance/;  </span><br><span class="line">        autoindex   on;  </span><br><span class="line">        autoindex_exact_size    off;  </span><br><span class="line">        autoindex_localtime on;  </span><br><span class="line">        allow allow;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">#proxy the php scripts to fpm_pool_upstream  </span></span><br><span class="line">    location ~ \.php$ &#123;  </span><br><span class="line">        root    /balance;  </span><br><span class="line">        <span class="keyword">include</span> /etc/nginx/fastcgi_params;  </span><br><span class="line">        <span class="comment">#将webserver接收的客户端请求通过fastcgi负载均衡到php5-fpm的池  </span></span><br><span class="line">        fastcgi_pass    icontact_pool;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h3 id="负载均衡服务器处理php请求"><a href="#负载均衡服务器处理php请求" class="headerlink" title="负载均衡服务器处理php请求"></a>负载均衡服务器处理php请求</h3><p>192.168.1.1:9000、192.168.1.2:9000、192.168.1.3:9000为后端的三台负载均衡服务器监听的fpm地址和端口号，负载均衡服务器通过fastcgi将http请求和上下文参数发送给这个fpm池，然后fpm负责解析php程序</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/wzy_1988/article/details/8230562">https://blog.csdn.net/wzy_1988/article/details/8230562</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1276,85 +1355,6 @@ Honesty is the best policy.
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/04/nginx%E4%BD%BF%E7%94%A8lua-redis%E9%99%90%E5%88%B6ip%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/06/04/nginx%E4%BD%BF%E7%94%A8lua-redis%E9%99%90%E5%88%B6ip%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87/" class="post-title-link" itemprop="url">Nginx使用Lua+Redis限制IP的访问频率</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-06-04 09:23:22 / 修改时间：10:29:37" itemprop="dateCreated datePublished" datetime="2018-06-04T09:23:22+09:00">2018-06-04</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-不登高山，不知天之高也；不临深溪，不知地之厚也。
-</blockquote>
-
-<h3 id="添加访问控制的Lua脚本"><a href="#添加访问控制的Lua脚本" class="headerlink" title="添加访问控制的Lua脚本"></a>添加访问控制的Lua脚本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@hbase31 ~]<span class="comment"># vim /usr/local/openresty/nginx/conf/lua/access.lua</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> ip_block_time=<span class="number">300</span> <span class="comment">--封禁IP时间（秒）</span></span><br><span class="line"><span class="keyword">local</span> ip_time_out=<span class="number">30</span>    <span class="comment">--指定ip访问频率时间段（秒）</span></span><br><span class="line"><span class="keyword">local</span> ip_max_count=<span class="number">20</span> <span class="comment">--指定ip访问频率计数最大值（秒）</span></span><br><span class="line"><span class="keyword">local</span> BUSINESS = ngx.var.business <span class="comment">--nginx的location中定义的业务标识符</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--连接redis</span></span><br><span class="line"><span class="keyword">local</span> redis = <span class="built_in">require</span> <span class="string">&quot;resty.redis&quot;</span>  </span><br><span class="line"><span class="keyword">local</span> conn = redis:new()  </span><br><span class="line">ok, err = conn:connect(<span class="string">&quot;192.168.1.30&quot;</span>, <span class="number">6379</span>)  </span><br><span class="line">conn:set_timeout(<span class="number">2000</span>) <span class="comment">--超时时间2秒</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--如果连接失败，跳转到脚本结尾</span></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">goto</span> FLAG</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--查询ip是否被禁止访问，如果存在则返回403错误代码</span></span><br><span class="line">is_block, err = conn:get(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr)  </span><br><span class="line"><span class="keyword">if</span> is_block == <span class="string">&#x27;1&#x27;</span> <span class="keyword">then</span></span><br><span class="line">    ngx.<span class="built_in">exit</span>(<span class="number">403</span>)</span><br><span class="line">    <span class="keyword">goto</span> FLAG</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--查询redis中保存的ip的计数器</span></span><br><span class="line">ip_count, err = conn:get(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr)</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> ip_count == ngx.null <span class="keyword">then</span> <span class="comment">--如果不存在，则将该IP存入redis，并将计数器设置为1、该KEY的超时时间为ip_time_out</span></span><br><span class="line">    res, err = conn:set(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, <span class="number">1</span>)</span><br><span class="line">    res, err = conn:expire(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, ip_time_out)</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    ip_count = ip_count + <span class="number">1</span> <span class="comment">--存在则将单位时间内的访问次数加1</span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">if</span> ip_count &gt;= ip_max_count <span class="keyword">then</span> <span class="comment">--如果超过单位时间限制的访问次数，则添加限制访问标识，限制时间为ip_block_time</span></span><br><span class="line">        res, err = conn:set(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr, <span class="number">1</span>)</span><br><span class="line">        res, err = conn:expire(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr, ip_block_time)</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        res, err = conn:set(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr,ip_count)</span><br><span class="line">        res, err = conn:expire(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, ip_time_out)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 结束标记</span></span><br><span class="line">::FLAG::</span><br><span class="line"><span class="keyword">local</span> ok, err = conn:<span class="built_in">close</span>()</span><br></pre></td></tr></table></figure>
-<p>这个脚本的目的很简单：一个IP如果在30秒内其访问次数达到20次则表明该IP访问频率太快了，因此将该IP封禁5分钟。同时由于计数的KEY在Redis中的超时时间设置成了30秒，所以如果两次访问间隔时间大于30秒将会重新开始计数</p>
-<h3 id="在Nginx需要限速的location中引用上述脚本"><a href="#在Nginx需要限速的location中引用上述脚本" class="headerlink" title="在Nginx需要限速的location中引用上述脚本"></a>在Nginx需要限速的location中引用上述脚本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">location /user/ &#123;</span><br><span class="line">    set <span class="variable">$business</span> <span class="string">&quot;USER&quot;</span>;</span><br><span class="line">    access_by_lua_file /usr/local/openresty/nginx/conf/lua/access.lua;</span><br><span class="line">        proxy_redirect off;</span><br><span class="line">        proxy_set_header        Host <span class="variable">$host</span>;</span><br><span class="line">        proxy_set_header        X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        proxy_set_header        X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        proxy_pass http:<span class="comment">//user_224/user/;</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>注：对于有大量静态资源文件（如：js、css、图片等）的前端页面可以设置只有指定格式的请求才进行访问限速，示例代码如下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">location /h5 &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$request_uri</span> ~ .*\.(html|htm|jsp|json)) &#123;</span><br><span class="line">            set <span class="variable">$business</span> <span class="string">&quot;H5&quot;</span>;</span><br><span class="line">            access_by_lua_file /usr/local/openresty/nginx/conf/lua/access.lua;</span><br><span class="line">        &#125;</span><br><span class="line">        proxy_redirect off;</span><br><span class="line">        proxy_set_header        Host <span class="variable">$host</span>;</span><br><span class="line">        proxy_set_header        X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        proxy_set_header        X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        proxy_pass http:<span class="comment">//h5_224/h5;</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://juejin.im/entry/5a45a9b8f265da431f4b62d5">https://juejin.im/entry/5a45a9b8f265da431f4b62d5</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/12/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/14/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1368,7 +1368,7 @@ Honesty is the best policy.
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

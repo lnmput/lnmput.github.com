@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">414</span>
+          <span class="site-state-item-count">415</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,88 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/24/PHP%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BE%AA%E7%8E%AF%E6%97%B6%E5%86%85%E5%AD%98%E8%80%97%E5%B0%BD%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/08/24/PHP%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BE%AA%E7%8E%AF%E6%97%B6%E5%86%85%E5%AD%98%E8%80%97%E5%B0%BD%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" class="post-title-link" itemprop="url">PHP大量数据循环时内存耗尽问题的解决方案</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2016-08-24 10:52:33 / 修改时间：11:58:51" itemprop="dateCreated datePublished" datetime="2016-08-24T10:52:33+09:00">2016-08-24</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我的肺功能快衰竭了，没有两天了，请大家不要打钱了，谢谢大家这段时间的帮助，希望来生没有痛苦。---魏则西
+</blockquote>
+
+<p>最近在开发一个PHP程序时遇到了下面的错误：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PHP Fatal <span class="built_in">error</span>: Allowed memory size of <span class="number">268</span> <span class="number">435</span> <span class="number">456</span> bytes exhausted</span><br></pre></td></tr></table></figure>
+<p>错误信息显示允许的最大内存已经耗尽。遇到这样的错误起初让我很诧异，但转眼一想，也不奇怪，因为我正在开发的这个程序是要用一个foreach循环语句在一个有4万条记录的表里全表搜索具有特定特征的数据，也就是说，一次要把4万条数据取出，然后逐条检查每天数据。可想而知，4万条数据全部加载到内存中，内存不爆才怪。</p>
+<p>毕竟编程这么多年，我隐约记得PHP里提供有非一次全部加载数据的API，是像处理流媒体那样，随用随取随丢、数据并不会积累在内存的查询方法。经过简单的搜索，果然在官方网站上找到的正确的用法。</p>
+<p>这个问题在PHP的官方网站上叫缓冲查询和非缓冲查询(Buffered and Unbuffered queries)。 PHP的查询缺省模式是缓冲模式。也就是说，查询数据结果会一次全部提取到内存里供PHP程序处理。这样给了PHP程序额外的功能，比如说，计算行数，将 指针指向某一行等。更重要的是程序可以对数据集反复进行二次查询和过滤等操作。但这种缓冲查询模式的缺陷就是消耗内存，也就是用空间换速度。</p>
+<p>相对的，另外一种PHP查询模式是非缓冲查询，数据库服务器会一条一条的返回数据，而不是一次全部返回，这样的结果就是PHP程序消耗较少的内存，但却增加了数据库服务器的压力，因为数据库会一直等待PHP来取数据，一直到数据全部取完。</p>
+<p>很显然，缓冲查询模式适用于小数据量查询，而非缓冲查询适应于大数据量查询。</p>
+<p>对于PHP的缓冲模式查询大家都知道，下面列举的例子是如何执行非缓冲查询API。</p>
+<h3 id="非缓冲查询方法一-mysqli"><a href="#非缓冲查询方法一-mysqli" class="headerlink" title="非缓冲查询方法一: mysqli"></a>非缓冲查询方法一: mysqli</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="variable">$mysqli</span>  = <span class="keyword">new</span> mysqli(<span class="string">&quot;localhost&quot;</span>, <span class="string">&quot;my_user&quot;</span>, <span class="string">&quot;my_password&quot;</span>, <span class="string">&quot;world&quot;</span>); </span><br><span class="line"><span class="variable">$uresult</span> = <span class="variable">$mysqli</span>-&gt;query(<span class="string">&quot;SELECT Name FROM City&quot;</span>, MYSQLI_USE_RESULT); </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$uresult</span>) &#123; </span><br><span class="line">   <span class="keyword">while</span> (<span class="variable">$row</span> = <span class="variable">$uresult</span>-&gt;fetch_assoc()) &#123; </span><br><span class="line">       <span class="keyword">echo</span> <span class="variable">$row</span>[<span class="string">&#x27;Name&#x27;</span>] . PHP_EOL; </span><br><span class="line">   &#125; </span><br><span class="line">&#125; </span><br><span class="line"><span class="variable">$uresult</span>-&gt;close(); </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="非缓冲查询方法二-pdo-mysql"><a href="#非缓冲查询方法二-pdo-mysql" class="headerlink" title="非缓冲查询方法二: pdo_mysql"></a>非缓冲查询方法二: pdo_mysql</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="variable">$pdo</span> = <span class="keyword">new</span> PDO(<span class="string">&quot;mysql:host=localhost;dbname=world&quot;</span>, <span class="string">&#x27;my_user&#x27;</span>, <span class="string">&#x27;my_pass&#x27;</span>); </span><br><span class="line"><span class="variable">$pdo</span>-&gt;setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, <span class="literal">false</span>); </span><br><span class="line"></span><br><span class="line"><span class="variable">$uresult</span> = <span class="variable">$pdo</span>-&gt;query(<span class="string">&quot;SELECT Name FROM City&quot;</span>); </span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$uresult</span>) &#123; </span><br><span class="line">   <span class="keyword">while</span> (<span class="variable">$row</span> = <span class="variable">$uresult</span>-&gt;fetch(PDO::FETCH_ASSOC)) &#123; </span><br><span class="line">       <span class="keyword">echo</span> <span class="variable">$row</span>[<span class="string">&#x27;Name&#x27;</span>] . PHP_EOL; </span><br><span class="line">   &#125; </span><br><span class="line">&#125; </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="非缓冲查询方法三-mysql"><a href="#非缓冲查询方法三-mysql" class="headerlink" title="非缓冲查询方法三: mysql"></a>非缓冲查询方法三: mysql</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="variable">$conn</span> = mysql_connect(<span class="string">&quot;localhost&quot;</span>, <span class="string">&quot;my_user&quot;</span>, <span class="string">&quot;my_pass&quot;</span>); </span><br><span class="line"><span class="variable">$db</span>   = mysql_select_db(<span class="string">&quot;world&quot;</span>); </span><br><span class="line"></span><br><span class="line"><span class="variable">$uresult</span> = mysql_unbuffered_query(<span class="string">&quot;SELECT Name FROM City&quot;</span>); </span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$uresult</span>) &#123; </span><br><span class="line">   <span class="keyword">while</span> (<span class="variable">$row</span> = mysql_fetch_assoc(<span class="variable">$uresult</span>)) &#123; </span><br><span class="line">       <span class="keyword">echo</span> <span class="variable">$row</span>[<span class="string">&#x27;Name&#x27;</span>] . PHP_EOL; </span><br><span class="line">   &#125; </span><br><span class="line">&#125; </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://www.codeceo.com/article/php-foreach-memory.html">http://www.codeceo.com/article/php-foreach-memory.html</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -965,116 +1047,6 @@ huixinchen20072008
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/08/07/PHP%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E7%AE%80%E5%8D%95%E7%90%86%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/08/07/PHP%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E7%AE%80%E5%8D%95%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">PHP生成器的简单理解</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-08-07 20:15:30" itemprop="dateCreated datePublished" datetime="2016-08-07T20:15:30+09:00">2016-08-07</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2017-07-19 19:02:44" itemprop="dateModified" datetime="2017-07-19T19:02:44+09:00">2017-07-19</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-最初不相识，最终不相认
-</blockquote>
-生成器允许你在 foreach 代码块中写代码来迭代一组数据而不需要在内存中创建一个数组, 那会使你的内存达到上限，或者会占据可观的处理时间。相反，你可以写一个生成器函数，就像一个普通的自定义函数一样, 和普通函数只返回一次不同的是, 生成器可以根据需要 yield 多次，以便生成需要迭代的值。
-一个简单的例子就是使用生成器来重新实现 range() 函数。 标准的 range() 函数需要在内存中生成一个数组包含每一个在它范围内的值，然后返回该数组, 结果就是会产生多个很大的数组。 比如，调用 range(0, 1000000) 将导致内存占用超过 100 MB。
-做为一种替代方法, 我们可以实现一个 xrange() 生成器, 只需要足够的内存来创建 Iterator 对象并在内部跟踪生成器的当前状态，这样只需要不到1K字节的内存。
-### 简单理解
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">官方的定义中：生成器就是简单的迭代器。</span><br><span class="line">不同于标准的PHP迭代器，PHP的生成器并不要求你一定要在一个重量级的类中实现<span class="built_in">Iterator</span>接口。</span><br><span class="line">相反，生成器会按需求计算并交出迭代值。这对应用程序的性能有着深远的意义。想想吧，</span><br><span class="line">一个标准的PHP迭代器通常都是基于内存中全部计算过的数据集进行迭代。这样做效率不高。</span><br><span class="line">尤其是大量可计算的公式化数据集。使用生成器我们可以动态的计算并交出下一个值而不占用</span><br><span class="line">宝贵的系统内存，这就是我们使用生成器的原因。</span><br></pre></td></tr></table></figure>
-### 创建一个生成器
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">myGenerator</span>(<span class="params"></span>) </span>&#123;  </span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value1&#x27;</span>;  </span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value2&#x27;</span>;  </span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value3&#x27;</span>;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-### 使用这个生成器
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="keyword">foreach</span> (myGenerator() <span class="keyword">as</span> <span class="variable">$yieldedValue</span>) &#123;  </span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$yieldedValue</span>, PHP_EOL;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-结果：
-value1
-value2
-value3
-
-<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><ul>
-<li>Range生成器（糟糕的实现）</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeRange</span>(<span class="params"><span class="variable">$length</span></span>) </span>&#123;  </span><br><span class="line">    <span class="variable">$dataset</span> = [];  </span><br><span class="line">    <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="variable">$length</span>; <span class="variable">$i</span>++) &#123;  </span><br><span class="line">        <span class="variable">$dataset</span>[] = <span class="variable">$i</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$dataset</span>;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="variable">$customRange</span> = makeRange(<span class="number">1000000</span>);  </span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$customRange</span> <span class="keyword">as</span> <span class="variable">$i</span>) &#123;  </span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$i</span>, PHP_EOL;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<ul>
-<li>Range生成器（好的实现）</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeRange</span>(<span class="params"><span class="variable">$length</span></span>) </span>&#123;  </span><br><span class="line">    <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="variable">$length</span>; <span class="variable">$i</span>++) &#123;  </span><br><span class="line">        <span class="keyword">yield</span> <span class="variable">$i</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">foreach</span> (makeRange(<span class="number">1000000</span>) <span class="keyword">as</span> <span class="variable">$i</span>) &#123;  </span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$i</span>, PHP_EOL;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>上面的例子并不实用。但是，联想一下所有你可能用来计算的数据集。序列数（例如斐波纳挈数）就是很典型的例子。同样你还可以遍历文件流资源。想象一下，如果你需要遍历一个4G的逗号分隔值（CSV）文件，而你的虚拟个人服务器（VPS）上PHP只分配了1G的内存。你根本没法把整个文件读取到内存中。</p>
-<ul>
-<li>CSV生成器</li>
-</ul>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getRows</span>(<span class="params"><span class="variable">$file</span></span>) </span>&#123;  </span><br><span class="line">    <span class="variable">$handle</span> = fopen(<span class="variable">$file</span>, <span class="string">&#x27;rb&#x27;</span>);  </span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$handle</span> === <span class="literal">false</span>) &#123;  </span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Exception</span>();  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">while</span> (feof(<span class="variable">$handle</span>) === <span class="literal">false</span>) &#123;  </span><br><span class="line">        <span class="keyword">yield</span> fgetcsv(<span class="variable">$handle</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">    fclose(<span class="variable">$handle</span>);  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">foreach</span> (getRows(<span class="string">&#x27;data.csv&#x27;</span>) <span class="keyword">as</span> <span class="variable">$row</span>) &#123;  </span><br><span class="line">    print_r(<span class="variable">$row</span>);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<h3 id="接收参数"><a href="#接收参数" class="headerlink" title="接收参数"></a>接收参数</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">printer</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        printf(<span class="string">&quot;receive: %s\n&quot;</span>, <span class="keyword">yield</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$printer</span> = printer();</span><br><span class="line"></span><br><span class="line"><span class="variable">$printer</span>-&gt;send(<span class="string">&#x27;hello&#x27;</span>);</span><br><span class="line"><span class="variable">$printer</span>-&gt;send(<span class="string">&#x27;world&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>生成器的确使用了很少的内存却大大简化了某些任务。如果你需要更强大的功能诸如重置、快进、或者数据集的检索，你最好还是自定义一个实现Iterator interface接口的类，或者使用PHP现成的Standard PHP Library（SPL）迭代器。</p>
-<p><code>yield</code> 和 <code>return</code> 都会返回值，但区别在于一个 return 是返回既定结果，一次返回完毕就不再返回新的结果，而 yield 是不断产出直到无法产出为止。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://blog.csdn.net/bandita/article/details/47723815">http://blog.csdn.net/bandita/article/details/47723815</a><br><a target="_blank" rel="noopener" href="https://laravel-china.org/articles/1430/single-php-generator-complete-knowledge-generator-implementation-process">https://laravel-china.org/articles/1430/single-php-generator-complete-knowledge-generator-implementation-process</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/39/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/39/">39</a><span class="page-number current">40</span><a class="page-number" href="/page/41/">41</a><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/41/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1088,7 +1060,7 @@ value3
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

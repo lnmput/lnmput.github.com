@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">414</span>
+          <span class="site-state-item-count">415</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,86 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/09/05/laravel%E9%9B%86%E5%90%88%E4%B8%AD%E7%9A%84when%E6%96%B9%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/09/05/laravel%E9%9B%86%E5%90%88%E4%B8%AD%E7%9A%84when%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">Laravel集合中的when方法</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-09-05 08:55:51 / 修改时间：10:30:19" itemprop="dateCreated datePublished" datetime="2018-09-05T08:55:51+09:00">2018-09-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Hope is a good thing and maybe the best of things. And no good thing ever dies. 
+</blockquote>
+
+<p>Starting at v5.4.12, Laravel Collections now includes a when method that allows you to perform conditional actions on the items without breaking the chain.</p>
+<p>Like all the other Laravel Collection methods this one can have a lot of use cases but one example that comes to mind is being able to filter based on a query string parameter.</p>
+<p>To demonstrate that example, let’s pretend we have a list of hosts from the Laravel News Podcast:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$hosts</span> = [</span><br><span class="line">    [<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;Eric Barnes&#x27;</span>, <span class="string">&#x27;location&#x27;</span> =&gt; <span class="string">&#x27;USA&#x27;</span>, <span class="string">&#x27;is_active&#x27;</span> =&gt; <span class="number">0</span>],</span><br><span class="line">    [<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;Jack Fruh&#x27;</span>, <span class="string">&#x27;location&#x27;</span> =&gt; <span class="string">&#x27;USA&#x27;</span>, <span class="string">&#x27;is_active&#x27;</span> =&gt; <span class="number">0</span>],</span><br><span class="line">    [<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;Jacob Bennett&#x27;</span>, <span class="string">&#x27;location&#x27;</span> =&gt; <span class="string">&#x27;USA&#x27;</span>, <span class="string">&#x27;is_active&#x27;</span> =&gt; <span class="number">1</span>],</span><br><span class="line">    [<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;Michael Dyrynda&#x27;</span>, <span class="string">&#x27;location&#x27;</span> =&gt; <span class="string">&#x27;AU&#x27;</span>, <span class="string">&#x27;is_active&#x27;</span> =&gt; <span class="number">1</span>],</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+<p>Previously to filter based on a query string you might do something like this:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$inUsa</span> = collect(<span class="variable">$hosts</span>)-&gt;where(<span class="string">&#x27;location&#x27;</span>, <span class="string">&#x27;USA&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (request(<span class="string">&#x27;retired&#x27;</span>)) &#123;</span><br><span class="line">    <span class="variable">$inUsa</span> = <span class="variable">$inUsa</span>-&gt;filter(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$employee</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ! <span class="variable">$employee</span>[<span class="string">&#x27;is_active&#x27;</span>];</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>With the new when method you can now do this all in one Collection chain:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$inUsa</span> = collect(<span class="variable">$hosts</span>)</span><br><span class="line">    -&gt;where(<span class="string">&#x27;location&#x27;</span>, <span class="string">&#x27;USA&#x27;</span>)</span><br><span class="line">    -&gt;when(request(<span class="string">&#x27;retired&#x27;</span>), <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$collection</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$collection</span>-&gt;reject(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$employee</span></span>)</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$employee</span>[<span class="string">&#x27;is_active&#x27;</span>];</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-news.com/laravel-collections-when-method">https://laravel-news.com/laravel-collections-when-method</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1048,92 +1128,6 @@ All is well
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/03/laravel%E4%B8%AD%E7%9A%84%E9%94%81/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/08/03/laravel%E4%B8%AD%E7%9A%84%E9%94%81/" class="post-title-link" itemprop="url">Laravel中的锁</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-08-03 10:56:40 / 修改时间：14:12:16" itemprop="dateCreated datePublished" datetime="2018-08-03T10:56:40+09:00">2018-08-03</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-昔日寒山问拾得曰：世间有人谤我、欺我、辱我、笑我、轻我、贱我、恶我、骗我、如何处治乎？拾得曰：只要忍他、让他、由他、避他、耐他、敬他、不要理他，再待几年你且看他。
-</blockquote>
-
-<p>查询构造器也包含一些可以帮助你在 select 语法上实现 「悲观锁定」的函数。</p>
-<h3 id="sharedLock"><a href="#sharedLock" class="headerlink" title="sharedLock"></a>sharedLock</h3><p>共享锁可防止选中的数据列被篡改，直到事务被提交为止</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DB::table(<span class="string">&#x27;users&#x27;</span>)-&gt;where(<span class="string">&#x27;votes&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, <span class="number">100</span>)-&gt;sharedLock()-&gt;get();</span><br></pre></td></tr></table></figure>
-
-<h3 id="lockForUpdate"><a href="#lockForUpdate" class="headerlink" title="lockForUpdate"></a>lockForUpdate</h3><p>使用「更新」锁可避免行被其它共享锁修改或选取</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DB::table(<span class="string">&#x27;users&#x27;</span>)-&gt;where(<span class="string">&#x27;votes&#x27;</span>, <span class="string">&#x27;&gt;&#x27;</span>, <span class="number">100</span>)-&gt;lockForUpdate()-&gt;get();</span><br></pre></td></tr></table></figure>
-
-<h3 id="相同和不同"><a href="#相同和不同" class="headerlink" title="相同和不同"></a>相同和不同</h3><ul>
-<li>相同的地方是都能避免同一行数据被其他 transaction 进行 update。</li>
-<li>不同的地方是：<br>sharedLock 不会阻止其他 transaction 读取同一行<br>lockForUpdate 会阻止其他 transaction 读取同一行（需要特别注意的是，普通的非锁定读取读取依然可以读取到该行，只有 sharedLock 和 lockForUpdate 的读取会被阻止。）</li>
-</ul>
-<h3 id="试验"><a href="#试验" class="headerlink" title="试验"></a>试验</h3><p>事务本身并不会锁表或者锁行</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// </span></span><br><span class="line">Route::get(<span class="string">&#x27;/haha&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    \DB::beginTransaction();</span><br><span class="line">    \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;first();</span><br><span class="line">    sleep(<span class="number">5</span>);</span><br><span class="line">    \DB::commit();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// hehe的查询操作并不会受到影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 更新也没有任何影响</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>使用共享锁</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sharedLock</span></span><br><span class="line">Route::get(<span class="string">&#x27;/haha&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    \DB::beginTransaction();</span><br><span class="line">    \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;sharedLock()-&gt;first();</span><br><span class="line">    sleep(<span class="number">5</span>);</span><br><span class="line">    \DB::commit();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 普通的查询没有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 同样使用共享锁的查询没有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;sharedLock()-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 使用lockForUpdate的查询会有影响</span></span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;lockForUpdate()-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>使用排他锁</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;/haha&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    \DB::beginTransaction();</span><br><span class="line">    \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;lockForUpdate()-&gt;first();</span><br><span class="line">    sleep(<span class="number">5</span>);</span><br><span class="line">    \DB::commit();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//普通的查询并没有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用了共享锁或者排他锁的查询才会有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;sharedLock()-&gt;first();</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 对更新有影响</span></span><br><span class="line">Route::get(<span class="string">&#x27;/hehe&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$user</span> = \App\Models\User::query()-&gt;where(<span class="string">&#x27;id&#x27;</span>, <span class="number">13</span>)-&gt;update([<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;yangzie&#x27;</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$user</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/9/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/11/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1147,7 +1141,7 @@ All is well
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

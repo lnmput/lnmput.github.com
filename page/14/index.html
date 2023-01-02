@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">414</span>
+          <span class="site-state-item-count">415</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,85 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/06/04/nginx%E4%BD%BF%E7%94%A8lua-redis%E9%99%90%E5%88%B6ip%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/06/04/nginx%E4%BD%BF%E7%94%A8lua-redis%E9%99%90%E5%88%B6ip%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87/" class="post-title-link" itemprop="url">Nginx使用Lua+Redis限制IP的访问频率</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-06-04 09:23:22 / 修改时间：10:29:37" itemprop="dateCreated datePublished" datetime="2018-06-04T09:23:22+09:00">2018-06-04</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+不登高山，不知天之高也；不临深溪，不知地之厚也。
+</blockquote>
+
+<h3 id="添加访问控制的Lua脚本"><a href="#添加访问控制的Lua脚本" class="headerlink" title="添加访问控制的Lua脚本"></a>添加访问控制的Lua脚本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@hbase31 ~]<span class="comment"># vim /usr/local/openresty/nginx/conf/lua/access.lua</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> ip_block_time=<span class="number">300</span> <span class="comment">--封禁IP时间（秒）</span></span><br><span class="line"><span class="keyword">local</span> ip_time_out=<span class="number">30</span>    <span class="comment">--指定ip访问频率时间段（秒）</span></span><br><span class="line"><span class="keyword">local</span> ip_max_count=<span class="number">20</span> <span class="comment">--指定ip访问频率计数最大值（秒）</span></span><br><span class="line"><span class="keyword">local</span> BUSINESS = ngx.var.business <span class="comment">--nginx的location中定义的业务标识符</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--连接redis</span></span><br><span class="line"><span class="keyword">local</span> redis = <span class="built_in">require</span> <span class="string">&quot;resty.redis&quot;</span>  </span><br><span class="line"><span class="keyword">local</span> conn = redis:new()  </span><br><span class="line">ok, err = conn:connect(<span class="string">&quot;192.168.1.30&quot;</span>, <span class="number">6379</span>)  </span><br><span class="line">conn:set_timeout(<span class="number">2000</span>) <span class="comment">--超时时间2秒</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--如果连接失败，跳转到脚本结尾</span></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">goto</span> FLAG</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--查询ip是否被禁止访问，如果存在则返回403错误代码</span></span><br><span class="line">is_block, err = conn:get(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr)  </span><br><span class="line"><span class="keyword">if</span> is_block == <span class="string">&#x27;1&#x27;</span> <span class="keyword">then</span></span><br><span class="line">    ngx.<span class="built_in">exit</span>(<span class="number">403</span>)</span><br><span class="line">    <span class="keyword">goto</span> FLAG</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">--查询redis中保存的ip的计数器</span></span><br><span class="line">ip_count, err = conn:get(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr)</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> ip_count == ngx.null <span class="keyword">then</span> <span class="comment">--如果不存在，则将该IP存入redis，并将计数器设置为1、该KEY的超时时间为ip_time_out</span></span><br><span class="line">    res, err = conn:set(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, <span class="number">1</span>)</span><br><span class="line">    res, err = conn:expire(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, ip_time_out)</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    ip_count = ip_count + <span class="number">1</span> <span class="comment">--存在则将单位时间内的访问次数加1</span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">if</span> ip_count &gt;= ip_max_count <span class="keyword">then</span> <span class="comment">--如果超过单位时间限制的访问次数，则添加限制访问标识，限制时间为ip_block_time</span></span><br><span class="line">        res, err = conn:set(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr, <span class="number">1</span>)</span><br><span class="line">        res, err = conn:expire(BUSINESS..<span class="string">&quot;-BLOCK-&quot;</span>..ngx.var.remote_addr, ip_block_time)</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        res, err = conn:set(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr,ip_count)</span><br><span class="line">        res, err = conn:expire(BUSINESS..<span class="string">&quot;-COUNT-&quot;</span>..ngx.var.remote_addr, ip_time_out)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 结束标记</span></span><br><span class="line">::FLAG::</span><br><span class="line"><span class="keyword">local</span> ok, err = conn:<span class="built_in">close</span>()</span><br></pre></td></tr></table></figure>
+<p>这个脚本的目的很简单：一个IP如果在30秒内其访问次数达到20次则表明该IP访问频率太快了，因此将该IP封禁5分钟。同时由于计数的KEY在Redis中的超时时间设置成了30秒，所以如果两次访问间隔时间大于30秒将会重新开始计数</p>
+<h3 id="在Nginx需要限速的location中引用上述脚本"><a href="#在Nginx需要限速的location中引用上述脚本" class="headerlink" title="在Nginx需要限速的location中引用上述脚本"></a>在Nginx需要限速的location中引用上述脚本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">location /user/ &#123;</span><br><span class="line">    set <span class="variable">$business</span> <span class="string">&quot;USER&quot;</span>;</span><br><span class="line">    access_by_lua_file /usr/local/openresty/nginx/conf/lua/access.lua;</span><br><span class="line">        proxy_redirect off;</span><br><span class="line">        proxy_set_header        Host <span class="variable">$host</span>;</span><br><span class="line">        proxy_set_header        X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        proxy_set_header        X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        proxy_pass http:<span class="comment">//user_224/user/;</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>注：对于有大量静态资源文件（如：js、css、图片等）的前端页面可以设置只有指定格式的请求才进行访问限速，示例代码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">location /h5 &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$request_uri</span> ~ .*\.(html|htm|jsp|json)) &#123;</span><br><span class="line">            set <span class="variable">$business</span> <span class="string">&quot;H5&quot;</span>;</span><br><span class="line">            access_by_lua_file /usr/local/openresty/nginx/conf/lua/access.lua;</span><br><span class="line">        &#125;</span><br><span class="line">        proxy_redirect off;</span><br><span class="line">        proxy_set_header        Host <span class="variable">$host</span>;</span><br><span class="line">        proxy_set_header        X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        proxy_set_header        X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        proxy_pass http:<span class="comment">//h5_224/h5;</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://juejin.im/entry/5a45a9b8f265da431f4b62d5">https://juejin.im/entry/5a45a9b8f265da431f4b62d5</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1098,98 +1177,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/08/swoole%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/05/08/swoole%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" class="post-title-link" itemprop="url">swoole的核心概念</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-05-08 09:29:04 / 修改时间：11:14:08" itemprop="dateCreated datePublished" datetime="2018-05-08T09:29:04+09:00">2018-05-08</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-只要从现在开始努力，最坏不过是大器晚成
-</blockquote>
-
-<p>当 Swoole 启动时, 一共会建立 2 + n + m 个进程，其 n 为 Worker 数， m 为 TaskWorker 数，2 为一个 Master 进程和一个 Manager 进程</p>
-<h3 id="Swoole框架模型"><a href="#Swoole框架模型" class="headerlink" title="Swoole框架模型"></a>Swoole框架模型</h3><p>Swoole Server 中有以下几种角色，分别是：Master(Process)、Reactor(Thread)、Manager(Process)、Worker(Process) 和 TaskWoker(Process);<br><img style="margin-left: 0;" src="/images/swoole01.png"></p>
-<h4 id="Master-Process"><a href="#Master-Process" class="headerlink" title="Master(Process)"></a>Master(Process)</h4><p>Master 是 Swoole 的主要 Process，当我们启动 Swoole 时，当下的 Process 就会成为 Master Process 并负责建立 Main Reactor、建立和管理 Reactor、建立 Manager 并开始接受客户端请求等工作。</p>
-<p>首先 Master 会透过 fork 函数建立一个 Manager，接着建立 Reactor，当全部建立完成后会呼叫 onStart 的 callback function，此时可以在这个 callback function 中对 Master 做一些处理或修改。如：将 Master 重新命名，保存 Master 的 PID 档桉等。</p>
-<p>这裡要特别注意，因为 Master 不应该存在任何商业逻辑，因此 Swoole 底层会禁止你在此处做一些行为，如：发送请求、呼叫 Swoole 的异步 API 等等。</p>
-<h4 id="Reactor-Thread"><a href="#Reactor-Thread" class="headerlink" title="Reactor(Thread)"></a>Reactor(Thread)</h4><p>Reactor 以 Multi-Thread 的方式执行，Reactor 底层由 epoll 函数来实现（在Mac系统是透过 Kqueue），用于实际监听和处理来自客户端的 Connect 请求，并完全是透过异步、非阻塞的模式来运作。</p>
-<h4 id="Manager-Process"><a href="#Manager-Process" class="headerlink" title="Manager(Process)"></a>Manager(Process)</h4><p>Swoole 中 Worker/Task worker 都是由 Manager 所 fork 并管理的。当 Manager 被建立时，会呼叫 onManagerStart 的 callback function 通知上层的应用。</p>
-<p>当底下的某个 Worker 意外结束执行时，Manager 会负责回收的工作，并同时建立新的 Worker 补足固定的数量维持 Swoole 的正常运作。</p>
-<p>当 Manager 退出时，会呼叫 onManagerStop 的 callback function，可以利用此时进行一些回收逻辑。</p>
-<h4 id="Worker-Process"><a href="#Worker-Process" class="headerlink" title="Worker(Process)"></a>Worker(Process)</h4><p>Worker 以 Multi-Process 的方式执行，是 Swoole 中执行大部分逻辑的地方，因此在 Worker 中所对应的 callback function 数量也是最多的。</p>
-<p>当 Worker 启动后会呼叫 onWorkerStart 的 callback function，在这裡我们就能够使用全部 Swoole 所提供的 API 了。</p>
-<p>当上层的 Reactor 收到客户端的请求后，就会将数据打包发送给 Worker，并在相对应的 callback function 中（如：onReceive、onRequest、onMessage等）处理这些资料，并可以将处理结果回传给 Reactor，再回传至客户端中。如果 Worker 正常退出，会呼叫 onWorkerStop 的 callback function，若是处理数据过程中出现严重错误或者 Worker 请求达到处理上限时，则会呼叫 onWorkerError 的 callback function 并结束该 Worker。</p>
-<h4 id="Task-Worker-Process"><a href="#Task-Worker-Process" class="headerlink" title="Task Worker(Process)"></a>Task Worker(Process)</h4><p>Task Worker 一样以 Multi-Process 的方式执行，只接受由 Worker 中透过 swoole_server-&gt;task/taskwait 方法指派过来的任务，并将结果回传给 Worker。</p>
-<h3 id="Process-间的通讯"><a href="#Process-间的通讯" class="headerlink" title="Process 间的通讯"></a>Process 间的通讯</h3><p>在 Swoole 中，Process 间的通讯可以分为以下几三种状况：</p>
-<ul>
-<li>Master &lt;=&gt; Worker</li>
-<li>Worker &lt;=&gt; Worker</li>
-<li>Worker &lt;=&gt; Task Worker</li>
-</ul>
-<p>前两种情形，在 Swoole 底层统一使用 Unix Socket 进行通讯，这些 socket 也都归併到各自 Process 的 Reactor 中进行管理。而第三种情况，除了预设的 Unix Socket 外，还可以使用由系统提供的 Message Queue 来实作。</p>
-<h3 id="Reactor-Worker-Task的关系"><a href="#Reactor-Worker-Task的关系" class="headerlink" title="Reactor,Worker,Task的关系"></a>Reactor,Worker,Task的关系</h3><p>一个通俗的比喻，假设Server就是一个工厂，那Reactor就是销售，接受客户订单。而Worker就是工人，当销售接到订单后，Worker去工作生产出客户要的东西。而TaskWorker可以理解为行政人员，可以帮助Worker干些杂事，让Worker专心工作。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://wiki.swoole.com/wiki/page/163.html">https://wiki.swoole.com/wiki/page/163.html</a><br><a target="_blank" rel="noopener" href="https://blog.albert-chen.com/swoole-basic-concepts/">https://blog.albert-chen.com/swoole-basic-concepts/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1203,7 +1190,7 @@
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">414</span>
+          <span class="site-state-item-count">415</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,83 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/10/laravel%E4%BB%85%E5%85%81%E8%AE%B8%E5%8D%95%E4%B8%80%E4%BC%9A%E8%AF%9D%E5%AD%98%E5%9C%A8%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/10/laravel%E4%BB%85%E5%85%81%E8%AE%B8%E5%8D%95%E4%B8%80%E4%BC%9A%E8%AF%9D%E5%AD%98%E5%9C%A8%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">Laravel仅允许单一会话存在实现</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-04-10 15:53:58 / 修改时间：17:08:55" itemprop="dateCreated datePublished" datetime="2018-04-10T15:53:58+09:00">2018-04-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+他说你任何为人称道的美丽 不及他第一次遇见你
+</blockquote>
+在Laravel 中, 如果要实现用户的单点登录, 即系统中同一个用户仅仅允许一个会话(session)存在, 实现起来相当简单, 下面的代码是我在Laravel 5.5.13中试验的, 并不保证在其他版本的Laravel中可以使用, 但是思想同样可以借鉴;
+
+<h3 id="修改user表"><a href="#修改user表" class="headerlink" title="修改user表"></a>修改user表</h3><p>User模型对应的数据库表增加 <code>session_id</code> 字段, <code>string</code>类型;</p>
+<h3 id="修改登录控制器"><a href="#修改登录控制器" class="headerlink" title="修改登录控制器"></a>修改登录控制器</h3><p>/app/Http/Controllers/Auth/LoginController.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">authenticated</span>(<span class="params">Request <span class="variable">$request</span>,User <span class="variable">$user</span></span>)</span>&#123;</span><br><span class="line">    <span class="variable">$previous_session</span> = <span class="variable">$user</span>-&gt;session_id;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$previous_session</span>) &#123;</span><br><span class="line">        \Session::getHandler()-&gt;destroy(<span class="variable">$previous_session</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    \Auth::user()-&gt;session_id = \Session::getId();</span><br><span class="line">    \Auth::user()-&gt;save();</span><br><span class="line">    <span class="keyword">return</span> redirect()-&gt;intended(<span class="keyword">$this</span>-&gt;redirectPath());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>我们分别在不同的浏览器去用同一帐号尝试去登录我们的应用, 发现, 如果帐号在一个浏览器登录, 那么另外一个浏览器的帐号就会自动退出;</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://tiicle.com/items/327/laravel-applications-a-user-is-only-allowed-a-single-session">https://tiicle.com/items/327/laravel-applications-a-user-is-only-allowed-a-single-session</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1052,83 +1129,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/28/hexo%E7%9A%84url%E5%A4%A7%E5%B0%8F%E5%86%99%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/28/hexo%E7%9A%84url%E5%A4%A7%E5%B0%8F%E5%86%99%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">hexo的url大小写问题</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-03-28 09:42:32 / 修改时间：10:47:35" itemprop="dateCreated datePublished" datetime="2018-03-28T09:42:32+09:00">2018-03-28</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我自己说不出口的，总希望别人能问一问。
-</blockquote>
-
-<h3 id="相关配置"><a href="#相关配置" class="headerlink" title="相关配置"></a>相关配置</h3><ul>
-<li><p>根配置文件_config.yml</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">filename_case: <span class="number">1</span>  # url case</span><br></pre></td></tr></table></figure></li>
-<li><p>git配置文件<br>进入到博客项目中 .deploy_git文件夹 .git 下的 config 文件</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ignorecase=<span class="literal">false</span></span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="后续操作"><a href="#后续操作" class="headerlink" title="后续操作"></a>后续操作</h3><p>删除博客项目中 .deploy_git 文件夹下的所有文件，并 push 到 Github 上, 这一步是清空你的 github.io 项目中所有文件。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git rm -rf *</span><br><span class="line">git commit -m <span class="string">&#x27;clean all file&#x27;</span></span><br><span class="line">git push</span><br></pre></td></tr></table></figure>
-<p>使用 Hexo 再次生成及部署</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd ..</span><br><span class="line">hexo clean</span><br><span class="line">hexo deploy -generate</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/16/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><span class="page-number current">17</span><a class="page-number" href="/page/18/">18</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/18/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1142,7 +1142,7 @@
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

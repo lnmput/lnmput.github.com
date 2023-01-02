@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">414</span>
+          <span class="site-state-item-count">415</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,98 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/08/swoole%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/08/swoole%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" class="post-title-link" itemprop="url">swoole的核心概念</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-05-08 09:29:04 / 修改时间：11:14:08" itemprop="dateCreated datePublished" datetime="2018-05-08T09:29:04+09:00">2018-05-08</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+只要从现在开始努力，最坏不过是大器晚成
+</blockquote>
+
+<p>当 Swoole 启动时, 一共会建立 2 + n + m 个进程，其 n 为 Worker 数， m 为 TaskWorker 数，2 为一个 Master 进程和一个 Manager 进程</p>
+<h3 id="Swoole框架模型"><a href="#Swoole框架模型" class="headerlink" title="Swoole框架模型"></a>Swoole框架模型</h3><p>Swoole Server 中有以下几种角色，分别是：Master(Process)、Reactor(Thread)、Manager(Process)、Worker(Process) 和 TaskWoker(Process);<br><img style="margin-left: 0;" src="/images/swoole01.png"></p>
+<h4 id="Master-Process"><a href="#Master-Process" class="headerlink" title="Master(Process)"></a>Master(Process)</h4><p>Master 是 Swoole 的主要 Process，当我们启动 Swoole 时，当下的 Process 就会成为 Master Process 并负责建立 Main Reactor、建立和管理 Reactor、建立 Manager 并开始接受客户端请求等工作。</p>
+<p>首先 Master 会透过 fork 函数建立一个 Manager，接着建立 Reactor，当全部建立完成后会呼叫 onStart 的 callback function，此时可以在这个 callback function 中对 Master 做一些处理或修改。如：将 Master 重新命名，保存 Master 的 PID 档桉等。</p>
+<p>这裡要特别注意，因为 Master 不应该存在任何商业逻辑，因此 Swoole 底层会禁止你在此处做一些行为，如：发送请求、呼叫 Swoole 的异步 API 等等。</p>
+<h4 id="Reactor-Thread"><a href="#Reactor-Thread" class="headerlink" title="Reactor(Thread)"></a>Reactor(Thread)</h4><p>Reactor 以 Multi-Thread 的方式执行，Reactor 底层由 epoll 函数来实现（在Mac系统是透过 Kqueue），用于实际监听和处理来自客户端的 Connect 请求，并完全是透过异步、非阻塞的模式来运作。</p>
+<h4 id="Manager-Process"><a href="#Manager-Process" class="headerlink" title="Manager(Process)"></a>Manager(Process)</h4><p>Swoole 中 Worker/Task worker 都是由 Manager 所 fork 并管理的。当 Manager 被建立时，会呼叫 onManagerStart 的 callback function 通知上层的应用。</p>
+<p>当底下的某个 Worker 意外结束执行时，Manager 会负责回收的工作，并同时建立新的 Worker 补足固定的数量维持 Swoole 的正常运作。</p>
+<p>当 Manager 退出时，会呼叫 onManagerStop 的 callback function，可以利用此时进行一些回收逻辑。</p>
+<h4 id="Worker-Process"><a href="#Worker-Process" class="headerlink" title="Worker(Process)"></a>Worker(Process)</h4><p>Worker 以 Multi-Process 的方式执行，是 Swoole 中执行大部分逻辑的地方，因此在 Worker 中所对应的 callback function 数量也是最多的。</p>
+<p>当 Worker 启动后会呼叫 onWorkerStart 的 callback function，在这裡我们就能够使用全部 Swoole 所提供的 API 了。</p>
+<p>当上层的 Reactor 收到客户端的请求后，就会将数据打包发送给 Worker，并在相对应的 callback function 中（如：onReceive、onRequest、onMessage等）处理这些资料，并可以将处理结果回传给 Reactor，再回传至客户端中。如果 Worker 正常退出，会呼叫 onWorkerStop 的 callback function，若是处理数据过程中出现严重错误或者 Worker 请求达到处理上限时，则会呼叫 onWorkerError 的 callback function 并结束该 Worker。</p>
+<h4 id="Task-Worker-Process"><a href="#Task-Worker-Process" class="headerlink" title="Task Worker(Process)"></a>Task Worker(Process)</h4><p>Task Worker 一样以 Multi-Process 的方式执行，只接受由 Worker 中透过 swoole_server-&gt;task/taskwait 方法指派过来的任务，并将结果回传给 Worker。</p>
+<h3 id="Process-间的通讯"><a href="#Process-间的通讯" class="headerlink" title="Process 间的通讯"></a>Process 间的通讯</h3><p>在 Swoole 中，Process 间的通讯可以分为以下几三种状况：</p>
+<ul>
+<li>Master &lt;=&gt; Worker</li>
+<li>Worker &lt;=&gt; Worker</li>
+<li>Worker &lt;=&gt; Task Worker</li>
+</ul>
+<p>前两种情形，在 Swoole 底层统一使用 Unix Socket 进行通讯，这些 socket 也都归併到各自 Process 的 Reactor 中进行管理。而第三种情况，除了预设的 Unix Socket 外，还可以使用由系统提供的 Message Queue 来实作。</p>
+<h3 id="Reactor-Worker-Task的关系"><a href="#Reactor-Worker-Task的关系" class="headerlink" title="Reactor,Worker,Task的关系"></a>Reactor,Worker,Task的关系</h3><p>一个通俗的比喻，假设Server就是一个工厂，那Reactor就是销售，接受客户订单。而Worker就是工人，当销售接到订单后，Worker去工作生产出客户要的东西。而TaskWorker可以理解为行政人员，可以帮助Worker干些杂事，让Worker专心工作。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://wiki.swoole.com/wiki/page/163.html">https://wiki.swoole.com/wiki/page/163.html</a><br><a target="_blank" rel="noopener" href="https://blog.albert-chen.com/swoole-basic-concepts/">https://blog.albert-chen.com/swoole-basic-concepts/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1051,97 +1143,6 @@ Still water run deep.
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/17/%E5%AD%97%E8%8A%82%E4%B8%8E%E5%AD%97%E7%AC%A6%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/17/%E5%AD%97%E8%8A%82%E4%B8%8E%E5%AD%97%E7%AC%A6%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">字节与字符的区别</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-17 15:09:02 / 修改时间：17:44:52" itemprop="dateCreated datePublished" datetime="2018-04-17T15:09:02+09:00">2018-04-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-山中何事，松花酿酒，春水煎茶。
-</blockquote>
-
-<h3 id="一通分析"><a href="#一通分析" class="headerlink" title="一通分析"></a>一通分析</h3><p>PHP代码中字符串的默认编码方式是根据页面的编码方式决定的, 一般情况下我们设置的都是utf-8编码,当然也不排除其他情况;<br>默认utf8格式</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$str</span>=<span class="string">&#x27;我&#x27;</span>;</span><br><span class="line"><span class="keyword">echo</span> strlen(<span class="variable">$str</span>);  <span class="comment">// 3个字节</span></span><br></pre></td></tr></table></figure>
-<p>转成gbk格式</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$str</span>=<span class="string">&#x27;我&#x27;</span>;</span><br><span class="line"><span class="variable">$str</span> = iconv(<span class="string">&#x27;utf-8&#x27;</span>,<span class="string">&#x27;gbk&#x27;</span>, <span class="variable">$str</span>);</span><br><span class="line"><span class="keyword">echo</span> strlen(<span class="variable">$str</span>);  <span class="comment">// 2个字节</span></span><br></pre></td></tr></table></figure>
-<p>出现乱码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$str</span>=<span class="string">&#x27;我&#x27;</span>;</span><br><span class="line"><span class="variable">$str</span> = iconv(<span class="string">&#x27;utf-8&#x27;</span>,<span class="string">&#x27;gbk&#x27;</span>, <span class="variable">$str</span>);</span><br><span class="line"><span class="keyword">echo</span> strlen(<span class="variable">$str</span>);  <span class="comment">// 2个字节</span></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$str</span>; <span class="comment">// ��</span></span><br></pre></td></tr></table></figure>
-<p>解决乱码</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">header(<span class="string">&quot;Content-type: text/html; charset=gb2312&quot;</span>);</span><br><span class="line"><span class="variable">$str</span>=<span class="string">&#x27;我&#x27;</span>;</span><br><span class="line"><span class="variable">$str</span> = iconv(<span class="string">&#x27;utf-8&#x27;</span>,<span class="string">&#x27;gbk&#x27;</span>, <span class="variable">$str</span>);</span><br><span class="line"><span class="keyword">echo</span> strlen(<span class="variable">$str</span>);  <span class="comment">// 2个字节</span></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$str</span>; <span class="comment">// ��</span></span><br></pre></td></tr></table></figure>
-<p>或者是将我们的网页的编码方式改成<code>gbk</code>, 因为新版的Chrome已经移除了修改页面编码方式的工具, 不过我们可以借助他的一款扩展程序<code>Set Character Encoding</code>来解决;</p>
-<p><code>注意header头的作用是申明页面渲染的编码方式, 并不能影响PHP代码中相关字符的编码方式</code></p>
-<h3 id="字节和字符"><a href="#字节和字符" class="headerlink" title="字节和字符"></a>字节和字符</h3><p>字节(Byte)是计量单位，表示数据量多少，是计算机存储容量的计量单位。一个字节占8位。<br>字符(Character)计算机中使用的文字和符号，比如’A’、’B’、’$’、’&amp;’等。</p>
-<ul>
-<li><p>ASCII码中，一个英文字母（不分大小写）占一个字节的空间，一个中文汉字占两个字节的空间。</p>
-</li>
-<li><p>UTF-8编码中，一个英文字符等于一个字节，一个中文等于三个字节。</p>
-</li>
-<li><p>Unicode编码中，一个英文等于两个字节，一个中文等于两个字节。</p>
-</li>
-</ul>
-<p>符号：英文标点占一个字节，中文标点占两个字节。举例：英文句号“.”占1个字节的大小，中文句号“。”占2个字节的大小。</p>
-<h3 id="单位换算"><a href="#单位换算" class="headerlink" title="单位换算"></a>单位换算</h3><blockquote>
-<p>1字节(Byte) = 8位(bit) （1B=8位(bit)）<br>1KB=1024B<br>1MB=1024KB</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/14/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><span class="page-number current">15</span><a class="page-number" href="/page/16/">16</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/16/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1155,7 +1156,7 @@ Still water run deep.
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

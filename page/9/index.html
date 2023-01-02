@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">414</span>
+          <span class="site-state-item-count">415</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,143 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/06/12/%E4%BD%BF%E7%94%A8cloudflare%E6%8F%90%E4%BE%9B%E7%9A%84%E8%AF%81%E4%B9%A6%E9%85%8D%E7%BD%AEhttps/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/06/12/%E4%BD%BF%E7%94%A8cloudflare%E6%8F%90%E4%BE%9B%E7%9A%84%E8%AF%81%E4%B9%A6%E9%85%8D%E7%BD%AEhttps/" class="post-title-link" itemprop="url">使用cloudflare提供的证书配置https</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2019-06-12 10:39:35 / 修改时间：12:01:53" itemprop="dateCreated datePublished" datetime="2019-06-12T10:39:35+09:00">2019-06-12</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我有整个宇宙想讲给你听，张嘴却吐不出半粒星尘。
+</blockquote>
+
+<h3 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h3><p>Cloudflare is a service that sits between the visitor and the website owner’s server, acting as a reverse proxy for websites. Cloudflare provides a Content Delivery Network (CDN), as well as DDoS mitigation and distributed domain name server services.</p>
+<p>Nginx is a popular web server responsible for hosting some of the largest and highest-traffic sites on the internet. It’s common for organizations to serve websites with Nginx and use Cloudflare as a CDN and DNS provider.</p>
+<p>In this tutorial you will secure your website served by Nginx with an Origin CA certificate from Cloudflare and configure Nginx to use authenticated pull requests. The advantages of using this setup are that you benefit from Cloudflare’s CDN and fast DNS resolution while ensuring that all connections pass through Cloudflare. This prevents any malicious requests from reaching your server.</p>
+<h3 id="Step-1-—-Generating-an-Origin-CA-TLS-Certificate"><a href="#Step-1-—-Generating-an-Origin-CA-TLS-Certificate" class="headerlink" title="Step 1 — Generating an Origin CA TLS Certificate"></a>Step 1 — Generating an Origin CA TLS Certificate</h3><p>The Cloudflare Origin CA lets you generate a free TLS certificate signed by Cloudflare to install on your Nginx server. By using the Cloudflare generated TLS certificate you can secure the connection between Cloudflare’s servers and your Nginx server.</p>
+<p>To generate a certificate with Origin CA, navigate to the Crypto section of your Cloudflare dashboard. From there, click on the Create Certificate button in the Origin Certificates section:<br><img src="/images/ca01.png"><br>Leave the default option of Let CloudFlare generate a private key and a CSR selected.<br><img src="/images/ca02.png"><br>Click Next and you will see a dialog with the Origin Certificate and Private key. You need to transfer both the origin certificate and private key from CloudFlare to your server.<br><img src="/images/ca03.png"><br>We’ll use the <code>/etc/ssl/certs</code> directory on the server to hold the origin certificate. The <code>/etc/ssl/private</code> directory will hold the private key file. Both folders already exist on the server.</p>
+<p>First, copy the contents of the Origin Certificate displayed in the dialog box in your browser.</p>
+<p>Then, on your server, open <code>/etc/ssl/certs/cert.pem</code> for editing:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nano /etc/ssl/certs/cert.pem</span><br></pre></td></tr></table></figure>
+<p>Paste the certificate contents into the file. Then save and exit the editor.</p>
+<p>Then return to your browser and copy the contents of the Private key. Open the file <code>/etc/ssl/private/key.pem</code> for editing:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nano /etc/ssl/<span class="keyword">private</span>/key.pem</span><br></pre></td></tr></table></figure>
+<p>Paste the key into the file, save the file, and exit the editor.</p>
+<blockquote>
+<p>Warning: Cloudflare’s Origin CA Certificate is only trusted by Cloudflare and therefore should only be used by origin servers that are actively connected to Cloudflare. If at any point you pause or disable Cloudflare, your Origin CA certificate will throw an untrusted certificate error.</p>
+</blockquote>
+<p>Now that you copied the key and certificate files to your server, you need to update the Nginx configuration to use them.</p>
+<h3 id="Step-2-—-Installing-the-Origin-CA-certificate-in-Nginx"><a href="#Step-2-—-Installing-the-Origin-CA-certificate-in-Nginx" class="headerlink" title="Step 2 — Installing the Origin CA certificate in Nginx"></a>Step 2 — Installing the Origin CA certificate in Nginx</h3><p>In the previous section, you generated an origin certificate and private key using Cloudlfare’s dashboard and saved the files to your server. Now you’ll update the Nginx configuration for your site to use the origin certificate and private key to secure the connection between Cloudflare’s servers and your server.</p>
+<p>Nginx creates a default server block during installation. Remove it if it exists, as you’ve already configured a custom server block for your domain:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo rm /etc/nginx/sites-enabled/<span class="keyword">default</span></span><br></pre></td></tr></table></figure>
+<p>Next, open the Nginx configuration file for your domain:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nano /etc/nginx/sites-available/example.com</span><br></pre></td></tr></table></figure>
+<p>The file should look like this:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">example.com<span class="string">&#x27;&gt;/etc/nginx/sites-available/example.com</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        listen <span class="number">80</span>;</span><br><span class="line">        listen [::]:<span class="number">80</span>;</span><br><span class="line"></span><br><span class="line">        root /<span class="keyword">var</span>/www/example.com/html;</span><br><span class="line">        index index.html index.htm index.nginx-debian.html;</span><br><span class="line"></span><br><span class="line">        server_name example.com www.example.com;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                try_files <span class="variable">$uri</span> <span class="variable">$uri</span>/ =<span class="number">404</span>;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>We’ll modify the Nginx configuration file to do the following:</p>
+<ul>
+<li>Listen on port 80 and redirect all requests to use https.</li>
+<li>Listen on port 443 and use the origin certificate and private key that you added in the previous section.</li>
+</ul>
+<p>Modify the file so it looks like the following:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">example.com<span class="string">&#x27;&gt;/etc/nginx/sites-available/example.com</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    listen [::]:<span class="number">80</span>;</span><br><span class="line">    server_name example.com www.example.com;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">302</span> https:<span class="comment">//$server_name$request_uri;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># SSL configuration</span></span><br><span class="line"></span><br><span class="line">    listen <span class="number">443</span> ssl http2;</span><br><span class="line">    listen [::]:<span class="number">443</span> ssl http2;</span><br><span class="line">    ssl        on;</span><br><span class="line">    ssl_certificate         /etc/ssl/certs/cert.pem;</span><br><span class="line">    ssl_certificate_key     /etc/ssl/<span class="keyword">private</span>/key.pem;</span><br><span class="line"></span><br><span class="line">    server_name example.com www.example.com;</span><br><span class="line"></span><br><span class="line">    root /<span class="keyword">var</span>/www/example.com/html;</span><br><span class="line">    index index.html index.htm index.nginx-debian.html;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">            try_files <span class="variable">$uri</span> <span class="variable">$uri</span>/ =<span class="number">404</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Save the file and exit the editor.</p>
+<p>Next, test to make sure that there are no syntax errors in any of your Nginx configuration files:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nginx -t</span><br></pre></td></tr></table></figure>
+<p>If no problems were found, restart Nginx to enable your changes:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl restart nginx</span><br></pre></td></tr></table></figure>
+<p>Now go to the Cloudflare dashboard’s Crypto section and change SSL mode to Full. This informs Cloudflare to always encrypt the connection between Cloudflare and your origin Nginx server.</p>
+<p><img src="/images/ca04.png"><br>Now visit your website at <a target="_blank" rel="noopener" href="https://example.com/">https://example.com</a> to verify that it’s set up properly. You’ll see your home page displayed, and the browser will report that the site is secure.</p>
+<p>In the next section, you will set up Authenticated Origin Pulls to verify that your origin server is indeed talking to Cloudflare and not some other server. By doing so, Nginx will be configured to only accept requests which use a valid client certificate from Cloudflare and requests which have not passed through CloudFlare will be dropped.</p>
+<h3 id="Step-3-—-Setting-Up-Authenticated-Origin-Pulls"><a href="#Step-3-—-Setting-Up-Authenticated-Origin-Pulls" class="headerlink" title="Step 3 — Setting Up Authenticated Origin Pulls"></a>Step 3 — Setting Up Authenticated Origin Pulls</h3><p>The Origin CA certificate will help Cloudflare verify that it is talking to the correct origin server. But how can your origin Nginx server verify that it is actually talking to Cloudflare? Enter TLS Client Authentication.</p>
+<p>In a client authenticated TLS handshake, both sides provide a certificate to be verified. The origin server is configured to only accept requests that use a valid client certificate from Cloudflare. Requests which have not passed through Cloudflare will be dropped as they will not have Cloudflare’s certificate. This means that attackers cannot circumvent Cloudflare’s security measures and directly connect to your Nginx server.</p>
+<p>Cloudflare presents certificates signed by a CA with the following certificate:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">-----BEGIN CERTIFICATE-----</span><br><span class="line">MIIGBjCCA/CgAwIBAgIIV5G6lVbCLmEwCwYJKoZIhvcNAQENMIGQMQswCQYDVQQG</span><br><span class="line">EwJVUzEZMBcGA1UEChMQQ2xvdWRGbGFyZSwgSW5jLjEUMBIGA1UECxMLT3JpZ2lu</span><br><span class="line">IFB1bGwxFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xEzARBgNVBAgTCkNhbGlmb3Ju</span><br><span class="line">aWExIzAhBgNVBAMTGm9yaWdpbi1wdWxsLmNsb3VkZmxhcmUubmV0MB4XDTE1MDEx</span><br><span class="line">MzAyNDc1M1oXDTIwMDExMjAyNTI1M1owgZAxCzAJBgNVBAYTAlVTMRkwFwYDVQQK</span><br><span class="line">ExBDbG91ZEZsYXJlLCBJbmMuMRQwEgYDVQQLEwtPcmlnaW4gUHVsbDEWMBQGA1UE</span><br><span class="line">BxMNU2FuIEZyYW5jaXNjbzETMBEGA1UECBMKQ2FsaWZvcm5pYTEjMCEGA1UEAxMa</span><br><span class="line">b3JpZ2luLXB1bGwuY2xvdWRmbGFyZS5uZXQwggIiMA0GCSqGSIb3DQEBAQUAA4IC</span><br><span class="line">DwAwggIKAoICAQDdsts6I2H5dGyn4adACQRXlfo0KmwsN7B5rxD8C5qgy6spyONr</span><br><span class="line">WV0ecvdeGQfWa8Gy/yuTuOnsXfy7oyZ1dm93c3Mea7YkM7KNMc5Y6m520E9tHooc</span><br><span class="line">f1qxeDpGSsnWc7HWibFgD7qZQx+T+yfNqt63vPI0HYBOYao6hWd3JQhu5caAcIS2</span><br><span class="line">ms5tzSSZVH83ZPe6Lkb5xRgLl3eXEFcfI2DjnlOtLFqpjHuEB3Tr6agfdWyaGEEi</span><br><span class="line">lRY1IB3k6TfLTaSiX2/SyJ96bp92wvTSjR7USjDV9ypf7AD6u6vwJZ3bwNisNw5L</span><br><span class="line">ptph0FBnc1R6nDoHmvQRoyytoe0rl/d801i9Nru/fXa+l5K2nf1koR3IX440Z2i9</span><br><span class="line">+Z4iVA69NmCbT4MVjm7K3zlOtwfI7i1KYVv+ATo4ycgBuZfY9f/<span class="number">2</span>lBhIv7BHuZal</span><br><span class="line">b9D+/EK8aMUfjDF4icEGm+RQfExv2nOpkR4BfQppF/dLmkYfjgtO1403X0ihkT6T</span><br><span class="line">PYQdmYS6Jf53/KpqC3aA+R7zg2birtvprinlR14MNvwOsDOzsK4p8WYsgZOR4Qr2</span><br><span class="line">gAx+z2aVOs/<span class="number">87</span>+TVOR0r14irQsxbg7uP2X4t+EXx13glHxwG+CnzUVycDLMVGvuG</span><br><span class="line">aUgF9hukZxlOZnrl6VOf1fg0Caf3uvV8smOkVw6DMsGhBZSJVwao0UQNqQIDAQAB</span><br><span class="line">o2YwZDAOBgNVHQ8BAf8EBAMCAAYwEgYDVR0TAQH/BAgwBgEB/wIBAjAdBgNVHQ4E</span><br><span class="line">FgQUQ1lLK2mLgOERM2pXzVc42p59xeswHwYDVR0jBBgwFoAUQ1lLK2mLgOERM2pX</span><br><span class="line">zVc42p59xeswCwYJKoZIhvcNAQENA4ICAQDKDQM1qPRVP/<span class="number">4</span>Gltz0D6OU6xezFBKr</span><br><span class="line">LWtDoA1qW2F7pkiYawCP9MrDPDJsHy7dx+xw3bBZxOsK5PA/T7p1dqpEl6i8F692</span><br><span class="line">g<span class="comment">//EuYOifLYw3ySPe3LRNhvPl/1f6Sn862VhPvLa8aQAAwR9e/CZvlY3fj+6G5ik</span></span><br><span class="line"><span class="number">3</span>it7fikmKUsVnugNOkjmwI3hZqXfJNc7AtHDFw0mEOV0dSeAPTo95N9cxBbm9PKv</span><br><span class="line">qAEmTEXp2trQ/RjJ/AomJyfA1BQjsD0j++DI3a9/BbDwWmr1lJciKxiNKaa0BRLB</span><br><span class="line">dKMrYQD+PkPNCgEuojT+paLKRrMyFUzHSG1doYm46NE9/WARTh3sFUp1B7HZSBqA</span><br><span class="line">kHleoB/vQ/mDuW9C3/<span class="number">8</span>Jk2uRUdZxR+LoNZItuOjU8oTy6zpN1+GgSj7bHjiy9rfA</span><br><span class="line">F+ehdrz+IOh80WIiqs763PGoaYUyzxLvVowLWNoxVVoc9G+PqFKqD988XlipHVB6</span><br><span class="line">Bz+<span class="number">1</span>CD4D/bWrs3cC9+kk/jFmrrAymZlkFX8tDb5aXASSLJjUjcptci9SKqtI2h0J</span><br><span class="line">wUGkD7+bQAr+<span class="number">7</span>vr8/R+CBmNMe7csE8NeEX6lVMF7Dh0a1YKQa6hUN18bBuYgTMuT</span><br><span class="line">QzMmZpRpIBB321ZBlcnlxiTJvWxvbCPHKHj20VwwAz7LONF59s84ZsOqfoBv8gKM</span><br><span class="line">s0s5dsq5zpLeaw==</span><br><span class="line">-----END CERTIFICATE-----</span><br></pre></td></tr></table></figure>
+
+<p>You can also download the certificate directly from Cloudflare here.</p>
+<p>Copy this certificate.</p>
+<p>Then create the file <code>/etc/ssl/certs/cloudflare.crt</code> file to hold Cloudflare’s certificate:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nano /etc/ssl/certs/cloudflare.crt</span><br></pre></td></tr></table></figure>
+<p>Paste the certificate into the file. Then save the file and exit the editor.</p>
+<p>Now update your Nginx configuration to use TLS Authenticated Origin Pulls. Open the configuration file for your domain:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nano /etc/nginx/sites-available/example.com</span><br></pre></td></tr></table></figure>
+<p>Add the ssl_client_certificate and ssl_verify_client directives as shown in the following example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">example.com<span class="string">&#x27;&gt;/etc/nginx/sites-available/example.com</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">. . .</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># SSL configuration</span></span><br><span class="line"></span><br><span class="line">    listen <span class="number">443</span> ssl http2;</span><br><span class="line">    listen [::]:<span class="number">443</span> ssl http2;</span><br><span class="line">    ssl        on;</span><br><span class="line">    ssl_certificate         /etc/ssl/certs/cert.pem;</span><br><span class="line">    ssl_certificate_key     /etc/ssl/<span class="keyword">private</span>/key.pem;</span><br><span class="line">    ssl_client_certificate /etc/ssl/certs/cloudflare.crt;</span><br><span class="line">    ssl_verify_client on;</span><br><span class="line"></span><br><span class="line">    . . .</span><br></pre></td></tr></table></figure>
+<p>Save the file and exit the editor.</p>
+<p>Next, test to make sure that there are no syntax errors in your Nginx configuration.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl restart nginx</span><br></pre></td></tr></table></figure>
+<p>Finally, to enable Authenticated Pulls, open the Crypto section in the Cloudflare dashboard and toggle the Authenticated Origin Pulls option .<br><img src="/images/ca05.png"></p>
+<p>Now visit your website at <a target="_blank" rel="noopener" href="https://example.com/">https://example.com</a> to verify that it was set up properly. As before, you’ll see your home page displayed.</p>
+<p>To verify that your server will only accept requests signed by Cloudflare’s CA, toggle the Authenticated Origin Pulls option to disable it and then reload your website. You should get the following error message :<br><img src="/images/ca06.png"></p>
+<p>Your origin server raises an error if a request is not signed by Cloudflare’s CA.</p>
+<p>Now that you know it works properly, return to the Crypto section in the Cloudflare dashboard and toggle the Authenticated Origin Pulls option again to enable it.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.digitalocean.com/community/tutorials/how-to-host-a-website-using-cloudflare-and-nginx-on-ubuntu-16-04">https://www.digitalocean.com/community/tutorials/how-to-host-a-website-using-cloudflare-and-nginx-on-ubuntu-16-04</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -985,86 +1122,6 @@ You know some birds are not meant to be caged, their feathers are just too brigh
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/09/05/laravel%E9%9B%86%E5%90%88%E4%B8%AD%E7%9A%84when%E6%96%B9%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/09/05/laravel%E9%9B%86%E5%90%88%E4%B8%AD%E7%9A%84when%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">Laravel集合中的when方法</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-09-05 08:55:51 / 修改时间：10:30:19" itemprop="dateCreated datePublished" datetime="2018-09-05T08:55:51+09:00">2018-09-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-Hope is a good thing and maybe the best of things. And no good thing ever dies. 
-</blockquote>
-
-<p>Starting at v5.4.12, Laravel Collections now includes a when method that allows you to perform conditional actions on the items without breaking the chain.</p>
-<p>Like all the other Laravel Collection methods this one can have a lot of use cases but one example that comes to mind is being able to filter based on a query string parameter.</p>
-<p>To demonstrate that example, let’s pretend we have a list of hosts from the Laravel News Podcast:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$hosts</span> = [</span><br><span class="line">    [<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;Eric Barnes&#x27;</span>, <span class="string">&#x27;location&#x27;</span> =&gt; <span class="string">&#x27;USA&#x27;</span>, <span class="string">&#x27;is_active&#x27;</span> =&gt; <span class="number">0</span>],</span><br><span class="line">    [<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;Jack Fruh&#x27;</span>, <span class="string">&#x27;location&#x27;</span> =&gt; <span class="string">&#x27;USA&#x27;</span>, <span class="string">&#x27;is_active&#x27;</span> =&gt; <span class="number">0</span>],</span><br><span class="line">    [<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;Jacob Bennett&#x27;</span>, <span class="string">&#x27;location&#x27;</span> =&gt; <span class="string">&#x27;USA&#x27;</span>, <span class="string">&#x27;is_active&#x27;</span> =&gt; <span class="number">1</span>],</span><br><span class="line">    [<span class="string">&#x27;name&#x27;</span> =&gt; <span class="string">&#x27;Michael Dyrynda&#x27;</span>, <span class="string">&#x27;location&#x27;</span> =&gt; <span class="string">&#x27;AU&#x27;</span>, <span class="string">&#x27;is_active&#x27;</span> =&gt; <span class="number">1</span>],</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
-<p>Previously to filter based on a query string you might do something like this:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$inUsa</span> = collect(<span class="variable">$hosts</span>)-&gt;where(<span class="string">&#x27;location&#x27;</span>, <span class="string">&#x27;USA&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (request(<span class="string">&#x27;retired&#x27;</span>)) &#123;</span><br><span class="line">    <span class="variable">$inUsa</span> = <span class="variable">$inUsa</span>-&gt;filter(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$employee</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ! <span class="variable">$employee</span>[<span class="string">&#x27;is_active&#x27;</span>];</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>With the new when method you can now do this all in one Collection chain:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$inUsa</span> = collect(<span class="variable">$hosts</span>)</span><br><span class="line">    -&gt;where(<span class="string">&#x27;location&#x27;</span>, <span class="string">&#x27;USA&#x27;</span>)</span><br><span class="line">    -&gt;when(request(<span class="string">&#x27;retired&#x27;</span>), <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$collection</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$collection</span>-&gt;reject(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$employee</span></span>)</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$employee</span>[<span class="string">&#x27;is_active&#x27;</span>];</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-news.com/laravel-collections-when-method">https://laravel-news.com/laravel-collections-when-method</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/8/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/10/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1078,7 +1135,7 @@ Hope is a good thing and maybe the best of things. And no good thing ever dies.
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

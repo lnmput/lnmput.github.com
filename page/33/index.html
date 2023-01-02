@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">414</span>
+          <span class="site-state-item-count">415</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">133</span>
+        <span class="site-state-item-count">134</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,89 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/05/15/elasticsearch%E4%B8%AD%E7%9A%84analysis%E3%80%81analyzer%E3%80%81tokenizer%E3%80%81filter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/05/15/elasticsearch%E4%B8%AD%E7%9A%84analysis%E3%80%81analyzer%E3%80%81tokenizer%E3%80%81filter/" class="post-title-link" itemprop="url">elasticsearch中的analysis、analyzer、tokenizer、filter</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-05-15 09:14:50" itemprop="dateCreated datePublished" datetime="2017-05-15T09:14:50+09:00">2017-05-15</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:11:12" itemprop="dateModified" datetime="2018-03-27T22:11:12+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+这样看你
+用所有眼睛和所有距离
+就像风住了
+风又起
+</blockquote>
+Elasticsearch把每条数据叫做Document，然后提交到Index中。
+
+<p>简单说，Document中的数据是如何转变成倒排索引的，以及查询语句是如何转换成一个个词(Term)使高效率文本搜索变得可行，这种转换数据的过程就称为文本分析(analysis)。</p>
+<h3 id="analysis-基本概念"><a href="#analysis-基本概念" class="headerlink" title="analysis 基本概念"></a>analysis 基本概念</h3><p>elasticsearch全文搜索引擎会用某种算法(Tokenizer)对要建索引的文档进行分析， 从文档中提取出若干Token(词元)， 这些算法称为Tokenizer(分词器)， 这些Token会被进一步处理， 比如转成小写等， 这些进一步的处理算法被称为Filter(过滤器), 被处理后的结果被称为Term(词)， 文档中包含了几个这样的Term被称为Frequency(词频)。 引擎会建立Term和原文档的Inverted Index(倒排索引)， 这样就能根据Term很快到找到源文档了。</p>
+<p>文本分析(analysis)工作由analyzer(分析器)组件负责。analyzer由一个分词器(tokenizer)和0个或者多个过滤器(filter)组成,也可能会有0个或者多个字符映射器(character mappers)组成。</p>
+<p>tokenizer用来把文本拆分成一个个的Token。Token包含了比较多的信息，比如Term在文本的中的位置及Term原始文本，以及Term的长度。文本经过tokenizer处理后的结果称为token stream。token stream其实就是一个个Token的顺序排列。token stream将等待着filter来处理。</p>
+<p>filter链将用来处理Token Stream中的每一个token。这些处理方式包括删除Token,改变Token，甚至添加新的Token。比如变小写，去掉里面的HTML标记， 这些处理的算法被称为Character Filter(字符过滤器)，Elasticsearch中内置了许多filter，读者也可以轻松地自己实现一个filter。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;settings&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;analysis&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;filter&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;autocomplete_filter&quot;</span>: &#123;</span><br><span class="line">          <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;edge_ngram&quot;</span>,</span><br><span class="line">          <span class="attr">&quot;min_gram&quot;</span>: <span class="number">1</span>,</span><br><span class="line">          <span class="attr">&quot;max_gram&quot;</span>: <span class="number">20</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">&quot;analyzer&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;autocomplete&quot;</span>: &#123;</span><br><span class="line">          <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;custom&quot;</span>,</span><br><span class="line">          <span class="attr">&quot;tokenizer&quot;</span>: <span class="string">&quot;standard&quot;</span>,</span><br><span class="line">          <span class="attr">&quot;filter&quot;</span>: [</span><br><span class="line">            <span class="string">&quot;lowercase&quot;</span>,</span><br><span class="line">            <span class="string">&quot;autocomplete_filter&quot;</span></span><br><span class="line">          ]</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -963,89 +1046,6 @@ sql_mode是个很容易被忽视的变量，默认值是空值，在这种设置
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/04/06/php%E6%95%B0%E5%AD%A6%E6%89%A9%E5%B1%95bcmath/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/04/06/php%E6%95%B0%E5%AD%A6%E6%89%A9%E5%B1%95bcmath/" class="post-title-link" itemprop="url">php数学扩展bcmath</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-04-06 17:14:54" itemprop="dateCreated datePublished" datetime="2017-04-06T17:14:54+09:00">2017-04-06</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-03 18:11:53" itemprop="dateModified" datetime="2018-04-03T18:11:53+09:00">2018-04-03</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我在这里准备了一百口棺材，九十九口留给贪官，一口留给自己。
-</blockquote>
-
-<h3 id="问题引出"><a href="#问题引出" class="headerlink" title="问题引出"></a>问题引出</h3><p>看下面这个代码片段的结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$res1</span> = <span class="number">0.07</span> * <span class="number">100</span> == <span class="number">7</span>;</span><br><span class="line">dump(<span class="variable">$res1</span>); <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
-<p>结果竟然是 <code>false</code><br>这个和电脑中存储小数的原理有关。大家都知道计算机只能存储0和1，我们日常生活习惯使用的是10进制的数据，像0.07这个小数在计算机中存储时会有精度损失.</p>
-<h3 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$res2</span> = bcmul(<span class="number">0.07</span>, <span class="number">100</span>) == <span class="number">7</span>;</span><br><span class="line">dump(<span class="variable">$res2</span>);  <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-<p>BC 数学 函数<br>  ● bcadd — 2个任意精度数字的加法计算<br>  ● bccomp — 比较两个任意精度的数字<br>  ● bcdiv — 2个任意精度的数字除法计算<br>  ● bcmod — 对一个任意精度数字取模<br>  ● bcmul — 2个任意精度数字乘法计算<br>  ● bcpow — 任意精度数字的乘方<br>  ● bcpowmod — Raise an arbitrary precision number to another, reduced by a specified modulus<br>  ● bcscale — 设置所有bc数学函数的默认小数点保留位数<br>  ● bcsqrt — 任意精度数字的二次方根<br>  ● bcsub — 2个任意精度数字的减法</p>
-<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$re</span> = intval(<span class="number">18.99</span>*<span class="number">100</span>)/<span class="number">100</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$re</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;&lt;br&gt;&quot;</span>;</span><br><span class="line"><span class="variable">$gg</span> = bcdiv(bcmul(<span class="string">&#x27;18.99&#x27;</span>,<span class="string">&#x27;100&#x27;</span>), <span class="string">&#x27;100&#x27;</span>,<span class="number">2</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$gg</span>;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://php.net/manual/zh/book.bc.php">http://php.net/manual/zh/book.bc.php</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/32/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/32/">32</a><span class="page-number current">33</span><a class="page-number" href="/page/34/">34</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/34/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1059,7 +1059,7 @@ sql_mode是个很容易被忽视的变量，默认值是空值，在这种设置
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
