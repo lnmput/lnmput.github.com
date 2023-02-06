@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">415</span>
+          <span class="site-state-item-count">416</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,109 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/09/05/laravel%E4%BD%BF%E7%94%A8ajax%E4%B8%8A%E4%BC%A0%E5%9B%BE%E7%89%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/09/05/laravel%E4%BD%BF%E7%94%A8ajax%E4%B8%8A%E4%BC%A0%E5%9B%BE%E7%89%87/" class="post-title-link" itemprop="url">Laravel使用Ajax上传图片</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-09-05 09:12:17 / 修改时间：10:29:48" itemprop="dateCreated datePublished" datetime="2018-09-05T09:12:17+09:00">2018-09-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+You know some birds are not meant to be caged, their feathers are just too bright. 
+</blockquote>
+
+<p>File uploads is one of the most important functions on the internet, and we have bigger files nowadays, which means it’s not enough to have simple input fields – we need AJAX and processing file upload “in the background”. Here I will show you a simple example of that in Laravel 5.</p>
+<p>Let’s say, we have a simple form to upload the product and many photos for it.</p>
+<p>And we want to upload photos and see upload progress immediately, only then submitting the form. For that we will use a jQuery-File-Upload library.</p>
+<h3 id="Step-1-Database-structure"><a href="#Step-1-Database-structure" class="headerlink" title="Step 1. Database structure"></a>Step 1. Database structure</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Schema::create(<span class="string">&#x27;products&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$table</span>-&gt;increments(<span class="string">&#x27;id&#x27;</span>);</span><br><span class="line">    <span class="variable">$table</span>-&gt;string(<span class="string">&#x27;name&#x27;</span>);</span><br><span class="line">    <span class="variable">$table</span>-&gt;timestamps();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">Schema::create(<span class="string">&#x27;product_photos&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">    <span class="variable">$table</span>-&gt;increments(<span class="string">&#x27;id&#x27;</span>);</span><br><span class="line">    <span class="variable">$table</span>-&gt;integer(<span class="string">&#x27;product_id&#x27;</span>)-&gt;unsigned()-&gt;nullable();</span><br><span class="line">    <span class="variable">$table</span>-&gt;foreign(<span class="string">&#x27;product_id&#x27;</span>)-&gt;references(<span class="string">&#x27;id&#x27;</span>)-&gt;on(<span class="string">&#x27;products&#x27;</span>);</span><br><span class="line">    <span class="variable">$table</span>-&gt;string(<span class="string">&#x27;filename&#x27;</span>);</span><br><span class="line">    <span class="variable">$table</span>-&gt;timestamps();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>And then we have two simple models – app/Product.php and app/ProductPhoto.php.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Product</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$fillable</span> = [<span class="string">&#x27;name&#x27;</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ProductPhoto</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$fillable</span> = [<span class="string">&#x27;product_id&#x27;</span>, <span class="string">&#x27;filename&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">product</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;belongsTo(<span class="string">&#x27;App\Product&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>As you can see, field <code>product_photos.product_id</code> is nullable – which means we can upload photos without saving product with them yet. We’ll show later why.</p>
+<h3 id="Step-2-Routes-and-MVC"><a href="#Step-2-Routes-and-MVC" class="headerlink" title="Step 2. Routes and MVC"></a>Step 2. Routes and MVC</h3><p>First, let’s decide our URLs. In routes/web.php we will have this:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Route::get(<span class="string">&#x27;/&#x27;</span>, <span class="string">&#x27;UploadController@uploadForm&#x27;</span>);</span><br><span class="line">Route::post(<span class="string">&#x27;/upload&#x27;</span>, <span class="string">&#x27;UploadController@uploadSubmit&#x27;</span>);</span><br><span class="line">Route::post(<span class="string">&#x27;/product&#x27;</span>, <span class="string">&#x27;UploadController@postProduct&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>Basically, homepage for the form, then /upload for AJAX file submit, and /product for submitting the whole product with photos.</p>
+<p>Then we have app/Http/Controllers/UploadController.php with these methods:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">uploadForm</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">&#x27;upload_form&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">uploadSubmit</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// This method will cover file upload</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">postProduct</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// This method will cover whole product submit</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-3-Building-the-form"><a href="#Step-3-Building-the-form" class="headerlink" title="Step 3. Building the form"></a>Step 3. Building the form</h3><p>Our resources/views/upload_form.blade.php will look like this:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">&quot;/product&quot;</span> <span class="attr">method</span>=<span class="string">&quot;post&quot;</span>&gt;</span></span><br><span class="line">    &#123;&#123; csrf_field() &#125;&#125;</span><br><span class="line">    Product name:</span><br><span class="line">    <span class="tag">&lt;<span class="name">br</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;name&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">br</span> /&gt;</span><span class="tag">&lt;<span class="name">br</span> /&gt;</span></span><br><span class="line">    Product photos (can add more than one):</span><br><span class="line">    <span class="tag">&lt;<span class="name">br</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;file&quot;</span> <span class="attr">id</span>=<span class="string">&quot;fileupload&quot;</span> <span class="attr">name</span>=<span class="string">&quot;photos[]&quot;</span> <span class="attr">data-url</span>=<span class="string">&quot;/upload&quot;</span> <span class="attr">multiple</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">br</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;files_list&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">&quot;loading&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span> <span class="attr">name</span>=<span class="string">&quot;file_ids&quot;</span> <span class="attr">id</span>=<span class="string">&quot;file_ids&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;Upload&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-4-Processing-the-upload-and-submit"><a href="#Step-4-Processing-the-upload-and-submit" class="headerlink" title="Step 4. Processing the upload and submit"></a>Step 4. Processing the upload and submit</h3><p>Now, let’s download jQuery-File-Upload library and put its /js contents into our /public/js. And then we can use it like this – in the end of our upload_form.blade.php:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=<span class="string">&quot;//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js&quot;</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;script src=<span class="string">&quot;/js/vendor/jquery.ui.widget.js&quot;</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;script src=<span class="string">&quot;/js/jquery.iframe-transport.js&quot;</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;script src=<span class="string">&quot;/js/jquery.fileupload.js&quot;</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">    $(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        $(<span class="string">&#x27;#fileupload&#x27;</span>).fileupload(&#123;</span><br><span class="line">            dataType: <span class="string">&#x27;json&#x27;</span>,</span><br><span class="line">            add: <span class="function"><span class="keyword">function</span> (<span class="params">e, data</span>) </span>&#123;</span><br><span class="line">                $(<span class="string">&#x27;#loading&#x27;</span>).text(<span class="string">&#x27;Uploading...&#x27;</span>);</span><br><span class="line">                data.submit();</span><br><span class="line">            &#125;,</span><br><span class="line">            done: <span class="function"><span class="keyword">function</span> (<span class="params">e, data</span>) </span>&#123;</span><br><span class="line">                $.each(data.result.files, <span class="function"><span class="keyword">function</span> (<span class="params">index, file</span>) </span>&#123;</span><br><span class="line">                    $(<span class="string">&#x27;&lt;p/&gt;&#x27;</span>).html(file.name + <span class="string">&#x27; (&#x27;</span> + file.size + <span class="string">&#x27; KB)&#x27;</span>).appendTo($(<span class="string">&#x27;#files_list&#x27;</span>));</span><br><span class="line">                    <span class="keyword">if</span> ($(<span class="string">&#x27;#file_ids&#x27;</span>).val() != <span class="string">&#x27;&#x27;</span>) &#123;</span><br><span class="line">                        $(<span class="string">&#x27;#file_ids&#x27;</span>).val($(<span class="string">&#x27;#file_ids&#x27;</span>).val() + <span class="string">&#x27;,&#x27;</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                    $(<span class="string">&#x27;#file_ids&#x27;</span>).val($(<span class="string">&#x27;#file_ids&#x27;</span>).val() + file.fileID);</span><br><span class="line">                &#125;);</span><br><span class="line">                $(<span class="string">&#x27;#loading&#x27;</span>).text(<span class="string">&#x27;&#x27;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>To be honest, I’m not a strong front-ender, so the syntax was written according to jQuery-File-Upload library examples. But basically, it works like this:</p>
+<ul>
+<li>fileupload() method is attached to input field and takes two important parameters – name=”photos[]” data-url=”/upload”;</li>
+<li>Those parameters are passed via AJAX request to /upload URL – meaning UploadController and method uploadSubmit();</li>
+<li>uploadSubmit() physically uploads the file, stores information in the database but doesn’t store product_photos.product_id because we don’t have ID yet. After upload it returns JSON with array of file results;</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">uploadSubmit</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$photos</span> = [];</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$request</span>-&gt;photos <span class="keyword">as</span> <span class="variable">$photo</span>) &#123;</span><br><span class="line">        <span class="variable">$filename</span> = <span class="variable">$photo</span>-&gt;store(<span class="string">&#x27;photos&#x27;</span>);</span><br><span class="line">        <span class="variable">$product_photo</span> = ProductPhoto::create([</span><br><span class="line">            <span class="string">&#x27;filename&#x27;</span> =&gt; <span class="variable">$filename</span></span><br><span class="line">        ]);</span><br><span class="line"></span><br><span class="line">        <span class="variable">$photo_object</span> = <span class="keyword">new</span> \<span class="built_in">stdClass</span>();</span><br><span class="line">        <span class="variable">$photo_object</span>-&gt;name = str_replace(<span class="string">&#x27;photos/&#x27;</span>, <span class="string">&#x27;&#x27;</span>,<span class="variable">$photo</span>-&gt;getClientOriginalName());</span><br><span class="line">        <span class="variable">$photo_object</span>-&gt;size = round(Storage::size(<span class="variable">$filename</span>) / <span class="number">1024</span>, <span class="number">2</span>);</span><br><span class="line">        <span class="variable">$photo_object</span>-&gt;fileID = <span class="variable">$product_photo</span>-&gt;id;</span><br><span class="line">        <span class="variable">$photos</span>[] = <span class="variable">$photo_object</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> response()-&gt;json(<span class="keyword">array</span>(<span class="string">&#x27;files&#x27;</span> =&gt; <span class="variable">$photos</span>), <span class="number">200</span>);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Those results are shown to the user in the file list (filename and size) and also in the hidden field file_ids which stores values from product_photos.id column;</li>
+</ul>
+<p>We can upload more files like this, and our files list will grow bigger and bigger. As soon as we hit the main submit – the data will be posted and UploadController method postProduct() will save the data into products DB table, and also assign new product ID to product_photos entries:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">postProduct</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$product</span> = Product::create(<span class="variable">$request</span>-&gt;all());</span><br><span class="line">    ProductPhoto::whereIn(<span class="string">&#x27;id&#x27;</span>, explode(<span class="string">&quot;,&quot;</span>, <span class="variable">$request</span>-&gt;file_ids))</span><br><span class="line">        -&gt;update([<span class="string">&#x27;product_id&#x27;</span> =&gt; <span class="variable">$product</span>-&gt;id]);</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;Product saved successfully&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laraveldaily.com/laravel-ajax-file-upload-blueimp-jquery-library/">https://laraveldaily.com/laravel-ajax-file-upload-blueimp-jquery-library/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1030,85 +1133,6 @@ Hope is a good thing and maybe the best of things. And no good thing ever dies.
 <p>config函数会优先读取 bootstrap/cache/config.php 中缓存的配置，如果没有缓存文件，则会直接读取 config 目录下的所有配置文件</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/83f9cd407751">https://www.jianshu.com/p/83f9cd407751</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/08/03/linux%E6%9F%A5%E6%89%BE%E5%90%AB%E6%9C%89%E6%9F%90%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E6%89%80%E6%9C%89%E6%96%87%E4%BB%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/08/03/linux%E6%9F%A5%E6%89%BE%E5%90%AB%E6%9C%89%E6%9F%90%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E6%89%80%E6%9C%89%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">Linux查找含有某字符串的所有文件</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-08-03 13:23:42 / 修改时间：14:31:30" itemprop="dateCreated datePublished" datetime="2018-08-03T13:23:42+09:00">2018-08-03</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-All is well
-</blockquote>
-
-<p>如果你想在当前目录下 查找”hello,world!”字符串,可以这样:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -rn <span class="string">&quot;hello,world!&quot;</span> *</span><br></pre></td></tr></table></figure>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">* : 表示当前目录所有文件，也可以是某个文件名</span><br><span class="line">-r 是递归查找</span><br><span class="line">-n 是显示行号</span><br><span class="line">-R 查找所有文件包含子目录</span><br><span class="line">-i 忽略大小写</span><br></pre></td></tr></table></figure>
-<p>下面是一些有意思的命令行参数：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">grep -i pattern files ：不区分大小写地搜索。默认情况区分大小写， </span><br><span class="line">grep -l pattern files ：只列出匹配的文件名， </span><br><span class="line">grep -L pattern files ：列出不匹配的文件名， </span><br><span class="line">grep -w pattern files ：只匹配整个单词，而不是字符串的一部分（如匹配‘magic’，而不是‘magical’）， </span><br><span class="line">grep -C number pattern files ：匹配的上下文分别显示[number]行， </span><br><span class="line">grep pattern1 | pattern2 files ：显示匹配 pattern1 或 pattern2 的行， </span><br><span class="line">grep pattern1 files | grep pattern2 ：显示既匹配 pattern1 又匹配 pattern2 的行。 </span><br></pre></td></tr></table></figure>
-<p>这里还有些用于搜索的特殊符号：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">\&lt; 和 \&gt; 分别标注单词的开始与结尾。</span><br><span class="line">例如： </span><br><span class="line">grep man * 会匹配 ‘Batman’、‘manic’、‘man’等， </span><br><span class="line">grep <span class="string">&#x27;\&lt;man&#x27;</span> * 匹配‘manic’和‘man’，但不是‘Batman’， </span><br><span class="line">grep <span class="string">&#x27;\&lt;man\&gt;&#x27;</span> 只匹配‘man’，而不是‘Batman’或‘manic’等其他的字符串。 </span><br><span class="line"><span class="string">&#x27;^&#x27;</span>：指匹配的字符串在行首， </span><br><span class="line"><span class="string">&#x27;$&#x27;</span>：指匹配的字符串在行尾</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://blog.51cto.com/151wqooo/1162118">http://blog.51cto.com/151wqooo/1162118</a></p>
 </blockquote>
 
       

@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">415</span>
+          <span class="site-state-item-count">416</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,100 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/23/golang%E5%AE%9A%E4%B9%89%E9%98%9F%E5%88%97%E5%92%8C%E5%BE%AA%E7%8E%AF%E9%98%9F%E5%88%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/03/23/golang%E5%AE%9A%E4%B9%89%E9%98%9F%E5%88%97%E5%92%8C%E5%BE%AA%E7%8E%AF%E9%98%9F%E5%88%97/" class="post-title-link" itemprop="url">golang定义队列和循环队列</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-03-23 21:12:36" itemprop="dateCreated datePublished" datetime="2020-03-23T21:12:36+09:00">2020-03-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-10 13:56:16" itemprop="dateModified" datetime="2021-09-10T13:56:16+09:00">2021-09-10</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+忽忆故人今总老。贪梦好。茫然忘了邯郸道。
+</blockquote>
+
+<h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p>队列是一种特殊的线性表，特殊之处在于它只允许在表的前端（front）进行删除操作，而在表的后端（rear）进行插入操作，和栈一样，队列是一种操作受限制的线性表。进行插入操作的端称为队尾，进行删除操作的端称为队头。</p>
+<p>队列的先进先出，其实就对应了我们生活中的先到先得。比如你在食堂打饭，肯定是队头的人先打饭。还有在银行的叫号系统，那其实也是一个队列。</p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>队列肯定要装不只一个对象，所以我们需要一个切片作为容器。并且，我们还需要两个标记位，一个指向队列的头 front ，一个指向队列的尾 rear 。并且我们也需要一个队列的容量 size 。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Queue <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 队首标记位</span></span><br><span class="line">    front <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 队尾标记位</span></span><br><span class="line">    rear <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewQueue</span><span class="params">(size <span class="keyword">int</span>)</span> *<span class="title">Queue</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Queue&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">int</span>,size),</span><br><span class="line">        <span class="comment">// 在队列中已经装了多少元素我们可以用size表示</span></span><br><span class="line">        <span class="comment">// 想一想为什么不能用rear-front表示队列当前长度呢？</span></span><br><span class="line">        front:       <span class="number">0</span>,</span><br><span class="line">        rear:        <span class="number">0</span>,</span><br><span class="line">        size:        <span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="队列的基本操作"><a href="#队列的基本操作" class="headerlink" title="队列的基本操作"></a>队列的基本操作</h3><p>队列的基本操作包括如下几种</p>
+<ul>
+<li>初始化队列：InitQueue（size） 操作结果：初始化一个空队列。</li>
+<li>判断队列是否为空：IsEmpty（） 操作结果：若队列为空则返回 true，否则返回 false。</li>
+<li>判断队列是否已满：IsFull（）。 操作结果：若队列为满则返回 true，否则返回 false。</li>
+<li>入队操作：EnQueue（data） 操作结果：在队列的队尾插入 data。</li>
+<li>出队操作：DeQueue（） 操作结果：将队列的队头元素出队，并返回出队元素的值。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Queue <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 用来装元素的切片</span></span><br><span class="line">    container []<span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 队首标记位</span></span><br><span class="line">    front <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 队尾标记位</span></span><br><span class="line">    rear <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// 容量限制</span></span><br><span class="line">    size <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时，要传入容量限制</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewQueue</span><span class="params">(size <span class="keyword">int</span>)</span> *<span class="title">Queue</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Queue&#123;</span><br><span class="line">        container: <span class="built_in">make</span>([]<span class="keyword">int</span>,size),</span><br><span class="line">        <span class="comment">// 在队列中已经装了多少元素我们可以用size表示</span></span><br><span class="line">        <span class="comment">// 想一想为什么不用 rear - front 表示呢</span></span><br><span class="line">        front:       <span class="number">0</span>,</span><br><span class="line">        rear:         <span class="number">0</span>,</span><br><span class="line">        size:           <span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 队列是否为空</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *Queue)</span> <span class="title">IsEmpty</span> <span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> q.size == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *Queue)</span> <span class="title">IsFull</span> <span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> q.size == <span class="built_in">len</span>(q.container) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 新元素入队</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *Queue)</span> <span class="title">EnQueue</span> <span class="params">(a <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> q.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    q.container[q.rear] = a</span><br><span class="line">    q.rear++</span><br><span class="line">    q.size++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 队首元素出队</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *Queue)</span> <span class="title">Dequeue</span> <span class="params">()</span> <span class="params">(<span class="keyword">bool</span>,<span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> q.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>,<span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">    ret := q.container[q.front]</span><br><span class="line">    q.front++</span><br><span class="line">    q.size--</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>,ret</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    queue := NewQueue(<span class="number">10</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">5</span> ; i++ &#123;</span><br><span class="line">        queue.EnQueue(i)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">6</span>; i++ &#123;</span><br><span class="line">        fmt.Println(queue.Dequeue())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="循环队列"><a href="#循环队列" class="headerlink" title="循环队列"></a>循环队列</h3><p>我们在每次让元素出队的时候，队列的头指针是不断的在往后移的。总有一天，队头指向的索引值比我们的容器长度还要大，那种情况出现的时候要怎么办呢？<br>既然在使用过程中，front 和 rear 都只能往后移导致有用的空间被浪费了。那么能不能去做一个可以再利用，不浪费一点空间的队列呢？</p>
+<p>答案就是我们可以做一个循环队列。循环队列，顾名思义，它长得像一个环。原本数组是有头有尾的，是一条直线。现在我们把首尾相连，扳成了一个环。</p>
+<h4 id="判断队列的状态"><a href="#判断队列的状态" class="headerlink" title="判断队列的状态"></a>判断队列的状态</h4><p>用 size 表示队列的实际长度，而不用 rear - front 呢？其实就是为了循环队列。各位想一想，在循环时，rear 和 front 是说不清谁大谁小的，有可能减出一个负数。而我们使用 size 就不会出现这种问题，因为只有入队操作才会让 size + 1， 也只有出队操作能让 size - 1。所以这里我们的判断队列状态的函数可以直接不变就拿来使用。解决了循环队列中的最难点。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** 检查循环队列是否为空. */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.size == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 检查循环队列是否为满 */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">IsFull</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.size == <span class="built_in">len</span>(this.arr) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="计算索引"><a href="#计算索引" class="headerlink" title="计算索引"></a>计算索引</h3><p>解决了判断状态问题，我们可以继续解决索引值的计算问题了。首先是入队操作，在入队时。我们只要对 rear 先对队列的容量取余，计算出的索引值就是我们要插入的位置。</p>
+<p>对于出队操作，我们要出队的元素是 front 对队列容量取余所指向的元素，取出之后下一个 front 的值需要先对队列的容量取余再加 1。 到这里我们就可以写出新的队列的完整代码了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Queue <span class="keyword">struct</span> &#123;</span><br><span class="line">    container   []<span class="keyword">int</span></span><br><span class="line">    front <span class="keyword">int</span></span><br><span class="line">    rear  <span class="keyword">int</span></span><br><span class="line">    size  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewQueue</span> <span class="params">(k <span class="keyword">int</span>)</span> *<span class="title">Queue</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Queue&#123;</span><br><span class="line">        <span class="built_in">make</span>([]<span class="keyword">int</span>, k),</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">EnQueue</span><span class="params">(value <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.container == <span class="literal">nil</span> || this.IsFull() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">    this.container[this.rear%<span class="built_in">len</span>(this.container)] = value</span><br><span class="line">    this.rear = this.rear%<span class="built_in">len</span>(this.container) + <span class="number">1</span></span><br><span class="line">    this.size++</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">DeQueue</span><span class="params">()</span> <span class="params">(<span class="keyword">bool</span>,<span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.container == <span class="literal">nil</span> || this.IsEmpty() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>,<span class="number">0</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ret := this.container[this.front%<span class="built_in">len</span>(this.container)]</span><br><span class="line">        this.front = this.front%<span class="built_in">len</span>(this.container) + <span class="number">1</span></span><br><span class="line">        this.size--</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>,ret</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">IsEmpty</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.size == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Queue)</span> <span class="title">IsFull</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> this.size == <span class="built_in">len</span>(this.container) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    queue := NewQueue(<span class="number">5</span>)</span><br><span class="line">    <span class="comment">// 循环3次，每次添加5个元素，再出队三个元素</span></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">3</span>; i++&#123;</span><br><span class="line">        <span class="keyword">for</span> j:=<span class="number">0</span>;j&lt;<span class="number">5</span>;j++ &#123;</span><br><span class="line">            queue.EnQueue(j)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> k:=<span class="number">0</span>;k&lt;<span class="number">3</span>;k++ &#123;</span><br><span class="line">            fmt.Println(queue.DeQueue())</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1092,106 +1186,6 @@
 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://qiita.com/sbenemerito/items/d94b811f14ce0a546a3f">https://qiita.com/sbenemerito/items/d94b811f14ce0a546a3f</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/" class="post-title-link" itemprop="url">Nginx使用HTTPS反向代理laravel的HTTP应用</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2020-01-14 12:39:12 / 修改时间：13:49:08" itemprop="dateCreated datePublished" datetime="2020-01-14T12:39:12+09:00">2020-01-14</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-幸有我来山未孤
-</blockquote>
-
-<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>反向代理的概念不多做解释，此处应用反向代理主要原因如下：</p>
-<ul>
-<li>应用服务器不必暴露在公网，躲在防火墙后，通过内网连接代理服务器（proxy server）</li>
-<li>DNS设置简单，因为有两个不同应用服务器，对应不同的子域名（a.example.com, b.example.com），只需设置DNS *.example.com 到代理服务器IP即可</li>
-<li>SSL证书管理方便，只需申请一个通配符的证书 *.example.com 配置在代理服务器</li>
-</ul>
-<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><p>系统环境都是Ubuntu 18.04.2，服务器都是使用Nginx，代理服务器配置SSL，使用HTTPS对外访问（HTTP强制跳转到HTTPS），应用服务器使用Laravel，HTTP对内网访问。</p>
-<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><h4 id="应用服务器配置"><a href="#应用服务器配置" class="headerlink" title="应用服务器配置"></a>应用服务器配置</h4><p>应用服务器的nginx照常配置即可，可以设置server_name为对应的域名。</p>
-<h3 id="代理服务器配置"><a href="#代理服务器配置" class="headerlink" title="代理服务器配置"></a>代理服务器配置</h3><p>代理服务器从网上抄来一份，主要是设置proxy_pass，下面只是location block：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_set_header Host <span class="variable">$host</span>;</span><br><span class="line">    proxy_set_header X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-Proto <span class="variable">$scheme</span>;</span><br><span class="line">    proxy_pass    http:<span class="comment">//ip;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意要加 proxy_set_header X-Forwarded-Proto $scheme 这一条，让后面被代理的应用服务器知道对应的协议是什么，这样应用服务器生成url（如css，js文件）使用相应的协议。如果代理服务器确定使用https，那$scheme替换成https也可以。</p>
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>本以为这样就搞定了，但是在用域名测试的时候发现网站不能正常加载，浏览器有如下错误：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Mixed</span> Content: The page at <span class="string">&#x27;&lt;URL&gt;&#x27;</span> was loaded over HTTPS, but requested an insecure stylesheet <span class="string">&#x27;&lt;URL&gt;&#x27;</span>. This request has been blocked; the content must be served over HTTPS.</span><br></pre></td></tr></table></figure>
-<p>在页面中混用了HTTPS和HTTP，浏览器会block掉不安全的HTTP链接。而HTTP链接主要是用laravel的asset生成的css, js文件，css文件没有加载上，所以就不能正常加载了。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/helpers#method-asset">https://laravel.com/docs/5.5/helpers#method-asset</a><br>多方查询，有推荐使用proxy_redirect来替换HTTP为HTTPS，但是试用不成功。</p>
-</blockquote>
-<p>也有说这些资源文件用uri路径来表示，\css\example.css 这样，不带协议。</p>
-<p>或者页面增加一个meta，让HTTP升级为安全的HTTPS：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;Content-Security-Policy&quot;</span> <span class="attr">content</span>=<span class="string">&quot;upgrade-insecure-requests&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
-<p>这样在生产环境没问题，但是需要改动很多代码，而且开发、测试环境也需要ssl证书，很不方便。</p>
-<p>在查询到几篇文章中，有提到后端是tomcat，需要修改tomcat的配置来接受X-Forwarded-Proto 这个Header来处理。我思考是不是laravel也需要类似设置，google一下发现了这个：</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/requests#configuring-trusted-proxies">https://laravel.com/docs/5.5/requests#configuring-trusted-proxies</a><br>When running your applications behind a load balancer that terminates TLS / SSL certificates, you may notice your application sometimes does not generate HTTPS links. Typically this is because your application is being forwarded traffic from your load balancer on port 80 and does not know it should generate secure links.</p>
-</blockquote>
-<p>Laravel从5.5开始，内置了一个 TrustProxies模块来解决这个问题，专门应对使用了Load Balancer等情况。</p>
-<p>所以按照文档，修改 protected $proxies = ‘<strong>‘，因为应用服务器在内网，所以改成</strong>也无所谓。<br>Laravel 5.5之前的版本，可以自行用composer来安装这个插件。</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/fideloper/TrustedProxy">https://github.com/fideloper/TrustedProxy</a></p>
-<p>测试之后，问题解决。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/">http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/</a></p>
 </blockquote>
 
       

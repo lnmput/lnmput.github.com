@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">415</span>
+          <span class="site-state-item-count">416</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,124 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/04/10/mysql%E7%9A%84%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/04/10/mysql%E7%9A%84%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">mysql的严格模式</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-04-10 09:15:08" itemprop="dateCreated datePublished" datetime="2017-04-10T09:15:08+09:00">2017-04-10</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:57:01" itemprop="dateModified" datetime="2018-03-27T21:57:01+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+虎豹只会独处，牛羊才会成群。
+</blockquote>
+在使用MySQL 5.7版本时，因为SQL_MODE的改变而导致的问题，究其原因都是因为MySQL 5.7控制的更加严格了，所以在MySQL 5.6或MySQL 5.5有些SQL语句就无法在MySQL 5.7执行。
+
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>查询当前SQL_MODE<br>v 5.5.3</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> @<span class="variable">@sql</span>_mode;</span><br><span class="line"><span class="operator">/</span><span class="operator">/</span> NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION</span><br></pre></td></tr></table></figure>
+<p>v 5.7.21</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> @<span class="variable">@sql</span>_mode;</span><br><span class="line"><span class="operator">/</span><span class="operator">/</span> ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION</span><br></pre></td></tr></table></figure>
+
+<h3 id="参数意思"><a href="#参数意思" class="headerlink" title="参数意思"></a>参数意思</h3><ul>
+<li><p>ONLY_FULL_GROUP_BY<br>在严格模式下，不要让GROUP BY部分中的查询指向未选择的列，否则报错。</p>
+</li>
+<li><p>NO_ZERO_DATE<br>在严格模式，不要将’0000-00-00’做为合法日期。你仍然可以用IGNORE选项插入零日期。在非严格模式，可以接受该日期，但会生成警告。</p>
+</li>
+<li><p>NO_ZERO_IN_DATE<br>在严格模式，不接受月或日部分为0的日期，对年不限制。如果使用IGNORE选项，我们为类似的日期插入’0000-00-00’。在非严格模式，可以接受该日期，但会生成警告。</p>
+</li>
+<li><p>ERROR_FOR_DIVISION_BY_ZERO<br>在严格模式，在INSERT或UPDATE过程中，如果被零除(或MOD(X，0))，则产生错误(否则为警告)。如果未给出该模式，被零除时MySQL返回NULL。如果用到INSERT IGNORE或UPDATE IGNORE中，MySQL生成被零除警告，但操作结果为NULL。</p>
+</li>
+<li><p>NO_AUTO_CREATE_USER<br>在严格模式下，防止GRANT自动创建新用户，除非还指定了密码。</p>
+</li>
+<li><p>NO_ENGINE_SUBSTITUTION<br>如果需要的存储引擎被禁用或未编译，可以防止自动替换存储引擎。</p>
+</li>
+<li><p>STRICT_TRANS_TABLES<br>为事务存储引擎启用严格模式，也可能为非事务存储引擎启用严格模式，非法数据值被拒绝，下面有详细说明。<br>严格模式控制MySQL如何处理非法或丢失的输入值。有几种原因可以使一个值为非法。例如，数据类型错误，不适合列，或超出范围。当新插入的行不包含某列的没有显示定义DEFAULT子句的值，则该值被丢失。<br>对于事务表，当启用STRICT_ALL_TABLES或STRICT_TRANS_TABLES模式时，如果语句中有非法或丢失值，则会出现错误。语句被放弃并滚动。<br>对于非事务表，如果插入或更新的第1行出现坏值，两种模式的行为相同。语句被放弃，表保持不变。如果语句插入或修改多行，并且坏值出现在第2或后面的行，结果取决于启用了哪个严格选项：<br>对于STRICT_ALL_TABLES，MySQL返回错误并忽视剩余的行。但是，在这种情况下，前面的行已经被插入或更新。这说明你可以部分更新，这可能不是你想要的。要避免这点，最好使用单行语句，因为这样可以不更改表即可以放弃。<br>对于STRICT_TRANS_TABLES，MySQL将非法值转换为最接近该列的合法值并插入调整后的值。如果值丢失，MySQL在列中插入隐式 默认值。在任何情况下，MySQL都会生成警告而不是给出错误并继续执行语句。<br>严格模式不允许非法日期，例如’2004-04-31’。它不允许禁止日期使用“零”部分，例如’2004-04-00’或”零”日期。要想禁止，应在严格模式基础上，启用NO_ZERO_IN_DATE和NO_ZERO_DATE SQL模式。<br>如果你不使用严格模式(即不启用STRICT_TRANS_TABLES或STRICT_ALL_TABLES模式)，对于非法或丢失的值，MySQL将插入调整后的值并给出警告。在严格模式，你可以通过INSERT IGNORE或UPDATE IGNORE来实现。</p>
+</li>
+</ul>
+<h3 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h3><h4 id="某些GROUP-BY的SQL语句无法执行了"><a href="#某些GROUP-BY的SQL语句无法执行了" class="headerlink" title="某些GROUP BY的SQL语句无法执行了"></a>某些GROUP BY的SQL语句无法执行了</h4><p>这是因为MySQL 5.7默认加入了ONLY_FULL_GROUP_BY参数。在MySQL的sql_mode是非ONLY_FULL_GROUP_BY语义时。一条select语句，MySQL允许target list中输出的表达式是除聚集函数或group by column以外的表达式，这个表达式的值可能在经过group by操作后变成undefined，例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tt <span class="keyword">group</span> <span class="keyword">by</span> id;</span><br></pre></td></tr></table></figure>
+<p>而对于语义限制都比较严谨的多家数据库，如SQLServer、Oracle、PostgreSql都不支持select target list中出现语义不明确的列，这样的语句在这些数据库中是会被报错的，所以从MySQL 5.7版本开始修正了这个语义，就是我们所说的ONLY_FULL_GROUP_BY语义。而正确的写法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> id <span class="keyword">from</span> tt <span class="keyword">group</span> <span class="keyword">by</span> id;</span><br><span class="line"><span class="keyword">select</span> id,<span class="built_in">max</span>(age) <span class="keyword">from</span> tt <span class="keyword">group</span> <span class="keyword">by</span> id;</span><br></pre></td></tr></table></figure>
+<p>所以ONLY_FULL_GROUP_BY的语义就是确定select target list中的所有列的值都是明确语义，简单的说来，在ONLY_FULL_GROUP_BY模式下，target list中的值要么是来自于聚集函数的结果，要么是来自于group by list中的表达式的值。</p>
+<h4 id="创建表时使用日期数据类型指定的默认值为0000-00-00时报错"><a href="#创建表时使用日期数据类型指定的默认值为0000-00-00时报错" class="headerlink" title="创建表时使用日期数据类型指定的默认值为0000-00-00时报错"></a>创建表时使用日期数据类型指定的默认值为0000-00-00时报错</h4><p>这是因为MySQL 5.7默认加入了NO_ZERO_DATE和NO_ZERO_IN_DATE参数。通过上面的介绍，这两个参数还是有些区别的，NO_ZERO_DATE是完全匹配默认值为0000-00-00时才限制，而NO_ZERO_IN_DATE是在匹配到月或日任意为00时限制（对年不限制）。</p>
+<p>当数据类型为date或datetime时，并且使用了NO_ZERO_IN_DATE限制，那么会有如下几种情况：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># 不合法默认值;</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `test` (`<span class="type">time</span>` datetime <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">&#x27;1111-00-01 00:00:00&#x27;</span></span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">1</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br><span class="line"></span><br><span class="line"># 合法默认值;</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `test` (`<span class="type">time</span>` datetime <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">&#x27;1111-01-01 00:00:00&#x27;</span></span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">1</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br><span class="line"></span><br><span class="line"># 合法默认值;</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `test` (`<span class="type">time</span>` datetime <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">&#x27;0000-01-01 00:00:00&#x27;</span></span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">1</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br></pre></td></tr></table></figure>
+
+<p>timestamp类型取值范围：1970-01-01 00:00:00到2037-12-31 23:59:59。也就是说默认值最少需要调整为1970-01-02 00:00:00。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `test` (</span><br><span class="line">  `mid` <span class="type">int</span>(<span class="number">11</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `create_time` <span class="type">timestamp</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span>,</span><br><span class="line">  `start_time` <span class="type">timestamp</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">&#x27;1970-01-02 00:00:00&#x27;</span>,</span><br><span class="line">  `end_time` <span class="type">timestamp</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">&#x27;2037-12-31 23:59:59&#x27;</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`mid`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">1</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br></pre></td></tr></table></figure>
+<p>最大值或最小值在timestamp合法范围内才行。网上大概看了看，部分人碰到这个问题都是数据库升级的时候，老的表结构无法在MySQL 5.7应用了。如果想调整SQL模式，直接在配置文件写入sql_mode参数跟上对应的模式参数即可。</p>
+<h4 id="修改字段类型小于小于最长字段时报错"><a href="#修改字段类型小于小于最长字段时报错" class="headerlink" title="修改字段类型小于小于最长字段时报错"></a>修改字段类型小于小于最长字段时报错</h4><p>当启用严格模式时”STRICT_TRANS_TABLES或STRICT_ALL_TABLES”时，控制MySQL如何处理非法或丢失的输入值。有几种原因可以使一个值为非法。例如，数据类型错误，不适合列，或超出范围。当新插入的行不包含某列的没有显示定义DEFAULT子句的值，则该值被丢失。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> dd;</span><br><span class="line"><span class="operator">+</span><span class="comment">--------------------------------+</span></span><br><span class="line"><span class="operator">|</span> log                            <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">--------------------------------+</span></span><br><span class="line"><span class="operator">|</span> 一二三四五六七八九十              <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">--------------------------------+</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">set</span> sql_mode<span class="operator">=</span><span class="string">&#x27;STRICT_TRANS_TABLES&#x27;</span>;</span><br><span class="line">Query OK, <span class="number">0</span> <span class="keyword">rows</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">alter</span> <span class="keyword">table</span> dd change <span class="keyword">column</span> log log <span class="type">varchar</span>(<span class="number">9</span>);         </span><br><span class="line">ERROR <span class="number">1265</span> (<span class="number">01000</span>): Data truncated <span class="keyword">for</span> <span class="keyword">column</span> <span class="string">&#x27;log&#x27;</span> <span class="keyword">at</span> <span class="type">row</span> <span class="number">1</span></span><br><span class="line">                                 </span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">set</span> sql_mode<span class="operator">=</span><span class="string">&#x27;&#x27;</span>;                                </span><br><span class="line">Query OK, <span class="number">0</span> <span class="keyword">rows</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line"></span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">alter</span> <span class="keyword">table</span> dd change <span class="keyword">column</span> log log <span class="type">varchar</span>(<span class="number">9</span>);</span><br><span class="line">Query OK, <span class="number">1</span> <span class="type">row</span> affected, <span class="number">1</span> warning (<span class="number">0.02</span> sec)     </span><br><span class="line">Records: <span class="number">1</span>  Duplicates: <span class="number">0</span>  Warnings: <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [dkey]<span class="operator">&gt;</span> <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> dd;                               </span><br><span class="line"><span class="operator">+</span><span class="comment">-----------------------------+</span></span><br><span class="line"><span class="operator">|</span> log                         <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-----------------------------+</span></span><br><span class="line"><span class="operator">|</span> 一二三四五六七八九             <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-----------------------------+</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br></pre></td></tr></table></figure>
+<p>可以看到非严格模式，默认把多余数据给截断了。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://www.ywnds.com/?p=8865">http://www.ywnds.com/?p=8865</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -975,81 +1093,6 @@ Let’s imagine the situation: you have a big database table (like 10 000 rows o
 <blockquote>
 <p><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/5dafd0d6e69a">http://www.jianshu.com/p/5dafd0d6e69a</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/03/08/python%E5%AE%9E%E7%8E%B0Markdown%E8%BD%AChtml/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/03/08/python%E5%AE%9E%E7%8E%B0Markdown%E8%BD%AChtml/" class="post-title-link" itemprop="url">python实现Markdown转html</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-03-08 10:31:01" itemprop="dateCreated datePublished" datetime="2017-03-08T10:31:01+09:00">2017-03-08</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-04-25 10:41:27" itemprop="dateModified" datetime="2018-04-25T10:41:27+09:00">2018-04-25</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-女人容颜逝去要十年，男人贬值不过一瞬间。
-</blockquote>
-
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"><span class="keyword">import</span> markdown</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MarkdownToHtml</span>:</span></span><br><span class="line"></span><br><span class="line">    headTag = <span class="string">&#x27;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;/head&gt;&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, cssFilePath = <span class="literal">None</span></span>):</span></span><br><span class="line">        <span class="keyword">if</span> cssFilePath != <span class="literal">None</span>:</span><br><span class="line">            self.genStyle(cssFilePath)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">genStyle</span>(<span class="params">self,cssFilePath</span>):</span></span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(cssFilePath,<span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            cssString = f.read()</span><br><span class="line">        self.headTag = self.headTag[:-<span class="number">7</span>] + <span class="string">&#x27;&lt;style type=&quot;text/css&quot;&gt;&#123;&#125;&lt;/style&gt;&#x27;</span>.<span class="built_in">format</span>(cssString) + self.headTag[-<span class="number">7</span>:]</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">markdownToHtml</span>(<span class="params">self,**arguments</span>):</span></span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;sourceFilePath&#x27;</span> <span class="keyword">in</span> arguments:</span><br><span class="line">            sourceFilePath = arguments[<span class="string">&#x27;sourceFilePath&#x27;</span>]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;destinationDirectory&#x27;</span> <span class="keyword">in</span> arguments:</span><br><span class="line">            destinationDirectory = arguments[<span class="string">&#x27;destinationDirectory&#x27;</span>]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 未定义输出目录则将源文件目录(注意要转换为绝对路径)作为输出目录</span></span><br><span class="line">            destinationDirectory = os.path.dirname(os.path.abspath(sourceFilePath))</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;outputFileName&#x27;</span> <span class="keyword">in</span> arguments:</span><br><span class="line">            outputFileName = arguments[<span class="string">&#x27;outputFileName&#x27;</span>]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 未定义输出文件名则沿用输入文件名</span></span><br><span class="line">            outputFileName = os.path.splitext(os.path.basename(sourceFilePath))[<span class="number">0</span>] + <span class="string">&#x27;.html&#x27;</span></span><br><span class="line">        <span class="keyword">if</span> destinationDirectory[-<span class="number">1</span>] != <span class="string">&#x27;/&#x27;</span>:</span><br><span class="line">            destinationDirectory += <span class="string">&#x27;/&#x27;</span></span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(sourceFilePath,<span class="string">&#x27;r&#x27;</span>, encoding=<span class="string">&#x27;utf8&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            markdownText = f.read()</span><br><span class="line">        <span class="comment"># 编译出原始 HTML 文本</span></span><br><span class="line">        rawHtml = self.headTag + markdown.markdown(markdownText,output_format=<span class="string">&#x27;html5&#x27;</span>)</span><br><span class="line">        <span class="comment"># 格式化 HTML 文本为可读性更强的格式</span></span><br><span class="line">        beautifyHtml = BeautifulSoup(rawHtml,<span class="string">&#x27;html5lib&#x27;</span>).prettify()</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(destinationDirectory + outputFileName, <span class="string">&#x27;w&#x27;</span>, encoding=<span class="string">&#x27;utf8&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(beautifyHtml)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    mth = MarkdownToHtml()</span><br><span class="line">    <span class="comment"># 做一个命令行参数列表的浅拷贝，不包含脚本文件名</span></span><br><span class="line">    argv = sys.argv[<span class="number">1</span>:]</span><br><span class="line">    <span class="comment"># 目前列表 argv 可能包含源文件路径之外的元素（即选项信息）</span></span><br><span class="line">    <span class="comment"># 程序最后遍历列表 argv 进行编译 markdown 时，列表中的元素必须全部是源文件路径</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&#x27;-s&#x27;</span> <span class="keyword">in</span> argv:</span><br><span class="line">        cssArgIndex = argv.index(<span class="string">&#x27;-s&#x27;</span>) +<span class="number">1</span></span><br><span class="line">        cssFilePath = argv[cssArgIndex]</span><br><span class="line">        <span class="comment"># 检测样式表文件路径是否有效</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> os.path.isfile(cssFilePath):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;Invalid Path: &#x27;</span> + cssFilePath)</span><br><span class="line">            sys.exit()</span><br><span class="line">        mth.genStyle(cssFilePath)</span><br><span class="line">        <span class="comment"># POP顺序不能随意变化</span></span><br><span class="line">        argv.pop(cssArgIndex)</span><br><span class="line">        argv.pop(cssArgIndex-<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&#x27;-o&#x27;</span> <span class="keyword">in</span> argv:</span><br><span class="line">        dirArgIndex = argv.index(<span class="string">&#x27;-o&#x27;</span>) +<span class="number">1</span></span><br><span class="line">        outputDirectory = argv[dirArgIndex]</span><br><span class="line">        <span class="comment"># 检测输出目录是否有效</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> os.path.isdir(outputDirectory):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;Invalid Directory: &#x27;</span> + outputDirectory)</span><br><span class="line">            sys.exit()</span><br><span class="line">        <span class="comment"># POP顺序不能随意变化</span></span><br><span class="line">        argv.pop(dirArgIndex)</span><br><span class="line">        argv.pop(dirArgIndex-<span class="number">1</span>)</span><br><span class="line">        argumentsList = [<span class="built_in">dict</span>([(<span class="string">&#x27;sourceFilePath&#x27;</span>,filePath), (<span class="string">&#x27;destinationDirectory&#x27;</span>,outputDirectory)]) <span class="keyword">for</span> filePath <span class="keyword">in</span> argv]</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        argumentsList = [<span class="built_in">dict</span>([(<span class="string">&#x27;sourceFilePath&#x27;</span>,filePath)]) <span class="keyword">for</span> filePath <span class="keyword">in</span> argv]</span><br><span class="line">    <span class="comment"># 至此，列表 argv 中的元素均是源文件路径</span></span><br><span class="line">    <span class="keyword">for</span> argument <span class="keyword">in</span> argumentsList:</span><br><span class="line">        <span class="comment"># 检测文件路径是否有效</span></span><br><span class="line">        <span class="keyword">if</span> os.path.isfile(argument[<span class="string">&#x27;sourceFilePath&#x27;</span>]):</span><br><span class="line">            mth.markdownToHtml(**argument)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;Invalid Path: &#x27;</span>+argument[<span class="string">&#x27;sourceFilePath&#x27;</span>])</span><br></pre></td></tr></table></figure>
 
       
     </div>

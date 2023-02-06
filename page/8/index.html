@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">415</span>
+          <span class="site-state-item-count">416</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,106 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/01/14/nginx%E4%BD%BF%E7%94%A8https%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86laravel%E7%9A%84http%E5%BA%94%E7%94%A8/" class="post-title-link" itemprop="url">Nginx使用HTTPS反向代理laravel的HTTP应用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2020-01-14 12:39:12 / 修改时间：13:49:08" itemprop="dateCreated datePublished" datetime="2020-01-14T12:39:12+09:00">2020-01-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+幸有我来山未孤
+</blockquote>
+
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>反向代理的概念不多做解释，此处应用反向代理主要原因如下：</p>
+<ul>
+<li>应用服务器不必暴露在公网，躲在防火墙后，通过内网连接代理服务器（proxy server）</li>
+<li>DNS设置简单，因为有两个不同应用服务器，对应不同的子域名（a.example.com, b.example.com），只需设置DNS *.example.com 到代理服务器IP即可</li>
+<li>SSL证书管理方便，只需申请一个通配符的证书 *.example.com 配置在代理服务器</li>
+</ul>
+<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><p>系统环境都是Ubuntu 18.04.2，服务器都是使用Nginx，代理服务器配置SSL，使用HTTPS对外访问（HTTP强制跳转到HTTPS），应用服务器使用Laravel，HTTP对内网访问。</p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><h4 id="应用服务器配置"><a href="#应用服务器配置" class="headerlink" title="应用服务器配置"></a>应用服务器配置</h4><p>应用服务器的nginx照常配置即可，可以设置server_name为对应的域名。</p>
+<h3 id="代理服务器配置"><a href="#代理服务器配置" class="headerlink" title="代理服务器配置"></a>代理服务器配置</h3><p>代理服务器从网上抄来一份，主要是设置proxy_pass，下面只是location block：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    proxy_set_header Host <span class="variable">$host</span>;</span><br><span class="line">    proxy_set_header X-<span class="keyword">Real</span>-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-<span class="keyword">For</span> <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">    proxy_set_header X-Forwarded-Proto <span class="variable">$scheme</span>;</span><br><span class="line">    proxy_pass    http:<span class="comment">//ip;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意要加 proxy_set_header X-Forwarded-Proto $scheme 这一条，让后面被代理的应用服务器知道对应的协议是什么，这样应用服务器生成url（如css，js文件）使用相应的协议。如果代理服务器确定使用https，那$scheme替换成https也可以。</p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>本以为这样就搞定了，但是在用域名测试的时候发现网站不能正常加载，浏览器有如下错误：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Mixed</span> Content: The page at <span class="string">&#x27;&lt;URL&gt;&#x27;</span> was loaded over HTTPS, but requested an insecure stylesheet <span class="string">&#x27;&lt;URL&gt;&#x27;</span>. This request has been blocked; the content must be served over HTTPS.</span><br></pre></td></tr></table></figure>
+<p>在页面中混用了HTTPS和HTTP，浏览器会block掉不安全的HTTP链接。而HTTP链接主要是用laravel的asset生成的css, js文件，css文件没有加载上，所以就不能正常加载了。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/helpers#method-asset">https://laravel.com/docs/5.5/helpers#method-asset</a><br>多方查询，有推荐使用proxy_redirect来替换HTTP为HTTPS，但是试用不成功。</p>
+</blockquote>
+<p>也有说这些资源文件用uri路径来表示，\css\example.css 这样，不带协议。</p>
+<p>或者页面增加一个meta，让HTTP升级为安全的HTTPS：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;Content-Security-Policy&quot;</span> <span class="attr">content</span>=<span class="string">&quot;upgrade-insecure-requests&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这样在生产环境没问题，但是需要改动很多代码，而且开发、测试环境也需要ssl证书，很不方便。</p>
+<p>在查询到几篇文章中，有提到后端是tomcat，需要修改tomcat的配置来接受X-Forwarded-Proto 这个Header来处理。我思考是不是laravel也需要类似设置，google一下发现了这个：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel.com/docs/5.5/requests#configuring-trusted-proxies">https://laravel.com/docs/5.5/requests#configuring-trusted-proxies</a><br>When running your applications behind a load balancer that terminates TLS / SSL certificates, you may notice your application sometimes does not generate HTTPS links. Typically this is because your application is being forwarded traffic from your load balancer on port 80 and does not know it should generate secure links.</p>
+</blockquote>
+<p>Laravel从5.5开始，内置了一个 TrustProxies模块来解决这个问题，专门应对使用了Load Balancer等情况。</p>
+<p>所以按照文档，修改 protected $proxies = ‘<strong>‘，因为应用服务器在内网，所以改成</strong>也无所谓。<br>Laravel 5.5之前的版本，可以自行用composer来安装这个插件。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/fideloper/TrustedProxy">https://github.com/fideloper/TrustedProxy</a></p>
+<p>测试之后，问题解决。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/">http://alexlove77.github.io/2019/06/18/ngingx-reverse-proxy-https/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -979,82 +1079,6 @@
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event#Safari_Mobile">https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event#Safari_Mobile</a><br><a target="_blank" rel="noopener" href="https://blog.zfanw.com/ios-safari-click-not-working/">https://blog.zfanw.com/ios-safari-click-not-working/</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2019/07/23/elasticsearch%E6%8C%89%E7%85%A7%E7%BB%99%E5%AE%9A%E7%9A%84id%E9%A1%BA%E5%BA%8F%E6%8E%92%E5%BA%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/07/23/elasticsearch%E6%8C%89%E7%85%A7%E7%BB%99%E5%AE%9A%E7%9A%84id%E9%A1%BA%E5%BA%8F%E6%8E%92%E5%BA%8F/" class="post-title-link" itemprop="url">elasticsearch按照给定的id顺序排序</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2019-07-23 11:07:05 / 修改时间：12:13:14" itemprop="dateCreated datePublished" datetime="2019-07-23T11:07:05+09:00">2019-07-23</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-春风再美也比不上你的笑
-没见过你的人不会明了
-</blockquote>
-
-<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><ul>
-<li>Laravel 5.5</li>
-<li>ElasticSearch 6.5</li>
-</ul>
-<h3 id="代码片段"><a href="#代码片段" class="headerlink" title="代码片段"></a>代码片段</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$params</span> = [];</span><br><span class="line"><span class="variable">$length</span> = count(<span class="variable">$conditions</span>[<span class="string">&#x27;id&#x27;</span>]);</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$conditions</span>[<span class="string">&#x27;id&#x27;</span>] <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$id</span>) &#123;</span><br><span class="line">    <span class="variable">$params</span>[] = [<span class="string">&#x27;id&#x27;</span> =&gt; <span class="variable">$id</span>, <span class="string">&#x27;score&#x27;</span> =&gt; <span class="variable">$length</span> - <span class="variable">$key</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$source</span> = [<span class="string">&#x27;id&#x27;</span>, <span class="string">&#x27;title&#x27;</span>, <span class="string">&#x27;url&#x27;</span>, <span class="string">&#x27;price&#x27;</span>, <span class="string">&#x27;list_price&#x27;</span>, <span class="string">&#x27;images&#x27;</span>, <span class="string">&#x27;thumbs&#x27;</span>, <span class="string">&#x27;status&#x27;</span>, <span class="string">&#x27;rating&#x27;</span>, <span class="string">&#x27;sort&#x27;</span>, <span class="string">&#x27;reviews_amount&#x27;</span>, <span class="string">&#x27;cids&#x27;</span>];</span><br><span class="line"><span class="variable">$params</span> = [</span><br><span class="line">    <span class="string">&#x27;index&#x27;</span> =&gt; <span class="variable">$index</span>,</span><br><span class="line">    <span class="string">&#x27;type&#x27;</span> =&gt; <span class="string">&#x27;products&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;body&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;query&#x27;</span> =&gt; [</span><br><span class="line">            <span class="string">&#x27;function_score&#x27;</span> =&gt; [</span><br><span class="line">                <span class="string">&#x27;query&#x27;</span> =&gt; [</span><br><span class="line">                    <span class="string">&#x27;bool&#x27;</span> =&gt; [</span><br><span class="line">                        <span class="string">&#x27;must&#x27;</span> =&gt; [</span><br><span class="line">                            [</span><br><span class="line">                                <span class="string">&#x27;terms&#x27;</span> =&gt; [</span><br><span class="line">                                    <span class="string">&#x27;id&#x27;</span> =&gt; <span class="variable">$conditions</span>[<span class="string">&#x27;id&#x27;</span>]</span><br><span class="line">                                ]</span><br><span class="line">                            ]</span><br><span class="line">                        ]</span><br><span class="line">                    ]</span><br><span class="line">                ],</span><br><span class="line">                <span class="string">&#x27;script_score&#x27;</span> =&gt; [</span><br><span class="line">                    <span class="string">&#x27;script&#x27;</span> =&gt; [</span><br><span class="line">                        <span class="string">&#x27;lang&#x27;</span> =&gt; <span class="string">&#x27;painless&#x27;</span>,</span><br><span class="line">                        <span class="string">&#x27;params&#x27;</span> =&gt; [</span><br><span class="line">                            <span class="string">&#x27;scoring&#x27;</span> =&gt; <span class="variable">$params</span></span><br><span class="line">                        ],</span><br><span class="line">                        <span class="string">&#x27;source&#x27;</span> =&gt; <span class="string">&quot;for(i in params.scoring) &#123; if(doc[&#x27;id&#x27;].value == i.id ) return i.score; &#125; return 0;&quot;</span></span><br><span class="line">                    ]</span><br><span class="line">                ]</span><br><span class="line">            ]</span><br><span class="line">        ],</span><br><span class="line">        <span class="string">&#x27;_source&#x27;</span> =&gt; <span class="variable">$source</span>,</span><br><span class="line">    ],</span><br><span class="line">    <span class="string">&#x27;from&#x27;</span> =&gt; (<span class="variable">$page</span> - <span class="number">1</span>) * <span class="variable">$perPage</span>,</span><br><span class="line">    <span class="string">&#x27;size&#x27;</span> =&gt; <span class="variable">$perPage</span>,</span><br><span class="line">];</span><br><span class="line"></span><br><span class="line"><span class="variable">$results</span> = Searches::getEsInstance()-&gt;search(<span class="variable">$params</span>);</span><br><span class="line"><span class="variable">$total</span> = <span class="variable">$results</span>[<span class="string">&#x27;hits&#x27;</span>][<span class="string">&#x27;total&#x27;</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">empty</span>(<span class="variable">$items</span> = <span class="variable">$results</span>[<span class="string">&#x27;hits&#x27;</span>][<span class="string">&#x27;hits&#x27;</span>])) &#123;</span><br><span class="line">    <span class="keyword">return</span> [];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><p>不同版本的ES语法可能不同， 具体请参阅官方文档</p>
 
       
     </div>

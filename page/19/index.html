@@ -133,13 +133,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">415</span>
+          <span class="site-state-item-count">416</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">134</span>
+        <span class="site-state-item-count">135</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -178,6 +178,87 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/16/mysql%E7%9A%84with-rollup%E7%9A%84%E7%94%A8%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/16/mysql%E7%9A%84with-rollup%E7%9A%84%E7%94%A8%E6%B3%95/" class="post-title-link" itemprop="url">mysql的with-rollup的用法</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-16 09:44:52" itemprop="dateCreated datePublished" datetime="2018-03-16T09:44:52+09:00">2018-03-16</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:55:47" itemprop="dateModified" datetime="2018-03-27T21:55:47+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+世人谓我恋长安，其实只恋长安某。
+</blockquote>
+今天在做按照商品的SPU批量采购的时候, 遇到了一个问题, 就是安装SPU`groupBy`后计算的`sum`值仅仅只是每个SPU下的产品数量之和, 这可以满足在每个列表中的正常显示,但是现在需要在页面的顶部显示一个全部的SPU下的产品数量, 因为数据是分页的, 就很难计算了.起初我的代码是这样的:
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = WaitingForPurchase::query()</span><br><span class="line">        -&gt;selectRaw(<span class="string">&#x27;id, site_id, ps_type_id, ps_shop_id, ps_product_id, order_product_id, shop_product_id, sum(qty) as qty&#x27;</span>)</span><br><span class="line">        -&gt;where([<span class="string">&#x27;ps_type_id&#x27;</span> =&gt; <span class="variable">$type_id</span>, <span class="string">&#x27;ps_shop_id&#x27;</span> =&gt; <span class="variable">$shop_id</span>])</span><br><span class="line">        -&gt;groupBy(<span class="string">&#x27;shop_product_id&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>在GOOGLE了一番以后, 才知道<code>mysql</code>竟然还有这样的用法</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = WaitingForPurchase::query()</span><br><span class="line">        -&gt;selectRaw(<span class="string">&#x27;id, site_id, ps_type_id, ps_shop_id, ps_product_id, order_product_id, shop_product_id, sum(qty) as qty&#x27;</span>)</span><br><span class="line">        -&gt;where([<span class="string">&#x27;ps_type_id&#x27;</span> =&gt; <span class="variable">$type_id</span>, <span class="string">&#x27;ps_shop_id&#x27;</span> =&gt; <span class="variable">$shop_id</span>])</span><br><span class="line">        -&gt;groupBy(DB::raw(<span class="string">&#x27;shop_product_id WITH ROLLUP&#x27;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>这样得到的结果就是在我们的查询结果中会多出一条数据,用来显示额外的统计信息.<br>在使用Laravel框架的情况下, 我们还可以这样统计:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$query</span> = WaitingForPurchase::query()</span><br><span class="line">        -&gt;selectRaw(<span class="string">&#x27;id, site_id, ps_type_id, ps_shop_id, ps_product_id, order_product_id, shop_product_id, sum(qty) as qty&#x27;</span>)</span><br><span class="line">        -&gt;where([<span class="string">&#x27;ps_type_id&#x27;</span> =&gt; <span class="variable">$type_id</span>, <span class="string">&#x27;ps_shop_id&#x27;</span> =&gt; <span class="variable">$shop_id</span>]);</span><br><span class="line"></span><br><span class="line">    WaitingForPurchase::setFilters(<span class="variable">$query</span>, <span class="variable">$conditions</span>);</span><br><span class="line"></span><br><span class="line">    <span class="variable">$sum</span> = <span class="variable">$query</span>-&gt;sum(<span class="string">&#x27;qty&#x27;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="variable">$query</span>-&gt;groupBy(<span class="string">&#x27;shop_product_id&#x27;</span>)</span><br><span class="line">        -&gt;orderByDesc(<span class="string">&#x27;qty&#x27;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="variable">$items</span> = <span class="variable">$query</span>-&gt;paginate(<span class="number">20</span>);</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -997,87 +1078,6 @@ There are a ton of helper methods in Laravel that make development more efficien
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://laravel-news.com/5-laravel-helpers-make-life-easier">https://laravel-news.com/5-laravel-helpers-make-life-easier</a></p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/02/23/node%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%8A%A5%E9%94%99error-code-ELIFECYCLE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/02/23/node%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%8A%A5%E9%94%99error-code-ELIFECYCLE/" class="post-title-link" itemprop="url">node开发环境报错error-code-ELIFECYCLE</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-02-23 10:34:50" itemprop="dateCreated datePublished" datetime="2018-02-23T10:34:50+09:00">2018-02-23</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 21:57:47" itemprop="dateModified" datetime="2018-03-27T21:57:47+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-别说东南西北，请说左右好么
-</blockquote>
-
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>项目开发环境报了错，报错信息如下：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">npm ERR! code ELIFECYCLE</span><br><span class="line">npm ERR! errno <span class="number">2</span></span><br><span class="line">npm ERR! @ development: <span class="string">`cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js`</span></span><br><span class="line">npm ERR! Exit status <span class="number">2</span></span><br><span class="line">npm ERR!</span><br><span class="line">npm ERR! Failed at the @ development script.</span><br><span class="line">npm ERR! This is probably not a problem <span class="keyword">with</span> npm. There is likely additional logging output above.</span><br><span class="line"></span><br><span class="line">npm ERR! A complete log <span class="keyword">of</span> <span class="built_in">this</span> run can be found <span class="keyword">in</span>:</span><br><span class="line">npm ERR!     C:\Users\Administrator\AppData\Roaming\npm-cache\_logs\<span class="number">2018</span>-<span class="number">02</span>-23T02_05_24_275Z-debug.log</span><br><span class="line">npm ERR! code ELIFECYCLE</span><br><span class="line">npm ERR! errno <span class="number">2</span></span><br><span class="line">npm ERR! @ dev: <span class="string">`npm run development`</span></span><br><span class="line">npm ERR! Exit status <span class="number">2</span></span><br><span class="line">npm ERR!</span><br><span class="line">npm ERR! Failed at the @ dev script.</span><br><span class="line">npm ERR! This is probably not a problem <span class="keyword">with</span> npm. There is likely additional logging output above.</span><br><span class="line"></span><br><span class="line">npm ERR! A complete log <span class="keyword">of</span> <span class="built_in">this</span> run can be found <span class="keyword">in</span>:</span><br><span class="line">npm ERR!     C:\Users\Administrator\AppData\Roaming\npm-cache\_logs\<span class="number">2018</span>-<span class="number">02</span>-23T02_05_24_301Z-debug.log</span><br></pre></td></tr></table></figure>
-
-<h3 id="解法一"><a href="#解法一" class="headerlink" title="解法一"></a>解法一</h3><p>把 <code>node_modules</code> 目录删除<br>执行命令</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm cache clear --force  </span><br><span class="line">npm install -g npm  </span><br></pre></td></tr></table></figure>
-<h3 id="解法二"><a href="#解法二" class="headerlink" title="解法二"></a>解法二</h3><p>查看 <code>node_modules</code> 目录的权限是否存在问题</p>
-<h3 id="解法三"><a href="#解法三" class="headerlink" title="解法三"></a>解法三</h3><p>检查是否有异常端口占用</p>
 
       
     </div>
