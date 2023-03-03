@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">416</span>
+          <span class="site-state-item-count">418</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,185 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/04/12/Http%E5%8D%8F%E8%AE%AE%E6%B5%8F%E8%A7%88%E5%99%A8%E7%BC%93%E5%AD%98%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/04/12/Http%E5%8D%8F%E8%AE%AE%E6%B5%8F%E8%A7%88%E5%99%A8%E7%BC%93%E5%AD%98%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Http协议浏览器缓存缓存机制</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-04-12 14:51:08" itemprop="dateCreated datePublished" datetime="2017-04-12T14:51:08+09:00">2017-04-12</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:21:40" itemprop="dateModified" datetime="2018-03-27T22:21:40+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+山家除夕无他事，插了梅花便过年
+</blockquote>
+http缓存一直有在用，也听前辈讲过，今天打算自己总结一下，把不同情况都试了一遍，发现网上有些内容并不全对。
+
+<p>首先，我们知道，浏览器缓存后，在浏览器的network中看到的状态码分两种情况，304和200 OK from cache</p>
+<h3 id="304"><a href="#304" class="headerlink" title="304"></a>304</h3><p>304是协商缓存，表示请求了服务器，但是内容没有变化，从浏览器本地缓存取数据</p>
+<p>304 是通过按浏览器上的刷新按钮或者按F5刷新得到的状态码</p>
+<p>从下图可以看到，headers中有etag属性，etag是资源的唯一标识，如果内容变了，etag会改变</p>
+<p>Last-Modified 也是用于协商缓存的Last-Modified的值表示内容最后修改时间</p>
+<p>浏览器请求已经缓存的资源时，会把etag和Last-Modified发送给服务器，服务器对比，如果浏览器发送来的和服务器的值相等，说明内容没有变化，服务器返回304给浏览器，浏览器从缓存读取数据</p>
+<h3 id="200-OK-from-cache"><a href="#200-OK-from-cache" class="headerlink" title="200 OK from cache"></a>200 OK from cache</h3><p>200 OK from cache 表示浏览器没有发出网络请求，直接取的本地缓存</p>
+<p>200 OK from cache 是通过在地址栏回车得到的状态码</p>
+<p>如下图，没有etag属性。etag是服务器计算出来的唯一值，因为没有请求服务器，所以也不会有etag标识</p>
+<h3 id="expires、Cache-Control"><a href="#expires、Cache-Control" class="headerlink" title="expires、Cache-Control"></a>expires、Cache-Control</h3><p>expires 表示过期日期，是绝对值。适用于http1.0协议</p>
+<p>Cache-Control 表示缓存的时间，是相对值，比如3600，表示3600秒后失效。适用于http1.1及以上</p>
+<p>如有expires和Cache-Control 同时存在，Cache-Control优先级更高</p>
+<p>Cache-Control: no-cache：这个很容易让人产生误解，使人误以为是响应不被缓存。实际上Cache-Control: no-cache是会被缓存的，只不过每次在向客户端（浏览器）提供响应数据时，缓存都要向服务器评估缓存响应的有效性。</p>
+<p>Cache-Control: no-store：这个才是响应不被缓存的意思。</p>
+<p>Pragma: no-cache：跟Cache-Control: no-cache相同，Pragma: no-cache兼容http 1.0 ，Cache-Control: no-cache是http 1.1提供的。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/04/10/mysql%E7%9A%84sql-mode%E5%90%88%E7%90%86%E8%AE%BE%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/04/10/mysql%E7%9A%84sql-mode%E5%90%88%E7%90%86%E8%AE%BE%E7%BD%AE/" class="post-title-link" itemprop="url">mysql的sql_mode合理设置</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-04-10 10:03:42" itemprop="dateCreated datePublished" datetime="2017-04-10T10:03:42+09:00">2017-04-10</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:55:24" itemprop="dateModified" datetime="2018-03-27T21:55:24+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+以大部分人努力程度之低，根本轮不到去拼天赋
+</blockquote>
+MySQL的sql_mode合理设置
+sql_mode是个很容易被忽视的变量，默认值是空值，在这种设置下是可以允许一些非法操作的，比如允许一些非法数据的插入。在生产环境必须将这个值设置为严格模式，所以开发、测试环境的数据库也必须要设置，这样在开发测试阶段就可以发现问题 
+  
+<p>sql_mode常用值如下：<br>ONLY_FULL_GROUP_BY：<br>对于GROUP BY聚合操作，如果在SELECT中的列，没有在GROUP BY中出现，那么这个SQL是不合法的，因为列不在GROUP BY从句中</p>
+<p>NO_AUTO_VALUE_ON_ZERO：<br>该值影响自增长列的插入。默认设置下，插入0或NULL代表生成下一个自增长值。如果用户 希望插入的值为0，而该列又是自增长的，那么这个选项就有用了。</p>
+<p>STRICT_TRANS_TABLES：<br>在该模式下，如果一个值不能插入到一个事务表中，则中断当前的操作，对非事务表不做限制<br>NO_ZERO_IN_DATE：<br>在严格模式下，不允许日期和月份为零</p>
+<p>NO_ZERO_DATE：<br>设置该值，mysql数据库不允许插入零日期，插入零日期会抛出错误而不是警告。</p>
+<p>ERROR_FOR_DIVISION_BY_ZERO：<br>在INSERT或UPDATE过程中，如果数据被零除，则产生错误而非警告。如 果未给出该模式，那么数据被零除时MySQL返回NULL</p>
+<p>NO_AUTO_CREATE_USER：<br>禁止GRANT创建密码为空的用户</p>
+<p>NO_ENGINE_SUBSTITUTION：<br>如果需要的存储引擎被禁用或未编译，那么抛出错误。不设置此值时，用默认的存储引擎替代，并抛出一个异常</p>
+<p>PIPES_AS_CONCAT：<br>将”||”视为字符串的连接操作符而非或运算符，这和Oracle数据库是一样的，也和字符串的拼接函数Concat相类似</p>
+<p>ANSI_QUOTES：<br>启用ANSI_QUOTES后，不能用双引号来引用字符串，因为它被解释为识别符</p>
+<p>ORACLE的sql_mode设置等同：PIPES_AS_CONCAT, ANSI_QUOTES, IGNORE_SPACE, NO_KEY_OPTIONS, NO_TABLE_OPTIONS, NO_FIELD_OPTIONS, NO_AUTO_CREATE_USER.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://blog.csdn.net/wyzxg/article/details/8787878">http://blog.csdn.net/wyzxg/article/details/8787878</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -920,179 +1099,6 @@ Linux系统中，所有用户（包括系统管理员）的账号和密码都可
 <p>忘了ubuntu中默认登陆的不开启root账户，而/etc/shadow文件只有root账户才能够访问，那怎么办呢，只好开启ubunt的root账户了，或者 sudo vi /etc/shadow即可，搞定之后shadow的内容如下面样式：</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root:!:<span class="number">15324</span>:<span class="number">0</span>:<span class="number">99999</span>:<span class="number">7</span>:::</span><br><span class="line">daemon:*:<span class="number">15259</span>:<span class="number">0</span>:<span class="number">99999</span>:<span class="number">7</span>:::</span><br><span class="line">bin:*:<span class="number">15259</span>:<span class="number">0</span>:<span class="number">99999</span>:<span class="number">7</span>:::</span><br></pre></td></tr></table></figure>
 <p>letuknowit:$1$cPf/cIvr$sCws95uSip2ljTK052DDB.:15400:5:60:7:2:15490:<br>这里也是由[:]来进行分割，但是这里一共分出来九个栏目，每个栏目的解释如下：<br>　　1、账户名称（密码需要与账户对应的嘛）<br>　　2、加密后的密码（总不能学CSDN放明文密码，是吧），如果这一栏的第一个字符为!或者*的话，说明这是一个不能登录的账户，从上面可以看出，ubuntu默认的就不启用root账户。<br>　　3、最近改动密码的日期（不是日期吗，咋是一堆数字，别急，这个是从1970年1月1日算起的总的天数）。那怎么才能知道今天距1970年1月1日有多少天呢？很简单，你改下密码，然后看下这个栏目中的数字是多少就可以了！<br>　　4、密码不可被变更的天数：设置了这个值，则表示从变更密码的日期算起，多少天内无法再次修改密码，如果是0的话，则没有限制<br>　　5、密码需要重新变更的天数：密码经常更换才能保证安全，为了提醒某些经常不更换密码的用户，可以设置一个天数，强制让用户更换密码，也就是说该用户的密码会在多少天后过期，如果为99999则没有限制<br>　　6、密码过期预警天数：如果在5中设置了密码需要重新变更的天数，则会在密码过期的前多少天进行提醒，提示用户其密码将在多少天后过期<br>　　7、密码过期的宽恕时间：如果在5中设置的日期过后，用户仍然没有修改密码，则该用户还可以继续使用的天数<br>　　8、账号失效日期，过了这个日期账号就不能用了<br>　　9、保留的</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/03/08/%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E5%9C%B0%E4%BD%BF%E7%94%A8StackOverflow/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/03/08/%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E5%9C%B0%E4%BD%BF%E7%94%A8StackOverflow/" class="post-title-link" itemprop="url">如何优雅地使用StackOverflow</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2017-03-08 13:56:57 / 修改时间：15:09:53" itemprop="dateCreated datePublished" datetime="2017-03-08T13:56:57+09:00">2017-03-08</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我先起，你再睡一会儿。
-</blockquote>
-一:提问前一定要搜索，先在 Google 搜索，然后在 StackOverFlow 上搜索，当实在找不到答案后再提问。    对于那些靠搜索就能得到答案的问题，StackOverFlow 上的广大群众是毫不留情的，反对票数量蹭蹭得往上加啊。
-二:学习一些典型的提问/回答习惯，我做了一些笔记。
-
-<p>提问：</p>
-<ul>
-<li>1，In my limited experience with ..    谦虚表达自己在某方面的经验</li>
-<li>2， I am searching for a long time on net. But no use. Please help or try to give some ideas how to achieve this.   找了很久未果，求助攻</li>
-<li>3，after searching around for a decent XX solution and found that everything out there was difficult to use.  找了N种方法都发现太TM难了。</li>
-<li>4，I’ ve looked around and apparently I’ve got the choice between these libraries/ solutions:   说明自己是努力搜索过的，然后目前有了哪几种方案</li>
-<li>5，which seems it’s a promising solution.  看起来是一个好解决方案</li>
-<li>6，Ive tried multiple variations of this, but none of them seem to work. Any ideas? 试了很多种方法都无效，求助</li>
-<li>7，Wanted to know if it’s good practice to do that and what would be the best way to do that? 我的做法是否正确，是否有更好的法子？</li>
-<li>8，Thanks in advance.  </li>
-</ul>
-<p> 先行谢过回答问题：</p>
-<ul>
-<li>1，If I understand you correctly, you want to xxx      如果我没理解错，你想。</li>
-<li>2，Can you provided more details about your use case ? Can you provide more xml and code setting the url ? </li>
-</ul>
-<p>提供更详细当别人回答你的问题后，你对回答的评论：</p>
-<ul>
-<li>1，thank you for your answer sincerely 感谢回答blabla这些感觉就差不多了，其他说来说去也都是这些套路，回答问题或者提问时多看看别人的表达习惯，也可以做记录，好记性不如烂笔头嘛。说明一下，上面的中文不是翻译，只是一个说明，方便我快速定位的。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/03/08/Laravel%E4%B8%ADchunk%E6%96%B9%E6%B3%95%E5%88%86%E5%9D%97%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/03/08/Laravel%E4%B8%ADchunk%E6%96%B9%E6%B3%95%E5%88%86%E5%9D%97%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE/" class="post-title-link" itemprop="url">Laravel中chunk方法分块处理数据</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-03-08 11:57:41" itemprop="dateCreated datePublished" datetime="2017-03-08T11:57:41+09:00">2017-03-08</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:18:54" itemprop="dateModified" datetime="2018-03-27T22:18:54+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我只说从今往后，不说今日以前。
-</blockquote>
-Let’s imagine the situation: you have a big database table (like 10 000 rows or bigger) and you need to run an update to one column. But you cannot run just SQL query – there is some PHP logic behind it. So foreach loop could potentially take forever or bump into a default 30-second script limit. Luckily, Laravel has a neat solution for it.
-
-<p>Let’s look at a simple example of a problem I’m talking about:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$users</span> = User::all();</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$users</span> <span class="keyword">as</span> <span class="variable">$user</span>) &#123;</span><br><span class="line">  <span class="variable">$some_value</span> = (<span class="variable">$user</span>-&gt;some_field &gt; <span class="number">0</span>) ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">  <span class="comment">// might be more logic here</span></span><br><span class="line">  <span class="variable">$user</span>-&gt;update([<span class="string">&#x27;some_other_field&#x27;</span> =&gt; <span class="variable">$some_value</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Do you see the problem? It’s fine for a DB table with 100 or 500 users. But what about 10000? 100000? Million?<br>It’s not only about the speed, but also about storing the data – you are potentially storing the whole database table into variables, you might run out of memory.</p>
-<p>So here’s the thing: there is a function called chunk() which splits all data into separate selects, like pagination.<br>Let’s look at an example:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">User::chunk(<span class="number">100</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$users</span></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">foreach</span> (<span class="variable">$users</span> <span class="keyword">as</span> <span class="variable">$user</span>) &#123;</span><br><span class="line">    <span class="variable">$some_value</span> = (<span class="variable">$user</span>-&gt;some_field &gt; <span class="number">0</span>) ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// might be more logic here</span></span><br><span class="line">    <span class="variable">$user</span>-&gt;update([<span class="string">&#x27;some_other_field&#x27;</span> =&gt; <span class="variable">$some_value</span>]);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/5dafd0d6e69a">http://www.jianshu.com/p/5dafd0d6e69a</a></p>
-</blockquote>
 
       
     </div>

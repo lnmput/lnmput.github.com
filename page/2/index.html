@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">416</span>
+          <span class="site-state-item-count">418</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,211 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/21/Golang%E4%B8%AD%E7%9A%84%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/21/Golang%E4%B8%AD%E7%9A%84%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Golang中的原子操作</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-08-21 23:57:16" itemprop="dateCreated datePublished" datetime="2022-08-21T23:57:16+09:00">2022-08-21</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2022-08-22 12:27:58" itemprop="dateModified" datetime="2022-08-22T12:27:58+09:00">2022-08-22</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Love means never having to say you're sorry. 
+</blockquote>
+
+
+<p>With it easy to use go routines, you have unbridled power to harness concurrency in your programs. However, Go is not spared from race conditions. We still have to use mutex and atomic constructs to ensure that shared variables and their state are correct when read/write by go routines. The aim of this article is to see what could go wrong if you are not careful and how to avoid race conditions in your code.</p>
+<p>Let’s create a simple program to demonstrate a shared variable.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> mutexAtomicExample</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">        <span class="string">&quot;fmt&quot;</span></span><br><span class="line">        <span class="string">&quot;sync&quot;</span></span><br><span class="line">        <span class="string">&quot;sync/atomic&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Increment</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">var</span> count <span class="keyword">int</span></span><br><span class="line">        <span class="keyword">var</span> wg sync.WaitGroup <span class="comment">//needed so that the function don&#x27;t   </span></span><br><span class="line">                              <span class="comment">//exit prematurely relative </span></span><br><span class="line">                              <span class="comment">//to all go routines</span></span><br><span class="line">        <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++ &#123;</span><br><span class="line">                wg.Add(<span class="number">1</span>)</span><br><span class="line">                <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">                        <span class="keyword">defer</span> wg.Done()</span><br><span class="line">                        count++</span><br><span class="line">                &#125;()</span><br><span class="line">        &#125;</span><br><span class="line">        wg.Wait()</span><br><span class="line">        fmt.Printf(<span class="string">&quot;count: %v for 100000 cycles\n&quot;</span>, count) </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>In the increment function above, we use create 100,000 go routines where each of these will increment the count variable. We use a waitgroup to ensure the main program stays blocked [at the wg.Wait() line] until all the go routines have the chance to run till completion.</p>
+<p>Surprisingly, the output is as follows if we run the increment function.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">count: <span class="number">98152</span> <span class="keyword">for</span> <span class="number">100000</span> cycles</span><br></pre></td></tr></table></figure>
+<p>What gives?? Turns out that despite the waitgroup, the increment count operations carried out by each go routine may not be successful. The increment operation is not atomic, meaning that it could be interrupted midway by another go routine that is working concurrently to increment the same count variable. Hence, you won’t have count that will reach 100,000 but less than that. At the high level, this is a race condition.</p>
+<p>Two ways to handle — Mutex and Atomic Construct</p>
+<p>In the first way, we use mutex to lock the shared variable such that only one go routine can increment the count at a time.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IncrementMutex</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> count <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup </span><br><span class="line">	m := sync.Mutex&#123;&#125; <span class="comment">//1</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++ &#123;</span><br><span class="line">	        wg.Add(<span class="number">1</span>)</span><br><span class="line">	        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">	                <span class="keyword">defer</span> wg.Done()</span><br><span class="line">	                m.Lock()</span><br><span class="line">	                <span class="keyword">defer</span> m.Unlock()</span><br><span class="line">	                count++</span><br><span class="line">	        &#125;()</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line">	fmt.Printf(<span class="string">&quot;count: %v for 100000 cycles with Mutex\n&quot;</span>, count)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>In //(1), we create a variable mutex with the sync.Mutex{} structure which will give a zero value mutex. This will by default be an unlocked mutex.</p>
+<p>In the go routine, we lock the mutex before the increment of the count and unlock thereafter. And below is the output of running the function.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">count: <span class="number">100000</span> <span class="keyword">for</span> <span class="number">100000</span> cycles with Mutex</span><br></pre></td></tr></table></figure>
+
+<p>Now, let’s try to use the atomic construct which is available as part of the sync/atomic. Again we create a variant of the increment function:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IncrementAtomic</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">var</span> count <span class="keyword">int64</span> <span class="comment">// sync atomic cannot work with int (1)</span></span><br><span class="line">        <span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">        <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++ &#123;</span><br><span class="line">                wg.Add(<span class="number">1</span>)</span><br><span class="line">                <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">                        <span class="keyword">defer</span> wg.Done()</span><br><span class="line">                        atomic.AddInt64(&amp;count, <span class="number">1</span>) <span class="comment">//(2)</span></span><br><span class="line">                &#125;()</span><br><span class="line">        &#125;</span><br><span class="line">        wg.Wait()</span><br><span class="line">        fmt.Printf(<span class="string">&quot;count: %v for 100000 cycles with Atomic\n&quot;</span>, count)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Notice in (1), we had to use a int64 instead of the int since the atomic package cannot work with int. We can also use int32. Below are some functions showing the specific integer types that will work. So be sure to check the official documentations before using the sync/atomic package.</p>
+<ul>
+<li><code>func AddInt32(addr *int32, delta int32) (new int32)</code></li>
+<li><code>func AddInt64(addr *int64, delta int64) (new int64)</code></li>
+<li><code>func AddUint32(addr *uint32, delta uint32) (new uint32)</code></li>
+<li><code>func AddUint64(addr *uint64, delta uint64) (new uint64)</code></li>
+<li><code>func AddUintptr(addr *uintptr, delta uintptr) (new uintptr)</code></li>
+</ul>
+<p>In //(2), we evoke the AddInt64 function which requires the int64 variable as the first parameter and the delta value (also another int64) that we want to add to it.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@naikofficial56/concurrency-with-golang-7d8e0c65ef85">https://medium.com/@naikofficial56/concurrency-with-golang-7d8e0c65ef85</a></p>
+</blockquote>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@naikofficial56/concurrency-with-golang-7d8e0c65ef85">https://medium.com/@naikofficial56/concurrency-with-golang-7d8e0c65ef85</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/15/Go-Programming-I-Pointers-in-Golang/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/15/Go-Programming-I-Pointers-in-Golang/" class="post-title-link" itemprop="url">Go-Programming-I-Pointers-in-Golang</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-08-15 11:19:11 / 修改时间：11:29:41" itemprop="dateCreated datePublished" datetime="2022-08-15T11:19:11+09:00">2022-08-15</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Bond。James Bond。
+</blockquote>
+
+<p>A pointer is a special type that is used to reference a value. Understanding it better can help you write advanced code in Go.</p>
+<h3 id="Variables"><a href="#Variables" class="headerlink" title="Variables"></a>Variables</h3><p>Computer memory can be thought of as a sequence of boxes, placed one after another in a line. Each box is labeled with a unique number, which increments sequentially. The unique location number is called a memory address.</p>
+<img style="margin-left: 0;" src="/images/golangpointer001.png">
+
+<p>A variable is just a convenient, alphanumeric nickname for a piece of memory location assigned by the compiler. When you declare variables, you are given a memory location to use from the free memory available.</p>
+<img style="margin-left: 0;" src="/images/golangpointer002.png">
+
+<h3 id="Pointers"><a href="#Pointers" class="headerlink" title="Pointers"></a>Pointers</h3><p>A pointer value is the address of a variable. A pointer is thus the location at which a value is stored. With a pointer, we can read or update the value of a variable indirectly, without using or even knowing the variable’s name, if indeed it has a name.</p>
+<p>In the following example,</p>
+<ul>
+<li>The statement &amp;x yields a pointer to an integer variable.</li>
+<li>y := &amp;x We say y points to x, or y contains the address of x.</li>
+<li>The expression <code>*y</code> yields the value of that integer variable, which is 9 here.</li>
+</ul>
+<img style="margin-left: 0;" src="/images/golangpointer003.png">
+
+<h3 id="Why-is-pointer-useful"><a href="#Why-is-pointer-useful" class="headerlink" title="Why is pointer useful?"></a>Why is pointer useful?</h3><blockquote>
+<p>“Pointers are used for efficiency because everything in Go is passed by value so they let us pass an address where data is held instead of passing the data’s value, to avoid unintentionally changing data, and so we can access an actual value in another function and not just a copy of it when we want to mutate it.”</p>
+</blockquote>
+<h3 id="Pointers-Example"><a href="#Pointers-Example" class="headerlink" title="Pointers Example"></a>Pointers Example</h3><p>A copy of the value is sent to a function as an argument in pass-by-value. Any changes in the function will only impact the function’s variable; it will not update the original value outside of the function scope.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name <span class="keyword">string</span></span><br><span class="line">	Age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">String</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> fmt.Sprintf(<span class="string">&quot;User[Name: %s, Age: %d]&quot;</span>, u.Name, u.Age)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// value receiver</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">SetAge</span><span class="params">(age <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	u.Age = age</span><br><span class="line">	fmt.Println(u)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	u := User&#123;</span><br><span class="line">		Name: <span class="string">&quot;John&quot;</span>,</span><br><span class="line">		Age:  <span class="number">25</span>,</span><br><span class="line">	&#125;</span><br><span class="line">	u.SetAge(<span class="number">30</span>)</span><br><span class="line">	fmt.Println(u)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Result:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User[Name: John, Age: <span class="number">30</span>]</span><br><span class="line">User[Name: John, Age: <span class="number">25</span>]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Pass-by-pointer"><a href="#Pass-by-pointer" class="headerlink" title="Pass by pointer"></a>Pass by pointer</h3><p>In Go, everything is passed-by-value. We use pointers when we want to pass by reference and set the original value.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name <span class="keyword">string</span></span><br><span class="line">	Age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">String</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> fmt.Sprintf(<span class="string">&quot;User[Name: %s, Age: %d]&quot;</span>, u.Name, u.Age)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// value receiver</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u *User)</span> <span class="title">SetAge</span><span class="params">(age <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	u.Age = age</span><br><span class="line">	fmt.Println(u)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	u := User&#123;</span><br><span class="line">		Name: <span class="string">&quot;John&quot;</span>,</span><br><span class="line">		Age:  <span class="number">25</span>,</span><br><span class="line">	&#125;</span><br><span class="line">	u.SetAge(<span class="number">30</span>)</span><br><span class="line">	fmt.Println(u)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Result:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User[Name: John, Age: 30]</span><br><span class="line">User[Name: John, Age: 30]</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -958,185 +1163,6 @@ If you have no critics, you will likely have no success.
 
 <p>I hope you would get some point about implementing interface with multiple types, it will allow you to create only one logic for executing their method and make you life easier 😂.</p>
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/05/14/Laravel%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%9C%A8%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8env%E5%87%BD%E6%95%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/05/14/Laravel%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%9C%A8%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8env%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">Laravel为什么不能在程序中直接使用env函数</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-05-14 13:28:56 / 修改时间：13:37:27" itemprop="dateCreated datePublished" datetime="2022-05-14T13:28:56+09:00">2022-05-14</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-一定要爱着点什么，恰似草木对光阴的钟情。
-</blockquote>
-
-<h3 id="HH"><a href="#HH" class="headerlink" title="HH"></a>HH</h3><ul>
-<li><code>env()</code>は コントローラー, モデル, etc.. 内で直接使わない。</li>
-<li><code>config/*.php</code>に<code>env()</code>の値を入れて<code>config()</code>から参照する。</li>
-</ul>
-<p>例</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// config/my-app.php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> [</span><br><span class="line">    <span class="comment">// configに.envの内容を入れる。</span></span><br><span class="line">    <span class="string">&#x27;my-env&#x27;</span> =&gt; env(<span class="string">&#x27;MY_ENV&#x27;</span>),</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// コントローラー内など</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// config() を使用。</span></span><br><span class="line"><span class="variable">$my_env</span> = config(<span class="string">&#x27;my-app.my-env&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// これはダメなパターン。</span></span><br><span class="line"><span class="variable">$my_env</span> = env(<span class="string">&#x27;MY_ENV&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="何故-env-を使ってはいけないのか"><a href="#何故-env-を使ってはいけないのか" class="headerlink" title="何故 env() を使ってはいけないのか"></a>何故 env() を使ってはいけないのか</h3><p>本番環境で<code>config:cache</code>コマンドを実行した際、<code>.env</code>ファイルを読み込まないから。</p>
-<p><code>.env</code>ファイルは<code>Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables</code>クラスの<code>bootstrap()</code>で読み込まれるのですが、読み込む前に<code>config</code>のキャッシュの有無を確認し、キャッシュがあった場合は<code>.env</code>ファイルを読み込まない仕様になっています。</p>
-<p>当該部分のLaravelのコードを引用。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// 省略</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">bootstrap</span>(<span class="params">Application <span class="variable">$app</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$app</span>-&gt;configurationIsCached()) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;checkForSpecificEnvironmentFile(<span class="variable">$app</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            (<span class="keyword">new</span> Dotenv(<span class="variable">$app</span>-&gt;environmentPath(), <span class="variable">$app</span>-&gt;environmentFile()))-&gt;load();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InvalidPathException <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (InvalidFileException <span class="variable">$e</span>) &#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">&#x27;The environment file is invalid: &#x27;</span>.<span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 省略</span></span><br></pre></td></tr></table></figure>
-
-<p>大体の場合の本番環境では、高速化の為に設定を一纏めにする<code>config:cache</code>コマンドを実行すると思うのですが、前述の通りキャッシュがあると.envが読み込まれないので、<code>env()</code>を直接叩いてると開発時やテスト時には動くけど本番環境で死ぬ。といった事になります。(実際なった)</p>
-<h3 id="実際に試す"><a href="#実際に試す" class="headerlink" title="実際に試す"></a>実際に試す</h3><p>適当なコントローラーを用意してddを使って値をダンプするだけ。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HogeController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getHoge</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        dd(</span><br><span class="line">            env(<span class="string">&#x27;MY_ENV&#x27;</span>),</span><br><span class="line">            config(<span class="string">&#x27;my-app.my-env&#x27;</span>)</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>まずはキャッシュ無しでアクセス。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;Foo&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;Foo&quot;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>テスト環境や開発環境と同じ様にキャッシュを作成していないのでどちらも同じ値が取得できます。</p>
-<p>次にキャッシュさせてアクセス。<code>artisan</code>の<code>config:cache</code>を実行して<code>bootstrap/cache/config.php</code>を作成します。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan config:cache</span><br></pre></td></tr></table></figure>
-<p>で、先ほどと同じ様にアクセスしてみる。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">null</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;Foo&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p><code>.env</code>ファイルが読み出されていないので<code>env()</code>で取得した所で値が入ってる訳もなくnullを返します。</p>
-<p>と言う訳で最初に書いた通り、env()は直接使わずにconfig()に.envの値を入れて使いましょう。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://hiroto-k.hatenablog.com/entry/2018/03/28/213000">https://hiroto-k.hatenablog.com/entry/2018/03/28/213000</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/04/17/%E4%BD%BF%E7%94%A8channel%E6%A8%A1%E6%8B%9F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/04/17/%E4%BD%BF%E7%94%A8channel%E6%A8%A1%E6%8B%9F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">使用channel模拟锁的实现</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-04-17 15:19:24 / 修改时间：15:40:36" itemprop="dateCreated datePublished" datetime="2022-04-17T15:19:24+09:00">2022-04-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-看人好处 记人长处 帮人难处
-</blockquote>
-
-<h3 id="线程安全问题"><a href="#线程安全问题" class="headerlink" title="线程安全问题"></a>线程安全问题</h3><p>假设我要要计算一个用户的积分，为了能够尽快算出用户所有的积分数，我们开启了协程</p>
-<p>main.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;fmt&quot;</span></span><br><span class="line">  <span class="string">&quot;sync&quot;</span></span><br><span class="line">  <span class="string">&quot;test/user&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">  newuser:= user.User&#123;</span><br><span class="line">    Point: <span class="number">1</span>,</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">  wg.Add(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Add()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Minus()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  wg.Wait()</span><br><span class="line"></span><br><span class="line">  point := newuser.Get()</span><br><span class="line"></span><br><span class="line">  fmt.Println(point)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>user/user.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> user</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">  Point <span class="keyword">int64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Point ++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Point --</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> user.Point</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果计算的用户积分每次都不一样，正常情况下应该是 1</p>
-<h3 id="加锁处理"><a href="#加锁处理" class="headerlink" title="加锁处理"></a>加锁处理</h3><p>user/user.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> user</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;sync&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">  Point <span class="keyword">int64</span></span><br><span class="line">  lock sync.Mutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.lock.Unlock()</span><br><span class="line">  user.Point ++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.lock.Unlock()</span><br><span class="line">  user.Point --</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> user.Point</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="使用channel模拟锁"><a href="#使用channel模拟锁" class="headerlink" title="使用channel模拟锁"></a>使用channel模拟锁</h3><p>nain.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;fmt&quot;</span></span><br><span class="line">  <span class="string">&quot;sync&quot;</span></span><br><span class="line">  <span class="string">&quot;test/user&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">  newuser:= user.User&#123;</span><br><span class="line">    Point: <span class="number">1</span>,</span><br><span class="line">    Lock: user.NewMutex(),</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">  wg.Add(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Add()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>; i&lt;<span class="number">10000</span>; i++ &#123;</span><br><span class="line">      newuser.Minus()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;()</span><br><span class="line"></span><br><span class="line">  wg.Wait()</span><br><span class="line"></span><br><span class="line">  point := newuser.Get()</span><br><span class="line"></span><br><span class="line">  fmt.Println(point)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>user/user.go</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> user</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Mutex <span class="keyword">struct</span> &#123;</span><br><span class="line">  ch <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewMutex</span><span class="params">()</span> *<span class="title">Mutex</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> &amp;Mutex&#123;ch: <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;, <span class="number">1</span>)&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Mutex)</span> <span class="title">Lock</span><span class="params">()</span></span> &#123;</span><br><span class="line">  this.ch &lt;- <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this *Mutex)</span> <span class="title">UnLock</span><span class="params">()</span></span> &#123;</span><br><span class="line">  <span class="keyword">select</span> &#123;</span><br><span class="line">  <span class="keyword">case</span> &lt;-this.ch:</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    <span class="built_in">panic</span>(<span class="string">&quot;unlock error&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">  Point <span class="keyword">int64</span></span><br><span class="line">  Lock *Mutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Add</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.Lock.UnLock()</span><br><span class="line">  user.Point ++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Minus</span><span class="params">()</span></span> &#123;</span><br><span class="line">  user.Lock.Lock()</span><br><span class="line">  <span class="keyword">defer</span> user.Lock.UnLock()</span><br><span class="line">  user.Point --</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> user.Point</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
     </div>
 

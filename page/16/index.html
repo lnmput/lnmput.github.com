@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">416</span>
+          <span class="site-state-item-count">418</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,189 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/24/laravel%E5%9C%A8eloquent%E4%B8%AD%E7%AE%A1%E7%90%86%E5%AF%B9%E5%BA%94%E7%9A%84url/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/24/laravel%E5%9C%A8eloquent%E4%B8%AD%E7%AE%A1%E7%90%86%E5%AF%B9%E5%BA%94%E7%9A%84url/" class="post-title-link" itemprop="url">laravel在eloquent中管理对应的url</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-04-24 16:17:02 / 修改时间：17:20:50" itemprop="dateCreated datePublished" datetime="2018-04-24T16:17:02+09:00">2018-04-24</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+No pain, no gain.
+</blockquote>
+
+<p>It’s not uncommon to have tens, if not hundreds of views in a Laravel application. Something that soon gets out of hand is the various references to routes. Think about how many times you’ve done something like this in your blade views:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=<span class="string">&quot;&#123;&#123; route(&#x27;users.show&#x27;, <span class="subst">$user</span>) &#125;&#125;&quot;</span>&gt;&#123;&#123; <span class="variable">$user</span>-&gt;name &#125;&#125;&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+<p>If for whatever reason we have to make a change to either the route alias or default query string values you’ll soon find yourself doing mass string replacements across your entire application which brings the risk of breakage within many files.</p>
+<p>What can we do to possibly better handle this? There are a couple of different approaches.</p>
+<h3 id="Eloquent-Only"><a href="#Eloquent-Only" class="headerlink" title="Eloquent Only"></a>Eloquent Only</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="variable">$appends</span> = [</span><br><span class="line">    <span class="string">&#x27;url&#x27;</span></span><br><span class="line">  ];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getUrlAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> route(<span class="string">&#x27;users.show&#x27;</span>, <span class="keyword">$this</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Then in your views it would look like this:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&#123;&#123; $user-&gt;url &#125;&#125;&quot;</span>&gt;</span>&#123;&#123; $user-&gt;name &#125;&#125;<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>Super clean, right? For you advanced developers you’ll probably want to go with this next approach.</p>
+<h3 id="Eloquent-with-URL-Presenter"><a href="#Eloquent-with-URL-Presenter" class="headerlink" title="Eloquent with URL Presenter"></a>Eloquent with URL Presenter</h3><p>At first glance, you’ll see some similarities, but the key difference is that our accessor will return an instance of the presenter.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Presenters</span>\<span class="title">User</span>\<span class="title">UrlPresenter</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="variable">$appends</span> = [</span><br><span class="line">    <span class="string">&#x27;url&#x27;</span></span><br><span class="line">  ];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getUrlAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> UrlPresenter(<span class="keyword">$this</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Presenters</span>\<span class="title">User</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">User</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UrlPresenter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$user</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params">User <span class="variable">$user</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;user = <span class="variable">$user</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__get</span>(<span class="params"><span class="variable">$key</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(method_exists(<span class="keyword">$this</span>, <span class="variable">$key</span>))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;<span class="variable">$key</span>();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;<span class="variable">$key</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">delete</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> route(<span class="string">&#x27;users.delete&#x27;</span>, <span class="keyword">$this</span>-&gt;user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">edit</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> route(<span class="string">&#x27;users.edit&#x27;</span>, <span class="keyword">$this</span>-&gt;user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">show</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> route(<span class="string">&#x27;users.show&#x27;</span>, <span class="keyword">$this</span>-&gt;user);</span><br><span class="line">    &#125;    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">update</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> route(<span class="string">&#x27;users.update&#x27;</span>, <span class="keyword">$this</span>-&gt;user);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Then you would use it like this:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&#123;&#123; $user-&gt;url-&gt;show &#125;&#125;&quot;</span>&gt;</span>&#123;&#123; $user-&gt;name &#125;&#125;<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>As you can see with either approach, the view now doesn’t care about how we determine the URL, just that a URL is returned. The beauty to this is should you have to adjust any routes you only have to edit two files, not hundreds.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-news.com/leverage-eloquent-to-prepare-your-urls">https://laravel-news.com/leverage-eloquent-to-prepare-your-urls</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/24/laravel5-6%E7%9A%84%E8%B7%AF%E7%94%B1%E7%AD%BE%E5%90%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/24/laravel5-6%E7%9A%84%E8%B7%AF%E7%94%B1%E7%AD%BE%E5%90%8D/" class="post-title-link" itemprop="url">laravel5.6的路由签名</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-04-24 15:54:57 / 修改时间：17:07:02" itemprop="dateCreated datePublished" datetime="2018-04-24T15:54:57+09:00">2018-04-24</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+Still water run deep.
+</blockquote>
+
+<p>In the latest Laravel 5.6.12 Release a new signed URLs feature was introduced. In this article, we’ll work on enabling signed URLs in an application and look at a few options of how to use them.</p>
+<h3 id="Setup"><a href="#Setup" class="headerlink" title="Setup"></a>Setup</h3><p>First, you’ll need to run composer update laravel/framework in your terminal to pull the latest changes.</p>
+<p>Second, you’ll need to add the new ValidateSignature to your route middleware in <code>/app/Http/Kernel.php</code>.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="variable">$routeMiddleware</span> = [</span><br><span class="line">         <span class="comment">// ...</span></span><br><span class="line">         <span class="string">&#x27;guest&#x27;</span> =&gt; \App\Http\Middleware\RedirectIfAuthenticated::class,</span><br><span class="line">+        <span class="string">&#x27;signed&#x27;</span> =&gt; \Illuminate\Routing\Middleware\ValidateSignature::class,</span><br><span class="line">         <span class="string">&#x27;throttle&#x27;</span> =&gt; \Illuminate\Routing\Middleware\ThrottleRequests::class,</span><br><span class="line">     ];</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>That’s it! Now you can start adding signed URLs to your application.</p>
+<h3 id="Starting-Point"><a href="#Starting-Point" class="headerlink" title="Starting Point"></a>Starting Point</h3><p>Let’s say we have an event planning application that we let users RSVP to upcoming events. We want to email all users a link so they can quickly respond “yes” or “no” if they are going. However, we don’t want to force them to log into the application again if they happen to be logged out.</p>
+<p>Currently, we have the following event.rsvp route in our <code>routes/web.php</code> file.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;event/&#123;id&#125;/rsvp/&#123;user&#125;/&#123;response&#125;&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$id</span>, <span class="variable">$user</span>, <span class="variable">$response</span></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// Add response from user for event.</span></span><br><span class="line">&#125;)-&gt;name(<span class="string">&#x27;event.rsvp&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>and our URL is generated like so</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> \<span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">URL</span>;</span><br><span class="line">Url::route(<span class="string">&#x27;event.rsvp&#x27;</span>, [<span class="string">&#x27;id&#x27;</span> =&gt; <span class="number">25</span>, <span class="string">&#x27;user&#x27;</span> =&gt; <span class="number">100</span>, <span class="string">&#x27;response&#x27;</span> =&gt; <span class="string">&#x27;yes&#x27;</span>]);</span><br></pre></td></tr></table></figure>
+<p>which generates:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//example.com/event/25/rsvp/100/yes</span></span><br></pre></td></tr></table></figure>
+<p>We can see that a curious or malicious user will be easily able to change any variables in the URL, which is far from ideal.</p>
+<h3 id="Signing-a-URL"><a href="#Signing-a-URL" class="headerlink" title="Signing a URL"></a>Signing a URL</h3><p>Now that we have a prime candidate for a signed URL let’s add the signature handling.</p>
+<p>First, we’ll need to add the signed middleware to our route definition.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Route::get(<span class="string">&#x27;event/&#123;id&#125;/rsvp/&#123;user&#125;/&#123;response&#125;&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$id</span>, <span class="variable">$user</span>, <span class="variable">$response</span></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// Add response from user for event.</span></span><br><span class="line">&#125;)-&gt;name(<span class="string">&#x27;event.rsvp&#x27;</span>)-&gt;middleware(<span class="string">&#x27;signed&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll change our <code>Url::route()</code> to <code>Url::signedRoute()</code> in our application.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> \<span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">URL</span>;</span><br><span class="line"></span><br><span class="line">Url::signedRoute(<span class="string">&#x27;event.rsvp&#x27;</span>, [<span class="string">&#x27;id&#x27;</span> =&gt; <span class="number">25</span>, <span class="string">&#x27;user&#x27;</span> =&gt; <span class="number">100</span>, <span class="string">&#x27;response&#x27;</span> =&gt; <span class="string">&#x27;yes&#x27;</span>]);</span><br></pre></td></tr></table></figure>
+<p>Laravel will generate a new signed URL given the route name, and all of the parameters, which generates a URL similar to the following:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//example.com/event/25/rsvp/100/yes?</span></span><br><span class="line">signature=<span class="number">30</span>a3877b00890fff0d7ca25f82c6387ff16a98d21008ddc9689ed3c20ef13cd4</span><br></pre></td></tr></table></figure>
+<p>Now by using this signed URL if that same “curious” user tries to tamper with the user id, changing it from 100 to 101, or the signature ending with 4 to 5 Laravel will throw an <code>Illuminate\Routing\Exceptions\InvalidSignatureException</code>.</p>
+<h3 id="Temporary-URLs"><a href="#Temporary-URLs" class="headerlink" title="Temporary URLs"></a>Temporary URLs</h3><p>In addition to just signing a URL, Laravel gives us a great way to add an expiration to a signature as well. If we want the link to expire in 1 hour from generation, we can update our code to the following.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> \<span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">URL</span>;</span><br><span class="line"></span><br><span class="line">URL::temporarySignedRoute(<span class="string">&#x27;event.rsvp&#x27;</span>, now()-&gt;addHour(), [</span><br><span class="line">    <span class="string">&#x27;id&#x27;</span> =&gt; <span class="number">25</span>, </span><br><span class="line">    <span class="string">&#x27;user&#x27;</span> =&gt; <span class="number">100</span>, </span><br><span class="line">    <span class="string">&#x27;response&#x27;</span> =&gt; <span class="string">&#x27;yes&#x27;</span></span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+<p>which generates the following:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//example.com/event/25/rsvp/100/yes?expires=1521543365</span></span><br><span class="line">&amp;signature=d32f53ced4a781f287b612d21a3b7d3c38ebc5ae53951115bb9af4bc3f88a87a</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-news.com/signed-routes">https://laravel-news.com/signed-routes</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1019,198 +1202,6 @@ Laravel5.3的tap
 <p>上面这个例子会启动两个进程，process_name 分别为 foo:foo_01 和 foo:foo_02。通过这样一种方式，就可以用一个 [program:x] 配置项，来启动一组非常类似的进程。</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/3592/using-supervisor-to-manage-laravel-queue-processes">https://laravel-china.org/topics/3592/using-supervisor-to-manage-laravel-queue-processes</a><br><a target="_blank" rel="noopener" href="https://laravel-china.org/docs/laravel/5.5/horizon">https://laravel-china.org/docs/laravel/5.5/horizon</a><br><a target="_blank" rel="noopener" href="https://www.restran.net/2015/10/04/supervisord-tutorial/">https://www.restran.net/2015/10/04/supervisord-tutorial/</a><br><a target="_blank" rel="noopener" href="http://weidwonder.leanote.com/post/Untitled-55faa25638f4111167000067-6">http://weidwonder.leanote.com/post/Untitled-55faa25638f4111167000067-6</a><br><a target="_blank" rel="noopener" href="https://linuxize.com/post/how-to-install-pip-on-centos-7/">https://linuxize.com/post/how-to-install-pip-on-centos-7/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/11/laravel%E4%BD%BF%E7%94%A8%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8%E7%B1%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/11/laravel%E4%BD%BF%E7%94%A8%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8%E7%B1%BB/" class="post-title-link" itemprop="url">Laravel使用自定义异常类</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-11 16:14:31 / 修改时间：18:34:57" itemprop="dateCreated datePublished" datetime="2018-04-11T16:14:31+09:00">2018-04-11</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-今夜月明人尽望，不知秋思落谁家
-</blockquote>
-
-<h3 id="自定义异常类"><a href="#自定义异常类" class="headerlink" title="自定义异常类"></a>自定义异常类</h3><p>app\Exceptions\ExportException.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Exceptions</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Throwable</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExportException</span> <span class="keyword">extends</span> \<span class="title">Exception</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$message</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"><span class="keyword">string</span> <span class="variable">$message</span> = <span class="string">&quot;&quot;</span>, <span class="keyword">int</span> <span class="variable">$code</span> = <span class="number">0</span>, <span class="built_in">Throwable</span> <span class="variable">$previous</span> = <span class="literal">null</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">parent</span>::__construct(<span class="variable">$message</span>, <span class="variable">$code</span>, <span class="variable">$previous</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;message = <span class="variable">$message</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">report</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 这里自定义发生异常发生时要额外做的事情</span></span><br><span class="line">        <span class="comment">// 比如发邮件通知管理员</span></span><br><span class="line">        <span class="comment">// </span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 这里需要给浏览器或者API返回必要的通知信息</span></span><br><span class="line">        <span class="comment">// 可以是json 结构, 一般是针对API调用的</span></span><br><span class="line">        <span class="comment">// 也可以渲染一个网页, 一般是针对浏览器访问的页面</span></span><br><span class="line">        <span class="comment">// 也可以直接重定向到其他网页</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> response()-&gt;json([<span class="string">&#x27;status&#x27;</span> =&gt; <span class="number">200</span>, <span class="string">&#x27;message&#x27;</span> =&gt; <span class="keyword">$this</span>-&gt;message], <span class="number">503</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>说明:<br>如果在文件 app\Exceptions\Handler.php 中申明了以下代码, 针对该异常类的<code>report</code>方法将不会在被执行;</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Handler</span> <span class="keyword">extends</span> <span class="title">ExceptionHandler</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A list of the exception types that are not reported.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$dontReport</span> = [</span><br><span class="line">        </span><br><span class="line">         ExportException::class</span><br><span class="line">    ];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="抛出并捕获异常"><a href="#抛出并捕获异常" class="headerlink" title="抛出并捕获异常"></a>抛出并捕获异常</h3><p>首先尝试抛出异常:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">   <span class="variable">$res</span> = <span class="number">1</span>/<span class="number">0</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> (\App\Exceptions\ExportException <span class="variable">$e</span>) &#123;</span><br><span class="line">   <span class="keyword">throw</span> <span class="keyword">new</span> \App\Exceptions\ExportException(<span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面这段代码并不会在我们自定义的<code>ExportException</code>中捕获, 而会在全局异常中捕获,原因我们打印出这个异常类型看看<br>app\Exceptions\Handler.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params"><span class="variable">$request</span>, <span class="built_in">Exception</span> <span class="variable">$exception</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   dd(get_class(<span class="variable">$exception</span>));  <span class="comment">// ErrorException</span></span><br><span class="line">        </span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">parent</span>::render(<span class="variable">$request</span>, <span class="variable">$exception</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>该异常类型属于<code>ErrorException</code>, 并不是我们自定的<code>ExportException</code>, 所以并不会被我们捕获;<br>我们可以这样, 既然我们已经知道这个异常类似是<code>ErrorException</code>, 那么</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="variable">$res</span> = <span class="number">1</span>/<span class="number">0</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> ( <span class="built_in">ErrorException</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> \App\Exceptions\ExportException(<span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>当然也可以直接这样</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">   <span class="variable">$res</span> = <span class="number">1</span>/<span class="number">0</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> ( <span class="built_in">Exception</span> <span class="variable">$e</span>) &#123;</span><br><span class="line">   <span class="keyword">throw</span> <span class="keyword">new</span> \App\Exceptions\ExportException(<span class="variable">$e</span>-&gt;getMessage());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这样就可以用我们自定义的异常类来捕捉从而进一步处理了</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   <span class="attr">&quot;status&quot;</span>: <span class="number">200</span>,</span><br><span class="line">   <span class="attr">&quot;message&quot;</span>: <span class="string">&quot;Division by zero&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="关于异常的理解"><a href="#关于异常的理解" class="headerlink" title="关于异常的理解"></a>关于异常的理解</h3><ul>
-<li>由程序员设计不足所导致的错误，需要用异常来捕捉和处理</li>
-<li>程序在运行过程中, 有可能会发生一些不可预知的错误, 无法用if…else这样的语句来处理的时候.</li>
-<li>函数无法满足调用方的期望的时候使用异常, 比如用户要请求一个API获得最新的商品信息, 但是查询结果为空的时候</li>
-</ul>
-<p>所以我们自定义的异常可以是在不符合实现给定的情况下抛出的, 而不是真正程序在运行过程中发生了错误, 在Laravel的源码中我们可以找到很多一样的例子<br>vendor\laravel\framework\src\Illuminate\Foundation\Auth\AuthenticatesUsers.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">sendFailedLoginResponse</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">throw</span> ValidationException::withMessages([</span><br><span class="line">        <span class="keyword">$this</span>-&gt;username() =&gt; [trans(<span class="string">&#x27;auth.failed&#x27;</span>)],</span><br><span class="line">    ]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>vendor\guzzlehttp\psr7\src\functions.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">str</span>(<span class="params">MessageInterface <span class="variable">$message</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$message</span> <span class="keyword">instanceof</span> RequestInterface) &#123;</span><br><span class="line">        <span class="variable">$msg</span> = trim(<span class="variable">$message</span>-&gt;getMethod() . <span class="string">&#x27; &#x27;</span></span><br><span class="line">                . <span class="variable">$message</span>-&gt;getRequestTarget())</span><br><span class="line">            . <span class="string">&#x27; HTTP/&#x27;</span> . <span class="variable">$message</span>-&gt;getProtocolVersion();</span><br><span class="line">        <span class="keyword">if</span> (!<span class="variable">$message</span>-&gt;hasHeader(<span class="string">&#x27;host&#x27;</span>)) &#123;</span><br><span class="line">            <span class="variable">$msg</span> .= <span class="string">&quot;\r\nHost: &quot;</span> . <span class="variable">$message</span>-&gt;getUri()-&gt;getHost();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">elseif</span> (<span class="variable">$message</span> <span class="keyword">instanceof</span> ResponseInterface) &#123;</span><br><span class="line">        <span class="variable">$msg</span> = <span class="string">&#x27;HTTP/&#x27;</span> . <span class="variable">$message</span>-&gt;getProtocolVersion() . <span class="string">&#x27; &#x27;</span></span><br><span class="line">            . <span class="variable">$message</span>-&gt;getStatusCode() . <span class="string">&#x27; &#x27;</span></span><br><span class="line">            . <span class="variable">$message</span>-&gt;getReasonPhrase();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> \<span class="built_in">InvalidArgumentException</span>(<span class="string">&#x27;Unknown message type&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$message</span>-&gt;getHeaders() <span class="keyword">as</span> <span class="variable">$name</span> =&gt; <span class="variable">$values</span>) &#123;</span><br><span class="line">        <span class="variable">$msg</span> .= <span class="string">&quot;\r\n<span class="subst">&#123;$name&#125;</span>: &quot;</span> . implode(<span class="string">&#x27;, &#x27;</span>, <span class="variable">$values</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;<span class="subst">&#123;$msg&#125;</span>\r\n\r\n&quot;</span> . <span class="variable">$message</span>-&gt;getBody();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/11/php%E4%BD%BF%E7%94%A8yield%E6%9D%A5%E5%81%9A%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/11/php%E4%BD%BF%E7%94%A8yield%E6%9D%A5%E5%81%9A%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">PHP使用yield来做内存优化</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-11 13:38:28 / 修改时间：14:52:21" itemprop="dateCreated datePublished" datetime="2018-04-11T13:38:28+09:00">2018-04-11</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-只要想起一生中后悔的事
-梅花便落满了南山 
-</blockquote>
-
-<h3 id="什么是-“yield”"><a href="#什么是-“yield”" class="headerlink" title="什么是 “yield”"></a>什么是 “yield”</h3><p>生成器函数看上去就像一个普通函数， 除了不是返回一个值之外， 生成器会根据需求产生更多的值。</p>
-<p>来看以下的例子：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 输出字符串 &quot;value&quot;</span></span><br><span class="line"><span class="keyword">echo</span> getValues();</span><br></pre></td></tr></table></figure>
-<p>当然， 这不是他生效的方式， 前面的例子会给你一个致命的错误,类生成器的对象不能被转换成字符串， 让我们清楚的说明</p>
-<h3 id="“yield”-amp-“return”-的区别"><a href="#“yield”-amp-“return”-的区别" class="headerlink" title="“yield” &amp; “return” 的区别"></a>“yield” &amp; “return” 的区别</h3><p>前面的错误意味着 <code>getValues()</code> 方法不会如预期返回一个字符串，让我们检查一下他的类型：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;value&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line">var_dump(getValues()); <span class="comment">// string(5) &quot;value&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">&#x27;value&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line">var_dump(getValues()); <span class="comment">// class Generator#1 (0) &#123;&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>生成器 类实现了 生成器 接口， 这意味着你必须遍历 getValue() 方法来取值：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span> (getValues() <span class="keyword">as</span> <span class="variable">$value</span>) &#123;</span><br><span class="line">   <span class="keyword">echo</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用变量也是好的</span></span><br><span class="line"><span class="variable">$values</span> = getValues();</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$values</span> <span class="keyword">as</span> <span class="variable">$value</span>) &#123;</span><br><span class="line">   <span class="keyword">echo</span> <span class="variable">$value</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>但这不是唯一的不同！</p>
-<p>一个生成器运行你写使用循环来迭代一维数组的代码，而不需要在内存中创建是一个数组，这可能会导致你超出内存限制。</p>
-<p>在下面的例子里我们创建一个有 800,000 元素的数字同时从 getValues() 方法中返回他，同时在此期间，我们将使用函数 memory_get_usage() 来获取分配给次脚本的内存， 我们将会每增加 200,000 个元素来获取一下内存使用量，这意味着我们将会提出四个检查点：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="variable">$valuesArray</span> = [];</span><br><span class="line">   <span class="comment">// 获取初始内存使用量</span></span><br><span class="line">   <span class="keyword">echo</span> round(memory_get_usage() / <span class="number">1024</span> / <span class="number">1024</span>, <span class="number">2</span>) . <span class="string">&#x27; MB&#x27;</span> . PHP_EOL;</span><br><span class="line">   <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">1</span>; <span class="variable">$i</span> &lt; <span class="number">800000</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">      <span class="variable">$valuesArray</span>[] = <span class="variable">$i</span>;</span><br><span class="line">      <span class="comment">// 为了让我们能进行分析，所以我们测量一下内存使用量</span></span><br><span class="line">      <span class="keyword">if</span> ((<span class="variable">$i</span> % <span class="number">200000</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">         <span class="comment">// 来 MB 为单位获取内存使用量</span></span><br><span class="line">         <span class="keyword">echo</span> round(memory_get_usage() / <span class="number">1024</span> / <span class="number">1024</span>, <span class="number">2</span>) . <span class="string">&#x27; MB&#x27;</span>. PHP_EOL;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> <span class="variable">$valuesArray</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$myValues</span> = getValues(); <span class="comment">// 一旦我们调用函数将会在这里创建数组</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$myValues</span> <span class="keyword">as</span> <span class="variable">$value</span>) &#123;&#125;</span><br></pre></td></tr></table></figure>
-
-<p>前面例子发生的情况是这个脚本的内存消耗和输出：</p>
-<blockquote>
-<p>0.34 MB<br>8.35 MB<br>16.35 MB<br>32.35 MB</p>
-</blockquote>
-<p>这意味着我们的几行脚本消耗了超过 30 MB 的内存， 每次你你添加一个元素到 $valuesArray 数组中， 都会增加他在内存中的大小。</p>
-<p>让我们使用 yield 同样的例子:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValues</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="comment">// 获取内存使用数据</span></span><br><span class="line">   <span class="keyword">echo</span> round(memory_get_usage() / <span class="number">1024</span> / <span class="number">1024</span>, <span class="number">2</span>) . <span class="string">&#x27; MB&#x27;</span> . PHP_EOL;</span><br><span class="line">   <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">1</span>; <span class="variable">$i</span> &lt; <span class="number">800000</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">      <span class="keyword">yield</span> <span class="variable">$i</span>;</span><br><span class="line">      <span class="comment">// 做性能分析，因此可测量内存使用率</span></span><br><span class="line">      <span class="keyword">if</span> ((<span class="variable">$i</span> % <span class="number">200000</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">         <span class="comment">// 内存使用以 MB 为单位</span></span><br><span class="line">         <span class="keyword">echo</span> round(memory_get_usage() / <span class="number">1024</span> / <span class="number">1024</span>, <span class="number">2</span>) . <span class="string">&#x27; MB&#x27;</span>. PHP_EOL;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$myValues</span> = getValues(); <span class="comment">// 在循环之前都不会有动作</span></span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$myValues</span> <span class="keyword">as</span> <span class="variable">$value</span>) &#123;&#125; <span class="comment">// 开始生成数据</span></span><br></pre></td></tr></table></figure>
-<p>这个脚本的输出令人惊讶:</p>
-<blockquote>
-<p>0.34 MB<br>0.34 MB<br>0.34 MB<br>0.34 MB</p>
-</blockquote>
-<p>这不意味着你从 return 表达式迁移到 yield，但如果你在应用中创建会导致服务器上内存出问题的巨大数组，则 yield 更加适合你的情况。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/8704/using-yield-to-do-memory-optimization-in-php?utm_source=coffeephp.com">https://laravel-china.org/topics/8704/using-yield-to-do-memory-optimization-in-php?utm_source=coffeephp.com</a></p>
 </blockquote>
 
       

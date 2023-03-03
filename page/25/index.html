@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">416</span>
+          <span class="site-state-item-count">418</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,176 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/10/24/mysql%E8%BF%9E%E6%8E%A5%E6%9F%A5%E8%AF%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/10/24/mysql%E8%BF%9E%E6%8E%A5%E6%9F%A5%E8%AF%A2/" class="post-title-link" itemprop="url">mysql连接查询</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-10-24 09:36:04" itemprop="dateCreated datePublished" datetime="2017-10-24T09:36:04+09:00">2017-10-24</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:57:09" itemprop="dateModified" datetime="2018-03-27T21:57:09+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+身无饥寒，父母未曾亏我；我无长进，我以何待父母；愿你离去时，还有归途，愿你归来时，还有守候;
+</blockquote>
+
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>今天我们要说的内容就主要会围绕下面这张图片来讲<br><img src="/images/mysql_join.png"></p>
+<h3 id="一般左连接"><a href="#一般左连接" class="headerlink" title="一般左连接"></a>一般左连接</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tablea a <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> tableb b <span class="keyword">ON</span> a.val <span class="operator">=</span> b.val</span><br></pre></td></tr></table></figure>
+<p>说明:<br>在内连接的基础上, 还包含左表中所有不符合条件的数据行, 并在其中的右表列补充值为 null, 右表中没有被匹配到列不会出现在结果集当中<br>对于table1中的每一条记录对应的记录如果在table2中也恰好存在而且刚好只有一条，那么就会在返回的结果中形成一条新的记录。<br>对于table1中的每一条记录对应的记录如果在table2中也恰好存在而且有N条，那么就会在返回的结果中形成 N条新的记录(数据可能会有重复)。<br>对于table1中的每一条记录对应的记录如果在table2中不存在，那么就会在返回的结果中形成一条条新的记录，且该记录的右边全部NULL。</p>
+<h3 id="一般右连接"><a href="#一般右连接" class="headerlink" title="一般右连接"></a>一般右连接</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tablea a <span class="keyword">RIGHT</span> <span class="keyword">JOIN</span> tableb b <span class="keyword">ON</span> a.val <span class="operator">=</span> b.val</span><br></pre></td></tr></table></figure>
+
+<h3 id="交集"><a href="#交集" class="headerlink" title="交集"></a>交集</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tablea a <span class="keyword">INNER</span> <span class="keyword">JOIN</span> tableb b <span class="keyword">ON</span> a.val <span class="operator">=</span> b.val</span><br></pre></td></tr></table></figure>
+<p>说明:<br>如果两张表不加任何条件的做一个内连接, 结果将是两站表的笛卡尔积<br>如果关联的时候有条件, 使用关键字 on, 查询的结果是完全复合这个条件的结果, 不会有重复的数据<br>在内连接的查询条件, 使用where和on 的条件是一样的, 但在外连接中就不能代替</p>
+<h3 id="并集"><a href="#并集" class="headerlink" title="并集"></a>并集</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tablea a <span class="keyword">FULL</span> <span class="keyword">OUTER</span> <span class="keyword">JOIN</span> tableb <span class="keyword">ON</span> a.val <span class="operator">=</span> b.val</span><br></pre></td></tr></table></figure>
+
+<h3 id="差集A-B"><a href="#差集A-B" class="headerlink" title="差集A-B"></a>差集A-B</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tablea a <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> tableb b <span class="keyword">ON</span> a.val<span class="operator">=</span>b.val <span class="keyword">WHERE</span> b.val <span class="keyword">IS</span> <span class="keyword">NULL</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="差集B-A"><a href="#差集B-A" class="headerlink" title="差集B-A"></a>差集B-A</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tablea a <span class="keyword">RIGHT</span> <span class="keyword">JOIN</span> tableb b <span class="keyword">ON</span> a.val<span class="operator">=</span>b.val <span class="keyword">WHERE</span> a.val <span class="keyword">IS</span> <span class="keyword">NULL</span></span><br></pre></td></tr></table></figure>
+<h3 id="去掉两集合的公共元素"><a href="#去掉两集合的公共元素" class="headerlink" title="去掉两集合的公共元素"></a>去掉两集合的公共元素</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tablea a <span class="keyword">FULL</span> <span class="keyword">OUTER</span> <span class="keyword">JOIN</span> tableb b <span class="keyword">ON</span> a.val<span class="operator">=</span>b.val <span class="keyword">WHERE</span> a.val <span class="keyword">IS</span> <span class="keyword">NULL</span> <span class="keyword">OR</span> b.val <span class="keyword">IS</span> <span class="keyword">NULL</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/10/23/%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E5%90%AF%E5%8A%A8%E5%A4%9A%E4%B8%AAredis%E5%AE%9E%E4%BE%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/10/23/%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E5%90%AF%E5%8A%A8%E5%A4%9A%E4%B8%AAredis%E5%AE%9E%E4%BE%8B/" class="post-title-link" itemprop="url">如何在一台服务器上启动多个redis实例</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-10-23 09:35:52" itemprop="dateCreated datePublished" datetime="2017-10-23T09:35:52+09:00">2017-10-23</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:03:17" itemprop="dateModified" datetime="2018-03-27T22:03:17+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+夏酷暑，冬严寒，春也不死吾心，心所向，将所成
+</blockquote>
+
+<h3 id="编译安装"><a href="#编译安装" class="headerlink" title="编译安装"></a>编译安装</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget http:<span class="comment">//download.redis.io/releases/redis-4.0.2.tar.gz</span></span><br><span class="line">tar -xvf redis-<span class="number">4.0</span>.<span class="number">2</span>.tar.gz</span><br><span class="line">mv redis-<span class="number">4.0</span>.<span class="number">2</span> /usr/local</span><br><span class="line">cd /usr/local/redis-<span class="number">4.0</span>.<span class="number">2</span>/</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+
+<h3 id="修改配置文件"><a href="#修改配置文件" class="headerlink" title="修改配置文件"></a>修改配置文件</h3><p><code>redis.conf</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bind <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line">port <span class="number">6379</span></span><br><span class="line">daemonize yes</span><br><span class="line">pidfile /<span class="keyword">var</span>/run/redis_6379.pid</span><br></pre></td></tr></table></figure>
+<h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><p>需要指定配置文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./redis-server ../redis.conf</span><br></pre></td></tr></table></figure>
+<h3 id="查看"><a href="#查看" class="headerlink" title="查看"></a>查看</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef|grep redis</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置另外一个redis实例"><a href="#配置另外一个redis实例" class="headerlink" title="配置另外一个redis实例"></a>配置另外一个redis实例</h3><p>只要端口， 配置文件不一样的就可以<br>复制原配置文件并重命名</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cp redis.conf redis-<span class="number">1</span>.conf</span><br><span class="line">vi redis-<span class="number">1</span>.conf</span><br><span class="line">port <span class="number">6380</span></span><br><span class="line">slaveof <span class="number">127.0</span>.<span class="number">0.1</span> <span class="number">6379</span></span><br><span class="line">pidfile /<span class="keyword">var</span>/run/redis_6380.pid</span><br></pre></td></tr></table></figure>
+<h3 id="启动-1"><a href="#启动-1" class="headerlink" title="启动"></a>启动</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./redis-server ../redis-<span class="number">1</span>.conf</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -904,180 +1074,6 @@
 
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000008666954">https://segmentfault.com/a/1190000008666954</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/28/%E5%9C%A8Laravel%E4%B8%AD%E8%AE%BE%E7%BD%AE%E6%B2%A1%E6%9C%89%E5%8A%A0%E5%AF%86%E7%9A%84cookie/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/09/28/%E5%9C%A8Laravel%E4%B8%AD%E8%AE%BE%E7%BD%AE%E6%B2%A1%E6%9C%89%E5%8A%A0%E5%AF%86%E7%9A%84cookie/" class="post-title-link" itemprop="url">在Laravel中设置没有加密的cookie</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-09-28 14:43:01" itemprop="dateCreated datePublished" datetime="2017-09-28T14:43:01+09:00">2017-09-28</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:02:26" itemprop="dateModified" datetime="2018-03-27T22:02:26+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-如果这件事不是发生在我身上，那可真是太搞笑了。
-</blockquote>
-### 问题
-Laravel 框架内，因为安全的原因考虑，默认对所有 cookie 进行加密存储。
-有些时候，你想设置一个 Cookie 是不加密的，例如想用来跟 JS 交互，JS 可以直接读取到明文，可是以下面的代码设置后：
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie::queue(<span class="string">&#x27;cookie_for_js&#x27;</span>, <span class="string">&#x27;can you read me?&#x27;</span>, <span class="number">99999999</span>);</span><br></pre></td></tr></table></figure>
-得到的却是一个加密后的字符串;
-
-<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>添加到 <code>App\Http\Middleware\EncryptCookies</code> 的 排除名单 中：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Middleware</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Cookie</span>\<span class="title">Middleware</span>\<span class="title">EncryptCookies</span> <span class="title">as</span> <span class="title">BaseEncrypter</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EncryptCookies</span> <span class="keyword">extends</span> <span class="title">BaseEncrypter</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The names of the cookies that should not be encrypted.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$except</span> = [</span><br><span class="line">        <span class="string">&#x27;cookie_for_js&#x27;</span>, </span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>即可。</p>
-<h3 id="去除-HTTP-ONLY"><a href="#去除-HTTP-ONLY" class="headerlink" title="去除 HTTP ONLY"></a>去除 HTTP ONLY</h3><p>如果要给 JS 读取的话，要把 cookie 的 http only 属性去掉，请使用以下代码：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie::queue(<span class="string">&#x27;cookie_for_js&#x27;</span>, <span class="string">&#x27;can you read me?&#x27;</span>, <span class="variable">$minutes</span> = <span class="number">99999999</span>, <span class="variable">$path</span> = <span class="literal">null</span>, <span class="variable">$domain</span> = <span class="literal">null</span>, <span class="variable">$secure</span> = <span class="literal">false</span>, <span class="variable">$httpOnly</span> = <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/1758/tips-to-share-in-the-laravel-is-not-encrypted-cookie">https://laravel-china.org/topics/1758/tips-to-share-in-the-laravel-is-not-encrypted-cookie</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/28/Predis%E5%92%8CPhpredis%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/09/28/Predis%E5%92%8CPhpredis%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Predis和Phpredis的区别</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-09-28 10:46:54" itemprop="dateCreated datePublished" datetime="2017-09-28T10:46:54+09:00">2017-09-28</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-05-15 17:40:10" itemprop="dateModified" datetime="2018-05-15T17:40:10+09:00">2018-05-15</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你要知道，有一句话，普天之下莫非王土。但还有一句话，天高皇帝远。
-</blockquote>
-Redis 是一个开源的内存数据库服务器，得益于内建的数据类型，Redis 不仅仅只能做简单的 key/value 存储。
-
-<h3 id="Predis"><a href="#Predis" class="headerlink" title="Predis"></a>Predis</h3><p>predis，是PHP版本写的redis client,</p>
-<h3 id="Phpredis"><a href="#Phpredis" class="headerlink" title="Phpredis"></a>Phpredis</h3><p>php extension redis是PHP原生扩展，C写的,对于大量使用 Redis 的应用程序来说会产生更好的性能。</p>
-<h3 id="长连接-vs-短连接"><a href="#长连接-vs-短连接" class="headerlink" title="长连接 vs 短连接"></a>长连接 vs 短连接</h3><ul>
-<li><p>当使用pconnect时，连接会被重用，连接的生命周期是fpm进程的生命周期，而非一次php的执行。</p>
-</li>
-<li><p>如果代码中使用pconnect， close的作用仅是使当前php不能再进行redis请求，但无法真正关闭redis长连接，连接在后续请求中仍然会被重用，直至fpm进程生命周期结束。</p>
-</li>
-</ul>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/phpredis/phpredis">https://github.com/phpredis/phpredis</a></p>
 </blockquote>
 
       

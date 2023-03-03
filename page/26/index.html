@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">416</span>
+          <span class="site-state-item-count">418</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,180 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/28/%E5%9C%A8Laravel%E4%B8%AD%E8%AE%BE%E7%BD%AE%E6%B2%A1%E6%9C%89%E5%8A%A0%E5%AF%86%E7%9A%84cookie/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/09/28/%E5%9C%A8Laravel%E4%B8%AD%E8%AE%BE%E7%BD%AE%E6%B2%A1%E6%9C%89%E5%8A%A0%E5%AF%86%E7%9A%84cookie/" class="post-title-link" itemprop="url">在Laravel中设置没有加密的cookie</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-09-28 14:43:01" itemprop="dateCreated datePublished" datetime="2017-09-28T14:43:01+09:00">2017-09-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:02:26" itemprop="dateModified" datetime="2018-03-27T22:02:26+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+如果这件事不是发生在我身上，那可真是太搞笑了。
+</blockquote>
+### 问题
+Laravel 框架内，因为安全的原因考虑，默认对所有 cookie 进行加密存储。
+有些时候，你想设置一个 Cookie 是不加密的，例如想用来跟 JS 交互，JS 可以直接读取到明文，可是以下面的代码设置后：
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie::queue(<span class="string">&#x27;cookie_for_js&#x27;</span>, <span class="string">&#x27;can you read me?&#x27;</span>, <span class="number">99999999</span>);</span><br></pre></td></tr></table></figure>
+得到的却是一个加密后的字符串;
+
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>添加到 <code>App\Http\Middleware\EncryptCookies</code> 的 排除名单 中：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Middleware</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Cookie</span>\<span class="title">Middleware</span>\<span class="title">EncryptCookies</span> <span class="title">as</span> <span class="title">BaseEncrypter</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EncryptCookies</span> <span class="keyword">extends</span> <span class="title">BaseEncrypter</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The names of the cookies that should not be encrypted.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$except</span> = [</span><br><span class="line">        <span class="string">&#x27;cookie_for_js&#x27;</span>, </span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>即可。</p>
+<h3 id="去除-HTTP-ONLY"><a href="#去除-HTTP-ONLY" class="headerlink" title="去除 HTTP ONLY"></a>去除 HTTP ONLY</h3><p>如果要给 JS 读取的话，要把 cookie 的 http only 属性去掉，请使用以下代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie::queue(<span class="string">&#x27;cookie_for_js&#x27;</span>, <span class="string">&#x27;can you read me?&#x27;</span>, <span class="variable">$minutes</span> = <span class="number">99999999</span>, <span class="variable">$path</span> = <span class="literal">null</span>, <span class="variable">$domain</span> = <span class="literal">null</span>, <span class="variable">$secure</span> = <span class="literal">false</span>, <span class="variable">$httpOnly</span> = <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/1758/tips-to-share-in-the-laravel-is-not-encrypted-cookie">https://laravel-china.org/topics/1758/tips-to-share-in-the-laravel-is-not-encrypted-cookie</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/28/Predis%E5%92%8CPhpredis%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/09/28/Predis%E5%92%8CPhpredis%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Predis和Phpredis的区别</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-09-28 10:46:54" itemprop="dateCreated datePublished" datetime="2017-09-28T10:46:54+09:00">2017-09-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-05-15 17:40:10" itemprop="dateModified" datetime="2018-05-15T17:40:10+09:00">2018-05-15</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+你要知道，有一句话，普天之下莫非王土。但还有一句话，天高皇帝远。
+</blockquote>
+Redis 是一个开源的内存数据库服务器，得益于内建的数据类型，Redis 不仅仅只能做简单的 key/value 存储。
+
+<h3 id="Predis"><a href="#Predis" class="headerlink" title="Predis"></a>Predis</h3><p>predis，是PHP版本写的redis client,</p>
+<h3 id="Phpredis"><a href="#Phpredis" class="headerlink" title="Phpredis"></a>Phpredis</h3><p>php extension redis是PHP原生扩展，C写的,对于大量使用 Redis 的应用程序来说会产生更好的性能。</p>
+<h3 id="长连接-vs-短连接"><a href="#长连接-vs-短连接" class="headerlink" title="长连接 vs 短连接"></a>长连接 vs 短连接</h3><ul>
+<li><p>当使用pconnect时，连接会被重用，连接的生命周期是fpm进程的生命周期，而非一次php的执行。</p>
+</li>
+<li><p>如果代码中使用pconnect， close的作用仅是使当前php不能再进行redis请求，但无法真正关闭redis长连接，连接在后续请求中仍然会被重用，直至fpm进程生命周期结束。</p>
+</li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/phpredis/phpredis">https://github.com/phpredis/phpredis</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -866,182 +1040,6 @@ If you don't put a die() or exit() after your header('Location: http://something
 <h4 id="右移-gt-gt"><a href="#右移-gt-gt" class="headerlink" title="右移 &gt;&gt;"></a>右移 &gt;&gt;</h4><p>可以实现 除 2 运算</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="number">40</span> &gt;&gt; <span class="number">1</span>;</span><br><span class="line"><span class="comment">//结果是 20</span></span><br><span class="line"><span class="keyword">echo</span> <span class="number">40</span> &gt;&gt; <span class="number">2</span>;</span><br><span class="line"><span class="comment">//结果是 10</span></span><br><span class="line"><span class="keyword">echo</span> <span class="number">9</span> &gt;&gt; <span class="number">1</span>;</span><br><span class="line"><span class="comment">//结果是4</span></span><br></pre></td></tr></table></figure>
 
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/12/mysql%E4%BD%BF%E7%94%A8profile%E8%BF%9B%E8%A1%8C%E8%AF%AD%E5%8F%A5%E4%BC%98%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/09/12/mysql%E4%BD%BF%E7%94%A8profile%E8%BF%9B%E8%A1%8C%E8%AF%AD%E5%8F%A5%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">mysql使用profile进行语句优化</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-09-12 10:49:53" itemprop="dateCreated datePublished" datetime="2017-09-12T10:49:53+09:00">2017-09-12</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:39:40" itemprop="dateModified" datetime="2018-03-27T22:39:40+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-只是我回首来时路的每一步都走的好孤独。
-</blockquote>
-Profiling只是针对单个session的，如果session结束，profiling信息将丢失,可以在 `INFORMATION_SCHEMA`中的`profiling`表中获取profiling信息.
-### 查看profiling系统变量
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">show</span> variables <span class="keyword">like</span> <span class="string">&#x27;%profil%&#x27;</span>;  </span><br><span class="line"><span class="operator">+</span><span class="comment">------------------------+-------+</span></span><br><span class="line"><span class="operator">|</span> Variable_name          <span class="operator">|</span> <span class="keyword">Value</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">------------------------+-------+</span></span><br><span class="line"><span class="operator">|</span> have_profiling         <span class="operator">|</span> YES   <span class="operator">|</span>  #只读变量,用于控制是否由系统变量开启或禁用profiling;</span><br><span class="line"><span class="operator">|</span> profiling              <span class="operator">|</span> OFF   <span class="operator">|</span>  #开启或关闭<span class="keyword">SQL</span>语句剖析功能;</span><br><span class="line"><span class="operator">|</span> profiling_history_size <span class="operator">|</span> <span class="number">15</span>    <span class="operator">|</span>  #设置保留profiling的数目,缺省为<span class="number">15</span>,范围为<span class="number">0</span>至<span class="number">100</span>,为<span class="number">0</span>时将禁用profiling;</span><br><span class="line"><span class="operator">+</span><span class="comment">------------------------+-------+</span></span><br></pre></td></tr></table></figure>
-### 查看是否开启
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> @<span class="variable">@profiling</span>;</span><br></pre></td></tr></table></figure>
-###  设置开启
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> profiling <span class="operator">=</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-### 查看
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> profiles;</span><br></pre></td></tr></table></figure>
-### 查看具体的某一条sql
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> profile <span class="keyword">all</span> <span class="keyword">for</span> query <span class="number">18</span> ;</span><br></pre></td></tr></table></figure>
-### 查看cpu信息
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> profile cpu <span class="keyword">for</span> query <span class="number">18</span> ;</span><br></pre></td></tr></table></figure>
-### 查看内存
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> profile memory <span class="keyword">for</span> query <span class="number">18</span> ;</span><br></pre></td></tr></table></figure>
-> http://www.ywnds.com/?p=8677
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2017/09/11/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E8%AE%BE%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/09/11/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E8%AE%BE%E7%BD%AE/" class="post-title-link" itemprop="url">linux环境变量设置</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-09-11 14:14:37" itemprop="dateCreated datePublished" datetime="2017-09-11T14:14:37+09:00">2017-09-11</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:40:54" itemprop="dateModified" datetime="2018-03-27T22:40:54+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-普通玩家选择标准配置，高级玩家选择自定义配置
-</blockquote>
-Linux是一个多用户多任务的操作系统，可以在Linux中为不同的用户设置不同的运行环境，具体做法是设置不同用户的环境变量。
-### Linux环境变量分类
-
-<h4 id="按照生命周期来分"><a href="#按照生命周期来分" class="headerlink" title="按照生命周期来分"></a>按照生命周期来分</h4><p>1、永久的：需要用户修改相关的配置文件，变量永久生效。<br>2、临时的：用户利用export命令，在当前终端下声明环境变量，关闭Shell终端失效。</p>
-<h4 id="按照作用域来分"><a href="#按照作用域来分" class="headerlink" title="按照作用域来分"></a>按照作用域来分</h4><p>1、系统环境变量：系统环境变量对该系统中所有用户都有效。<br>2、用户环境变量：顾名思义，这种类型的环境变量只对特定的用户有效。</p>
-<h3 id="Linux设置环境变量的方法"><a href="#Linux设置环境变量的方法" class="headerlink" title="Linux设置环境变量的方法"></a>Linux设置环境变量的方法</h3><h4 id="在-etc-profile文件中添加变量-对所有用户生效（永久的）"><a href="#在-etc-profile文件中添加变量-对所有用户生效（永久的）" class="headerlink" title="在/etc/profile文件中添加变量 对所有用户生效（永久的）"></a>在/etc/profile文件中添加变量 对所有用户生效（永久的）</h4><p>用vim在文件/etc/profile文件中增加变量，该变量将会对Linux下所有用户有效，并且是“永久的”。<br>例如：编辑/etc/profile文件，添加CLASSPATH变量</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/profile    </span><br><span class="line">export CLASSPATH=./JAVA_HOME/lib;<span class="variable">$JAVA_HOME</span>/jre/lib</span><br></pre></td></tr></table></figure>
-<p>注：修改文件后要想马上生效还要运行source /etc/profile不然只能在下次重进此用户时生效。</p>
-<h4 id="在用户目录下的-bash-profile文件中增加变量-【对单一用户生效（永久的）】"><a href="#在用户目录下的-bash-profile文件中增加变量-【对单一用户生效（永久的）】" class="headerlink" title="在用户目录下的.bash_profile文件中增加变量 【对单一用户生效（永久的）】"></a>在用户目录下的.bash_profile文件中增加变量 【对单一用户生效（永久的）】</h4><p>用vim ~/.bash_profile文件中增加变量，改变量仅会对当前用户有效，并且是“永久的”。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.bash.profile</span><br><span class="line">export CLASSPATH=./JAVA_HOME/lib;<span class="variable">$JAVA_HOME</span>/jre/lib</span><br></pre></td></tr></table></figure>
-<p>注：修改文件后要想马上生效还要运行$ source ~/.bash_profile不然只能在下次重进此用户时生效。</p>
-<h4 id="直接运行export命令定义变量-【只对当前shell（BASH）有效（临时的）】"><a href="#直接运行export命令定义变量-【只对当前shell（BASH）有效（临时的）】" class="headerlink" title="直接运行export命令定义变量 【只对当前shell（BASH）有效（临时的）】"></a>直接运行export命令定义变量 【只对当前shell（BASH）有效（临时的）】</h4><p>在shell的命令行下直接使用export 变量名=变量值<br>定义变量，该变量只在当前的shell（BASH）或其子shell（BASH）下是有效的，shell关闭了，变量也就失效了，再打开新shell时就没有这个变量，需要使用的话还需要重新定义。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/ac2bc0ad3d74">http://www.jianshu.com/p/ac2bc0ad3d74</a></p>
-</blockquote>
 
       
     </div>
