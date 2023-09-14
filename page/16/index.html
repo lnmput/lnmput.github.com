@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">418</span>
+          <span class="site-state-item-count">419</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,99 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/25/%E4%BD%BF%E7%94%A8swoole%E8%BF%9B%E8%A1%8C%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/25/%E4%BD%BF%E7%94%A8swoole%E8%BF%9B%E8%A1%8C%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/" class="post-title-link" itemprop="url">使用swoole进行系统监控</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-04-25 09:13:22 / 修改时间：10:30:04" itemprop="dateCreated datePublished" datetime="2018-04-25T09:13:22+09:00">2018-04-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+问世间情为何物，两岸猿声啼不住。
+</blockquote>
+
+<p>通常情况下我们需要对服务器的某一个服务进行监控, 以确定该服务是在正常运行, 一般使用linux的计划任务可以实现, 但是计划任务的最小执行时间间隔是秒,往往并不能满足我们的要求, 这时候<code>Swoole</code>的毫秒定时器就该出场了</p>
+<h3 id="监控代码"><a href="#监控代码" class="headerlink" title="监控代码"></a>监控代码</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Server</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> PORT = <span class="number">80</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">port</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$shell</span>  =  <span class="string">&quot;netstat -anp 2&gt;/dev/null | grep &quot;</span>. <span class="built_in">self</span>::PORT . <span class="string">&quot; | grep LISTEN | wc -l&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="variable">$result</span> = shell_exec(<span class="variable">$shell</span>);</span><br><span class="line">        <span class="keyword">if</span>(<span class="variable">$result</span> != <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="comment">// 发送报警服务 邮件 短信</span></span><br><span class="line">            <span class="comment">/// todo</span></span><br><span class="line">            <span class="keyword">echo</span> date(<span class="string">&quot;Ymd H:i:s&quot;</span>).<span class="string">&quot;error&quot;</span>.PHP_EOL;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">echo</span> date(<span class="string">&quot;Ymd H:i:s&quot;</span>).<span class="string">&quot;succss&quot;</span>.PHP_EOL;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// nohup</span></span><br><span class="line">swoole_timer_tick(<span class="number">2000</span>, <span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$timer_id</span></span>) </span>&#123;</span><br><span class="line">    (<span class="keyword">new</span> Server())-&gt;port();</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;time-start&quot;</span>.PHP_EOL;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>注意以下命令要求使用绝对路径</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup /usr/bin/php /home/vagrant/code/swoole/script/bin/jian.php &gt; /home/vagrant/code/swoole/script/bin/log.txt &amp;</span><br></pre></td></tr></table></figure>
+
+<h3 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h3><h4 id="amp"><a href="#amp" class="headerlink" title="&amp;"></a>&amp;</h4><p>当在前台运行某个作业时，终端被该作业占据；可以在命令后面加上&amp; 实现后台运行。例如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh test.sh &amp; </span><br></pre></td></tr></table></figure>
+<p>适合在后台运行的命令有<code>find</code>、费时的排序及一些<code>shell</code>脚本。在后台运行作业时要当心：需要用户交互的命令不要放在后台执行，因为这样你的机器就会在那里傻等。不过，作业在后台运行一样会将结果输出到屏幕上，干扰你的工作。如果放在后台运行的作业会产生大量的输出，最好使用下面的方法把它的输出重定向到某个文件中：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command &gt; out.file <span class="number">2</span>&gt;&amp;<span class="number">1</span> &amp; </span><br></pre></td></tr></table></figure>
+<p>这样，所有的标准输出和错误输出都将被重定向到一个叫做<code>out.file</code>的文件中。</p>
+<h4 id="nohup"><a href="#nohup" class="headerlink" title="nohup"></a>nohup</h4><p>使用<code>&amp;</code>命令后，作业被提交到后台运行，当前控制台没有被占用，但是一但把当前控制台关掉(退出帐户时)，作业就会停止运行。<code>nohup</code>命令可以在你退出帐户之后继续运行相应的进程。<code>nohup</code>就是不挂起的意思(no hang up)。该命令的一般形式为：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup command &amp;</span><br></pre></td></tr></table></figure>
+<p>如果使用<code>nohup</code>命令提交作业，那么在缺省情况下该作业的所有输出都被重定向到一个名为<code>nohup.out</code>的文件中，除非另外指定了输出文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup command &gt; myout.file <span class="number">2</span>&gt;&amp;<span class="number">1</span> &amp;</span><br></pre></td></tr></table></figure>
+<p>使用了<code>nohup</code>之后，很多人就这样不管了，其实这样有可能在当前账户非正常退出或者结束的时候，命令还是自己结束了。所以在使用<code>nohup</code>命令后台运行命令之后，需要使用exit正常退出当前账户，这样才能保证命令一直在后台运行。</p>
+<h4 id="2-gt-amp-1解析"><a href="#2-gt-amp-1解析" class="headerlink" title="2&gt;&amp;1解析"></a>2&gt;&amp;1解析</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command &gt;out.file <span class="number">2</span>&gt;&amp;<span class="number">1</span> &amp;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>command&gt;out.file是将command的输出重定向到out.file文件，即输出内容不打印到屏幕上，而是输出到out.file文件中。</li>
+<li>2&gt;&amp;1 是将标准出错重定向到标准输出，这里的标准输出已经重定向到了out.file文件，即将标准出错也输出到out.file文件中。最后一个&amp;， 是让该命令在后台执行。</li>
+<li>试想2&gt;1代表什么，2与&gt;结合代表错误重定向，而1则代表错误重定向到一个文件1，而不代表标准输出；换成2&gt;&amp;1，&amp;与1结合就代表标准输出了，就变成错误重定向到标准输出.</li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/liuyanfeier/article/details/62422742">https://blog.csdn.net/liuyanfeier/article/details/62422742</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1070,139 +1163,6 @@ Laravel5.3的tap
 <p>我们<code>Model</code>类的实现</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">offsetExists</span>(<span class="params"><span class="variable">$offset</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> ! is_null(<span class="keyword">$this</span>-&gt;getAttribute(<span class="variable">$offset</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Get the value for a given offset.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  mixed  $offset</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> mixed</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">offsetGet</span>(<span class="params"><span class="variable">$offset</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;getAttribute(<span class="variable">$offset</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Set the value for a given offset.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  mixed  $offset</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  mixed  $value</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">offsetSet</span>(<span class="params"><span class="variable">$offset</span>, <span class="variable">$value</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">$this</span>-&gt;setAttribute(<span class="variable">$offset</span>, <span class="variable">$value</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Unset the value for a given offset.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  mixed  $offset</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">offsetUnset</span>(<span class="params"><span class="variable">$offset</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">unset</span>(<span class="keyword">$this</span>-&gt;attributes[<span class="variable">$offset</span>], <span class="keyword">$this</span>-&gt;relations[<span class="variable">$offset</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/11/%E4%BD%BF%E7%94%A8supervisor%E7%AE%A1%E7%90%86laravel%E9%98%9F%E5%88%97%E8%BF%9B%E7%A8%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/11/%E4%BD%BF%E7%94%A8supervisor%E7%AE%A1%E7%90%86laravel%E9%98%9F%E5%88%97%E8%BF%9B%E7%A8%8B/" class="post-title-link" itemprop="url">使用Supervisor管理Laravel队列进程</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-04-11 18:24:02" itemprop="dateCreated datePublished" datetime="2018-04-11T18:24:02+09:00">2018-04-11</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2019-03-08 22:55:24" itemprop="dateModified" datetime="2019-03-08T22:55:24+09:00">2019-03-08</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-你看了一千个正确答案，还是要一秒一秒的等时间 
-</blockquote>
-
-<p>Supervisor 是一个 Python 写的进程管理工具，有时一个进程需要在后台运行，并且意外挂掉后能够自动重启，就需要这么一个管理进程的工具。在 Laravel 开发中，也经常使用到队列监听，可以配合 Supervisor 来管理 Laravel 队列进程。</p>
-<h3 id="Supervisor的安装"><a href="#Supervisor的安装" class="headerlink" title="Supervisor的安装"></a>Supervisor的安装</h3><ul>
-<li>使用 pip 工具进行安装：<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo yum install epel-release</span><br><span class="line">sudo yum -y install  python-pip</span><br><span class="line">sudo pip install supervisor</span><br></pre></td></tr></table></figure></li>
-<li>Ubuntu 系统使用 apt-get<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install supervisor</span><br></pre></td></tr></table></figure></li>
-<li>还有其他的安装方式，请见官网（<a target="_blank" rel="noopener" href="http://supervisord.org/%EF%BC%89">http://supervisord.org/）</a></li>
-</ul>
-<h3 id="Supervisor的配置"><a href="#Supervisor的配置" class="headerlink" title="Supervisor的配置"></a>Supervisor的配置</h3><p>一般配置文件在<code>/etc/supervisor/conf.d</code> 目录下<br>也可以运行这个命令可以生成一个默认的配置文件：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo_supervisord_conf &gt; /etc/supervisor/supervisord.conf</span><br></pre></td></tr></table></figure>
-<p>生成成功后，打开编辑这个文件，把最后的 include 块的注释打开，并修改如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[include]</span><br><span class="line">files = /etc/supervisor/*.conf</span><br></pre></td></tr></table></figure>
-<p>新增的 Supervisor 配置文件放在 /etc/supervisor 目录下，并且以 conf 结尾。</p>
-<p>这时我们使用新的配置文件来启动 Supervisor：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">supervisord -c /etc/supervisord.conf</span><br></pre></td></tr></table></figure>
-<p>如果提示已经有进程在运行，那么先 kill 掉它。</p>
-<h3 id="使用Supervisor管理Laravel队列进程"><a href="#使用Supervisor管理Laravel队列进程" class="headerlink" title="使用Supervisor管理Laravel队列进程"></a>使用Supervisor管理Laravel队列进程</h3><p>我们使用 Laravel 队列，会用到 php artisan queue:work 命令，让它监听队列，我们可以通过 nohup 方式让它在后台运行，但是进程如果意外中断是不会自动重启的，所以使用 Supervisor 来监控进程是个很好的方式。</p>
-<p>首先在 /etc/supervisor 目录下新增一个 Supervisor 的配置文件，如下：<br>文件名<code>erp2-worker.conf</code>,和配置文件中指定的program保持一致</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[program:erp2-worker]</span><br><span class="line">process_name=%(program_name)s_%(process_num)<span class="number">02</span>d</span><br><span class="line">command=/usr/bin/php7 /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">user=vagrant</span><br><span class="line">numprocs=<span class="number">8</span></span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile=/<span class="keyword">var</span>/log/supervisor/laravel-queue.log</span><br></pre></td></tr></table></figure>
-<p>这里 user 填写网站运行进程的用户，如 vagrant，numprocs 表示启动多少个进程来监听 Laravel 队列。<br>一切就绪后，我们使用如下命令就可以启动队列进程的监听了：</p>
-<blockquote>
-<p>注意: 修改了配置文件以后都要进行 reload 和 update</p>
-</blockquote>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">supervisord <span class="comment"># 先执行</span></span><br><span class="line"></span><br><span class="line">sudo supervisorctl reload</span><br><span class="line"></span><br><span class="line">sudo supervisorctl update</span><br><span class="line"></span><br><span class="line">sudo supervisorctl start erp2-worker:*</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或者</span></span><br><span class="line">sudo supervisorctl start all</span><br></pre></td></tr></table></figure>
-<p>但是在这一步，发生了错误，提示如下：</p>
-<blockquote>
-<p>laravel-worker:laravel-worker_00: ERROR (spawn error)<br>laravel-worker:laravel-worker_01: ERROR (spawn error)<br>laravel-worker:laravel-worker_02: ERROR (spawn error)<br>laravel-worker:laravel-worker_03: ERROR (spawn error)<br>laravel-worker:laravel-worker_04: ERROR (spawn error)<br>laravel-worker:laravel-worker_05: ERROR (spawn error)<br>laravel-worker:laravel-worker_06: ERROR (spawn error)<br>laravel-worker:laravel-worker_07: ERROR (spawn error)</p>
-</blockquote>
-<p>经过一番折腾，解决方法是，把 Supervisor 的日志文件，和新增的队列配置文件中的日志文件，用 chown 把用户和组设置为正确的，如本例是 chown vagrant:vagrant file_name，另外把日志文件权限设置为 777.</p>
-<p>再次经过上述步骤，成功开启进程管理：</p>
-<blockquote>
-<p>laravel-worker:laravel-worker_00: started<br>laravel-worker:laravel-worker_01: started<br>laravel-worker:laravel-worker_02: started<br>laravel-worker:laravel-worker_03: started<br>laravel-worker:laravel-worker_04: started<br>laravel-worker:laravel-worker_05: started<br>laravel-worker:laravel-worker_06: started<br>laravel-worker:laravel-worker_07: started</p>
-</blockquote>
-<p>可以看到 Laravel 队列开始正常运行了，这里值得注意的是，如果 Laravel 处理队列的代码更改了，需要重启 Supervisor 的队列管理才能生效。</p>
-<p>查看运行情况:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef|grep <span class="string">&#x27;queue:work&#x27;</span></span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vagrant   <span class="number">4899</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4900</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4901</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4902</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4903</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4904</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4905</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4906</span>  <span class="number">1407</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">10</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/bin/php /home/vagrant/code/ccerp-v2/artisan queue:work --tries=<span class="number">3</span></span><br><span class="line">vagrant   <span class="number">4978</span>  <span class="number">2575</span>  <span class="number">0</span> <span class="number">03</span>:<span class="number">11</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep --color=auto queue:work</span><br></pre></td></tr></table></figure>
-
-<h3 id="一个错误"><a href="#一个错误" class="headerlink" title="一个错误"></a>一个错误</h3><p>使用<code>supervisorctl reload</code>却得到报错提示：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">error</span>: &lt;<span class="class"><span class="keyword">class</span> &#x27;<span class="title">socket</span>.<span class="title">error</span>&#x27;&gt;, [<span class="title">Errno</span> 2] <span class="title">No</span> <span class="title">such</span> <span class="title">file</span> <span class="title">or</span> <span class="title">directory</span>: <span class="title">file</span>: /<span class="title">usr</span>/<span class="title">lib</span>/<span class="title">python2</span>.7/<span class="title">socket</span>.<span class="title">py</span> <span class="title">line</span>: 228  </span></span><br></pre></td></tr></table></figure>
-<p>在运行 reload 命令前，先运行如下两个命令</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo supervisord -c /etc/supervisor/supervisord.conf  </span><br><span class="line">sudo supervisorctl -c /etc/supervisor/supervisord.conf  </span><br></pre></td></tr></table></figure>
-<p>或者直接</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo supervisord</span><br></pre></td></tr></table></figure>
-<p>即可解决</p>
-<h3 id="Horizon"><a href="#Horizon" class="headerlink" title="Horizon"></a>Horizon</h3><p><code>Horizon</code>为 Laravel 官方出品的 Redis 队列提供了一个可以通过代码进行配置、并且非常漂亮的仪表盘，并且能够轻松监控队列的任务吞吐量、执行时间以及任务失败情况等关键指标。</p>
-<p>队列执行者的所有配置项都存放在一个简单的配置文件中，所以团队可以通过版本控制进行协作维护。</p>
-<p>生产环境中，我们需要配置一个进程管理工具来监控 php artisan horizon 命令的执行，以便在其意外退出时自动重启。当服务器部署新代码时，需要终止当前 Horizon 主进程，然后通过进程管理工具来重启，从而使用最新的代码。</p>
-<p>使用 Artisan 命令 <code>horizon:terminate</code> 来正常停止系统中的 <code>Horizon</code> 主进程，此命令执行时，<code>Horizon</code> 当前执行中的任务会被正常完成，然后 Horizon 执行结束：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php artisan horizon:terminate</span><br></pre></td></tr></table></figure>
-<p>Supervisor 配置<br>可以使用进程管理工具 Supervisor 来管理 horizon 进程，下面配置文件就已够用：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[program:horizon]</span><br><span class="line">process_name=%(program_name)</span><br><span class="line">command=php /home/forge/app.com/artisan horizon</span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">user=forge</span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile=/home/forge/app.com/horizon.log</span><br></pre></td></tr></table></figure>
-<p>注意Horizon仅仅支持redis, 不支持database等其他队列引擎;</p>
-<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>配置说明:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">; 设置进程的名称，使用 supervisorctl 来管理进程时需要使用该进程名</span><br><span class="line">[program:foo] </span><br><span class="line">; 可以在 command 这里用 python 表达式传递不同的参数给每个进程</span><br><span class="line">command=python server.py --port=<span class="number">90</span>%(process_num)<span class="number">02</span>d</span><br><span class="line"><span class="built_in">directory</span>=/home/python/tornado_server ; 执行 command 之前，先切换到工作目录</span><br><span class="line">; 若 numprocs 不为<span class="number">1</span>，process_name 的表达式中一定要包含 process_num 来区分不同的进程</span><br><span class="line">numprocs=<span class="number">2</span>                   </span><br><span class="line">process_name=%(program_name)s_%(process_num)<span class="number">02</span>d; </span><br><span class="line">user=oxygen                 ; 使用 oxygen 用户来启动该进程</span><br><span class="line">autorestart=<span class="literal">true</span>            ; 程序崩溃时自动重启</span><br><span class="line">redirect_stderr=<span class="literal">true</span>        ; 重定向输出的日志</span><br><span class="line">stdout_logfile = /<span class="keyword">var</span>/log/supervisor/tornado_server.log</span><br><span class="line">loglevel=info</span><br></pre></td></tr></table></figure>
-
-<p>上面这个例子会启动两个进程，process_name 分别为 foo:foo_01 和 foo:foo_02。通过这样一种方式，就可以用一个 [program:x] 配置项，来启动一组非常类似的进程。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://laravel-china.org/topics/3592/using-supervisor-to-manage-laravel-queue-processes">https://laravel-china.org/topics/3592/using-supervisor-to-manage-laravel-queue-processes</a><br><a target="_blank" rel="noopener" href="https://laravel-china.org/docs/laravel/5.5/horizon">https://laravel-china.org/docs/laravel/5.5/horizon</a><br><a target="_blank" rel="noopener" href="https://www.restran.net/2015/10/04/supervisord-tutorial/">https://www.restran.net/2015/10/04/supervisord-tutorial/</a><br><a target="_blank" rel="noopener" href="http://weidwonder.leanote.com/post/Untitled-55faa25638f4111167000067-6">http://weidwonder.leanote.com/post/Untitled-55faa25638f4111167000067-6</a><br><a target="_blank" rel="noopener" href="https://linuxize.com/post/how-to-install-pip-on-centos-7/">https://linuxize.com/post/how-to-install-pip-on-centos-7/</a></p>
-</blockquote>
 
       
     </div>

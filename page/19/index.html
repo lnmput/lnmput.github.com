@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">418</span>
+          <span class="site-state-item-count">419</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,171 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/22/Github%E7%9A%84Restful-HTTP-API%E8%AE%BE%E8%AE%A1%E5%88%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/22/Github%E7%9A%84Restful-HTTP-API%E8%AE%BE%E8%AE%A1%E5%88%86%E8%A7%A3/" class="post-title-link" itemprop="url">Github的Restful-HTTP-API设计分解</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-03-22 15:46:39 / 修改时间：17:09:22" itemprop="dateCreated datePublished" datetime="2018-03-22T15:46:39+09:00">2018-03-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+在硝烟中想起冰棒汽水的味道
+和那些无所事事一整个夏天的年少
+</blockquote>
+
+<h3 id="什么是-RESTful"><a href="#什么是-RESTful" class="headerlink" title="什么是 RESTful"></a>什么是 RESTful</h3><p>RESTful 是一种软件设计风格，由 Roy Fielding 在他的 论文 中提出，全称为 Representational State Transfer，直译为表现层状态转移，或许可以解释为用 URL 定位资源，用 HTTP 动词描述操作，不用太纠结于定义，接下来我们会详细讨论。</p>
+<p>RESTful 风格的接口，目前来看，实现的最好的就是 Github API，经常被效仿。接下来我们通过分析 Github API 来引出我们的 API 设计原则。</p>
+<h3 id="为什么选择-RESTful"><a href="#为什么选择-RESTful" class="headerlink" title="为什么选择 RESTful"></a>为什么选择 RESTful</h3><p>我认为一套接口应该尽量满足以下几个原则：</p>
+<ul>
+<li>安全可靠，高效，易扩展。</li>
+<li>简单明了，可读性强，没有歧义。</li>
+<li>API 风格统一，调用规则，传入参数和返回数据有统一的标准。</li>
+</ul>
+<p>我们当然可以根据自己的经验，或者参考知名公司的接口总结设计出一套满足要求的接口，但是每个人对接口的理解不同，设计出来的接口也会有所不同，接口的命名，请求参数的格式，响应的结果，错误响应的错误码，等等很多地方都会有不一样的实现。当你去寻求一种设计理念来帮助我们设计出满足要求的接口，一定会发现 RESTful。<br>RESTful 的设计理念基于 HTTP 协议，因为 Roy Fielding 就是 HTTP 协议（1.0版和1.1版）的主要设计者。它是一种设计风格，没有规定我们一定如何实现，但是为我们提供了很好的设计理念。风格的统一，使得我们不需要过多的解释，就能让使用者明白该如何使用，同时也会有很多现成的工具来帮助我们实现 RESTful 风格的接口。</p>
+<h3 id="RESTful-设计原则"><a href="#RESTful-设计原则" class="headerlink" title="RESTful 设计原则"></a>RESTful 设计原则</h3><h4 id="1-HTTPS"><a href="#1-HTTPS" class="headerlink" title="1. HTTPS"></a>1. HTTPS</h4><p>HTTPS 为接口的安全提供了保障，可以有效防止通信被窃听和篡改。而且现在部署 HTTPS 的成本也越来越低，你可以通过 cerbot 等工具，方便快速的制作免费的安全证书，所以生产环境，请务必使用 HTTPS。</p>
+<blockquote>
+<p>另外注意，非 HTTPS 的 API 调用，不要重定向到 HTTPS，而要直接返回调用错误以禁止不安全的调用。</p>
+</blockquote>
+<h4 id="2-域名"><a href="#2-域名" class="headerlink" title="2. 域名"></a>2. 域名</h4><p>应当尽可能的将 API 与其主域名区分开，可以使用专用的域名，访问我们的 API，例如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.vxndy.com</span></span><br></pre></td></tr></table></figure>
+<p>或者可以放在主域名下，例如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//www.vxndy.com/api</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-版本控制"><a href="#3-版本控制" class="headerlink" title="3. 版本控制"></a>3. 版本控制</h4><p>随着业务的发展，需求的不断变化，API 的迭代是必然的，很可能当前版本正在使用，而我们就得开发甚至上线一个不兼容的新版本，为了让旧用户可以正常使用，为了保证开发的顺利进行，我们需要控制好 API 的版本。</p>
+<p>通常情况下，有两种做法：</p>
+<ul>
+<li>将版本号直接加入 URL 中<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.vxndy.com/v1</span></span><br><span class="line">https:<span class="comment">//api.vxndy.com/v2</span></span><br></pre></td></tr></table></figure></li>
+<li>使用 HTTP 请求头的 Accept 字段进行区分<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.larabbs.com/</span></span><br><span class="line">    Accept: application/prs.vxndy.v1+json</span><br><span class="line">    Accept: application/prs.vxndy.v2+json</span><br></pre></td></tr></table></figure>
+Github Api 虽然默认使用了第一种方法，但是其实是推荐并实现了第二种方法的，我们同样也尽量使用第二种方式。</li>
+</ul>
+<h4 id="4-用-URL-定位资源"><a href="#4-用-URL-定位资源" class="headerlink" title="4. 用 URL 定位资源"></a>4. 用 URL 定位资源</h4><p>在 RESTful 的架构中，所有的一切都表示资源，每一个 URL 都代表着一种资源，资源应当是一个名词，而且大部分情况下是名词的复数，尽量不要在 URL 中出现动词。<br>先来看看 github 的 例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GET /issues                                      列出所有的 issue</span><br><span class="line">GET /orgs/:org/issues                            列出某个项目的 issue</span><br><span class="line">GET /repos/:owner/:repo/issues/:number           获取某个项目的某个 issue</span><br><span class="line">POST /repos/:owner/:repo/issues                  为某个项目创建 issue</span><br><span class="line">PATCH /repos/:owner/:repo/issues/:number         修改某个 issue</span><br><span class="line">PUT /repos/:owner/:repo/issues/:number/lock      锁住某个 issue</span><br><span class="line">DELETE /repos/:owner/:repo/issues/:number/lock   接收某个 issue</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>例子中冒号开始的代表变量，例如 /repos/summerblue/larabbs/issues</p>
+</blockquote>
+<p>在 github 的实现中，我们可以总结出：</p>
+<ul>
+<li>资源的设计可以嵌套，表明资源与资源之间的关系。</li>
+<li>大部分情况下我们访问的是某个资源集合，想得到单个资源可以通过资源的 id 或number 等唯一标识获取。</li>
+<li>某些情况下，资源会是单数形式，例如某个项目某个 issue 的锁，每个 issue 只会有一把锁，所以它是单数。</li>
+</ul>
+<p>错误的例子</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST https:<span class="comment">//api.larabbs.com/createTopic</span></span><br><span class="line">GET https:<span class="comment">//api.larabbs.com/topic/show/1</span></span><br><span class="line">POST https:<span class="comment">//api.larabbs.com/topics/1/comments/create</span></span><br><span class="line">POST https:<span class="comment">//api.larabbs.com/topics/1/comments/100/delete</span></span><br></pre></td></tr></table></figure>
+
+<p>正确的例子</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST https:<span class="comment">//api.larabbs.com/topics</span></span><br><span class="line">GET https:<span class="comment">//api.larabbs.com/topics/1</span></span><br><span class="line">POST https:<span class="comment">//api.larabbs.com/topics/1/comments</span></span><br><span class="line">DELETE https:<span class="comment">//api.larabbs.com/topics/1/comments/100</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-用-HTTP-动词描述操作"><a href="#5-用-HTTP-动词描述操作" class="headerlink" title="5. 用 HTTP 动词描述操作"></a>5. 用 HTTP 动词描述操作</h4><p>HTTP 设计了很多动词，来表示不同的操作，RESTful 很好的利用的这一点，我们需要正确的使用 HTTP 动词，来表明我们要如何操作资源。<br>先来解释一个概念，幂等性，指一次和多次请求某一个资源应该具有同样的副作用，也就是一次访问与多次访问，对这个资源带来的变化是相同的。</p>
+<p>常用的动词及幂等性</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">动词	描述	                              是否幂等</span><br><span class="line">GET	获取资源，单个或多个	                  是</span><br><span class="line">POST	创建资源	                                  否</span><br><span class="line">PUT	更新资源，客户端提供完整的资源数据	          是</span><br><span class="line">PATCH	更新资源，客户端提供部分的资源数据	          否</span><br><span class="line">DELETE	删除资源	                                  是</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>为什么 PUT 是幂等的而 PATCH 是非幂等的，因为 PUT 是根据客户端提供了完整的资源数据，客户端提交什么就替换为什么，而 PATCH 有可能是根据客户端提供的参数，动态的计算出某个值，例如每次请求后资源的某个参数减1，所以多次调用，资源会有不同的变化。</p>
+</blockquote>
+<p>另外需要注意的是，GET 请求是安全的，不允许通过 GET 请求改变（更新或创建）资源，但是真实使用中，为了方便统计类的数据，会有一些例外情况，例如帖子详情，记录访问次数，每调用一次，访问次数 +1;</p>
+<h4 id="6-资源过滤"><a href="#6-资源过滤" class="headerlink" title="6. 资源过滤"></a>6. 资源过滤</h4><p>我们需要提供合理的参数供客户端过滤资源，例如</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">?state=closed: 不同状态的资源</span><br><span class="line">?page=<span class="number">2</span>&amp;per_page=<span class="number">100</span>：访问第几页数据，每页多少条。</span><br><span class="line">?sortby=name&amp;order=asc：指定返回结果按照哪个属性排序，以及排序顺序。</span><br></pre></td></tr></table></figure>
+
+<h4 id="7-正确使用状态码"><a href="#7-正确使用状态码" class="headerlink" title="7. 正确使用状态码"></a>7. 正确使用状态码</h4><p>HTTP 提供了丰富的状态码供我们使用，正确的使用状态码可以让响应数据更具可读性。</p>
+<ul>
+<li>200 OK - 对成功的 GET、PUT、PATCH 或 DELETE 操作进行响应。也可以被用在不创建新资源的 POST 操作上</li>
+<li>201 Created - 对创建新资源的 POST 操作进行响应。应该带着指向新资源地址的 Location 头</li>
+<li>202 Accepted - 服务器接受了请求，但是还未处理，响应中应该包含相应的指示信息，告诉客户端该去哪里查询关于本次请求的信息</li>
+<li>204 No Content - 对不会返回响应体的成功请求进行响应（比如 DELETE 请求）</li>
+<li>304 Not Modified - HTTP缓存header生效的时候用</li>
+<li>400 Bad Request - 请求异常，比如请求中的body无法解析</li>
+<li>401 Unauthorized - 没有进行认证或者认证非法</li>
+<li>403 Forbidden - 服务器已经理解请求，但是拒绝执行它</li>
+<li>404 Not Found - 请求一个不存在的资源</li>
+<li>405 Method Not Allowed - 所请求的 HTTP 方法不允许当前认证用户访问</li>
+<li>410 Gone - 表示当前请求的资源不再可用。当调用老版本 API 的时候很有用</li>
+<li>415 Unsupported Media Type - 如果请求中的内容类型是错误的</li>
+<li>422 Unprocessable Entity - 用来表示校验错误</li>
+<li>429 Too Many Requests - 由于请求频次达到上限而被拒绝访问</li>
+</ul>
+<h4 id="8-数据响应格式"><a href="#8-数据响应格式" class="headerlink" title="8. 数据响应格式"></a>8. 数据响应格式</h4><p>考虑到响应数据的可读性及通用性，默认使用 JSON 作为数据响应格式。如果客户端有需求使用其他的响应格式，例如 XML，需要在 Accept 头中指定需要的格式。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//api.vxndy.com/</span></span><br><span class="line">    Accept: application/prs.vxndy.v1+json</span><br><span class="line">    Accept: application/prs.vxndy.v1+xml</span><br></pre></td></tr></table></figure>
+
+<p>对于错误数据，默认使用如下结构：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x27;message&#x27; =&gt; &#x27;:message&#x27;,          <span class="comment">// 错误的具体描述</span></span><br><span class="line">&#x27;errors&#x27; =&gt; &#x27;:errors&#x27;,            <span class="comment">// 参数的具体错误描述，422 等状态提供</span></span><br><span class="line">&#x27;code&#x27; =&gt; &#x27;:code&#x27;,                <span class="comment">// 自定义的异常码</span></span><br><span class="line">&#x27;status_code&#x27; =&gt; &#x27;:status_code&#x27;,  <span class="comment">// http状态码</span></span><br><span class="line">&#x27;debug&#x27; =&gt; &#x27;:debug&#x27;,              <span class="comment">// debug 信息，非生产环境提供</span></span><br></pre></td></tr></table></figure>
+
+<p>例如</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;message&quot;</span>: <span class="string">&quot;422 Unprocessable Entity&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;errors&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;name&quot;</span>: [</span><br><span class="line">            <span class="string">&quot;姓名 必须为字符串。&quot;</span></span><br><span class="line">        ]</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;status_code&quot;</span>: <span class="number">422</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;message&quot;</span>: <span class="string">&quot;您无权访问该订单&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;status_code&quot;</span>: <span class="number">403</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="9-调用频率限制"><a href="#9-调用频率限制" class="headerlink" title="9. 调用频率限制"></a>9. 调用频率限制</h4><p>为了防止服务器被攻击，减少服务器压力，需要对接口进行合适的限流控制，需要在响应头信息中加入合适的信息，告知客户端当前的限流情况</p>
+<ul>
+<li>X-RateLimit-Limit :100 最大访问次数</li>
+<li>X-RateLimit-Remaining :93 剩余的访问次数</li>
+<li>X-RateLimit-Reset :1513784506 到该时间点，访问次数会重置为 X-RateLimit-Limit</li>
+</ul>
+<h4 id="10-编写文档"><a href="#10-编写文档" class="headerlink" title="10. 编写文档"></a>10. 编写文档</h4><p>为了方便用户使用，我们需要提供清晰的文档，尽可能包括以下几点</p>
+<ul>
+<li>包括每个接口的请求参数，每个参数的类型限制，是否必填，可选的值等。</li>
+<li>响应结果的例子说明，包括响应结果中，每个参数的释义。</li>
+<li>对于某一类接口，需要有尽量详细的文字说明，比如针对一些特定场景，接口应该如何调用。</li>
+</ul>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://developer.github.com/v3/">https://developer.github.com/v3/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -974,115 +1139,6 @@
 
 <p>所有文件的自动载入需要在<code>spl_autoload_register</code>这个函数中通过<code>include_once</code>实现;</p>
 <h3 id="PSR"><a href="#PSR" class="headerlink" title="PSR"></a>PSR</h3><p>命名空间跟文件加载并无直接关系，只是有些语言，将命名空间结构和文件结构对应起来了。 以php为例，一般的命名空间结构，跟php文件结构是存在映射关系的，通过命名空间名称，就能算出该类的实际存储位置， 然后实例化的时候，会触发用设置的spl自动加载函数将文件引入。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/01/%E5%9C%A8PHP%E4%B8%8B%E7%90%86%E8%A7%A3%E5%92%8C%E5%BA%94%E7%94%A8%E5%A4%9A%E6%80%81/" class="post-title-link" itemprop="url">在PHP下理解和应用多态</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-03-01 11:18:28" itemprop="dateCreated datePublished" datetime="2018-03-01T11:18:28+09:00">2018-03-01</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:02:34" itemprop="dateModified" datetime="2018-03-27T22:02:34+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
- 后来我终于知道 ， 它并不是我的花 ，我只是恰好途径了它的盛放。 
-</blockquote>
-
-<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>封装是类的构建过程，php具有；php也具有继承的特性。唯独这个多态，php体现的十分模糊。原因是php是弱类型语言。<br>java的多态体现的十分清晰，大体分两类：父类引用指向子类对象；接口引用指向实现接口的类对象。java声明变量时都要给变量设定类型，所以存在什么父类引用和接口引用。而php则没有这点体现，php声明变量不需要给变量设定类型，一个变量可以指向不同的数据类型。所以，php不具有像java一样的多态。</p>
-<p>多态，作为面向对象编程中的一种设计模式，指的是通过遵循同一个interface，类可以有不同的功能实现（相当于说，有多种形态）。<br>在编程世界里，多态形式可以让我们的程序更加地模块化，易于扩展，而不是到处都是基于不同状态的条件判断，比如动不动就switch，动不动就层层嵌套if判断，这种情况下，十有八九是你的代码“有问题”了。</p>
-<h3 id="Interfaces"><a href="#Interfaces" class="headerlink" title="Interfaces"></a>Interfaces</h3><p>interface里可以定义方法名及相应参数，任何实现这个interface的类必须具体实现interface里定义的所有抽象方法，一个class可以实现多个interface</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 正确的做法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> <span class="keyword">implements</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// code that does this</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// code that does that</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;name = <span class="variable">$name</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 无效的做法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> <span class="keyword">implements</span> <span class="title">MyInterface</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 缺少 doThis()方法!</span></span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 这个方法必须也是public!</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 缺少 name 参数!</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h3><p>Abstract Class可以说是介于interface和普通class之间，它既可以通过abstract method的形式定义统一的接口，又可以定义具体的功能实现。一个扩展了该Abstract Class的普通class，必须得具体实现该Abstract Class的所有抽象方法。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">MyAbstract</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThis</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// do this</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">abstract</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">doThat</span>(<span class="params"></span>)</span>;</span><br><span class="line">    <span class="keyword">abstract</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">setName</span>(<span class="params"><span class="variable">$name</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="问题的引出"><a href="#问题的引出" class="headerlink" title="问题的引出"></a>问题的引出</h3><p>假设你有一个articleclass：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$title</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$author</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$date</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$category</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span>  <span class="title">__construct</span>(<span class="params"><span class="variable">$title</span>, <span class="variable">$author</span>, <span class="variable">$date</span>, <span class="variable">$category</span> = <span class="number">0</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;title = <span class="variable">$title</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;author = <span class="variable">$author</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;date = <span class="variable">$date</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;category = <span class="variable">$category</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>现在呢，你想添加一个方法，来以不同的形式输出article相关的信息，比如说XML格式，或者说JSON格式。<br>可能你一开始会想着这么来处理：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params"><span class="variable">$type</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$ret</span> = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="keyword">switch</span>(<span class="variable">$type</span>) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;XML&#x27;</span>:</span><br><span class="line">                <span class="variable">$ret</span> = <span class="string">&#x27;&lt;article&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;title&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;title . <span class="string">&#x27;&lt;/title&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;author&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;author . <span class="string">&#x27;&lt;/author&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;date&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;date . <span class="string">&#x27;&lt;/date&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;category&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;category . <span class="string">&#x27;&lt;/category&gt;&#x27;</span>;</span><br><span class="line">                <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;/article&gt;&#x27;</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;JSON&#x27;</span>:</span><br><span class="line">                <span class="variable">$array</span> = <span class="keyword">array</span>(<span class="string">&#x27;article&#x27;</span> =&gt; <span class="variable">$obj</span>);</span><br><span class="line">                <span class="variable">$ret</span> = json_encode(<span class="variable">$array</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$ret</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>虽然功能上能实现效果，但是看上去很糟糕，不是吗？假设，将来你又想加上其他的格式，那该怎么办？再加几个case判断，这代码得多臃肿呢？</p>
-<p>关于面向对象，有一个很重要的原则就是，一个class应该只做份内之事。每当你遇到大块的条件判断的时候，你就应该有所警醒，因为很可能这个时候你已经在同一个class或method下，硬要去做太多的事情了。那么这个时候，也就是该尝试多态实现了。</p>
-<h3 id="尝试解决"><a href="#尝试解决" class="headerlink" title="尝试解决"></a>尝试解决</h3><p>定义 Interface</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>具体实现 Interface</p>
-<p>XMLWriter可以这样来实现：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">XMLWriter</span> <span class="keyword">implements</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$ret</span> = <span class="string">&#x27;&lt;article&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;title&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;title . <span class="string">&#x27;&lt;/title&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;author&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;author . <span class="string">&#x27;&lt;/author&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;date&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;date . <span class="string">&#x27;&lt;/date&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;category&gt;&#x27;</span> . <span class="variable">$obj</span>-&gt;category . <span class="string">&#x27;&lt;/category&gt;&#x27;</span>;</span><br><span class="line">        <span class="variable">$ret</span> .= <span class="string">&#x27;&lt;/article&gt;&#x27;</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$ret</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>JSONWriter：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JSONWriter</span> <span class="keyword">implements</span> <span class="title">Writer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Article <span class="variable">$obj</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$array</span> = <span class="keyword">array</span>(<span class="string">&#x27;article&#x27;</span> =&gt; <span class="variable">$obj</span>);</span><br><span class="line">        <span class="keyword">return</span> json_encode(<span class="variable">$array</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这样每一种个的class只负责各自的那一件事。</p>
-<p>具体调用</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">write</span>(<span class="params">Writer <span class="variable">$writer</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$writer</span>-&gt;write(<span class="keyword">$this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这样article的write方法接收的是一个实现了Writer这个interface的具体类，article不再需要关注具体该用什么样的格式，那已经不是它要负责的了，交给背后具体的Writer去处理就好了。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="http://pilishen.com/posts/Understanding-and-Applying-Polymorphism-in-PHP">http://pilishen.com/posts/Understanding-and-Applying-Polymorphism-in-PHP</a></p>
-</blockquote>
 
       
     </div>

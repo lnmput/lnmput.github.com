@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">418</span>
+          <span class="site-state-item-count">419</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,99 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2016/07/28/%E5%85%B3%E4%BA%8E%E5%87%BA%E7%8E%B0php-m%E5%92%8Cphpinfo%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/07/28/%E5%85%B3%E4%BA%8E%E5%87%BA%E7%8E%B0php-m%E5%92%8Cphpinfo%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">关于出现php-m和phpinfo不一致的问题</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-28 09:44:23" itemprop="dateCreated datePublished" datetime="2016-07-28T09:44:23+09:00">2016-07-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:58:14" itemprop="dateModified" datetime="2018-03-27T21:58:14+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+我前半生最强烈三次心跳，分别发生在上课被老师点名 ，下楼梯一脚踩空， 和你对我微笑的时候！
+</blockquote>
+### 本文系转载
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">命令查看：</span><br><span class="line">php -m</span><br><span class="line">which php</span><br></pre></td></tr></table></figure>
+昨天有个学员私聊我，说他的`php -m`和在`apache` 中运行`phpinfo`不一致(这力默认`apache`是把`php`编译成模块的)，譬如模块加载不一致。
+
+<p>理论上这是不可能的。除非你的PHP做了特别的设置（此处不表，-c参数即可搞定), 默认情况下,两者都是一致的。</p>
+<p>经过我一番询问，发现并没有特别之处。于是我也纳闷了、抑郁了、纠结了。这也引起了我的“执着心”，我很讨厌在这种问题上还能卡住。于是我告诉那位学员，今天不找出原因咱两一起“切腹”。学员弱弱的答应了。。。。</p>
+<p>然而，经过我一步步询问确认（注意：我不帮学员远程调试，这是游戏规则）。终于发现了问题。接下来放出原因，大家可能也会碰到</p>
+<p>1、学员执行的是<code>php -m</code> .并不是类似 <code>/usr/local/php/bin/php -m</code>  这说明他的PHP存在于某个环境变量路径里。</p>
+<p>2、也就是恰恰上面这个原因给忽略了。我们一直始终认为 他的环境变量是正确的。</p>
+<p>3、最后，我让他执行了 重新编译PHP。问题依旧。（此时学员已经有切腹的愿望）</p>
+<p>4、最后，我让它（就是它）执行了 <code>which php</code> .这时发现它的PHP在 <code>/usr/bin</code> 里面。</p>
+<p>5、也就是说不管他怎么编译PHP，最终执行的php -m 的那个PHP可执行程序 永远是定位在 /usr/bin里面的那个老PHP</p>
+<p>6、学员已经忘了怎么操作使之 <code>/usr/bin</code>里也有个PHP</p>
+<p>7、解决方法如下：删掉 <code>/usr/bin</code>里面的那个老PHP 。把环境变量 设置到<code>/usr/local/php/bin</code>里。</p>
+<p>8、再次执行 php -m 一切正常了。</p>
+<p>本次解决问题的结论是：</p>
+<p>  不要相信一些“你认为不可能出错的步骤”。往往有的步骤你觉得“绝对不可能出错”，而问题恰恰就在你最信任的步骤里。 交朋友也是，往往你最最信任的人也是最有可能在关键部分干你一菊花的人。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://www.hishenyi.com/archives/1095">http://www.hishenyi.com/archives/1095</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 

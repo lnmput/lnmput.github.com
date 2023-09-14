@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="I gave up， x  Greetings humans (I am not a bot 😶) hope you are interfacing properly?  Follow me on a journey as I show you a simple way of continuous deployment on a Laravel project using git and so">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How-to-automate-deployment-using-git-and-webhooks">
+<meta property="og:url" content="https://swoole.app/2023/09/15/How-to-automate-deployment-using-git-and-webhooks/index.html">
+<meta property="og:site_name" content="外贸独立站(日本)">
+<meta property="og:description" content="I gave up， x  Greetings humans (I am not a bot 😶) hope you are interfacing properly?  Follow me on a journey as I show you a simple way of continuous deployment on a Laravel project using git and so">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-09-14T15:30:19.000Z">
+<meta property="article:modified_time" content="2023-09-14T15:45:33.880Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Laravel">
+<meta property="article:tag" content="Git">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2023/09/15/How-to-automate-deployment-using-git-and-webhooks/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2023/09/15/How-to-automate-deployment-using-git-and-webhooks/","path":"2023/09/15/How-to-automate-deployment-using-git-and-webhooks/","title":"How-to-automate-deployment-using-git-and-webhooks"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>How-to-automate-deployment-using-git-and-webhooks | 外贸独立站(日本)</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">外贸独立站(日本)</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">419</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://octobercms.com/" title="octobercms → https:&#x2F;&#x2F;octobercms.com&#x2F;" rel="noopener" target="_blank">octobercms</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://medium.com/" title="medium → https:&#x2F;&#x2F;medium.com&#x2F;" rel="noopener" target="_blank">medium</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2023/09/15/How-to-automate-deployment-using-git-and-webhooks/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          How-to-automate-deployment-using-git-and-webhooks
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-09-15 00:30:19 / 修改时间：00:45:33" itemprop="dateCreated datePublished" datetime="2023-09-15T00:30:19+09:00">2023-09-15</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+I gave up， x
+</blockquote>
+Greetings humans (I am not a bot 😶) hope you are interfacing properly?
+
+<p>Follow me on a journey as I show you a simple way of continuous deployment on a Laravel project using git and some other things (just read on).</p>
+<p>For our tutorial, we’re going to need a few things before we proceed:</p>
+<ul>
+<li>A Laravel project</li>
+<li>Some version of git (Github would be used for this tutorial, but the process is just about the same)</li>
+<li>Access to a server (You can test locally tho but it won’t be the same)</li>
+<li>Eyes</li>
+<li>Fingers</li>
+<li>A brain</li>
+<li>ok I’ll stop now…<br>Let us start from the beginning, a laravel project</li>
+</ul>
+<p>Very beautiful framework, (no regrets about cheating on asp.net [this is not a confession 😶]).</p>
+<p>The first thing we want to do on our project is use composer to install symfony/process to our project, we are going to need this package later.</p>
+<p>You can do that by running this simple command at the root of your project</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">  composer require symfony/process</span></span><br></pre></td></tr></table></figure>
+<p>This would load the required loadables to your composer.json file, in order to add the package to your project you just simply run this comman</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> composer update</span></span><br></pre></td></tr></table></figure>
+
+<p>That should add the package to your vendors folder and generate the required classes and so on.</p>
+<p>Here is a link to the Symfony docs where you can read up more about that.</p>
+<p>After this is done, we are going to need a shell script that is going to hold the sauce to our magic.</p>
+<p>This is how our shell script looks like:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/sh</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> activate maintenance mode</span></span><br><span class="line">php artisan down</span><br><span class="line"><span class="meta">#</span><span class="bash"> update <span class="built_in">source</span> code</span></span><br><span class="line">git pull</span><br><span class="line"><span class="meta">#</span><span class="bash"> update PHP dependencies</span></span><br><span class="line">composer install --no-interaction --no-dev --prefer-dist</span><br><span class="line"><span class="meta">#</span><span class="bash"> --no-interaction Do not ask any interactive question</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> --no-dev  Disables installation of require-dev packages.</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> --prefer-dist  Forces installation from package dist even <span class="keyword">for</span> dev versions.</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> update database</span></span><br><span class="line">php artisan migrate --force</span><br><span class="line"><span class="meta">#</span><span class="bash"> --force  Required to run when <span class="keyword">in</span> production.</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> stop maintenance mode</span></span><br><span class="line">php artisan up</span><br></pre></td></tr></table></figure>
+<p>We can call this file deploy.sh</p>
+<p>The truth is that this is just a template, you can modify this script to suit whatever needs you might have.</p>
+<p>Now you have to make this script executable</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> sudo chmod +x deploy.sh</span></span><br></pre></td></tr></table></figure>
+<p>Depending on your production environment, this method is very risky so if you’re one of those “safety” freaks, just clap for me and move on…</p>
+<p>But if you are one with the force (Linux) please proceed, it only get’s interesting from here.</p>
+<p>Now we have our script ready, we would need to prepare for our git webhook.</p>
+<p>On GitHub, on your repository page, select the Settings tab, then Webhooks in the left navigation. Or go directly to the URL:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/&lt;your account&gt;/&lt;your repository&gt;/settings/hooks</span><br></pre></td></tr></table></figure>
+
+<p>Click Add Webook:</p>
+<ul>
+<li>Payload URL: <a target="_blank" rel="noopener" href="http://example.com/deploy">http://example.com/deploy</a></li>
+<li>Secret: Some random long String (the longer the better 😏)</li>
+</ul>
+<p>Now we would need to add this webhook to our project (this is where it gets fun)</p>
+<p>Firstly we need to add our secret to the project or in Layman’s terms we need make or project understand that there is a secret that a url needs before we proceed.</p>
+<p>In config/app.php, add this line:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27;deploy_secret&#x27; =&gt; env(&#x27;APP_DEPLOY_SECRET&#x27;),</span><br></pre></td></tr></table></figure>
+<p>In your .env file add your webhook secret:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">APP_DEPLOY_SECRET=changemenoworfacetheconsequences</span><br></pre></td></tr></table></figure>
+<p>Now we’re done with the manual part, let’s write some codes</p>
+<p>We need to make a controller which would house our logic and process for making our deploy process run. Now let’s make our controller…</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> php artisan make:controller DeployController</span></span><br></pre></td></tr></table></figure>
+
+<p>I’m just going to call this controller DeployController for simplicity sake.</p>
+<p>Then we would add all our code, don’t worry I’ll explain most of it. At the end our controller should look something like this:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Http</span>\<span class="title">Request</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Process</span>\<span class="title">Process</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DeployController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">deploy</span>(<span class="params">Request <span class="variable">$request</span></span>)</span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">     <span class="variable">$githubPayload</span> = <span class="variable">$request</span>-&gt;getContent();</span><br><span class="line">     <span class="variable">$githubHash</span> = <span class="variable">$request</span>-&gt;header(<span class="string">&#x27;X-Hub-Signature&#x27;</span>);</span><br><span class="line">     <span class="variable">$localToken</span> = config(<span class="string">&#x27;app.deploy_secret&#x27;</span>);</span><br><span class="line">     <span class="variable">$localHash</span> = <span class="string">&#x27;sha1=&#x27;</span> . hash_hmac(<span class="string">&#x27;sha1&#x27;</span>, <span class="variable">$githubPayload</span>, <span class="variable">$localToken</span>, <span class="literal">false</span>);</span><br><span class="line">     <span class="keyword">if</span> (hash_equals(<span class="variable">$githubHash</span>, <span class="variable">$localHash</span>)) &#123;</span><br><span class="line">          <span class="variable">$root_path</span> = base_path();</span><br><span class="line">          <span class="variable">$process</span> = <span class="keyword">new</span> Process(<span class="string">&#x27;cd &#x27;</span> . <span class="variable">$root_path</span> . <span class="string">&#x27;; ./deploy.sh&#x27;</span>);</span><br><span class="line">          <span class="variable">$process</span>-&gt;run(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$type</span>, <span class="variable">$buffer</span></span>) </span>&#123;</span><br><span class="line">              <span class="keyword">echo</span> <span class="variable">$buffer</span>;</span><br><span class="line">          &#125;);</span><br><span class="line">     &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Before I proceed, clap for me, it’s not easy to indent your code here on medium.com.<br>The code above does the following:</p>
+<ul>
+<li><p>Makes sure the post request it coming from GitHub using the X-Hub-Signature unique to github. You can remove this particular verification if you’re feeling adventurous but I recommend you keep it.<br>You can always refer to the git version control system documentation you are using for their own X-Signature</p>
+</li>
+<li><p>Makes sure the post request is coming from your github repo by verifying your deploy secret (in a production environment there are other checks before and after this, so don’t bother much about how flimsy the security might look)</p>
+</li>
+<li><p>Uses the symfony process to run the deploy script at the root of the project path in a shell environment</p>
+</li>
+</ul>
+<p>That’s the basic gist about the code above, let’s proceed to adding a route to the webhook we added to github (or whatever proper sounding English that fits, English is hard)</p>
+<p>Navigate to route/web.php in your project and add this line</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Route::post(<span class="string">&#x27;deploy&#x27;</span>, <span class="string">&#x27;DeployController@deploy&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>The method for this route has to always be a post method because github sends only post requests to webhooks, so you can call this another check if you want.</p>
+<p>Secondly after this, to prevent CSRF token validation errors, we add the route above to our excepted route in the Middleware/VerifyCsrfToken.php</p>
+<p>Which when done should look like this:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Middleware</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Foundation</span>\<span class="title">Http</span>\<span class="title">Middleware</span>\<span class="title">VerifyCsrfToken</span> <span class="title">as</span> <span class="title">Middleware</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VerifyCsrfToken</span> <span class="keyword">extends</span> <span class="title">Middleware</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The URIs that should be excluded from CSRF verification.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> array</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$except</span> = [</span><br><span class="line">        <span class="string">&#x27;/deploy&#x27;</span>,</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>After this, on your server change the unix group of your project folder to www-data. This is necessary to allow the shell script to run in peace (allow the www-data user to update the project folder) this can be simply done by:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> sudo chgrp -R www-data .</span></span><br></pre></td></tr></table></figure>
+
+<p>Then after all this, you are done.</p>
+<p>With this now you have successfully set up a simple autodeployment (coughs Continuous Deployment) process on your project using git (while Jenkins and Travis are having some alone time).</p>
+<p>If you’ve made it this far, Congratulations!!! You made it through series of bad jokes and hopefully learnt something, please a round of applause for yourself (I mean that clap button 😐)</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@gmaumoh/laravel-how-to-automate-deployment-using-git-and-webhooks-9ae6cd8dffae">https://medium.com/@gmaumoh/laravel-how-to-automate-deployment-using-git-and-webhooks-9ae6cd8dffae</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Laravel/" rel="tag"># Laravel</a>
+              <a href="/tags/Git/" rel="tag"># Git</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/03/02/OctoberCms-Relation-Lists-With-Filters/" rel="prev" title="OctoberCms-Relation-Lists-With-Filters">
+                  <i class="fa fa-chevron-left"></i> OctoberCms-Relation-Lists-With-Filters
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
