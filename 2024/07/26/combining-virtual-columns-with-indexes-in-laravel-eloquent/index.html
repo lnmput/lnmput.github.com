@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"swoole.app","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="I&#39;m still here.    When it comes to building robust and efficient web applications, a well-structured database is crucial. Laravel simplifies database management with its elegant Object-Relational Ma">
+<meta property="og:type" content="article">
+<meta property="og:title" content="combining_virtual_columns_with_indexes_in_laravel_eloquent">
+<meta property="og:url" content="https://swoole.app/2024/07/26/combining-virtual-columns-with-indexes-in-laravel-eloquent/index.html">
+<meta property="og:site_name" content="外贸独立站(日本)">
+<meta property="og:description" content="I&#39;m still here.    When it comes to building robust and efficient web applications, a well-structured database is crucial. Laravel simplifies database management with its elegant Object-Relational Ma">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-07-25T15:57:28.000Z">
+<meta property="article:modified_time" content="2024-07-25T16:07:22.299Z">
+<meta property="article:author" content="lnmput@gmail.com">
+<meta property="article:tag" content="Laravel">
+<meta property="article:tag" content="翻译">
+<meta property="article:tag" content="translate">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://swoole.app/2024/07/26/combining-virtual-columns-with-indexes-in-laravel-eloquent/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://swoole.app/2024/07/26/combining-virtual-columns-with-indexes-in-laravel-eloquent/","path":"2024/07/26/combining-virtual-columns-with-indexes-in-laravel-eloquent/","title":"combining_virtual_columns_with_indexes_in_laravel_eloquent"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>combining_virtual_columns_with_indexes_in_laravel_eloquent | 外贸独立站(日本)</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">外贸独立站(日本)</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">专注外贸独立站建设</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-首页"><a href="/" rel="section">首页</a></li>
+        <li class="menu-item menu-item-标签"><a href="/tags" rel="section">标签</a></li>
+        <li class="menu-item menu-item-读书"><a href="/read" rel="section">读书</a></li>
+        <li class="menu-item menu-item-翻译"><a href="/tags/translate" rel="section">翻译</a></li>
+        <li class="menu-item menu-item-关于我"><a href="/about" rel="section">关于我</a></li>
+        <li class="menu-item menu-item-外贸站"><a href="/site" rel="section">外贸站</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Understanding-virtual-columns"><span class="nav-number">1.</span> <span class="nav-text">Understanding virtual columns</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Benefits-of-virtual-column-indexing"><span class="nav-number">2.</span> <span class="nav-text">Benefits of virtual column indexing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-virtual-columns-in-laravel-eloquent"><span class="nav-number">3.</span> <span class="nav-text">Using virtual columns in laravel eloquent</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Define-a-virtual-column-in-a-migration"><span class="nav-number">3.1.</span> <span class="nav-text">Define a virtual column in a migration</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Use-the-virtual-column-in-eloquent-models"><span class="nav-number">3.2.</span> <span class="nav-text">Use the virtual column in eloquent models</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Benefit-from-indexing"><span class="nav-number">3.3.</span> <span class="nav-text">Benefit from indexing</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#virtualAs-vs-storedAs"><span class="nav-number">4.</span> <span class="nav-text">virtualAs vs storedAs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Conclusion"><span class="nav-number">5.</span> <span class="nav-text">Conclusion</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lnmput@gmail.com"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lnmput@gmail.com</p>
+  <div class="site-description" itemprop="description">要么庸俗，要么孤独</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">420</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">135</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://octobercms.com/" title="octobercms → https:&#x2F;&#x2F;octobercms.com&#x2F;" rel="noopener" target="_blank">octobercms</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://medium.com/" title="medium → https:&#x2F;&#x2F;medium.com&#x2F;" rel="noopener" target="_blank">medium</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/lnmput" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2024/07/26/combining-virtual-columns-with-indexes-in-laravel-eloquent/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          combining_virtual_columns_with_indexes_in_laravel_eloquent
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-07-26 00:57:28 / 修改时间：01:07:22" itemprop="dateCreated datePublished" datetime="2024-07-26T00:57:28+09:00">2024-07-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote class="blockquote-center">
+I'm still here. 
+</blockquote>
+
+<p>When it comes to building robust and efficient web applications, a well-structured database is crucial. Laravel simplifies database management with its elegant Object-Relational Mapping (ORM) tool called Eloquent. In this blog post, we’ll delve into an advanced database optimization technique: using indexes on virtual columns in MySQL, combined with Laravel Eloquent.</p>
+<h3 id="Understanding-virtual-columns"><a href="#Understanding-virtual-columns" class="headerlink" title="Understanding virtual columns"></a>Understanding virtual columns</h3><p>Virtual columns, also known as generated columns, are columns in a database table that don’t physically store data but instead derive their values from other columns or expressions. These columns are computed on-the-fly when queried, providing a convenient way to manipulate and transform data without altering the actual table structure.</p>
+<p>In MySQL, you can create virtual columns using expressions, such as mathematical calculations or string manipulations, and then index these columns for improved query performance.</p>
+<h3 id="Benefits-of-virtual-column-indexing"><a href="#Benefits-of-virtual-column-indexing" class="headerlink" title="Benefits of virtual column indexing"></a>Benefits of virtual column indexing</h3><p>Indexing virtual columns can offer several advantages:</p>
+<ul>
+<li><p>Faster Query Performance: Indexes on virtual columns allow MySQL to quickly locate the relevant rows, reducing the time needed to retrieve data.</p>
+</li>
+<li><p>Simplified Data Transformation: Virtual columns enable you to perform complex data transformations within the database, reducing the need for application-level data manipulation.</p>
+</li>
+</ul>
+<h3 id="Using-virtual-columns-in-laravel-eloquent"><a href="#Using-virtual-columns-in-laravel-eloquent" class="headerlink" title="Using virtual columns in laravel eloquent"></a>Using virtual columns in laravel eloquent</h3><p>Let’s walk through the steps to use virtual columns and indexes in Laravel Eloquent:</p>
+<h4 id="Define-a-virtual-column-in-a-migration"><a href="#Define-a-virtual-column-in-a-migration" class="headerlink" title="Define a virtual column in a migration"></a>Define a virtual column in a migration</h4><p>To create a virtual column, you need to define it in a Laravel migration using the storedAs method. For example, let’s create a virtual column that calculates the total price based on the quantity and unit price:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">up</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Schema::create(<span class="string">&#x27;products&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$table</span>-&gt;id();</span><br><span class="line">        <span class="variable">$table</span>-&gt;string(<span class="string">&#x27;name&#x27;</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;decimal(<span class="string">&#x27;unit_price&#x27;</span>, <span class="number">8</span>, <span class="number">2</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;integer(<span class="string">&#x27;quantity&#x27;</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;decimal(<span class="string">&#x27;total_price&#x27;</span>, <span class="number">8</span>, <span class="number">2</span>)</span><br><span class="line">            -&gt;storedAs(<span class="string">&#x27;unit_price * quantity&#x27;</span>) <span class="comment">// Define the virtual column</span></span><br><span class="line">            -&gt;index(); <span class="comment">// Index the virtual column</span></span><br><span class="line">        <span class="variable">$table</span>-&gt;timestamps();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Use-the-virtual-column-in-eloquent-models"><a href="#Use-the-virtual-column-in-eloquent-models" class="headerlink" title="Use the virtual column in eloquent models"></a>Use the virtual column in eloquent models</h4><p>Once you’ve defined the virtual column, you can use it in your Eloquent models like any other column. Laravel Eloquent will handle the virtual column seamlessly:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Product</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$fillable</span> = [<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;unit_price&#x27;</span>, <span class="string">&#x27;quantity&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// You can access the virtual column as if it were a regular one</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$appends</span> = [<span class="string">&#x27;total_price&#x27;</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Now, you can access the total_price virtual column on your Product model instances as if it’s a standard attribute:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$product</span> = Product::find(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$product</span>-&gt;total_price; <span class="comment">// Access the virtual column</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Benefit-from-indexing"><a href="#Benefit-from-indexing" class="headerlink" title="Benefit from indexing"></a>Benefit from indexing</h4><p>By adding the <code>-&gt;index()</code> method when defining the virtual column in your migration, you’ve instructed MySQL to create an index on it. This index will significantly improve query performance when filtering, sorting, or searching for records based on the virtual column.</p>
+<h3 id="virtualAs-vs-storedAs"><a href="#virtualAs-vs-storedAs" class="headerlink" title="virtualAs vs storedAs"></a>virtualAs vs storedAs</h3><p>In Laravel Eloquent, both <code>storedAs</code> and <code>virtualAs</code> are methods used to work with virtual columns, but they serve slightly different purposes. Let’s explore the differences between these two methods.</p>
+<p>The <code>storedAs</code> method is used to define a virtual column in a database table, and it specifies how the virtual column’s values are calculated and stored within the table. Here are the key characteristics of <code>storedAs</code>:</p>
+<ul>
+<li><p>Stored Value: When you use storedAs, the calculated value for the virtual column is physically stored in the database table. This means that the result of the expression or formula you provide in storedAs is computed when a record is inserted or updated, and the result is saved in the table.</p>
+</li>
+<li><p>Indexing: You can index virtual columns created with storedAs. Indexing can significantly improve query performance when filtering or searching based on the virtual column.</p>
+</li>
+<li><p>Data Integrity: Since the value is stored in the table, it’s subject to data integrity constraints. If the formula involves other columns, changes to those columns will trigger updates to the virtual column.</p>
+</li>
+</ul>
+<p>Example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$table</span>-&gt;decimal(<span class="string">&#x27;total_price&#x27;</span>, <span class="number">8</span>, <span class="number">2</span>)</span><br><span class="line">    -&gt;storedAs(<span class="string">&#x27;unit_price * quantity&#x27;</span>)</span><br><span class="line">    -&gt;index();</span><br></pre></td></tr></table></figure>
+
+<p>In this example, the <code>total_price</code> column is a virtual column, and its value is calculated as the product of <code>unit_price</code> and quantity. The result is stored in the <code>total_price</code> column in the table, and an index is created on it.</p>
+<p>On the other hand, the <code>virtualAs</code> method is used to define a virtual column without physically storing its values in the table. Here are the key characteristics of <code>virtualAs</code>:</p>
+<ul>
+<li><p>Computed On-the-Fly: When you use virtualAs, the virtual column’s value is computed on-the-fly whenever you query the database. It’s not physically stored in the table.</p>
+</li>
+<li><p>No Indexing: Since there’s no physical storage, you can’t create an index directly on a column defined with virtualAs. This can result in slower query performance when filtering or sorting by the virtual column.</p>
+</li>
+<li><p>bData Integrity: There are no data integrity constraints associated with virtualAs because no data is stored. Changes to other columns won’t affect the virtual column since it’s always calculated dynamically.</p>
+</li>
+</ul>
+<p>Example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$table</span>-&gt;virtualAs(<span class="string">&#x27;unit_price * quantity&#x27;</span>, <span class="string">&#x27;total_price&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>In this example, the <code>total_price</code> column is also a virtual column, but its value is calculated on-the-fly using the provided expression whenever you access it in a query. No physical storage or indexing is involved.</p>
+<p>In summary, the choice between storedAs and <code>virtualAs</code> depends on your specific use case. If you need to frequently query and filter by the virtual column while maintaining data integrity, storedAs with indexing is a good option. If you only need the calculated value occasionally and don’t require data storage or indexing, <code>virtualAs</code> is more appropriate.</p>
+<h3 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h3><p>Leveraging virtual columns with indexing in MySQL, coupled with Laravel Eloquent, can greatly enhance the efficiency and maintainability of your database-driven web applications. By offloading complex calculations to the database engine and optimizing queries with indexes, you’ll be well on your way to building high-performance applications that scale with ease.</p>
+<p>So, next time you’re working on a Laravel project and need to perform calculations on your data, consider using virtual columns and indexing to boost your application’s database performance. Your users will thank you for the snappy response times, and your database will appreciate the reduced workload.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.yellowduck.be/posts/combining-virtual-columns-with-indexes-in-laravel-eloquent">https://www.yellowduck.be/posts/combining-virtual-columns-with-indexes-in-laravel-eloquent</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Laravel/" rel="tag"># Laravel</a>
+              <a href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag"># 翻译</a>
+              <a href="/tags/translate/" rel="tag"># translate</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/09/15/How-to-automate-deployment-using-git-and-webhooks/" rel="prev" title="How-to-automate-deployment-using-git-and-webhooks">
+                  <i class="fa fa-chevron-left"></i> How-to-automate-deployment-using-git-and-webhooks
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lnmput@gmail.com</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

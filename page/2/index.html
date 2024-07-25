@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">419</span>
+          <span class="site-state-item-count">420</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,129 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/27/Building-a-Golang-application-Docker-image/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/27/Building-a-Golang-application-Docker-image/" class="post-title-link" itemprop="url">Building-a-Golang-application-Docker-image</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-08-27 12:47:52 / 修改时间：13:00:17" itemprop="dateCreated datePublished" datetime="2022-08-27T12:47:52+09:00">2022-08-27</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+We'll find a way; we always have.
+</blockquote>
+
+
+<p>After we have written the application after several months of hard work, how to deploy it? Let’s use a simple example of Hello Worldto learn.</p>
+<p>The project structure is as follows:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── <span class="keyword">go</span>.mod</span><br><span class="line">└── hello.<span class="keyword">go</span></span><br></pre></td></tr></table></figure>
+<p>The code content of hello.gois as follows:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="built_in">println</span>(<span class="string">&quot;hello world!&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>In order to keep up with the trend, we choose to use Docker deployment here.</p>
+<h3 id="First-attempt"><a href="#First-attempt" class="headerlink" title="First attempt."></a>First attempt.</h3><p>For convenience, we are going to put all the content into Docker for compilation, and after some research, we get the following <code>Dockerfile</code> file:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">FROM golang:alpine</span><br><span class="line">WORKDIR /build</span><br><span class="line">COPY hello.<span class="keyword">go</span> .</span><br><span class="line">RUN <span class="keyword">go</span> build -o hello hello.<span class="keyword">go</span></span><br><span class="line">CMD [<span class="string">&quot;./hello&quot;</span>]</span><br></pre></td></tr></table></figure>
+<p>Next start building.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> docker build -t hello:v1 .</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> docker run -it --rm hello:v1 ls -l /build</span></span><br><span class="line">total 1260</span><br><span class="line">-rwxr-xr-x    1 root     root       1281547 Mar  6 15:54 hello</span><br><span class="line">-rw-r--r--    1 root     root            55 Mar  6 14:59 hello.go</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> try to run it</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> docker run -it --rm hello:v1</span></span><br><span class="line">hello world!</span><br></pre></td></tr></table></figure>
+
+<p>It runs successfully, and then we look at the size of the image.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> docker images | grep hello</span></span><br><span class="line">hello         v1    2783ee221014   44 minutes ago   314MB</span><br><span class="line">````</span><br><span class="line"></span><br><span class="line">Shocked me, the whole image actually has 314MB, just docker build, what happened?</span><br><span class="line"></span><br><span class="line">Although it can be run, the size of this image is too scary, we just simply printed a line of hello world, and the size of the image is more than 300 MB, which is too unreasonable and needs to be optimized.</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment">## Second attempt.</span></span></span><br><span class="line">After looking for the information, I found that the base image we used was too large.</span><br><span class="line"></span><br><span class="line">```golang</span><br><span class="line"><span class="meta">$</span><span class="bash"> docker images | grep golang</span></span><br><span class="line">golang    alpine     d026981a7165   2 days ago          313MB</span><br></pre></td></tr></table></figure>
+
+<p>A friend told me that I can compile the code first, and then copy it in, so I don’t need that huge base image, but it’s easy to say, I still spent some time learning, and finally the <code>Dockerfile</code> looks like this:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">FROM alpine</span><br><span class="line">WORKDIR /build</span><br><span class="line">COPY hello .</span><br><span class="line">CMD [<span class="string">&quot;./hello&quot;</span>]</span><br></pre></td></tr></table></figure>
+<p>Let’s rebuild the image:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ docker build -t hello:v2 .</span><br><span class="line">...</span><br><span class="line">=&gt; ERROR [<span class="number">3</span>/<span class="number">3</span>] COPY hello .                         <span class="number">0.0</span>s</span><br><span class="line">------</span><br><span class="line">&gt; [<span class="number">3</span>/<span class="number">3</span>] COPY hello .:</span><br><span class="line">------</span><br><span class="line">failed to compute cache key: <span class="string">&quot;/hello&quot;</span> not found: not found</span><br></pre></td></tr></table></figure>
+<p>Oh hoo, wrong report. The prompt hello cannot be found, so I forgot to compile hello.go first and execute it again.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> go build -o hello hello.go</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> docker run -it --rm hello:v2</span></span><br><span class="line">standard_init_linux.go:228: exec user process caused: exec format error</span><br><span class="line">````</span><br><span class="line"></span><br><span class="line">Whoops, failed again.</span><br><span class="line"></span><br><span class="line">Well, the format is wrong, it turns out that our development machine is not linux, Don’t give up, let’s do it again.</span><br><span class="line"></span><br><span class="line">```shell</span><br><span class="line"><span class="meta">$</span><span class="bash"> GOOS=linux go build -o hello hello.go</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> docker build -t hello:v2 .</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ...</span></span><br><span class="line">Successfully</span><br></pre></td></tr></table></figure>
+
+<p>Finally, the build is successful, let’s try it out.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --rm hello:v2</span><br><span class="line">hello world!</span><br></pre></td></tr></table></figure>
+
+<p>No problem, let’s take a look at the content and size.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --rm hello:v2 ls -l /build</span><br><span class="line">total <span class="number">1252</span></span><br><span class="line">-rwxr-xr-x    <span class="number">1</span> root     root       <span class="number">1281587</span> Mar  <span class="number">6</span> <span class="number">16</span>:<span class="number">18</span> hello</span><br><span class="line"></span><br><span class="line">$ docker images | grep hello</span><br><span class="line">hello    v2   <span class="number">0</span>dd53f016c93   <span class="number">53</span> seconds ago      <span class="number">6.61</span>MB</span><br><span class="line">hello    v1   ac0e37173b85   <span class="number">25</span> minutes ago      <span class="number">314</span>MB</span><br></pre></td></tr></table></figure>
+
+<p>Wow, it’s only 6.61MB this time, which is OK!</p>
+<h3 id="Third-attempt"><a href="#Third-attempt" class="headerlink" title="Third attempt."></a>Third attempt.</h3><p>Although the above image can be successfully built, there are still some shortcomings. It is not a multi-stage build.</p>
+<p>We need to be able to build a docker image from Go code, which is divided into three steps:</p>
+<ul>
+<li>Compile Go code natively, if it involves cgo the cross-platform compilation will be more troublesome.</li>
+<li>Build a docker image with the compiled executable.</li>
+<li>Write a shell script or makefile to get these steps in one command.<br>Multi-stage builds are all about putting it all into one <code>Dockerfile</code>, no source code leaks, no scripting for cross-platform compilation, and a minimal image.</li>
+</ul>
+<p>Loving to learn and striving for perfection, I ended up writing the following <code>Dockerfile</code>.</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">FROM golang:alpine AS builder</span><br><span class="line">WORKDIR /build</span><br><span class="line">ADD <span class="keyword">go</span>.mod .</span><br><span class="line">COPY . .</span><br><span class="line">RUN <span class="keyword">go</span> build -o hello hello.<span class="keyword">go</span></span><br><span class="line">FROM alpine</span><br><span class="line">WORKDIR /build</span><br><span class="line">COPY --from=builder /build/hello /build/hello</span><br><span class="line">CMD [<span class="string">&quot;./hello&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>The first FROM starts with building a builder image in which the executable hellois compiled.</p>
+<p>The part starting with the second FROM is to copy the executable hello from the first image, and use the smallest possible base image alpine to ensure that the final image is as small as possible.</p>
+<p>As for why you don’t use a smaller scratch, it’s because there’s really nothing in scratch, and there is no chance to take a look if there is a problem, and alpine is only 5MB, which is good for our service will not have much impact.</p>
+<p>Let’s run it first to verify:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> docker run -it --rm hello:v3</span></span><br><span class="line">hello world!</span><br></pre></td></tr></table></figure>
+
+<p>No problem, as expected! See what the size looks like:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> docker images | grep hello</span></span><br><span class="line">hello    v3     f51e1116be11   8 hours ago    6.61MB</span><br><span class="line">hello    v2     0dd53f016c93   8 hours ago    6.61MB</span><br><span class="line">hello    v1     ac0e37173b85   8 hours ago    314MB</span><br></pre></td></tr></table></figure>
+<p>The size of the image built by the second method is exactly the same. Take a look at the contents of the mirror:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --rm hello:v3 ls -l /build</span><br><span class="line">total <span class="number">1252</span></span><br><span class="line">-rwxr-xr-x    <span class="number">1</span> root     root       <span class="number">1281547</span> Mar  <span class="number">6</span> <span class="number">16</span>:<span class="number">32</span> hello</span><br></pre></td></tr></table></figure>
+
+<p>Also, only one executable hello file builds perfectly!</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.devgenius.io/tutorial-building-a-golang-application-docker-image-78e36d437c70">https://blog.devgenius.io/tutorial-building-a-golang-application-docker-image-78e36d437c70</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1108,78 +1231,6 @@ If you have no critics, you will likely have no success.
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/06/01/Golang%E4%BD%BF%E7%94%A8embed%E6%89%93%E5%8C%85gin%E5%BA%94%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/06/01/Golang%E4%BD%BF%E7%94%A8embed%E6%89%93%E5%8C%85gin%E5%BA%94%E7%94%A8/" class="post-title-link" itemprop="url">Golang使用embed打包gin应用</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-06-01 12:51:13 / 修改时间：12:58:24" itemprop="dateCreated datePublished" datetime="2022-06-01T12:51:13+09:00">2022-06-01</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-历史是一堆灰烬，但灰烬深处有余温。
-</blockquote>
-
-<h3 id="文件目录"><a href="#文件目录" class="headerlink" title="文件目录"></a>文件目录</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- static</span><br><span class="line">  - js</span><br><span class="line">    - <span class="number">1.</span>js</span><br><span class="line">- templates</span><br><span class="line">  - foo.html</span><br><span class="line">  - index.html</span><br><span class="line">- main.<span class="keyword">go</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;embed&quot;</span></span><br><span class="line">	<span class="string">&quot;github.com/gin-gonic/gin&quot;</span></span><br><span class="line">	<span class="string">&quot;html/template&quot;</span></span><br><span class="line">	<span class="string">&quot;net/http&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">//go:embed static templates</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> f embed.FS</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line"></span><br><span class="line">	router := gin.Default()</span><br><span class="line">	templ := template.Must(template.New(<span class="string">&quot;&quot;</span>).ParseFS(f, <span class="string">&quot;templates/*.html&quot;</span>))</span><br><span class="line">	router.SetHTMLTemplate(templ)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// example: /public/static/js/1.js</span></span><br><span class="line">	router.StaticFS(<span class="string">&quot;/public&quot;</span>, http.FS(f))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	router.GET(<span class="string">&quot;/&quot;</span>, <span class="function"><span class="keyword">func</span><span class="params">(c *gin.Context)</span></span> &#123;</span><br><span class="line">		c.HTML(http.StatusOK, <span class="string">&quot;index.html&quot;</span>, gin.H&#123;</span><br><span class="line">			<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Embed Demo&quot;</span>,</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	router.GET(<span class="string">&quot;/foo&quot;</span>, <span class="function"><span class="keyword">func</span><span class="params">(c *gin.Context)</span></span> &#123;</span><br><span class="line">		c.HTML(http.StatusOK, <span class="string">&quot;foo.html&quot;</span>, gin.H&#123;</span><br><span class="line">			<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Foo Bar&quot;</span>,</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	_ = router.Run(<span class="string">&quot;:9080&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Title<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;text/javascript&quot;</span> <span class="attr">src</span>=<span class="string">&quot;/public/static/js/1.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>htn<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1193,7 +1244,7 @@ If you have no critics, you will likely have no success.
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

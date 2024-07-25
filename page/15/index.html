@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">419</span>
+          <span class="site-state-item-count">420</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,100 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/05/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/" class="post-title-link" itemprop="url">Laravel之开发测试和生产环境区分</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2018-05-31 11:48:11 / 修改时间：13:05:32" itemprop="dateCreated datePublished" datetime="2018-05-31T11:48:11+09:00">2018-05-31</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+不做动机揣测，少做价值判断
+</blockquote>
+
+<p>Laravel环境检测的方法是很容易的，因为大家都知道Laravel中使用了Dotenv来做文件配置，这就牵扯到了我们的都很熟悉的.env。</p>
+<p>比如一个典型的.env是:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=local</span><br><span class="line">APP_DEBUG=<span class="literal">true</span></span><br><span class="line">APP_KEY=base64:<span class="number">3</span>csTuw5O1me1PF4j9xErbUR+seyH1xdf6uRfvjuQ22Q=</span><br><span class="line">APP_URL=http:<span class="comment">//localhost</span></span><br><span class="line"></span><br><span class="line">DB_CONNECTION=mysql</span><br><span class="line">DB_HOST=<span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line">DB_PORT=<span class="number">3306</span></span><br><span class="line">DB_DATABASE=db_name</span><br><span class="line">DB_USERNAME=db_user</span><br><span class="line">DB_PASSWORD=db_pass</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
+<p>今天我的这篇分享主要介绍两种区分不同环境的方法。</p>
+<h3 id="不同环境维护自己的-env文件"><a href="#不同环境维护自己的-env文件" class="headerlink" title="不同环境维护自己的.env文件"></a>不同环境维护自己的.env文件</h3><p>这种办法也是Laravel默认的办法，也就是开发环境、测试环境和生产环境各自维护自己的.env文件，也就是说.env不要加到版本控制系统中，通过不同的配置可以做到环境的区分，比如:</p>
+<p>开发环境</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=dev</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
+<p>测试环境</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=staging</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
+<p>生产环境</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APP_ENV=production</span><br><span class="line"><span class="comment">//...省略</span></span><br></pre></td></tr></table></figure>
+<p>这样，在我们的代码中即可以通过判断APP_ENV来判断是哪种环境。但是这种办法我个人是不太喜欢的，原因有以下几点:</p>
+<ul>
+<li>环境的判断过多的写到代码里面，维护起来很麻烦</li>
+<li>如果某次上线需要修改配置文件，则每次上线代码还需要到线上机器修改.env文件，部署起来很麻烦</li>
+</ul>
+<h3 id="不同环境加载自己的-env-文件"><a href="#不同环境加载自己的-env-文件" class="headerlink" title="不同环境加载自己的.env.文件"></a>不同环境加载自己的.env.文件</h3><p>这里面的.env.文件延伸开来就是.env.dev、.env.test和.env.prod，比如开发环境会自动加载.env.dev，依此类推，那么如果是这样的话，不同环境的机器又怎么知道加载哪个文件呢？其实这里面还是耍了点小聪明，别忘了我们有php.ini</p>
+<ul>
+<li>1.在php.ini中追加一行配置<br>当然开发、测试和生产环境中env所对应的值也需要不一样<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//开发环境</span></span><br><span class="line">env=dev</span><br><span class="line"><span class="comment">//测试环境</span></span><br><span class="line">env=staging</span><br><span class="line"><span class="comment">//生产环境</span></span><br><span class="line">env=production</span><br></pre></td></tr></table></figure></li>
+<li>2.加载不同的配置文件<br>在bootstrap/app.php文件中添加如下判断，在这里将通过获取php.ini中的env的值，然后从而加载不同的配置文件。<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//...省略</span></span><br><span class="line"><span class="variable">$env</span> = get_cfg_var(<span class="string">&#x27;env&#x27;</span>);</span><br><span class="line"><span class="variable">$env</span> = !<span class="keyword">empty</span>(<span class="variable">$env</span>) ? <span class="variable">$env</span> : <span class="string">&#x27;production&#x27;</span>;</span><br><span class="line"><span class="keyword">if</span>(!defined(<span class="string">&#x27;APP_MODE&#x27;</span>))&#123;</span><br><span class="line">    define(<span class="string">&#x27;APP_MODE&#x27;</span>, <span class="variable">$env</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$app</span>-&gt;loadEnvironmentFrom(<span class="string">&#x27;.env.&#x27;</span>.<span class="variable">$env</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> <span class="variable">$app</span>;</span><br></pre></td></tr></table></figure></li>
+<li>3.新建.env.dev、.env.staging和.env.production</li>
+</ul>
+<p>好，就到此为止了，当然虽然我非常喜欢第二种办法，但第二种毕竟需要对线上机器做一次大的改动，需要运维同学支持下。但是也需要具体情况具体来选择吧。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://xuwenzhi.com/2016/07/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E3%80%81%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/">http://xuwenzhi.com/2016/07/31/laravel%E4%B9%8B%E5%BC%80%E5%8F%91%E3%80%81%E6%B5%8B%E8%AF%95%E5%92%8C%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8C%BA%E5%88%86/</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1087,107 +1181,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/04/26/%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85nginx/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/04/26/%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85nginx/" class="post-title-link" itemprop="url">编译安装nginx</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2018-04-26 15:25:58 / 修改时间：16:47:04" itemprop="dateCreated datePublished" datetime="2018-04-26T15:25:58+09:00">2018-04-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-等一个不爱你的人，就像在机场等一艘船
-</blockquote>
-
-<h3 id="编译环境"><a href="#编译环境" class="headerlink" title="编译环境"></a>编译环境</h3><p>在linux使用make方式安装，需要保证linux已经具备比较OK的编译环境，例如gcc等编译工具。一般而言，服务器提供商在安装的系统中已经默认集成了这些软件，但是为了保险起见，我们还是通过一些较为基础的方式，把这些依赖包都跑一遍，以防在之后的编译中出差错。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install gcc gcc-c++ autoconf automake libtool make cmake<span class="comment"># yum -y install zlib zlib-devel openssl openssl-devel pcre-devel</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="创建用来运行nginx的用户及组"><a href="#创建用来运行nginx的用户及组" class="headerlink" title="创建用来运行nginx的用户及组"></a>创建用来运行nginx的用户及组</h3><p>我们创建一个新的用户和用户组来运行nginx，这样可以把nginx和root分开，保证nginx不具备root权限。但是，我们并不希望nginx成为一个真实的可以登陆到远程进行操作的用户，所以，我们并不给它创建家目录，在useradd的时候，用-M参数：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">groupadd nginx</span><br><span class="line">useradd -g nginx -M nginx</span><br></pre></td></tr></table></figure>
-<p>-g参数为nginx用户指定了一个组<br>-M参数保证其不自动生成home目录</p>
-<p>禁止用户登陆也很方便，只需要修改配置文件中有关用户和用户组的信息即可。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># vi /etc/passwd</span></span><br></pre></td></tr></table></figure>
-<p>找到nginx，将后面的<code>/bin/bash</code>改为<code>/sbin/nologin</code>即可。</p>
-<h3 id="编译安装Nginx"><a href="#编译安装Nginx" class="headerlink" title="编译安装Nginx"></a>编译安装Nginx</h3><ul>
-<li><p>下载</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http:<span class="comment">//xxxxxxxxxx/nginx1.7.x.tar.gz# tar zxvf nginx1.7.x.tar.gz# cd nginx1.7.x</span></span><br></pre></td></tr></table></figure></li>
-<li><p>配置</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ./configure --prefix=/usr/local/nginx \--pid-path=/usr/local/nginx/run/nginx.pid \--with-http_ssl_module \--user=nginx \ --group=nginx \--with-pcre \--without-mail_pop3_module \--without-mail_imap_module \--without-mail_smtp_module</span></span><br></pre></td></tr></table></figure>
-<p>说明可以使用<code>./configure --help</code>查看一些配置信息</p>
-</li>
-<li><p>编译</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></li>
-<li><p>运行</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/nginx</span><br><span class="line">ls</span><br><span class="line">sbin/nginx</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="nginx服务的载入"><a href="#nginx服务的载入" class="headerlink" title="nginx服务的载入"></a>nginx服务的载入</h3><p>make编译安装的软件，可不像yum安装的服务，我们熟悉的service命令并不起效，不然你用service nginx restart试试看。这是因为service调用/etc/ini.d/目录下的程序完成，而该目录下并不存在nginx这个程序。那么这个时候怎么重启nginx呢？如下操作：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/nginx/sbin/nginx -s reload</span><br></pre></td></tr></table></figure>
-<p>这个操作可以重新加载nginx的配置文件，相当于重启。如果一定要重启整个服务，那只能通过杀死nginx进程，然后在运行程序了。</p>
-<p>不过为了使用我们熟悉的service操作, 现在提供一个文件(nginx)</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> nginx Startup script <span class="keyword">for</span> the Nginx HTTP Server</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> this script create it by ivan at 2010.12.29.</span></span><br><span class="line"><span class="meta">#</span><span class="bash"></span></span><br><span class="line"><span class="bash"><span class="comment"># chkconfig: - 85 15</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> description: Nginx is a high-performance web and proxy server.</span></span><br><span class="line"><span class="meta">#</span><span class="bash">              It has a lot of features, but it<span class="string">&#x27;s not for everyone.</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> processname: nginx</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> pidfile: /var/run/nginx.pid</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> config: /etc/nginx.conf</span></span></span><br><span class="line"></span><br><span class="line">nginxd=/usr/local/nginx/sbin/nginx</span><br><span class="line">nginx_config=/usr/local/nginx/conf/nginx.conf</span><br><span class="line">nginx_pid=/usr/local/nginx/run/nginx.pid</span><br><span class="line"></span><br><span class="line">RETVAL=0</span><br><span class="line">prog=&quot;nginx&quot;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Source function library.</span></span></span><br><span class="line">. /etc/rc.d/init.d/functions</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Source networking configuration.</span></span></span><br><span class="line">. /etc/sysconfig/network</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Check that networking is up.</span></span></span><br><span class="line">[ $&#123;NETWORKING&#125; = &quot;no&quot; ] &amp;&amp; exit 0</span><br><span class="line">[ -x $nginxd ] || exit 0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Start nginx daemons functions.</span></span></span><br><span class="line">start()&#123;</span><br><span class="line"></span><br><span class="line">        if [ -e $nginx_pid ]; then</span><br><span class="line">                echo &quot;nginx already running...&quot;</span><br><span class="line">                exit 1</span><br><span class="line">        fi</span><br><span class="line">        echo -n $&quot;Starting $prog:&quot;</span><br><span class="line">        daemon $nginxd -c $&#123;nginx_config&#125;</span><br><span class="line">        RETVAL=$?</span><br><span class="line">        echo</span><br><span class="line">        [ $RETVAL = 0 ] &amp;&amp; touch /var/lock/subsys/nginx</span><br><span class="line">        return $RETVAL</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> Stop nginx daemons functions.</span></span></span><br><span class="line">stop()&#123;</span><br><span class="line">        echo -n $&quot;Stopping $prog:&quot;</span><br><span class="line">        killproc $nginxd</span><br><span class="line">        RETVAL=$?</span><br><span class="line">        echo</span><br><span class="line">        [ $RETVAL = 0 ] &amp;&amp; rm -f /var/lock/subsys/nginx $nginx_pid</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string">reload nginx service functions.</span></span></span><br><span class="line">reload()&#123;</span><br><span class="line">        echo -n $&quot;Reloading $proc:&quot;</span><br><span class="line">        killproc $nginxd -HUP</span><br><span class="line">        RETVAL=$?</span><br><span class="line">        echo</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="string"> See how we were called.</span></span></span><br><span class="line">case &quot;$1&quot; in</span><br><span class="line">        start)</span><br><span class="line">                start</span><br><span class="line">                ;;</span><br><span class="line">        stop)</span><br><span class="line">                stop</span><br><span class="line">                ;;</span><br><span class="line">        reload)</span><br><span class="line">                reload</span><br><span class="line">                ;;</span><br><span class="line">        restart)</span><br><span class="line">                stop</span><br><span class="line">                start</span><br><span class="line">                ;;</span><br><span class="line">        status)</span><br><span class="line">                status $prog</span><br><span class="line">                RETVAL=$?</span><br><span class="line">                ;;</span><br><span class="line">        *)</span><br><span class="line">                echo $&quot;Usage: $prog &#123;start|stop|restart|reload|status|help&#125;&quot;</span><br><span class="line">                exit 1</span><br><span class="line">esac</span><br><span class="line"></span><br><span class="line">exit $RETVAL</span><br></pre></td></tr></table></figure>
-
-<p>放到/etc/ini.d/目录下，并执行：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x /etc/init.d/nginx <span class="comment"># chkconfig --add nginx# chkconfig nginx on</span></span><br></pre></td></tr></table></figure>
-<p>这样就可以通过service nginx restart等方法来操作nginx了。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.tangshuang.net/1774.html">https://www.tangshuang.net/1774.html</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/14/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><span class="page-number current">15</span><a class="page-number" href="/page/16/">16</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/16/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1201,7 +1194,7 @@
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

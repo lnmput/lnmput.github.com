@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">419</span>
+          <span class="site-state-item-count">420</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,121 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/22/setTimeout%E5%87%BD%E6%95%B0%E4%B9%8B%E5%BE%AA%E7%8E%AF%E5%92%8C%E9%97%AD%E5%8C%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/03/22/setTimeout%E5%87%BD%E6%95%B0%E4%B9%8B%E5%BE%AA%E7%8E%AF%E5%92%8C%E9%97%AD%E5%8C%85/" class="post-title-link" itemprop="url">setTimeout函数之循环和闭包</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-22 17:46:47" itemprop="dateCreated datePublished" datetime="2018-03-22T17:46:47+09:00">2018-03-22</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 21:52:23" itemprop="dateModified" datetime="2018-03-27T21:52:23+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+所有的时光都是被辜负被浪费后，才能从记忆里将某一段拎出来，拍拍上面沉积的灰尘，感叹它是最好的时光。
+</blockquote>
+
+<h3 id="代码片段一"><a href="#代码片段一" class="headerlink" title="代码片段一"></a>代码片段一</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(i);</span><br><span class="line">    &#125;, <span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果:</p>
+<blockquote>
+<p>在控制台下, 一秒后输出5个5, 没有时间间隔;</p>
+</blockquote>
+<p>分析:</p>
+<blockquote>
+<p>setTimeout的执行异步的, for 循环的执行是很快的, 当setTimeout开始执行的时候,for循环已经执行完毕, 此时的i变为5(for循环使用var申明的变量是全局的), 因为所有的都是延迟1S执行, 所以最后一起输出;</p>
+</blockquote>
+<h3 id="代码片段二"><a href="#代码片段二" class="headerlink" title="代码片段二"></a>代码片段二</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(i);</span><br><span class="line">    &#125;, i * <span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果:</p>
+<blockquote>
+<p>在控制台下, 每隔一秒输出一个5;</p>
+</blockquote>
+<p>分析:</p>
+<blockquote>
+<p>为什么是5, 上一个代码片段已经分析, 每一秒输出一个的原因就是for循环过程中调用setTimeout的时候,调用5次时间非常短可忽略不计, 调用依次给的延迟秒数是0s,1s,2s,3s,4s.所以我们再最后看到他执行的时候, 是每隔一秒出现一个;</p>
+</blockquote>
+<h3 id="代码片段三"><a href="#代码片段三" class="headerlink" title="代码片段三"></a>代码片段三</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    (<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(i);</span><br><span class="line">        &#125;, i*<span class="number">1000</span>);</span><br><span class="line">    &#125;)();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果:</p>
+<blockquote>
+<p>在控制台下, 每隔一秒输出一个5, 和代码片段二的结果一样;</p>
+</blockquote>
+<p>分析:<br>虽然加了闭包, 但是并没有影响结果</p>
+<h3 id="代码片段四"><a href="#代码片段四" class="headerlink" title="代码片段四"></a>代码片段四</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">	(<span class="function"><span class="keyword">function</span> (<span class="params">i</span>) </span>&#123;</span><br><span class="line">	    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">	        <span class="built_in">console</span>.log(i);</span><br><span class="line">	    &#125;, i*<span class="number">1000</span>);</span><br><span class="line">	&#125;)(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果:</p>
+<blockquote>
+<p>在控制台下,每隔一秒依次输出0,1,2,3,4;</p>
+</blockquote>
+<p>分析:<br>此时setTimeout里面的参数是通过闭包传递的, 并没有受到全局i的影响</p>
+<h3 id="代码片段五"><a href="#代码片段五" class="headerlink" title="代码片段五"></a>代码片段五</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span> ; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    (<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(i);</span><br><span class="line">        &#125;, i*<span class="number">1000</span>);</span><br><span class="line">    &#125;)();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果:</p>
+<blockquote>
+<p>在控制台下,每隔一秒依次输出0,1,2,3,4;</p>
+</blockquote>
+<p>分析:</p>
+<blockquote>
+<p>使用let申明的变量是块级作用域, 当前的i只在本轮循环有效，所以每一次循环的i其实都是一个新的变量;</p>
+</blockquote>
+<p>更多关于let var 的区别, 请参考我的另外一篇文字: <a href="2017/08/08/var-let-const%E7%9A%84%E5%8C%BA%E5%88%AB/">var,let,const的区别</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1057,106 +1172,6 @@ Github Api 虽然默认使用了第一种方法，但是其实是推荐并实现
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/03/01/php%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E5%92%8C%E8%87%AA%E5%8A%A8%E8%BD%BD%E5%85%A5%E7%90%86%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/03/01/php%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E5%92%8C%E8%87%AA%E5%8A%A8%E8%BD%BD%E5%85%A5%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">php命名空间和自动载入理解</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-03-01 16:06:57" itemprop="dateCreated datePublished" datetime="2018-03-01T16:06:57+09:00">2018-03-01</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:32:05" itemprop="dateModified" datetime="2018-03-27T22:32:05+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
- 每个人的心里都有一片属于自己的森林，迷失的人迷失了，相遇的人会再相遇
-</blockquote>
-今天写一个demo，遇到一个问题，平时框架用多了，下意识的就以为use就能引入类，导致一直跑不成功，后来才意识到use与引用类并不是一回事。use只是指定了要使用哪个命名空间下的类，但是并不会引入类，类的引用还是需要使用include或require。
-
-<h3 id="不使用命名空间"><a href="#不使用命名空间" class="headerlink" title="不使用命名空间"></a>不使用命名空间</h3><p>我们的所有的php文件都没有申明使用命名空间, 所有相关文件的引入使用include或require, 并需要指明文件的具体路径</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Cat.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Dog.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">action</span>(<span class="params">AnimalInterface <span class="variable">$animal</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$animal</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$demo</span> = <span class="keyword">new</span> Demo();</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> Cat());</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> Dog());</span><br></pre></td></tr></table></figure>
-
-<p>注意:使用 <code>include_once</code> 可以防止文件重复引入定义</p>
-<p>如果不使用命名空间, 那么我们的同一个文件夹就不能重复定义相同的类名, 如果需要解决这个重名的冲突, 就需要放在不同的文件夹下面, 或者申明不同的命名空间;</p>
-<h3 id="使用命名空间"><a href="#使用命名空间" class="headerlink" title="使用命名空间"></a>使用命名空间</h3><p>申明使用命名空间</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">AnimalInterface</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>申明以后所有需要引入这个文件都必须使用<code>use</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">AnimalInterface</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> <span class="keyword">implements</span>  <span class="title">AnimalInterface</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;dog run&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果引用的文件是在同一个命名空间下, 则无需使用<code>use</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">AnimalInterface</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Cat.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Dog.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">action</span>(<span class="params">AnimalInterface <span class="variable">$animal</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$animal</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>如果被引入的文件没有申明命名空间,则默认全局命名空间<code>\</code></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Index</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">AnimalInterface</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Cat.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;Dog.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">action</span>(<span class="params">AnimalInterface <span class="variable">$animal</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$animal</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$demo</span> = <span class="keyword">new</span> Demo();</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> \Cat());</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> \Dog());</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">AnimalInterface</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_once</span> <span class="string">&#x27;AnimalInterface.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> <span class="keyword">implements</span>  <span class="title">AnimalInterface</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;dog run&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="自动载入"><a href="#自动载入" class="headerlink" title="自动载入"></a>自动载入</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Index</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">AnimalInterface</span>;</span><br><span class="line"></span><br><span class="line">spl_autoload_register(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="variable">$filename</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$filename</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (file_exists(<span class="variable">$filename</span>.<span class="string">&#x27;.php&#x27;</span>)) &#123;</span><br><span class="line">            <span class="keyword">include_once</span> <span class="variable">$filename</span>.<span class="string">&#x27;.php&#x27;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//include_once &#x27;AnimalInterface.php&#x27;;</span></span><br><span class="line"><span class="comment">//include_once &#x27;Cat.php&#x27;;</span></span><br><span class="line"><span class="comment">//include_once &#x27;Dog.php&#x27;;</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">action</span>(<span class="params">AnimalInterface <span class="variable">$animal</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$animal</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$demo</span> = <span class="keyword">new</span> Demo();</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> \Cat());</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$demo</span>-&gt;action(<span class="keyword">new</span> \Dog());</span><br></pre></td></tr></table></figure>
-
-<p>所有文件的自动载入需要在<code>spl_autoload_register</code>这个函数中通过<code>include_once</code>实现;</p>
-<h3 id="PSR"><a href="#PSR" class="headerlink" title="PSR"></a>PSR</h3><p>命名空间跟文件加载并无直接关系，只是有些语言，将命名空间结构和文件结构对应起来了。 以php为例，一般的命名空间结构，跟php文件结构是存在映射关系的，通过命名空间名称，就能算出该类的实际存储位置， 然后实例化的时候，会触发用设置的spl自动加载函数将文件引入。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/18/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/18/">18</a><span class="page-number current">19</span><a class="page-number" href="/page/20/">20</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/20/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1170,7 +1185,7 @@ Github Api 虽然默认使用了第一种方法，但是其实是推荐并实现
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

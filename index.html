@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">419</span>
+          <span class="site-state-item-count">420</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,128 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2024/07/26/combining-virtual-columns-with-indexes-in-laravel-eloquent/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2024/07/26/combining-virtual-columns-with-indexes-in-laravel-eloquent/" class="post-title-link" itemprop="url">combining_virtual_columns_with_indexes_in_laravel_eloquent</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-07-26 00:57:28 / 修改时间：01:07:22" itemprop="dateCreated datePublished" datetime="2024-07-26T00:57:28+09:00">2024-07-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+I'm still here. 
+</blockquote>
+
+<p>When it comes to building robust and efficient web applications, a well-structured database is crucial. Laravel simplifies database management with its elegant Object-Relational Mapping (ORM) tool called Eloquent. In this blog post, we’ll delve into an advanced database optimization technique: using indexes on virtual columns in MySQL, combined with Laravel Eloquent.</p>
+<h3 id="Understanding-virtual-columns"><a href="#Understanding-virtual-columns" class="headerlink" title="Understanding virtual columns"></a>Understanding virtual columns</h3><p>Virtual columns, also known as generated columns, are columns in a database table that don’t physically store data but instead derive their values from other columns or expressions. These columns are computed on-the-fly when queried, providing a convenient way to manipulate and transform data without altering the actual table structure.</p>
+<p>In MySQL, you can create virtual columns using expressions, such as mathematical calculations or string manipulations, and then index these columns for improved query performance.</p>
+<h3 id="Benefits-of-virtual-column-indexing"><a href="#Benefits-of-virtual-column-indexing" class="headerlink" title="Benefits of virtual column indexing"></a>Benefits of virtual column indexing</h3><p>Indexing virtual columns can offer several advantages:</p>
+<ul>
+<li><p>Faster Query Performance: Indexes on virtual columns allow MySQL to quickly locate the relevant rows, reducing the time needed to retrieve data.</p>
+</li>
+<li><p>Simplified Data Transformation: Virtual columns enable you to perform complex data transformations within the database, reducing the need for application-level data manipulation.</p>
+</li>
+</ul>
+<h3 id="Using-virtual-columns-in-laravel-eloquent"><a href="#Using-virtual-columns-in-laravel-eloquent" class="headerlink" title="Using virtual columns in laravel eloquent"></a>Using virtual columns in laravel eloquent</h3><p>Let’s walk through the steps to use virtual columns and indexes in Laravel Eloquent:</p>
+<h4 id="Define-a-virtual-column-in-a-migration"><a href="#Define-a-virtual-column-in-a-migration" class="headerlink" title="Define a virtual column in a migration"></a>Define a virtual column in a migration</h4><p>To create a virtual column, you need to define it in a Laravel migration using the storedAs method. For example, let’s create a virtual column that calculates the total price based on the quantity and unit price:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">up</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Schema::create(<span class="string">&#x27;products&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Blueprint <span class="variable">$table</span></span>) </span>&#123;</span><br><span class="line">        <span class="variable">$table</span>-&gt;id();</span><br><span class="line">        <span class="variable">$table</span>-&gt;string(<span class="string">&#x27;name&#x27;</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;decimal(<span class="string">&#x27;unit_price&#x27;</span>, <span class="number">8</span>, <span class="number">2</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;integer(<span class="string">&#x27;quantity&#x27;</span>);</span><br><span class="line">        <span class="variable">$table</span>-&gt;decimal(<span class="string">&#x27;total_price&#x27;</span>, <span class="number">8</span>, <span class="number">2</span>)</span><br><span class="line">            -&gt;storedAs(<span class="string">&#x27;unit_price * quantity&#x27;</span>) <span class="comment">// Define the virtual column</span></span><br><span class="line">            -&gt;index(); <span class="comment">// Index the virtual column</span></span><br><span class="line">        <span class="variable">$table</span>-&gt;timestamps();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Use-the-virtual-column-in-eloquent-models"><a href="#Use-the-virtual-column-in-eloquent-models" class="headerlink" title="Use the virtual column in eloquent models"></a>Use the virtual column in eloquent models</h4><p>Once you’ve defined the virtual column, you can use it in your Eloquent models like any other column. Laravel Eloquent will handle the virtual column seamlessly:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Product</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$fillable</span> = [<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;unit_price&#x27;</span>, <span class="string">&#x27;quantity&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// You can access the virtual column as if it were a regular one</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$appends</span> = [<span class="string">&#x27;total_price&#x27;</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Now, you can access the total_price virtual column on your Product model instances as if it’s a standard attribute:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$product</span> = Product::find(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$product</span>-&gt;total_price; <span class="comment">// Access the virtual column</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Benefit-from-indexing"><a href="#Benefit-from-indexing" class="headerlink" title="Benefit from indexing"></a>Benefit from indexing</h4><p>By adding the <code>-&gt;index()</code> method when defining the virtual column in your migration, you’ve instructed MySQL to create an index on it. This index will significantly improve query performance when filtering, sorting, or searching for records based on the virtual column.</p>
+<h3 id="virtualAs-vs-storedAs"><a href="#virtualAs-vs-storedAs" class="headerlink" title="virtualAs vs storedAs"></a>virtualAs vs storedAs</h3><p>In Laravel Eloquent, both <code>storedAs</code> and <code>virtualAs</code> are methods used to work with virtual columns, but they serve slightly different purposes. Let’s explore the differences between these two methods.</p>
+<p>The <code>storedAs</code> method is used to define a virtual column in a database table, and it specifies how the virtual column’s values are calculated and stored within the table. Here are the key characteristics of <code>storedAs</code>:</p>
+<ul>
+<li><p>Stored Value: When you use storedAs, the calculated value for the virtual column is physically stored in the database table. This means that the result of the expression or formula you provide in storedAs is computed when a record is inserted or updated, and the result is saved in the table.</p>
+</li>
+<li><p>Indexing: You can index virtual columns created with storedAs. Indexing can significantly improve query performance when filtering or searching based on the virtual column.</p>
+</li>
+<li><p>Data Integrity: Since the value is stored in the table, it’s subject to data integrity constraints. If the formula involves other columns, changes to those columns will trigger updates to the virtual column.</p>
+</li>
+</ul>
+<p>Example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$table</span>-&gt;decimal(<span class="string">&#x27;total_price&#x27;</span>, <span class="number">8</span>, <span class="number">2</span>)</span><br><span class="line">    -&gt;storedAs(<span class="string">&#x27;unit_price * quantity&#x27;</span>)</span><br><span class="line">    -&gt;index();</span><br></pre></td></tr></table></figure>
+
+<p>In this example, the <code>total_price</code> column is a virtual column, and its value is calculated as the product of <code>unit_price</code> and quantity. The result is stored in the <code>total_price</code> column in the table, and an index is created on it.</p>
+<p>On the other hand, the <code>virtualAs</code> method is used to define a virtual column without physically storing its values in the table. Here are the key characteristics of <code>virtualAs</code>:</p>
+<ul>
+<li><p>Computed On-the-Fly: When you use virtualAs, the virtual column’s value is computed on-the-fly whenever you query the database. It’s not physically stored in the table.</p>
+</li>
+<li><p>No Indexing: Since there’s no physical storage, you can’t create an index directly on a column defined with virtualAs. This can result in slower query performance when filtering or sorting by the virtual column.</p>
+</li>
+<li><p>bData Integrity: There are no data integrity constraints associated with virtualAs because no data is stored. Changes to other columns won’t affect the virtual column since it’s always calculated dynamically.</p>
+</li>
+</ul>
+<p>Example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$table</span>-&gt;virtualAs(<span class="string">&#x27;unit_price * quantity&#x27;</span>, <span class="string">&#x27;total_price&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>In this example, the <code>total_price</code> column is also a virtual column, but its value is calculated on-the-fly using the provided expression whenever you access it in a query. No physical storage or indexing is involved.</p>
+<p>In summary, the choice between storedAs and <code>virtualAs</code> depends on your specific use case. If you need to frequently query and filter by the virtual column while maintaining data integrity, storedAs with indexing is a good option. If you only need the calculated value occasionally and don’t require data storage or indexing, <code>virtualAs</code> is more appropriate.</p>
+<h3 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h3><p>Leveraging virtual columns with indexing in MySQL, coupled with Laravel Eloquent, can greatly enhance the efficiency and maintainability of your database-driven web applications. By offloading complex calculations to the database engine and optimizing queries with indexes, you’ll be well on your way to building high-performance applications that scale with ease.</p>
+<p>So, next time you’re working on a Laravel project and need to perform calculations on your data, consider using virtual columns and indexing to boost your application’s database performance. Your users will thank you for the snappy response times, and your database will appreciate the reduced workload.</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.yellowduck.be/posts/combining-virtual-columns-with-indexes-in-laravel-eloquent">https://www.yellowduck.be/posts/combining-virtual-columns-with-indexes-in-laravel-eloquent</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1112,129 +1234,6 @@ And that's that you want to make sure your children feel safe.
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2022/08/27/Building-a-Golang-application-Docker-image/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/08/27/Building-a-Golang-application-Docker-image/" class="post-title-link" itemprop="url">Building-a-Golang-application-Docker-image</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2022-08-27 12:47:52 / 修改时间：13:00:17" itemprop="dateCreated datePublished" datetime="2022-08-27T12:47:52+09:00">2022-08-27</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-We'll find a way; we always have.
-</blockquote>
-
-
-<p>After we have written the application after several months of hard work, how to deploy it? Let’s use a simple example of Hello Worldto learn.</p>
-<p>The project structure is as follows:</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── <span class="keyword">go</span>.mod</span><br><span class="line">└── hello.<span class="keyword">go</span></span><br></pre></td></tr></table></figure>
-<p>The code content of hello.gois as follows:</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="built_in">println</span>(<span class="string">&quot;hello world!&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>In order to keep up with the trend, we choose to use Docker deployment here.</p>
-<h3 id="First-attempt"><a href="#First-attempt" class="headerlink" title="First attempt."></a>First attempt.</h3><p>For convenience, we are going to put all the content into Docker for compilation, and after some research, we get the following <code>Dockerfile</code> file:</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">FROM golang:alpine</span><br><span class="line">WORKDIR /build</span><br><span class="line">COPY hello.<span class="keyword">go</span> .</span><br><span class="line">RUN <span class="keyword">go</span> build -o hello hello.<span class="keyword">go</span></span><br><span class="line">CMD [<span class="string">&quot;./hello&quot;</span>]</span><br></pre></td></tr></table></figure>
-<p>Next start building.</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> docker build -t hello:v1 .</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> docker run -it --rm hello:v1 ls -l /build</span></span><br><span class="line">total 1260</span><br><span class="line">-rwxr-xr-x    1 root     root       1281547 Mar  6 15:54 hello</span><br><span class="line">-rw-r--r--    1 root     root            55 Mar  6 14:59 hello.go</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> try to run it</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> docker run -it --rm hello:v1</span></span><br><span class="line">hello world!</span><br></pre></td></tr></table></figure>
-
-<p>It runs successfully, and then we look at the size of the image.</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> docker images | grep hello</span></span><br><span class="line">hello         v1    2783ee221014   44 minutes ago   314MB</span><br><span class="line">````</span><br><span class="line"></span><br><span class="line">Shocked me, the whole image actually has 314MB, just docker build, what happened?</span><br><span class="line"></span><br><span class="line">Although it can be run, the size of this image is too scary, we just simply printed a line of hello world, and the size of the image is more than 300 MB, which is too unreasonable and needs to be optimized.</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment">## Second attempt.</span></span></span><br><span class="line">After looking for the information, I found that the base image we used was too large.</span><br><span class="line"></span><br><span class="line">```golang</span><br><span class="line"><span class="meta">$</span><span class="bash"> docker images | grep golang</span></span><br><span class="line">golang    alpine     d026981a7165   2 days ago          313MB</span><br></pre></td></tr></table></figure>
-
-<p>A friend told me that I can compile the code first, and then copy it in, so I don’t need that huge base image, but it’s easy to say, I still spent some time learning, and finally the <code>Dockerfile</code> looks like this:</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">FROM alpine</span><br><span class="line">WORKDIR /build</span><br><span class="line">COPY hello .</span><br><span class="line">CMD [<span class="string">&quot;./hello&quot;</span>]</span><br></pre></td></tr></table></figure>
-<p>Let’s rebuild the image:</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ docker build -t hello:v2 .</span><br><span class="line">...</span><br><span class="line">=&gt; ERROR [<span class="number">3</span>/<span class="number">3</span>] COPY hello .                         <span class="number">0.0</span>s</span><br><span class="line">------</span><br><span class="line">&gt; [<span class="number">3</span>/<span class="number">3</span>] COPY hello .:</span><br><span class="line">------</span><br><span class="line">failed to compute cache key: <span class="string">&quot;/hello&quot;</span> not found: not found</span><br></pre></td></tr></table></figure>
-<p>Oh hoo, wrong report. The prompt hello cannot be found, so I forgot to compile hello.go first and execute it again.</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> go build -o hello hello.go</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> docker run -it --rm hello:v2</span></span><br><span class="line">standard_init_linux.go:228: exec user process caused: exec format error</span><br><span class="line">````</span><br><span class="line"></span><br><span class="line">Whoops, failed again.</span><br><span class="line"></span><br><span class="line">Well, the format is wrong, it turns out that our development machine is not linux, Don’t give up, let’s do it again.</span><br><span class="line"></span><br><span class="line">```shell</span><br><span class="line"><span class="meta">$</span><span class="bash"> GOOS=linux go build -o hello hello.go</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> docker build -t hello:v2 .</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ...</span></span><br><span class="line">Successfully</span><br></pre></td></tr></table></figure>
-
-<p>Finally, the build is successful, let’s try it out.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --rm hello:v2</span><br><span class="line">hello world!</span><br></pre></td></tr></table></figure>
-
-<p>No problem, let’s take a look at the content and size.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --rm hello:v2 ls -l /build</span><br><span class="line">total <span class="number">1252</span></span><br><span class="line">-rwxr-xr-x    <span class="number">1</span> root     root       <span class="number">1281587</span> Mar  <span class="number">6</span> <span class="number">16</span>:<span class="number">18</span> hello</span><br><span class="line"></span><br><span class="line">$ docker images | grep hello</span><br><span class="line">hello    v2   <span class="number">0</span>dd53f016c93   <span class="number">53</span> seconds ago      <span class="number">6.61</span>MB</span><br><span class="line">hello    v1   ac0e37173b85   <span class="number">25</span> minutes ago      <span class="number">314</span>MB</span><br></pre></td></tr></table></figure>
-
-<p>Wow, it’s only 6.61MB this time, which is OK!</p>
-<h3 id="Third-attempt"><a href="#Third-attempt" class="headerlink" title="Third attempt."></a>Third attempt.</h3><p>Although the above image can be successfully built, there are still some shortcomings. It is not a multi-stage build.</p>
-<p>We need to be able to build a docker image from Go code, which is divided into three steps:</p>
-<ul>
-<li>Compile Go code natively, if it involves cgo the cross-platform compilation will be more troublesome.</li>
-<li>Build a docker image with the compiled executable.</li>
-<li>Write a shell script or makefile to get these steps in one command.<br>Multi-stage builds are all about putting it all into one <code>Dockerfile</code>, no source code leaks, no scripting for cross-platform compilation, and a minimal image.</li>
-</ul>
-<p>Loving to learn and striving for perfection, I ended up writing the following <code>Dockerfile</code>.</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">FROM golang:alpine AS builder</span><br><span class="line">WORKDIR /build</span><br><span class="line">ADD <span class="keyword">go</span>.mod .</span><br><span class="line">COPY . .</span><br><span class="line">RUN <span class="keyword">go</span> build -o hello hello.<span class="keyword">go</span></span><br><span class="line">FROM alpine</span><br><span class="line">WORKDIR /build</span><br><span class="line">COPY --from=builder /build/hello /build/hello</span><br><span class="line">CMD [<span class="string">&quot;./hello&quot;</span>]</span><br></pre></td></tr></table></figure>
-
-<p>The first FROM starts with building a builder image in which the executable hellois compiled.</p>
-<p>The part starting with the second FROM is to copy the executable hello from the first image, and use the smallest possible base image alpine to ensure that the final image is as small as possible.</p>
-<p>As for why you don’t use a smaller scratch, it’s because there’s really nothing in scratch, and there is no chance to take a look if there is a problem, and alpine is only 5MB, which is good for our service will not have much impact.</p>
-<p>Let’s run it first to verify:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> docker run -it --rm hello:v3</span></span><br><span class="line">hello world!</span><br></pre></td></tr></table></figure>
-
-<p>No problem, as expected! See what the size looks like:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> docker images | grep hello</span></span><br><span class="line">hello    v3     f51e1116be11   8 hours ago    6.61MB</span><br><span class="line">hello    v2     0dd53f016c93   8 hours ago    6.61MB</span><br><span class="line">hello    v1     ac0e37173b85   8 hours ago    314MB</span><br></pre></td></tr></table></figure>
-<p>The size of the image built by the second method is exactly the same. Take a look at the contents of the mirror:</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --rm hello:v3 ls -l /build</span><br><span class="line">total <span class="number">1252</span></span><br><span class="line">-rwxr-xr-x    <span class="number">1</span> root     root       <span class="number">1281547</span> Mar  <span class="number">6</span> <span class="number">16</span>:<span class="number">32</span> hello</span><br></pre></td></tr></table></figure>
-
-<p>Also, only one executable hello file builds perfectly!</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://blog.devgenius.io/tutorial-building-a-golang-application-docker-image-78e36d437c70">https://blog.devgenius.io/tutorial-building-a-golang-application-docker-image-78e36d437c70</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1248,7 +1247,7 @@ We'll find a way; we always have.
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

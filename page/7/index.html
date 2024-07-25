@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">419</span>
+          <span class="site-state-item-count">420</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,104 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/05/03/async%E5%92%8Cawait%E8%AE%A9%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B%E6%9B%B4%E7%AE%80%E5%8D%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2020/05/03/async%E5%92%8Cawait%E8%AE%A9%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B%E6%9B%B4%E7%AE%80%E5%8D%95/" class="post-title-link" itemprop="url">async和await让异步编程更简单</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-05-03 20:58:27" itemprop="dateCreated datePublished" datetime="2020-05-03T20:58:27+09:00">2020-05-03</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2022-04-13 11:45:24" itemprop="dateModified" datetime="2022-04-13T11:45:24+09:00">2022-04-13</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+这是场接力赛，你却当成百米赛跑。
+</blockquote>
+
+<h3 id="async"><a href="#async" class="headerlink" title="async"></a>async</h3><p>首先，我们使用async关键字，您可以将它放在函数声明之前，将其转换为async function。异步函数是一个知道怎样预期 await 关键字可用于调用异步代码可能性的函数。</p>
+<p>尝试在浏览器的JS控制台中键入以下行：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123; <span class="keyword">return</span> <span class="string">&quot;Hello&quot;</span> &#125;;</span><br><span class="line">hello();</span><br></pre></td></tr></table></figure>
+<p>该函数返回“Hello” ––没什么特别的，对吧？</p>
+<p>但是，如果我们将其变成异步函数呢？请尝试以下方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123; <span class="keyword">return</span> <span class="string">&quot;Hello&quot;</span> &#125;;</span><br><span class="line">hello();</span><br></pre></td></tr></table></figure>
+<p>额。。现在调用该函数会返回一个promise。这是异步函数的特征之一 ––它将任何函数转换为promise。<br>你也可以创建一个异步函数表达式（参见async function expression），如下所示:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> hello = <span class="keyword">async</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123; <span class="keyword">return</span> <span class="string">&quot;Hello&quot;</span> &#125;;</span><br><span class="line">hello();</span><br></pre></td></tr></table></figure>
+<p>你可以使用箭头函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> hello = <span class="keyword">async</span> () =&gt; &#123; <span class="keyword">return</span> <span class="string">&quot;Hello&quot;</span> &#125;;</span><br></pre></td></tr></table></figure>
+<p>这些都基本上是一样的。</p>
+<p>要实际使用promise实现时返回的值，因为它返回了一个promise，我们可以使用.then()块：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hello().then(<span class="function">(<span class="params">value</span>) =&gt;</span> <span class="built_in">console</span>.log(value))</span><br></pre></td></tr></table></figure>
+<p>甚至只是简写如</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hello().then(<span class="built_in">console</span>.log)</span><br></pre></td></tr></table></figure>
+<p>就像我们在上一篇文章中看到的那样<br>因此，将async关键字添加到函数中以告诉它们返回promise而不是直接返回值。此外，这使同步函数可以避免运行支持使用await时带来的任何潜在开销。通过仅在函数声明为异步时添加必要的处理，JavaScript引擎可以为您优化您的程序。爽！</p>
+<h3 id="await"><a href="#await" class="headerlink" title="await"></a>await</h3><p>将它与await关键字结合使用时，异步函数的真正优势就变得明显了。这可以放在任何基于异步声明的函数之前，暂停代码在该行上，直到promise完成，然后返回结果值。与此同时，其他正在等待执行机会的代码就有可能如愿执行了。<br>这是一个简单的示例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> greeting = <span class="keyword">await</span> <span class="built_in">Promise</span>.resolve(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">hello().then(alert);</span><br></pre></td></tr></table></figure>
+<p>关键字 await 让 JavaScript 引擎等待直到 promise 完成（settle）并返回结果<br>这里的例子就是一个 1 秒后 resolve 的 promise：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> promise = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> resolve(<span class="string">&quot;done!&quot;</span>), <span class="number">1000</span>)</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> result = <span class="keyword">await</span> promise; <span class="comment">// 等待，直到 promise resolve (*)</span></span><br><span class="line"></span><br><span class="line">  alert(result); <span class="comment">// &quot;done!&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">f();</span><br></pre></td></tr></table></figure>
+<p>这个函数在执行的时候，“暂停”在了 <code>(*)</code> 那一行，并在 promise settle 时，拿到 result 作为结果继续往下执行。所以上面这段代码在一秒后显示 <code>“done!”</code>。</p>
+<p>让我们强调一下：await 字面的意思就是让 JavaScript 引擎等待直到 promise settle，然后以 promise 的结果继续执行。这个行为不会耗费任何 CPU 资源，因为引擎可以同时处理其他任务：执行其他脚本，处理事件等。</p>
+<p>相比于 promise.then，它只是获取 promise 的结果的一个更优雅的语法，同时也更易于读写。</p>
+<h3 id="编辑器报错"><a href="#编辑器报错" class="headerlink" title="编辑器报错"></a>编辑器报错</h3><h4 id="async-function-is-only-available-in-es8"><a href="#async-function-is-only-available-in-es8" class="headerlink" title="async function is only available in es8"></a>async function is only available in es8</h4><p>You can create “.jshintrc” file (see jshint.com/docs/) at project root and simply add to it lines given below:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;esversion&quot;</span>: <span class="number">8</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1078,109 +1176,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2020/03/02/a-real-world-example-of-go-interfaces/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/03/02/a-real-world-example-of-go-interfaces/" class="post-title-link" itemprop="url">A-Real-World-Example-of-Go-Interfaces</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-03-02 20:54:48" itemprop="dateCreated datePublished" datetime="2020-03-02T20:54:48+09:00">2020-03-02</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2022-06-01 17:31:34" itemprop="dateModified" datetime="2022-06-01T17:31:34+09:00">2022-06-01</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-孤独的孩子，悄悄在风中长大了。
-</blockquote>
-
-<p>Suppose I’m building a web app in Go. In my app, I want to send a message to my users. I can send a message to the users via email or SMS. This would be a perfect use case for interfaces.</p>
-<p>For this hypothetical web app, I create the following <code>main.go</code> file.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name <span class="keyword">string</span></span><br><span class="line">	Email <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> UserNotifier <span class="keyword">interface</span> &#123;</span><br><span class="line">	SendMessage(user *User, message <span class="keyword">string</span>) error</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	user := &amp;User&#123;<span class="string">&quot;Dirk&quot;</span>, <span class="string">&quot;dirk@email.com&quot;</span>&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Printf(<span class="string">&quot;Welcome %s\n&quot;</span>, user.Name)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>The User struct represents a user.<br>You can see I created a UserNotifier of type interface that has a single function: <code>SendMessage()</code>.<br>To implement this interface, I have to create a struct that implements the <code>SendMessage()</code> function.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> EmailNotifier <span class="keyword">struct</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(notifier EmailNotifier)</span> <span class="title">SendMessage</span><span class="params">(user *User, message <span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	_, err := fmt.Printf(<span class="string">&quot;Sending email to %s with content %s\n&quot;</span>, user.Name, message)</span><br><span class="line">	<span class="keyword">return</span> err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>As you can see, I created a new EmailNotifier struct. Then I implemented the SendMessage() method on the struct. Note that in this example, the EmailNotifier simply prints a message. In the real world, you would probably call an email API such as Mailgun.</p>
-<p>And that’s it, the interface is now implemented.</p>
-<p>The next thing to do is send an email to the user using the UserNotifier interface.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	user := User&#123;<span class="string">&quot;Dirk&quot;</span>, <span class="string">&quot;dirk@email.com&quot;</span>&#125;</span><br><span class="line">	fmt.Printf(<span class="string">&quot;Welcome %s\n&quot;</span>, user.Name)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> userNotifier UserNotifier</span><br><span class="line">	userNotifier = EmailNotifier&#123;&#125;</span><br><span class="line">	userNotifier.SendMessage(&amp;user, <span class="string">&quot;Interfaces all the way!&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>When running this program, the SendMessage() of the EmailNotifier is called correctly.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> build -o main main.<span class="keyword">go</span></span><br><span class="line">./main</span><br><span class="line">Welcome Dirk</span><br><span class="line">Sending email to Dirk with content Interfaces all the way!</span><br></pre></td></tr></table></figure>
-<p>Let’s implement an SMS interface as well.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> SmsNotifier <span class="keyword">struct</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(notifier SmsNotifier)</span> <span class="title">SendMessage</span><span class="params">(user *User, message <span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	_, err := fmt.Printf(<span class="string">&quot;Sending SMS to %s with content %s\n&quot;</span>, user.Name, message)</span><br><span class="line">	<span class="keyword">return</span> err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>One cool feature is we can store the notifier in the user struct. In this way, each user will have a personal notifier.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name <span class="keyword">string</span></span><br><span class="line">	Email <span class="keyword">string</span></span><br><span class="line">	Notifier UserNotifier</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>You can then add a handy method to the User struct that notifies the user using the UserNotifier interface.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(user *User)</span> <span class="title">notify</span><span class="params">(message <span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> user.Notifier.SendMessage(user, message)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Finally, I created two users in the main() function and called the notify() method.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	user1 := User&#123;<span class="string">&quot;Dirk&quot;</span>, <span class="string">&quot;dirk@email.com&quot;</span>, EmailNotifier&#123;&#125;&#125;</span><br><span class="line">	user2 := User&#123;<span class="string">&quot;Justin&quot;</span>, <span class="string">&quot;bieber@email.com&quot;</span>, SmsNotifier&#123;&#125;&#125;</span><br><span class="line"></span><br><span class="line">	user1.notify(<span class="string">&quot;Welcome Email user!&quot;</span>)</span><br><span class="line">	user2.notify(<span class="string">&quot;Welcome SMS user!&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>The final result worked as expected.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> build -o main main.<span class="keyword">go</span></span><br><span class="line">./main</span><br><span class="line">Sending email to Dirk with content Welcome Email user!</span><br><span class="line">Sending SMS to Justin with content Welcome SMS user!</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://medium.com/better-programming/a-real-world-example-of-go-interfaces-98e89b2ddb67">https://medium.com/better-programming/a-real-world-example-of-go-interfaces-98e89b2ddb67</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1194,7 +1189,7 @@
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

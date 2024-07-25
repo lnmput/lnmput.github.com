@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">419</span>
+          <span class="site-state-item-count">420</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,6 +178,124 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/25/Laravel%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%BC%93%E5%AD%98%E6%8A%80%E5%B7%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lnmput@gmail.com">
+      <meta itemprop="description" content="要么庸俗，要么孤独">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="外贸独立站(日本)">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/01/25/Laravel%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%BC%93%E5%AD%98%E6%8A%80%E5%B7%A7/" class="post-title-link" itemprop="url">Laravel的模型缓存技巧</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-25 18:58:01" itemprop="dateCreated datePublished" datetime="2018-01-25T18:58:01+09:00">2018-01-25</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2018-03-27 22:16:54" itemprop="dateModified" datetime="2018-03-27T22:16:54+09:00">2018-03-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote class="blockquote-center">
+牛b的人是不会废话的，只会默默的砸烂你的人生观，价值观，社会观。
+</blockquote>
+You’ve probably cached some model data in the controller before, but I am going to show you a Laravel model caching technique that’s a little more granular using Active Record models. This is a technique I originally learned about on RailsCasts.
+
+<p>Using a unique cache key on the model, you can cache properties and associations on your models that are automatically updated (and the cache invalidated) when the model (or associated model) is updated. A side benefit is that accessing the cached data is more portable than caching data in the controller, because it’s on the model instead of within a single controller method.</p>
+<p>Here’s the gist of the technique:</p>
+<p>Let’s say you have an Article model that has many Comment models. Given the following Laravel blade template, you might retrieve the comment count like so on your <code>/article/:id route</code>:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;h3&gt;<span class="variable">$article</span>-&gt;comments-&gt;count() &#123;&#123; str_plural(<span class="string">&#x27;Comment&#x27;</span>, <span class="variable">$article</span>-&gt;comments-&gt;count())&lt;/h3&gt;</span><br></pre></td></tr></table></figure>
+<p>You could cache the comment count in the controller, but the controller can get pretty ugly when you have multiple one-off queries and data you need to cache. Using the controller, accessing the cached data isn’t very portable either.</p>
+<p>We can build a template that will only hit the database when the article is updated, and any code that has access to the model can grab the cached value:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;h3&gt;<span class="variable">$article</span>-&gt;cached_comments_count &#123;&#123; str_plural(<span class="string">&#x27;Comment&#x27;</span>, <span class="variable">$article</span>-&gt;cached_comments_count)&lt;/h3&gt;</span><br></pre></td></tr></table></figure>
+
+<p>Using a model accessor, we will cache the comment count based on the last time the article was updated.</p>
+<p>So how do we update the article’s updated_at column when a new comment is added or removed?</p>
+<p>Enter the touch method.</p>
+<h3 id="Touching-Models"><a href="#Touching-Models" class="headerlink" title="Touching Models"></a>Touching Models</h3><p>Using the model’s touch() method, we can update an article’s updated_at column:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ php artisan tinker</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; <span class="variable">$article</span> = \App\Article::first();</span><br><span class="line">=&gt; App\Article &#123;<span class="comment">#746</span></span><br><span class="line">     id: <span class="number">1</span>,</span><br><span class="line">     title: <span class="string">&quot;Hello World&quot;</span>,</span><br><span class="line">     body: <span class="string">&quot;The Body&quot;</span>,</span><br><span class="line">     created_at: <span class="string">&quot;2018-01-11 05:16:51&quot;</span>,</span><br><span class="line">     updated_at: <span class="string">&quot;2018-01-11 05:51:07&quot;</span>,</span><br><span class="line">   &#125;</span><br><span class="line">&gt;&gt;&gt; <span class="variable">$article</span>-&gt;updated_at-&gt;timestamp</span><br><span class="line">=&gt; <span class="number">1515649867</span></span><br><span class="line">&gt;&gt;&gt; <span class="variable">$article</span>-&gt;touch();</span><br><span class="line">=&gt; <span class="literal">true</span></span><br><span class="line">&gt;&gt;&gt; <span class="variable">$article</span>-&gt;updated_at-&gt;timestamp</span><br><span class="line">=&gt; <span class="number">1515650910</span></span><br></pre></td></tr></table></figure>
+<p>We can use the updated timestamp to invalidate a cache, but how can we touch the article’s updated_at field when we add or remove a comment?</p>
+<p>It just so happens that Eloquent models have a property called $touches. Here’s what our comment model might look like:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Article</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Eloquent</span>\<span class="title">Model</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Comment</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$guarded</span> = [];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$touches</span> = [<span class="string">&#x27;article&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">article</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;belongsTo(Article::class);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The $touches property is an array containing the association that will get “touched” when a comment is created, saved, or removed.</p>
+<h3 id="The-Cached-Attribute"><a href="#The-Cached-Attribute" class="headerlink" title="The Cached Attribute"></a>The Cached Attribute</h3><p>Let’s go back to the $article-&gt;cached_comments_count accessor. The implementation might look like this on the App\Article model:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getCachedCommentsCountAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Cache::remember(<span class="keyword">$this</span>-&gt;cacheKey() . <span class="string">&#x27;:comments_count&#x27;</span>, <span class="number">15</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;comments-&gt;count();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>We are caching the model for fifteen minutes using a unique cacheKey() method and simply returning the comment count inside the closure.</p>
+<p>Note that we could also use the Cache::rememberForever() method and rely on our caching mechanism’s garbage collection to remove stale keys. I’ve set a timer so that the cache will be hit most of the time, with a fresh cache every fifteen minutes.</p>
+<p>The cacheKey() method needs to make the model unique, and invalidate the cache when the model is updated. Here’s my cacheKey implementation:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">cacheKey</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> sprintf(</span><br><span class="line">        <span class="string">&quot;%s/%s-%s&quot;</span>,</span><br><span class="line">        <span class="keyword">$this</span>-&gt;getTable(),</span><br><span class="line">        <span class="keyword">$this</span>-&gt;getKey(),</span><br><span class="line">        <span class="keyword">$this</span>-&gt;updated_at-&gt;timestamp</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>The example output for the model’s cacheKey() method might return the following string representation:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">articles/<span class="number">1</span>-<span class="number">1515650910</span></span><br></pre></td></tr></table></figure>
+
+<p>The key is the name of the table, the model id, and the current updated_at timestamp. Once we touch the model, the timestamp will be updated, and our model cache will be invalidated appropriately.</p>
+<p>Here’s the Article model if full:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Comment</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">Facades</span>\<span class="title">Cache</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Eloquent</span>\<span class="title">Model</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">cacheKey</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> sprintf(</span><br><span class="line">            <span class="string">&quot;%s/%s-%s&quot;</span>,</span><br><span class="line">            <span class="keyword">$this</span>-&gt;getTable(),</span><br><span class="line">            <span class="keyword">$this</span>-&gt;getKey(),</span><br><span class="line">            <span class="keyword">$this</span>-&gt;updated_at-&gt;timestamp</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">comments</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;hasMany(Comment::class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getCachedCommentsCountAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Cache::remember(<span class="keyword">$this</span>-&gt;cacheKey() . <span class="string">&#x27;:comments_count&#x27;</span>, <span class="number">15</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;comments-&gt;count();</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>And the associated Comment model:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Article</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Eloquent</span>\<span class="title">Model</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Comment</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$guarded</span> = [];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$touches</span> = [<span class="string">&#x27;article&#x27;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">article</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;belongsTo(Article::class);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="What’s-Next"><a href="#What’s-Next" class="headerlink" title="What’s Next?"></a>What’s Next?</h3><p>I’ve shown you how to cache a simple comment count, but what about caching all the comments?</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getCachedCommentsAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Cache::remember(<span class="keyword">$this</span>-&gt;cacheKey() . <span class="string">&#x27;:comments&#x27;</span>, <span class="number">15</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;comments;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>You might also choose to convert the comments to an array instead of serializing the models to only allow simple array access to the data on the frontend:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getCachedCommentsAttribute</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Cache::remember(<span class="keyword">$this</span>-&gt;cacheKey() . <span class="string">&#x27;:comments&#x27;</span>, <span class="number">15</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;comments-&gt;toArray();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Lastly, I defined the cacheKey() method on the Article model, but you would want to define this method via a trait called something like ProvidesModelCacheKey that you can use on multiple models or define the method on a base model that all our models extend. You might even want to use a contract (interface) for models that implement a cacheKey() method.</p>
+<p>I hope you’ve found this simple technique useful!</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://laravel-news.com/laravel-model-caching">https://laravel-news.com/laravel-model-caching</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1067,89 +1185,6 @@ PHP在用户自定义函数中支持可变数量的参数列表。在 `PHP 5.6` 
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://swoole.app/2018/01/11/hexo%E7%9A%84next%E4%B8%BB%E9%A2%98%E8%87%AA%E5%AE%9A%E4%B9%89css/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="lnmput@gmail.com">
-      <meta itemprop="description" content="要么庸俗，要么孤独">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="外贸独立站(日本)">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/11/hexo%E7%9A%84next%E4%B8%BB%E9%A2%98%E8%87%AA%E5%AE%9A%E4%B9%89css/" class="post-title-link" itemprop="url">hexo的next主题自定义css</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-11 17:47:07" itemprop="dateCreated datePublished" datetime="2018-01-11T17:47:07+09:00">2018-01-11</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2018-03-27 22:22:37" itemprop="dateModified" datetime="2018-03-27T22:22:37+09:00">2018-03-27</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote class="blockquote-center">
-我相信，梦里能到达的地方，总有一天，脚步也能到达。
-</blockquote>
-
-<h3 id="css文件位置"><a href="#css文件位置" class="headerlink" title="css文件位置"></a>css文件位置</h3><p><code>hexo\blog\themes\next\source\css\_custom\custom.styl</code></p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// Custom styles.</span><br><span class="line"><span class="selector-id">#header</span> &#123; </span><br><span class="line">    <span class="attribute">background</span>:<span class="built_in">url</span>(<span class="string">/images/header.jpg</span>);</span><br><span class="line">    <span class="attribute">background-repeat</span>: no-repeat;</span><br><span class="line">    <span class="attribute">background-size</span>: cover;</span><br><span class="line">    <span class="attribute">color</span>: <span class="number">#fff</span> <span class="meta">!important</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-id">#menu</span> <span class="selector-tag">a</span>&#123;</span><br><span class="line">	<span class="attribute">color</span>: <span class="number">#c9c9c9</span> <span class="meta">!important</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="图片文件位置"><a href="#图片文件位置" class="headerlink" title="图片文件位置"></a>图片文件位置</h3><p><code>hexo\blog\themes\next\source\images</code><br>可以在该目录下添加主题所需要的图片</p>
-<h3 id="如果上传不生效请尝试"><a href="#如果上传不生效请尝试" class="headerlink" title="如果上传不生效请尝试"></a>如果上传不生效请尝试</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">step1: hexo clean (请尝试, 一般无需执行)</span><br><span class="line">step2: hexo s (检查是自己的更改是否成功)</span><br><span class="line">step3: hexo g</span><br><span class="line">step4: gulp (这是拓展项，需要安装gulp插件，如果没有，可以忽略)</span><br><span class="line">step5: hexo d</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://syd192.github.io/2016/11/15/hexo-learn/">https://syd192.github.io/2016/11/15/hexo-learn/</a></p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/20/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><span class="page-number current">21</span><a class="page-number" href="/page/22/">22</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><a class="extend next" rel="next" href="/page/22/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
@@ -1163,7 +1198,7 @@ PHP在用户自定义函数中支持可变数量的参数列表。在 `PHP 5.6` 
 
 <div class="copyright">
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
